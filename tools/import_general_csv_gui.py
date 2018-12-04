@@ -123,10 +123,8 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     def load_files(self):
         charset = utils.ask_for_charset()
         if not charset:
-            return None
-        filename = utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate('GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s"))%('(*.csv)', '(*.txt)', '(*.*)'))
-        if not filename:
             raise utils.UserInterruptError()
+        filename = utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate('GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s"))%('(*.csv)', '(*.txt)', '(*.*)'))
         if isinstance(filename, (list, tuple)):
             filename = filename[0]
 

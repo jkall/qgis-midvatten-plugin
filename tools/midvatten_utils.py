@@ -787,10 +787,13 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
         dir = ''
 
     if only_one_file:
-        csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate('select_files', "Select file"), directory=dir, filter=extension)]
+        csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate('select_files', "Select file"), directory=dir, filter=extension)[0]]
     else:
-        csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate('select_files', "Select files"), directory=dir, filter=extension)
-    csvpath = [returnunicode(p[0]) for p in csvpath if p]
+        csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate('select_files', "Select files"), directory=dir, filter=extension)[0]
+    csvpath = [returnunicode(p) for p in csvpath if p]
+    if not csvpath:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('select_files', 'No file selected!')))
+        raise UserInterruptError()
     return csvpath
 
 
@@ -1428,15 +1431,15 @@ def general_exception_handler(func):
             result = func(*args, **kwargs)
         except UserInterruptError:
             # The user interrupted the process.
-            utils.stop_waiting_cursor()
+            stop_waiting_cursor()
             pass
         except UsageError as e:
-            utils.stop_waiting_cursor()
+            stop_waiting_cursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('general_exception_handler', 'Usage error: %s'))%str(e))
         except:
-            utils.stop_waiting_cursor()
+            stop_waiting_cursor()
             raise
         else:
             return result
@@ -1633,8 +1636,6 @@ class PlotTemplates(object):
     def import_templates(self, filenames=None):
         if filenames is None:
             filenames = select_files(only_one_file=False, extension='')
-        if filenames is None or not filenames:
-            raise UserInterruptError()
         templates = {}
         if filenames:
             for filename in filenames:

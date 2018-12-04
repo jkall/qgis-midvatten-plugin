@@ -107,8 +107,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     def select_files(self):
         self.charsetchoosen = utils.ask_for_charset(default_charset=self.default_charset)
         if not self.charsetchoosen:
-            self.status = 'True'
-            return 'cancel'
+            raise utils.UserInterruptError()
 
         files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         return files

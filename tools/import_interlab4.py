@@ -56,9 +56,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
     def parse_observations_and_populate_gui(self):
         filenames = utils.select_files(only_one_file=False,
                                        extension="lab (*.lab)")
-        if filenames is None or not filenames:
-            return Cancel()
-        
+
         self.all_lab_results = self.parse(filenames)
 
         splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)

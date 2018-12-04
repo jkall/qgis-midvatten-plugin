@@ -476,6 +476,7 @@ class midvatten(object):
             
                 utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
+    @utils.general_exception_handler
     def export_fieldlogger(self):
         """
         Exports data to FieldLogger android app format
@@ -495,6 +496,7 @@ class midvatten(object):
                 bar_msg=ru(QCoreApplication.translate("Midvatten", 'Error! Verify Midvatten settings. Verify that no layer is in edit mode.')),
                 duration=15, button=False)
 
+    @utils.general_exception_handler
     def import_fieldlogger(self):
         """
         Imports data from FieldLogger android app format.
@@ -522,6 +524,7 @@ class midvatten(object):
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         utils.stop_waiting_cursor()
 
+    @utils.general_exception_handler
     def import_csv(self):
         """
         Imports data from a csv file
@@ -668,7 +671,7 @@ class midvatten(object):
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         utils.stop_waiting_cursor()
 
-
+    @utils.general_exception_handler
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
         #return
@@ -682,6 +685,7 @@ class midvatten(object):
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
         utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
+    @utils.general_exception_handler
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
@@ -744,6 +748,7 @@ class midvatten(object):
             #markdowntable = utils.create_markdown_table_from_table('about_db', transposed=False, only_description=True)
             #print(markdowntable)
 
+    @utils.general_exception_handler
     def plot_piper(self):
         allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
@@ -752,6 +757,7 @@ class midvatten(object):
             piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
             dlg = piperplot.get_data_and_make_plot()
 
+    @utils.general_exception_handler
     def plot_timeseries(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
@@ -761,6 +767,7 @@ class midvatten(object):
         if err_flag == 0:
             dlg = TimeSeriesPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
+    @utils.general_exception_handler
     def plot_stratigraphy(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
@@ -775,6 +782,7 @@ class midvatten(object):
             dlg.showSurvey()
             self.dlg = dlg# only to prevent the Qdialog from closing.
 
+    @utils.general_exception_handler
     def plot_section(self):
         error = False
         all_critical_layers=('obs_points')
@@ -817,6 +825,7 @@ class midvatten(object):
                 self.myplot = SectionPlot(self.iface.mainWindow(), self.iface)
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
 
+    @utils.general_exception_handler
     def plot_xy(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
@@ -826,6 +835,7 @@ class midvatten(object):
         if err_flag == 0:
             dlg = XYPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
+    @utils.general_exception_handler
     def plot_sqlite(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if not(err_flag == 0):
@@ -835,6 +845,7 @@ class midvatten(object):
         except:
             self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
 
+    @utils.general_exception_handler
     def prepare_layers_for_qgis2threejs(self):
         allcritical_layers = ('obs_points', 'stratigraphy')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
@@ -885,6 +896,7 @@ class midvatten(object):
             db_utils.sql_alter_db('vacuum')
             utils.stop_waiting_cursor()
 
+    @utils.general_exception_handler
     def waterqualityreport(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         err_flag = utils.verify_layer_selection(err_flag)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
@@ -900,6 +912,7 @@ class midvatten(object):
             if not fail == 1:#only if all objects has data
                 Wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
 
+    @utils.general_exception_handler
     def waterqualityreportcompact(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
@@ -908,6 +921,7 @@ class midvatten(object):
         if err_flag == 0:
             CompactWqualReportUi(self.iface.mainWindow(), self.ms)
 
+    @utils.general_exception_handler
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
@@ -918,6 +932,7 @@ class midvatten(object):
             dlg = Calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
             dlg.exec_()
 
+    @utils.general_exception_handler
     def wlvlloggcalibrate(self):
         allcritical_layers = ('w_levels_logger', 'w_levels')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
@@ -947,6 +962,7 @@ class midvatten(object):
 
         stats_gui = CalculateStatisticsGui(self.iface.mainWindow(), self.ms)
 
+    @utils.general_exception_handler
     def calculate_db_table_rows(self):
         """ Counts the number of rows for all tables in the database """
         QApplication.setOverrideCursor(Qt.WaitCursor)
