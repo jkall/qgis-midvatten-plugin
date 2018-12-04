@@ -154,8 +154,8 @@ class Askuser(QtWidgets.QDialog):
         elif question == 'AllSelected': # All or Selected Dialog
             btnAll = QtWidgets.QPushButton(QCoreApplication.translate('askuser', "All"))   # = "0"
             btnSelected = QtWidgets.QPushButton(QCoreApplication.translate('askuser', "Selected"))     # = "1"
-            #btnAll.clicked.connect(self.DoForAll)
-            #btnSelected.clicked.connect(self.DoForSelected)
+            #btnAll.clicked.connect(lambda x: self.DoForAll())
+            #btnSelected.clicked.connect(lambda x: self.DoForSelected())
             msgBox = QtWidgets.QMessageBox(parent)
             msgBox.setText(msg)
             msgBox.setWindowTitle(dialogtitle)
@@ -202,7 +202,7 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
             button = QtWidgets.QPushButton(button_name)
             button.setObjectName(button_name.lower())
             self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
-            button.clicked.connect(self.button_clicked)
+            button.clicked.connect(lambda x: self.button_clicked())
 
         self.reuse_label = qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('NotFoundQuestion', 'Reuse answer for all identical'))
         self._reuse_column = qgis.PyQt.QtWidgets.QComboBox()
@@ -276,7 +276,7 @@ class HtmlDialog(QtWidgets.QDialog):
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.addStretch(1000)
         self.horizontalLayout.addWidget(self.closeButton)
-        self.closeButton.clicked.connect(self.closeWindow)
+        self.closeButton.clicked.connect(lambda x: self.closeWindow())
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.setLayout(self.verticalLayout)
         url = QtCore.QUrl(filepath)
@@ -1582,11 +1582,11 @@ class PlotTemplates(object):
             if self.loaded_template:
                 MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Loaded template from default hard coded template.')))
 
-        self.edit_button.clicked.connect(self.edit)
-        self.load_button.clicked.connect(self.load)
-        self.save_as_button.clicked.connect(self.save_as)
-        self.import_button.clicked.connect(self.import_templates)
-        self.remove_button.clicked.connect(self.remove)
+        self.edit_button.clicked.connect(lambda x: self.edit())
+        self.load_button.clicked.connect(lambda x: self.load())
+        self.save_as_button.clicked.connect(lambda x: self.save_as())
+        self.import_button.clicked.connect(lambda x: self.import_templates())
+        self.remove_button.clicked.connect(lambda x: self.remove())
 
     @general_exception_handler
     def edit(self):

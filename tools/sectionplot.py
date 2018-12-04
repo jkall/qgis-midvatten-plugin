@@ -618,8 +618,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     def initUI(self): 
         #connect signal
-        self.pushButton.clicked.connect(self.draw_plot)
-        self.redraw.clicked.connect(self.finish_plot)
+        self.pushButton.clicked.connect(lambda x: self.draw_plot())
+        self.redraw.clicked.connect(lambda x: self.finish_plot())
         self.chart_settings.clicked.connect(partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.set_groupbox_children_visibility(self.chart_settings)
         

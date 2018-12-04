@@ -45,7 +45,7 @@ class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statisti
 
         self.gridLayout.addWidget(self.db_browser.widget, 0, 0)
 
-        self.pushButton_ok.clicked.connect(self.calculate)
+        self.pushButton_ok.clicked.connect(lambda x: self.calculate())
 
         self.pushButton_cancel.clicked.connect(lambda : self.close())
 

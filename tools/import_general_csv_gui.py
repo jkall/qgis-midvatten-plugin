@@ -480,7 +480,7 @@ class ColumnEntry(object):
         if self.db_column == 'obsid':
             self.obsids_from_selection = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('ColumnEntry', 'Obsid from qgis selection')))
             self.obsids_from_selection.setToolTip(ru(QCoreApplication.translate('ColumnEntry', 'Select 1 obsid from obs_points or obs_lines attribute table or map.')))
-            self.obsids_from_selection.clicked.connect(self.obsids_from_selection_checked)
+            self.obsids_from_selection.clicked.connect(lambda x: self.obsids_from_selection_checked())
 
             self.obsid_widget = RowEntry()
             self.obsid_widget.layout.addWidget(self.obsids_from_selection)
@@ -508,7 +508,7 @@ class ColumnEntry(object):
         if self.column_type not in numeric_datatypes:
             self._factor.setVisible(False)
 
-        self.static_checkbox.clicked.connect(self.static_checkbox_checked)
+        self.static_checkbox.clicked.connect(lambda x: self.static_checkbox_checked())
 
         #This line prefills the columns if the header names matches the database column names
         self.file_column_name = self.db_column

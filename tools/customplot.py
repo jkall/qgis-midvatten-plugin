@@ -124,7 +124,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.filtersettings2.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings2))
         self.filtersettings3.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings3))
 
-        self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
+        self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawPlot_all())
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
 
         self.templates = utils.PlotTemplates(self,

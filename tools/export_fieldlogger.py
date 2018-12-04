@@ -126,12 +126,12 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.settings_strings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings strings')))
         self.settings_strings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Access the settings strings ("Create input fields" and input fields) to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.')))
         self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
-        self.settings_strings_button.clicked.connect(self.settings_strings_dialogs)
+        self.settings_strings_button.clicked.connect(lambda x: self.settings_strings_dialogs())
 
         self.default_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Default settings')))
         self.default_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Updates "Create input fields" and input fields to default settings.')))
         self.gridLayout_buttons.addWidget(self.default_settings_button, 6, 0)
-        self.default_settings_button.clicked.connect(self.restore_default_settings)
+        self.default_settings_button.clicked.connect(lambda x: self.restore_default_settings())
 
         self.gridLayout_buttons.addWidget(get_line(), 7, 0)
 
@@ -139,13 +139,13 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.preview_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'View a preview of the Fieldlogger location file as pop-up info.')))
         self.gridLayout_buttons.addWidget(self.preview_button, 8, 0)
         # Lambda and map is used to run several functions for every button click
-        self.preview_button.clicked.connect(self.preview)
+        self.preview_button.clicked.connect(lambda x: self.preview())
 
         self.export_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Export')))
         self.export_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Exports the current combination of locations and input fields to a Fieldlogger location file.')))
         self.gridLayout_buttons.addWidget(self.export_button, 9, 0)
         # Lambda and map is used to run several functions for every button click
-        self.export_button.clicked.connect(self.export)
+        self.export_button.clicked.connect(lambda x: self.export())
 
         self.gridLayout_buttons.setRowStretch(10, 1)
 

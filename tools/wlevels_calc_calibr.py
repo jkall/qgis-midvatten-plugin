@@ -60,10 +60,10 @@ class Calclvl(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         qgis.PyQt.QtWidgets.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
-        self.setWindowTitle(ru(QCoreApplication.translate('Calclvl', "Calculate levels"))) # Set the title for the dialog
-        self.pushButton_All.clicked.connect(self.calcall)
-        self.pushButton_Selected.clicked.connect(self.calcselected)
-        self.pushButton_Cancel.clicked.connect(self.close)
+        self.setWindowTitle(ru(QCoreApplication.translate('Calcl.clicked.connect(self.vl', "Calculate levels"))) # Set the title for the dialog
+        self.pushButton_All.clicked.connect(lambda x: self.calcall())
+        self.pushButton_Selected.clicked.connect(lambda x: self.calcselected())
+        self.pushButton_Cancel.clicked.connect(lambda x: self.close())
         self.layer = layerin
 
     def calc(self, obsids):
@@ -173,26 +173,26 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.cid =[]
                 
-        self.pushButtonSet.clicked.connect(self.set_logger_pos)
-        self.pushButtonAdd.clicked.connect(self.add_to_level_masl)
-        self.pushButtonFrom.clicked.connect(self.set_from_date_from_x)
-        self.pushButtonTo.clicked.connect(self.set_to_date_from_x)
+        self.pushButtonSet.clicked.connect(lambda x: self.set_logger_pos())
+        self.pushButtonAdd.clicked.connect(lambda x: self.add_to_level_masl())
+        self.pushButtonFrom.clicked.connect(lambda x: self.set_from_date_from_x())
+        self.pushButtonTo.clicked.connect(lambda x: self.set_to_date_from_x())
         self.L1_button.clicked.connect(self.set_L1_date_from_x)
         self.L2_button.clicked.connect(self.set_L2_date_from_x)
         self.M1_button.clicked.connect(self.set_M1_date_from_x)
         self.M2_button.clicked.connect(self.set_M2_date_from_x)
         self.pushButton_from_extent.clicked.connect(lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
         self.pushButton_to_extent.clicked.connect(lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
-        self.pushButtonupdateplot.clicked.connect(self.update_plot)
-        self.pushButtonLpos.clicked.connect(self.catch_old_level)
-        self.pushButtonMpos.clicked.connect(self.catch_new_level)
+        self.pushButtonupdateplot.clicked.connect(lambda x: self.update_plot())
+        self.pushButtonLpos.clicked.connect(lambda x: self.catch_old_level())
+        self.pushButtonMpos.clicked.connect(lambda x: self.catch_new_level())
         self.pushButtonMpos.setEnabled(False)
-        self.pushButtonCalcBestFit.clicked.connect(self.logger_pos_best_fit)
+        self.pushButtonCalcBestFit.clicked.connect(lambda x: self.logger_pos_best_fit())
         self.pushButtonCalcBestFit.setToolTip(ru(QCoreApplication.translate('Calibrlogger', 'This will calibrate all values inside the chosen period\nusing the mean difference between head_cm and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
-        self.pushButtonCalcBestFit2.clicked.connect(self.level_masl_best_fit)
+        self.pushButtonCalcBestFit2.clicked.connect(lambda x: self.level_masl_best_fit())
         self.pushButtonCalcBestFit2.setToolTip(ru(QCoreApplication.translate('Calibrlogger', 'This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
         self.pushButton_delete_logger.clicked.connect(lambda: self.delete_selected_range('w_levels_logger'))
-        self.adjust_trend_button.clicked.connect(self.adjust_trend_func)
+        self.adjust_trend_button.clicked.connect(lambda x: self.adjust_trend_func())
 
         self.get_search_radius()
 

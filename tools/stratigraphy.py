@@ -621,7 +621,7 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         
         self.layout.addLayout(self.layout2)
 
-        self.btnClose.clicked.connect(self.close)
+        self.btnClose.clicked.connect(lambda x: self.close())
         self.btnPrint.clicked.connect(self.widget.printDiagram)
         self.radGeo.toggled.connect( self.typeToggled)
         self.radHydro.toggled.connect( self.typeToggled)

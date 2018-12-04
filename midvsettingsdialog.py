@@ -647,7 +647,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
-        self.btnSetDB.clicked.connect(self.select_file)
+        self.btnSetDB.clicked.connect(lambda x: self.select_file())
 
     @property
     def dbpath(self):

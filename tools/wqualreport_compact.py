@@ -76,11 +76,11 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
-        self.pushButton_ok.clicked.connect(self.wqualreport)
+        self.pushButton_ok.clicked.connect(lambda x: self.wqualreport())
 
         #self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
-        self.pushButton_update_from_string.clicked.connect(self.ask_and_update_stored_settings)
+        self.pushButton_update_from_string.clicked.connect(lambda x: self.ask_and_update_stored_settings())
 
         self.sql_table.currentIndexChanged.connect(lambda: self.from_sql_table.setChecked(True))
 
