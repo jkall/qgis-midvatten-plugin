@@ -163,8 +163,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.axes = self.calibrplotfigure.add_subplot( 111 )
         self.canvas = FigureCanvas( self.calibrplotfigure )
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
-        lstActions = self.mpltoolbar.actions()
-        #self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
 

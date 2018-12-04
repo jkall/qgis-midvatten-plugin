@@ -629,8 +629,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.canvas = FigureCanvas( self.secfig )
         
         self.mpltoolbar = NavigationToolbar( self.canvas, self.plotareawidget )
-        lstActions = self.mpltoolbar.actions()
-        self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.mplplotlayout.addWidget( self.canvas )
         self.mplplotlayout.addWidget( self.mpltoolbar )
 
