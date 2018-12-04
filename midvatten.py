@@ -344,12 +344,12 @@ class midvatten(object):
 
     def about(self):
         util_translate.getTranslate('midvatten')
-        filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
+        filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt")
         iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
-        verno = str(iniText.value('version'))
+        verno = iniText.value('version')
         author = ', '.join(iniText.value('author'))
-        email = str(iniText.value('email'))
-        homepage = str(iniText.value('homepage'))
+        email = iniText.value('email')
+        homepage = iniText.value('homepage')
 
         ABOUT_templatefile = os.path.join(os.sep,os.path.dirname(__file__),"templates","about_template.htm")
         ABOUT_outpath = os.path.join(QDir.tempPath(), 'midvatten_about')
