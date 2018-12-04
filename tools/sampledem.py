@@ -15,7 +15,7 @@ and qchainage plugin (C) 2012 by Werner Macho
 """
 
 import qgis.PyQt
-from qgis.core import Qgis, QgsFeature, QgsField, QgsFields, QgsProject, QgsApplication, QgsRaster, QgsVectorLayer
+from qgis.core import Qgis, QgsFeature, QgsField, QgsFields, QgsProject, QgsApplication, QgsRaster, QgsVectorLayer, QgsUnitTypes, QgsWkbTypes
 
 
 def qchain(sectionlinelayer, distance): #original start function from qchainage
@@ -97,11 +97,12 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
     provider = virt_layer.dataProvider()
     virt_layer.startEditing()   # actually writes attributes
     units = layer.crs().mapUnits()
+
     unit_dic = {
-        Qgis.Degrees: 'Degrees',
-        Qgis.Meters: 'Meters',
-        Qgis.Feet: 'Feet',
-        Qgis.UnknownUnit: 'Unknown'}
+        QgsUnitTypes.DistanceDegrees: 'Degrees',
+        QgsUnitTypes.DistanceMeters: 'Meters',
+        QgsUnitTypes.DistanceFeet: 'Feet',
+        QgsUnitTypes.DistanceUnknownUnit: 'Unknown'}
     unit = unit_dic.get(units, 'Unknown')
     provider.addAttributes([QgsField("fid", qgis.PyQt.QtCore.QVariant.Int)])
     provider.addAttributes([QgsField("cum_dist", qgis.PyQt.QtCore.QVariant.Int)])
@@ -141,7 +142,8 @@ def sampling(pointsamplinglayer, rastersamplinglayer): # main process from point
     for pointFeat in pointProvider.getFeatures():
         np += 1
         pointGeom = pointFeat.geometry()
-        if pointGeom.wkbType() == Qgis.WKBMultiPoint:
+
+        if pointGeom.wkbType() == QgsWkbTypes.MultiPoint:
             pointPoint = pointGeom.asMultiPoint()[0]
         else:
             pointPoint = pointGeom.asPoint()

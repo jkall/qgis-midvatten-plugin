@@ -58,6 +58,7 @@ import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
 import db_utils
+from qgis.core import QgsWkbTypes
 #import profilefromdem
 
 
@@ -797,7 +798,8 @@ class midvatten(object):
         if nrofselected == 1:#First verify only one feature is selected in the active layer...
             for feat in SectionLineLayer.getFeatures():
                 geom = feat.geometry()
-                if geom.wkbType() == 2:#...and that the active layer is a line vector layer
+                # ...and that the active layer is a line vector layer
+                if geom.wkbType() == QgsWkbTypes.LineString:
                     pass
                 else:
                     utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'))
