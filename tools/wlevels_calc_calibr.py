@@ -166,7 +166,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
 
-        self.calibrplotfigure.tight_layout()
         self.show()
 
         self.cid =[]
@@ -429,10 +428,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
      
     @fn_timer
     def list_of_list_to_recarray(self, list_of_lists):
-        my_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array     
+        my_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
         table = np.array(list_of_lists, dtype=my_format)  #NDARRAY
-        table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values 
-        return table2     
+        table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values
+        return table2
 
     @fn_timer
     def update_plot(self):
@@ -474,13 +473,13 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.axes.set_ylabel(ru(QCoreApplication.translate('Calibrlogger', 'Level (masl)')))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
         self.axes.set_title(ru(QCoreApplication.translate('Calibrlogger', 'Plot for ')) + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
         for label in self.axes.xaxis.get_ticklabels():
-            label.set_fontsize(10)
+            label.set_fontsize(8)
         for label in self.axes.yaxis.get_ticklabels():
-            label.set_fontsize(10)
-        #plt.show()
+            label.set_fontsize(8)
+
         self.calibrplotfigure.tight_layout()
         self.canvas.draw()
-        plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
+        #plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
         utils.stop_waiting_cursor()
         self.calib_help.setText("")
 
@@ -495,7 +494,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         """ Plots a recarray to the supplied axes object """
         if time_list is None:
             time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(a_recarray))
-        self.plot_the_recarray(axes, time_list, a_recarray, lable, line_style, picker=5)
+        self.plot_the_recarray(axes, time_list, a_recarray, lable, line_style, picker=picker)
         
     @fn_timer
     def a_recarray_to_timestring_list(self, a_recarray):
@@ -508,7 +507,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         
     @fn_timer
     def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5):
-        axes.plot_date(time_list, a_recarray.values, line_style, label=lable, picker=picker)
+        axes.plot_date(time_list, a_recarray.values, line_style, label=lable, picker=picker) #, xdate=True)
 
     @fn_timer
     def set_from_date_from_x(self):
@@ -547,7 +546,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.ToDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
         self.Add2Levelmasl.setText('')
         self.bestFitSearchRadius.setText('10 minutes')
-        self.mpltoolbar.home()
+        #self.mpltoolbar.home()
 
         last_calibration = self.getlastcalibration(self.obsid)
         try:
