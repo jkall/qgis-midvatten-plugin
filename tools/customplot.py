@@ -457,13 +457,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         if FlagTimeXY == "time":
             if plottype == "step-pre":
-                plt.rc('axes', prop_cycle=self.line_cycler)
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
             elif plottype == "step-post":
-                plt.rc('axes', prop_cycle=self.line_cycler)
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i])
             elif plottype == "line and cross":
-                plt.rc('axes', prop_cycle=self.line_cycler)
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='x', label=self.plabels[i])
             elif plottype == "frequency":
                 plt.rc('axes', prop_cycle=self.line_cycler)
@@ -477,9 +474,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 plt.rc('axes', prop_cycle=self.self.marker_cycler)
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', linestyle='None', label=self.plabels[i])
             elif plottype == "line":
-                plt.rc('axes', prop_cycle=self.line_cycler)
-                print(str(mpl.rcParams['axes.prop_cycle']))
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label=self.plabels[i])
+                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label=self.plabels[i], **next(self.line_cycler))
             else:
                 mpl.rcParams['axes.prop_cycle'] = self.line_and_marker_cycler
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='o', label=self.plabels[i])
