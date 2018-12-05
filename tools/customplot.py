@@ -79,7 +79,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
         self.drawn = False
         self.used_format = None
-        
+
     def initUI(self):
         self.table_ComboBox_1.clear()  
         self.table_ComboBox_2.clear()  
@@ -138,21 +138,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              plt,
                                              msettings=self.ms)
 
-        self.styles.load()
-
-        figsize = mpl.rcParams['figure.figsize']
-        self.plot_width.setText(str(figsize[0]))
-        self.plot_height.setText(str(figsize[1]))
-
-        self.custplotfigure = plt.figure()
-
-        self.axes = self.custplotfigure.add_subplot(111)
-
-        self.canvas = FigureCanvas( self.custplotfigure )
-
-        self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
-        self.layoutplot.addWidget( self.canvas )
-        self.layoutplot.addWidget( self.mpltoolbar )
+        self.init_figure()
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
         regexp = QtCore.QRegExp('[+-]?\\d*[\\.,]?\\d+') 
@@ -187,7 +173,41 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.set_groupbox_children_visibility(self.template_wid)
 
+        self.title = None
+        self.xaxis_label = None
+        self.yaxis_label = None
+
         self.show()
+
+    def init_figure(self):
+
+        try:
+            self.title = self.axes.get_title()
+            self.xaxis_label = self.axes.get_xlabel()
+            self.yaxis_label = self.axes.get_ylabel()
+        except:
+            pass
+
+        try:
+            plt.close('all')
+        except:
+            pass
+
+        self.styles.load()
+
+        figsize = mpl.rcParams['figure.figsize']
+        self.plot_width.setText(str(figsize[0]))
+        self.plot_height.setText(str(figsize[1]))
+
+        self.custplotfigure = plt.figure()
+
+        self.axes = self.custplotfigure.add_subplot(111)
+
+        self.canvas = FigureCanvas(self.custplotfigure)
+
+        self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
+        self.layoutplot.addWidget(self.canvas)
+        self.layoutplot.addWidget(self.mpltoolbar)
 
     def calc_frequency(self,table2):
         freqs = np.zeros(len(table2.values),dtype=float)
@@ -244,17 +264,19 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
     @utils.general_exception_handler
     def drawPlot_all(self):
-        self.styles.load()
+
+        utils.start_waiting_cursor()  # show the user this may take a long time...
+
+        self.init_figure()
+
         self.used_format = None
 
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
-        self.title = self.axes.get_title() #self.axes.title.get_text()
-        self.xaxis_label = self.axes.get_xlabel() #self.axes.xaxis.get_label()
-        self.yaxis_label = self.axes.get_ylabel() #self.axes.yaxis.get_label()
-        self.axes.clear()
-        self.axes.set_title(self.title)
-        self.axes.set_xlabel(self.xaxis_label)
-        self.axes.set_ylabel(self.yaxis_label)
+        if self.title:
+            self.axes.set_title(self.title)
+        if self.xaxis_label:
+            self.axes.set_xlabel(self.xaxis_label)
+        if self.yaxis_label:
+            self.axes.set_ylabel(self.yaxis_label)
 
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
@@ -276,7 +298,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     
         self.drawn = True
 
-        self.refreshPlot()
+        self.refreshPlot(load_styles=False)
     
         utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
@@ -452,8 +474,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 self.p[i], = self.axes.plot(numtime, table2.values, label=self.plabels[i])
         else:
             raise Exception('Programming error. Must be time or XY!')
-
-
 
 
     def LastSelections(self):#set same selections as last plot
@@ -678,17 +698,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
-    def refreshPlot( self, *args):
-        """
-
-        :param args: Needed when using general_exception_handler for some reason?!?
-        :return:
-        """
+    def refreshPlot( self, load_styles=True):
         #If the user has not pressed "draw" before, do nothing
         if not self.drawn:
             return None
 
-        self.styles.load()
+        if load_styles:
+            self.styles.load()
 
         self.storesettings()    #all custom plot related settings are stored when plotting data (or pressing "redraw")
 
