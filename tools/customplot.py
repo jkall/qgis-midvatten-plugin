@@ -48,11 +48,13 @@ import datetime
 import matplotlib.ticker as tick
 import matplotlib.dates as mdates
 from cycler import cycler
+import copy
 
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.PyQt
+
 
 try:
     import pandas as pd
@@ -273,10 +275,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         ccycler = mpl.rcParams['axes.prop_cycle']
 
-        lcycler = (cycler('linestyle', ['-', '--', '-.', ':']) * ccycler)
-        #self.mcycler = (cycler('markerstyle', ['o', '+', 's', 'x']) * ccycler)
-        #self.xcycler = (cycler('markerstyle', ['o', '+', 's', 'x']) * ccycler)
-        mpl.rcParams['axes.prop_cycle'] = lcycler
+        self.line_cycler = (cycler('linestyle', ['-', '--', '-.', ':']) * copy.deepcopy(ccycler))
+        self.marker_cycler = (cycler('marker', ['o', '+', 's', 'x']) * copy.deepcopy(ccycler))
+        self.line_and_marker_cycler = (cycler('linestyle', ['-o', '--o', '-.o', ':o']) * copy.deepcopy(ccycler))
 
         self.init_figure()
 
@@ -456,12 +457,16 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         if FlagTimeXY == "time":
             if plottype == "step-pre":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
             elif plottype == "step-post":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i])
             elif plottype == "line and cross":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='x', label=self.plabels[i])
             elif plottype == "frequency":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 try:
                     self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label='frequency '+str(self.plabels[i]))
                     self.plabels[i]='frequency '+str(self.plabels[i])
@@ -469,20 +474,27 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     self.p[i], = self.axes.plot_date(np.array([]),np.array([]), '', marker='None', label='frequency '+str(self.plabels[i]))
                     self.plabels[i]='frequency '+str(self.plabels[i])
             elif plottype == "marker":
+                mpl.rcParams['axes.prop_cycle'] = self.marker_cycler
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', linestyle='None', label=self.plabels[i])
             elif plottype == "line":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label=self.plabels[i])
             else:
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', label=self.plabels[i])
+                mpl.rcParams['axes.prop_cycle'] = self.line_and_marker_cycler
+                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='o', label=self.plabels[i])
         elif FlagTimeXY == "XY":
             if plottype == "step-pre":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i])
             elif plottype == "step-post":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i])
             elif plottype == "line and cross":
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
                 self.p[i], = self.axes.plot(numtime, table2.values, '', marker='x', label=self.plabels[i])
             else:
-                self.p[i], = self.axes.plot(numtime, table2.values, '', label=self.plabels[i])
+                mpl.rcParams['axes.prop_cycle'] = self.line_cycler
+                self.p[i], = self.axes.plot(numtime, table2.values, '', marker='o', label=self.plabels[i])
         else:
             raise Exception('Programming error. Must be time or XY!')
 
