@@ -275,9 +275,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         ccycler = mpl.rcParams['axes.prop_cycle']
 
-        self.line_cycler = (cycler('linestyle', ['-', '--', '-.', ':']) * copy.deepcopy(ccycler))
-        self.marker_cycler = (cycler('marker', ['o', '+', 's', 'x']) * copy.deepcopy(ccycler))
-        self.line_and_marker_cycler = (cycler('linestyle', ['-o', '--o', '-.o', ':o']) * copy.deepcopy(ccycler))
+        self.line_cycler = (cycler('linestyle', ['-', '--', '-.', ':']) * copy.deepcopy(ccycler))()
+        self.marker_cycler = cycle_gen((cycler('marker', ['o', '+', 's', 'x']) * copy.deepcopy(ccycler)))
 
         self.init_figure()
 
@@ -979,3 +978,6 @@ def horizontal_line():
     return line
 
 
+def cycle_gen(cycler):
+    for x in cycler:
+        yield  x
