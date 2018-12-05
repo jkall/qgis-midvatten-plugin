@@ -276,7 +276,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         ccycler = mpl.rcParams['axes.prop_cycle']
 
         self.line_cycler = (cycler('linestyle', ['-', '--', '-.', ':']) * copy.deepcopy(ccycler))()
-        self.marker_cycler = cycle_gen((cycler('marker', ['o', '+', 's', 'x']) * copy.deepcopy(ccycler)))
+        self.marker_cycler = (cycler('marker', ['o', '+', 's', 'x']) * copy.deepcopy(ccycler))()
 
         self.init_figure()
 
@@ -455,44 +455,32 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Pandas calculate failed.")))
 
         if FlagTimeXY == "time":
-            if plottype == "step-pre":
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
-            elif plottype == "step-post":
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i])
-            elif plottype == "line and cross":
-                self.axes.set_prop_cycle(self.line_cycler)
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='x', label=self.plabels[i])
-            elif plottype == "frequency":
-                plt.rc('axes', prop_cycle=self.line_cycler)
-                try:
-                    self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label='frequency '+str(self.plabels[i]))
-                    self.plabels[i]='frequency '+str(self.plabels[i])
-                except:
-                    self.p[i], = self.axes.plot_date(np.array([]),np.array([]), '', marker='None', label='frequency '+str(self.plabels[i]))
-                    self.plabels[i]='frequency '+str(self.plabels[i])
-            elif plottype == "marker":
-                plt.rc('axes', prop_cycle=self.marker_cycler)
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', linestyle='None', label=self.plabels[i])
-            elif plottype == "line":
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label=self.plabels[i], **next(self.line_cycler))
-            else:
-                mpl.rcParams['axes.prop_cycle'] = self.line_and_marker_cycler
-                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='o', label=self.plabels[i])
+            plotfunc = self.axes.plot_date
         elif FlagTimeXY == "XY":
-            if plottype == "step-pre":
-                plt.rc('axes', prop_cycle=self.line_cycler)
-                self.p[i], = self.axes.plot(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i])
-            elif plottype == "step-post":
-                plt.rc('axes', prop_cycle=self.line_cycler)
-                self.p[i], = self.axes.plot(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i])
-            elif plottype == "line and cross":
-                plt.rc('axes', prop_cycle=self.line_cycler)
-                self.p[i], = self.axes.plot(numtime, table2.values, '', marker='x', label=self.plabels[i])
-            else:
-                plt.rc('axes', prop_cycle=self.line_cycler)
-                self.p[i], = self.axes.plot(numtime, table2.values, '', marker='o', label=self.plabels[i])
+            plotfunc = self.axes.plot
         else:
             raise Exception('Programming error. Must be time or XY!')
+
+        if plottype == "step-pre":
+            self.p[i], = plotfunc(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i], **next(self.line_cycler))# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+        elif plottype == "step-post":
+            self.p[i], = plotfunc(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i], **next(self.line_cycler))
+        elif plottype == "line and cross":
+            self.p[i], = plotfunc(numtime, table2.values, '', marker='x', label=self.plabels[i], **next(self.line_cycler))
+        elif plottype == "marker":
+            self.p[i], = plotfunc(numtime, table2.values, '', linestyle='None', label=self.plabels[i], **next(self.marker_cycler))
+        elif plottype == "line":
+            self.p[i], = plotfunc(numtime, table2.values, '', marker='None', label=self.plabels[i], **next(self.line_cycler))
+        elif plottype == "frequency" and FlagTimeXY == "time":
+            try:
+                self.p[i], = plotfunc(numtime, table2.values, '', marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
+                self.plabels[i]='frequency '+str(self.plabels[i])
+            except:
+                self.p[i], = plotfunc(np.array([]),np.array([]), '', marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
+                self.plabels[i]='frequency '+str(self.plabels[i])
+        else:
+            # line and marker
+            self.p[i], = plotfunc(numtime, table2.values, '', marker='o', label=self.plabels[i], **next(self.line_cycler))
 
 
     def LastSelections(self):#set same selections as last plot
@@ -976,8 +964,3 @@ def horizontal_line():
     line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine)
     line.setFrameShadow(qgis.PyQt.QtWidgets.QFrame.Sunken)
     return line
-
-
-def cycle_gen(cycler):
-    for x in cycler:
-        yield  x
