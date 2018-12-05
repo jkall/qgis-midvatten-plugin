@@ -1883,7 +1883,7 @@ class MatplotlibStyles(object):
                               log_msg=rows)
 
     def rcparams(self):
-        return '\n'.join(['{}: {}'.format(str(k), str(v)) for k, v in sorted(mpl.rcParams.items())])
+        return '\n'.join(['{}: {}'.format(str(k), str(v)) for k, v in sorted(self.mpl.rcParams.items())])
 
     def select_style_in_list(self, style):
         for idx in range(self.style_list.count()):
