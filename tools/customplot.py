@@ -188,10 +188,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         except:
             pass
 
-        try:
-            plt.close('all')
-        except:
-            pass
+        self.layoutplot.removeWidget(self.canvas)
+        self.layoutplot.removeWidget(self.mpltoolbar)
+        plt.close('all')
 
         self.styles.load()
 
