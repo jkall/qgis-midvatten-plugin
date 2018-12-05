@@ -1793,6 +1793,7 @@ class MatplotlibStyles(object):
 
     def save_style_to_stylelib(self, stylestring_stylename):
         filename = self.filename_from_style(stylestring_stylename[1])
+        print(str(stylestring_stylename[1]))
         with io.open(filename, 'w', encoding='utf-8') as of:
             of.write(stylestring_stylename[0])
 
@@ -1813,7 +1814,8 @@ class MatplotlibStyles(object):
     def load(self, drawfunc):
         self.mpl.rcdefaults()
         fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
-        self.save_style_to_stylelib((self.defaultstyle_stylename[0], fallback_style))
+        print(str(fallback_style))
+        self.save_style_to_stylelib([self.defaultstyle_stylename[0], fallback_style])
         styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style]
 
         use_style = None
