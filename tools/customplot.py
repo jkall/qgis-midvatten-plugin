@@ -176,9 +176,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.xaxis_label = None
         self.yaxis_label = None
 
+        self.init_figure()
+
         self.show()
 
-    def remove_figure(self):
+    def init_figure(self):
         try:
             self.title = self.axes.get_title()
             self.xaxis_label = self.axes.get_xlabel()
@@ -194,6 +196,19 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.canvas.close()
         plt.close('all')
 
+        figsize = mpl.rcParams['figure.figsize']
+        self.plot_width.setText(str(figsize[0]))
+        self.plot_height.setText(str(figsize[1]))
+
+        self.custplotfigure = plt.figure()
+
+        self.axes = self.custplotfigure.add_subplot(111)
+
+        self.canvas = FigureCanvas(self.custplotfigure)
+
+        self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
+        self.layoutplot.addWidget(self.canvas)
+        self.layoutplot.addWidget(self.mpltoolbar)
 
     def calc_frequency(self,table2):
         freqs = np.zeros(len(table2.values),dtype=float)
@@ -253,21 +268,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
     @utils.general_exception_handler
     def drawPlot_all(self):
-        self.remove_figure()
-        figsize = mpl.rcParams['figure.figsize']
-        self.plot_width.setText(str(figsize[0]))
-        self.plot_height.setText(str(figsize[1]))
-
-        self.custplotfigure = plt.figure()
-
-        self.axes = self.custplotfigure.add_subplot(111)
-
-        self.canvas = FigureCanvas(self.custplotfigure)
-
-        self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
-        self.layoutplot.addWidget(self.canvas)
-        self.layoutplot.addWidget(self.mpltoolbar)
-
         utils.start_waiting_cursor()  # show the user this may take a long time...
 
         self.init_figure()
