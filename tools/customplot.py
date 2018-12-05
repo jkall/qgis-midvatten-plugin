@@ -188,11 +188,12 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         except:
             pass
 
-
-        if hasattr(self, 'canvas'):
-            self.layoutplot.removeWidget(self.canvas)
         if hasattr(self, 'mpltoolbar'):
             self.layoutplot.removeWidget(self.mpltoolbar)
+            self.mpltoolbar.close()
+        if hasattr(self, 'canvas'):
+            self.layoutplot.removeWidget(self.canvas)
+            self.canvas.close()
         plt.close('all')
 
         self.styles.load()
@@ -208,6 +209,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.canvas = FigureCanvas(self.custplotfigure)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
+
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
