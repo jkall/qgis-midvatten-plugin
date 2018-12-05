@@ -274,9 +274,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         ccycler = mpl.rcParams['axes.prop_cycle']
 
         lcycler = (cycler('linestyle', ['-', '--', '-.', ':']) * ccycler)
-        mcycler = (cycler('markerstyle', ['o', '+', 's', 'x']) * ccycler)
-        totcycler = lcycler + mcycler
-        mpl.rcParams['axes.prop_cycle'] = totcycler
+        #self.mcycler = (cycler('markerstyle', ['o', '+', 's', 'x']) * ccycler)
+        #self.xcycler = (cycler('markerstyle', ['o', '+', 's', 'x']) * ccycler)
+        mpl.rcParams['axes.prop_cycle'] = lcycler
 
         self.init_figure()
 
