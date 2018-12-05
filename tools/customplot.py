@@ -123,7 +123,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.filtersettings2.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings2))
         self.filtersettings3.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings3))
 
-        self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawPlot_all())
+        self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawplot_with_styles())
         self.Redraw_pushButton.clicked.connect(lambda x: self.refreshPlot())
 
 
@@ -137,8 +137,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              defs.custplot_default_style(),
                                              plt,
                                              msettings=self.ms)
-
-        self.init_figure()
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
         regexp = QtCore.QRegExp('[+-]?\\d*[\\.,]?\\d+') 
@@ -179,8 +177,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.show()
 
-    def init_figure(self):
-
+    def remove_figure(self):
         try:
             self.title = self.axes.get_title()
             self.xaxis_label = self.axes.get_xlabel()
@@ -196,22 +193,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.canvas.close()
         plt.close('all')
 
-        self.styles.load()
-
-        figsize = mpl.rcParams['figure.figsize']
-        self.plot_width.setText(str(figsize[0]))
-        self.plot_height.setText(str(figsize[1]))
-
-        self.custplotfigure = plt.figure()
-
-        self.axes = self.custplotfigure.add_subplot(111)
-
-        self.canvas = FigureCanvas(self.custplotfigure)
-
-        self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
-
-        self.layoutplot.addWidget(self.canvas)
-        self.layoutplot.addWidget(self.mpltoolbar)
 
     def calc_frequency(self,table2):
         freqs = np.zeros(len(table2.values),dtype=float)
@@ -266,8 +247,25 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         if refresh:
             self.refreshPlot()
 
+    def drawplot_with_styles(self):
+        self.styles.load(self.drawPlot_all)
+
     @utils.general_exception_handler
     def drawPlot_all(self):
+        self.remove_figure()
+        figsize = mpl.rcParams['figure.figsize']
+        self.plot_width.setText(str(figsize[0]))
+        self.plot_height.setText(str(figsize[1]))
+
+        self.custplotfigure = plt.figure()
+
+        self.axes = self.custplotfigure.add_subplot(111)
+
+        self.canvas = FigureCanvas(self.custplotfigure)
+
+        self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
+        self.layoutplot.addWidget(self.canvas)
+        self.layoutplot.addWidget(self.mpltoolbar)
 
         utils.start_waiting_cursor()  # show the user this may take a long time...
 

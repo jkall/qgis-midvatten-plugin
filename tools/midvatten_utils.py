@@ -1753,6 +1753,7 @@ class MatplotlibStyles(object):
                  last_used_style_settingskey,
                  defaultstyle_stylename,
                  _plt,
+                 _mpl,
                  msettings=None):
 
         # Gui objects
@@ -1761,7 +1762,7 @@ class MatplotlibStyles(object):
         self.open_folder_button = open_folder_button
         self.available_settings_button = available_settings_button
         self.plt = _plt
-
+        self.mpl = _mpl
 
         self.style_extension = '.mplstyle'
         self.style_folder = os.path.join(mpl.get_configdir(), 'stylelib')
@@ -1808,31 +1809,35 @@ class MatplotlibStyles(object):
         filename = os.path.join(self.style_folder, style + self.style_extension)
         return filename
 
-    def load_style(self, style):
+    def load_style(self, style, drawfunc):
         try:
-            self.plt.style.use(style)
+            with self.plt.style.contect(style):
+                MessagebarAndLog.info(
+                    log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (
+                    style, self.rcparams()))
+                drawfunc()
+                #self.plt.style.use(style)
         except Exception as e:
             MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
                                                                                       'Failed to load style, check style settings in %s.')) % self.filename_from_style(style),
                                      log_msg=returnunicode(
                                          QCoreApplication.translate('MatplotlibStyles', 'Error msg %s')) % str(e))
             raise
-        else:
-            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (style, self.rcparams()))
+
 
     @general_exception_handler
-    def load(self, style=None):
+    def load(self, drawfunc):
+        self.mpl.rcdefaults()
         fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
-        styles = [style, self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style]
+        styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style]
         
         for _style in styles:
             try:
-                self.load_style(_style)
+                self.load_style(_style, drawfunc)
             except:
                 pass
             else:
                 break
-        
 
     @general_exception_handler
     def import_style(self, filenames=None):
