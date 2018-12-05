@@ -1811,7 +1811,7 @@ class MatplotlibStyles(object):
 
     def load_style(self, style, drawfunc):
         try:
-            with self.plt.style.contect(style):
+            with self.plt.style.context(style):
                 MessagebarAndLog.info(
                     log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (
                     style, self.rcparams()))
