@@ -47,6 +47,7 @@ except:
 import datetime
 import matplotlib.ticker as tick
 import matplotlib.dates as mdates
+from cycler import cycler
 
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
@@ -269,6 +270,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     @utils.general_exception_handler
     def drawPlot_all(self):
         utils.start_waiting_cursor()  # show the user this may take a long time...
+
+        ccycler = mpl.rcParams['axes.prop_cycle']
+
+        lcycler = (cycler('linestyle', ['-', '--', '-.', ':']) * ccycler)
+        mcycler = (cycler('markerstyle', ['o', '+', 's', 'x']) * ccycler)
+        totcycler = lcycler + mcycler
+        mpl.rcParams['axes.prop_cycle'] = totcycler
 
         self.init_figure()
 
