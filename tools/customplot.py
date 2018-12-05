@@ -301,7 +301,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     
         self.drawn = True
 
-        self.refreshPlot(load_styles=False)
+        self.refreshPlot()
     
         utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
@@ -701,13 +701,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
-    def refreshPlot( self, load_styles=True):
+    def refreshPlot( self):
         #If the user has not pressed "draw" before, do nothing
         if not self.drawn:
             return None
-
-        if load_styles:
-            self.styles.load()
 
         self.storesettings()    #all custom plot related settings are stored when plotting data (or pressing "redraw")
 
