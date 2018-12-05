@@ -461,6 +461,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             elif plottype == "step-post":
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i])
             elif plottype == "line and cross":
+                self.axes.set_prop_cycle(self.line_cycler)
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='x', label=self.plabels[i])
             elif plottype == "frequency":
                 plt.rc('axes', prop_cycle=self.line_cycler)
@@ -471,7 +472,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     self.p[i], = self.axes.plot_date(np.array([]),np.array([]), '', marker='None', label='frequency '+str(self.plabels[i]))
                     self.plabels[i]='frequency '+str(self.plabels[i])
             elif plottype == "marker":
-                plt.rc('axes', prop_cycle=self.self.marker_cycler)
+                plt.rc('axes', prop_cycle=self.marker_cycler)
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', linestyle='None', label=self.plabels[i])
             elif plottype == "line":
                 self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label=self.plabels[i], **next(self.line_cycler))
