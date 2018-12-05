@@ -46,6 +46,7 @@ except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg
 import datetime
 import matplotlib.ticker as tick
+import matplotlib.dates as mdates
 
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
@@ -249,6 +250,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
 
+        for k, v in mpl.rcParams.items():
+            print(str(k) + ': ' + str(v))
         #print('\n'.join(mpl.rcParams.keys()))
         rcparams = self.templates.loaded_template.get('rcParams', {})
         for k, v in rcparams.items():
@@ -747,7 +750,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             else:
                 self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))
             self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
-            self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
+
+            if self.xaxis_dateformat.text():
+                xformatter = mdates.DateFormatter(self.xaxis_dateformat.text())
+            else:
+                xformatter = self.xaxis_formatters[0]
+            self.axes.xaxis.set_major_formatter(xformatter)
+
             self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
         if self.Grid_checkBox.isChecked():

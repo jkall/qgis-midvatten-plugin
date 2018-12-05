@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1006</width>
-         <height>806</height>
+         <width>1026</width>
+         <height>821</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -2296,6 +2296,20 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_19">
+                     <property name="text">
+                      <string>Xaxis date format</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QLineEdit" name="xaxis_dateformat">
+                     <property name="toolTip">
+                      <string>Use python date formats ex: %Y-%m-%d %H:%M:%S.</string>
+                     </property>
+                    </widget>
+                   </item>
                   </layout>
                  </item>
                 </layout>
@@ -2449,7 +2463,7 @@
      <x>0</x>
      <y>0</y>
      <width>1028</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
