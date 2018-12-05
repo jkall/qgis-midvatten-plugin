@@ -1809,28 +1809,12 @@ class MatplotlibStyles(object):
         filename = os.path.join(self.style_folder, style + self.style_extension)
         return filename
 
-    def load_style(self, style, drawfunc):
-        try:
-            with self.plt.style.context(style):
-                MessagebarAndLog.info(
-                    log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (
-                    style, self.rcparams()))
-                drawfunc()
-                #self.plt.style.use(style)
-        except Exception as e:
-            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
-                                                                                      'Failed to load style, check style settings in %s.')) % self.filename_from_style(style),
-                                     log_msg=returnunicode(
-                                         QCoreApplication.translate('MatplotlibStyles', 'Error msg %s')) % str(e))
-            raise
-
-
     @general_exception_handler
     def load(self, drawfunc):
         self.mpl.rcdefaults()
         fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
         self.save_style_to_stylelib((self.defaultstyle_stylename[0], fallback_style))
-        styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style]
+        styles = [self.get_selected_style(), self.defaultstyle_stylename[0], fallback_style]
 
         use_style = None
         for _style in styles:
