@@ -136,6 +136,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              self.custplot_last_used_style_settingskey,
                                              defs.custplot_default_style(),
                                              plt,
+                                             mpl,
                                              msettings=self.ms)
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
