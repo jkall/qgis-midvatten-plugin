@@ -1868,7 +1868,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -2324,7 +2324,7 @@
                  </sizepolicy>
                 </property>
                 <property name="title">
-                 <string>Templates</string>
+                 <string>Styles</string>
                 </property>
                 <property name="checkable">
                  <bool>true</bool>
@@ -2351,13 +2351,33 @@
                    <property name="sizeConstraint">
                     <enum>QLayout::SetDefaultConstraint</enum>
                    </property>
-                   <item row="1" column="2">
-                    <widget class="QPushButton" name="edit_button">
+                   <item row="3" column="2">
+                    <widget class="QPushButton" name="open_folder_button">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit current loaded template.&lt;/p&gt;&lt;p&gt;Note: Changes are not saved to a template file. Use Save as... to save changes to file.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the selected template.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
-                      <string>Edit</string>
+                      <string>Open folder</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QPushButton" name="available_settings_button">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the loaded template to file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                     <property name="text">
+                      <string>Available settings</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QPushButton" name="import_button">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import template files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                     <property name="text">
+                      <string>Import</string>
                      </property>
                     </widget>
                    </item>
@@ -2377,53 +2397,13 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="0" rowspan="5" colspan="2">
+                    <widget class="QListWidget" name="template_list"/>
+                   </item>
                    <item row="0" column="2">
                     <widget class="QLabel" name="label_22">
                      <property name="text">
                       <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QPushButton" name="load_button">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the selected template.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Load</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0" rowspan="5">
-                    <widget class="QListWidget" name="template_list"/>
-                   </item>
-                   <item row="4" column="2">
-                    <widget class="QPushButton" name="import_button">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import template files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Import</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="2">
-                    <widget class="QPushButton" name="remove_button">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove a template from the list.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Note:&lt;/p&gt;&lt;p&gt;* Saved template files will not be removed from disk.&lt;/p&gt;&lt;p&gt;* Templates in default template folder will reappear again next time Section plot is used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Remove</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="2">
-                    <widget class="QPushButton" name="save_as_button">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the loaded template to file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Save as...</string>
                      </property>
                     </widget>
                    </item>

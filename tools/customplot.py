@@ -143,6 +143,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.custplotfigure = plt.figure()
 
         self.axes = self.custplotfigure.add_subplot( 111,  **self.templates.loaded_template.get('Figure_add_subplot', {}))
+
         self.canvas = FigureCanvas( self.custplotfigure )
 
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
@@ -245,7 +246,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.used_format = None
 
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
-
+        self.title = self.axes.title.get_text()
+        self.xaxis_label = self.axes.xaxis.get_label()
+        self.yaxis_label = self.axes.yaxis.get_label()
         self.axes.clear()
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
