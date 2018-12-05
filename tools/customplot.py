@@ -112,8 +112,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.select_button_t3f1.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_3, self.Filter1_ComboBox_3))
         self.select_button_t3f2.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_3, self.Filter2_ComboBox_3))
 
-        self.save_to_eps_button.clicked.connect(lambda x: self.save_to_eps())
-
         self.listfilter_1_1.editingFinished.connect( partial(self.filter_filterlist, self.Filter1_QListWidget_1, self.listfilter_1_1))
         self.listfilter_2_1.editingFinished.connect( partial(self.filter_filterlist, self.Filter2_QListWidget_1, self.listfilter_2_1))
         self.listfilter_1_2.editingFinished.connect( partial(self.filter_filterlist, self.Filter1_QListWidget_2, self.listfilter_1_2))
@@ -143,13 +141,14 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.custplotfigure = plt.figure()
 
-
         self.axes = self.custplotfigure.add_subplot( 111,  **self.templates.loaded_template.get('Figure_add_subplot', {}))
         self.canvas = FigureCanvas( self.custplotfigure )
 
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
+
+
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
         regexp = QtCore.QRegExp('[+-]?\\d*[\\.,]?\\d+') 
@@ -169,8 +168,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.pandas_calc_2 = PandasCalculations(self.gridLayout_14)
             self.pandas_calc_3 = PandasCalculations(self.gridLayout_19)
 
-        self.chart_settings.setChecked(False)
-        self.template_wid.setChecked(False)
+        self.chart_settings.setChecked(True)
+        self.template_wid.setChecked(True)
         self.filtersettings1.setChecked(False)
         self.filtersettings2.setChecked(False)
         self.filtersettings3.setChecked(False)
@@ -201,7 +200,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         return freqs
 
-    def change_plot_size(self):
+    def change_plot_size(self, refresh=True):
         width = self.plot_width.text()
         height = self.plot_height.text()
         self.templates.loaded_template['plot_width'] = width
@@ -230,6 +229,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             self.widgetPlot.setMinimumHeight(height)
             self.widgetPlot.setMaximumHeight(height)
+        if refresh:
+            self.refreshPlot()
 
     @utils.general_exception_handler
     def drawPlot_all(self, *args):
@@ -831,7 +832,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         if h is not None:
             self.plot_height.setText(str(h))
 
-        self.change_plot_size()
+        self.change_plot_size(refresh=False)
 
         if self.templates.loaded_template.get('tight_layout', False):
             self.custplotfigure.tight_layout()
@@ -899,14 +900,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             return
         selected_values = utils.getselectedobjectnames(column_name=current_column)
         [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
-
-    @utils.general_exception_handler
-    def save_to_eps(self):
-        filename = utils.get_save_file_name_no_extension(parent=None, caption=ru(
-            QCoreApplication.translate('CustomPlot', 'Choose a file name, extension sets format')), directory='')
-
-        name, ext = os.path.splitext(filename)
-        self.custplotfigure.savefig(filename, format=ext.lstrip('.'), dpi=float(self.figure_dpi.text()))
 
     def get_settings(self, FlagTimeXY_plottype, plot_key, label):
         if FlagTimeXY_plottype not in self.templates.loaded_template[plot_key]:

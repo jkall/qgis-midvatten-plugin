@@ -1,366 +1,628 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="2.8.8-Wien" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
-  <edittypes>
-    <edittype widgetv2type="TextEdit" name="obsid">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="name">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="place">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="type">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="length">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="drillstop">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="diam">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="material">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="screen">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="capacity">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="DateTime" name="drilldate">
-      <widgetv2config fieldEditable="1" calendar_popup="1" allow_null="1" display_format="yyyy-MM-dd" field_format="yyyy-MM-dd" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="CheckBox" name="wmeas_yn">
-      <widgetv2config fieldEditable="1" UncheckedState="0" CheckedState="1" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="CheckBox" name="wlogg_yn">
-      <widgetv2config fieldEditable="1" UncheckedState="0" CheckedState="1" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="east">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="north">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="ne_accur">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="ne_source">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="1"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="h_toc">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="h_tocags">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="h_gs">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="h_accur">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="h_syst">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="h_source">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="1"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="source">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="1"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="com_onerow">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="1"/>
-    </edittype>
-    <edittype widgetv2type="TextEdit" name="com_html">
-      <widgetv2config IsMultiline="1" fieldEditable="1" UseHtml="1" labelOnTop="1"/>
-    </edittype>
-  </edittypes>
-  <renderer-v2 symbollevels="0" type="singleSymbol">
+<qgis minScale="1e+8" labelsEnabled="1" readOnly="0" version="3.4.1-Madeira" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyDrawingHints="0" simplifyAlgorithm="0" maxScale="0" simplifyLocal="1" styleCategories="AllStyleCategories" simplifyDrawingTol="1">
+  <flags>
+    <Identifiable>1</Identifiable>
+    <Removable>1</Removable>
+    <Searchable>1</Searchable>
+  </flags>
+  <renderer-v2 forceraster="0" symbollevels="0" enableorderby="0" type="singleSymbol">
     <symbols>
-      <symbol alpha="1" type="marker" name="0">
-        <layer pass="0" class="SimpleMarker" locked="0">
+      <symbol name="0" alpha="1" type="marker" clip_to_extent="1">
+        <layer class="SimpleMarker" locked="0" pass="0" enabled="1">
           <prop k="angle" v="0"/>
           <prop k="color" v="148,148,148,255"/>
           <prop k="horizontal_anchor_point" v="1"/>
+          <prop k="joinstyle" v="bevel"/>
           <prop k="name" v="diamond"/>
           <prop k="offset" v="0,0"/>
-          <prop k="offset_map_unit_scale" v="0,0"/>
+          <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
           <prop k="offset_unit" v="MM"/>
           <prop k="outline_color" v="0,0,0,255"/>
           <prop k="outline_style" v="solid"/>
           <prop k="outline_width" v="0"/>
-          <prop k="outline_width_map_unit_scale" v="0,0"/>
+          <prop k="outline_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
           <prop k="outline_width_unit" v="MM"/>
           <prop k="scale_method" v="area"/>
           <prop k="size" v="4"/>
-          <prop k="size_map_unit_scale" v="0,0"/>
+          <prop k="size_map_unit_scale" v="3x:0,0,0,0,0,0"/>
           <prop k="size_unit" v="MM"/>
           <prop k="vertical_anchor_point" v="1"/>
+          <data_defined_properties>
+            <Option type="Map">
+              <Option name="name" value="" type="QString"/>
+              <Option name="properties"/>
+              <Option name="type" value="collection" type="QString"/>
+            </Option>
+          </data_defined_properties>
         </layer>
       </symbol>
     </symbols>
     <rotation/>
-    <sizescale scalemethod="area"/>
+    <sizescale/>
   </renderer-v2>
+  <labeling type="simple">
+    <settings>
+      <text-style useSubstitutions="0" fontLetterSpacing="0" namedStyle="Italic" fontSizeMapUnitScale="3x:0,0,0,0,0,0" previewBkgrdColor="#ffffff" fieldName="obsid" isExpression="0" fontWeight="50" fontUnderline="0" fontSize="8.25" textColor="0,0,0,255" fontItalic="1" fontStrikeout="0" fontWordSpacing="0" fontFamily="Noto Sans" textOpacity="1" blendMode="0" fontSizeUnit="Point" fontCapitals="0" multilineHeight="1">
+        <text-buffer bufferOpacity="1" bufferSizeUnits="MM" bufferSize="0.7" bufferDraw="1" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferNoFill="0" bufferBlendMode="0"/>
+        <background shapeOffsetX="0" shapeBlendMode="0" shapeBorderWidthUnit="MM" shapeFillColor="255,255,255,255" shapeRadiiX="0" shapeOffsetUnit="MM" shapeDraw="0" shapeSizeType="0" shapeRadiiY="0" shapeRotation="0" shapeSizeUnit="MM" shapeRotationType="0" shapeBorderWidth="0" shapeSizeX="0" shapeOffsetY="0" shapeSizeY="0" shapeJoinStyle="64" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeOpacity="1" shapeType="0" shapeRadiiUnit="MM" shapeSVGFile="" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0"/>
+        <shadow shadowRadius="1.5" shadowOffsetDist="1" shadowRadiusAlphaOnly="0" shadowOffsetAngle="135" shadowBlendMode="6" shadowScale="100" shadowUnder="0" shadowOpacity="0.7" shadowOffsetUnit="MM" shadowRadiusUnit="MM" shadowColor="0,0,0,255" shadowOffsetGlobal="1" shadowDraw="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0"/>
+        <substitutions/>
+      </text-style>
+      <text-format wrapChar="" placeDirectionSymbol="0" useMaxLineLengthForAutoWrap="1" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" multilineAlign="0" rightDirectionSymbol=">" autoWrapLength="0" decimals="0" plussign="0" leftDirectionSymbol="&lt;"/>
+      <placement dist="3" offsetType="0" priority="5" quadOffset="4" fitInPolygonOnly="0" preserveRotation="1" repeatDistanceUnits="MM" rotationAngle="0" xOffset="0" repeatDistance="0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" placement="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" yOffset="0" distMapUnitScale="3x:0,0,0,0,0,0" distUnits="MM" placementFlags="0" maxCurvedCharAngleIn="20" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" centroidWhole="0" maxCurvedCharAngleOut="-20" centroidInside="0"/>
+      <rendering scaleMin="1" fontMinPixelSize="3" fontLimitPixelSize="0" displayAll="0" obstacle="1" mergeLines="0" maxNumLabels="2000" labelPerPart="0" obstacleFactor="1" zIndex="0" upsidedownLabels="0" minFeatureSize="0" scaleMax="10000000" drawLabels="1" fontMaxPixelSize="10000" scaleVisibility="0" limitNumLabels="0" obstacleType="0"/>
+      <dd_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </dd_properties>
+    </settings>
+  </labeling>
   <customproperties>
-    <property key="labeling" value="pal"/>
-    <property key="labeling/addDirectionSymbol" value="false"/>
-    <property key="labeling/angleOffset" value="0"/>
-    <property key="labeling/blendMode" value="0"/>
-    <property key="labeling/bufferBlendMode" value="0"/>
-    <property key="labeling/bufferColorA" value="255"/>
-    <property key="labeling/bufferColorB" value="255"/>
-    <property key="labeling/bufferColorG" value="255"/>
-    <property key="labeling/bufferColorR" value="255"/>
-    <property key="labeling/bufferDraw" value="true"/>
-    <property key="labeling/bufferJoinStyle" value="64"/>
-    <property key="labeling/bufferNoFill" value="false"/>
-    <property key="labeling/bufferSize" value="0.7"/>
-    <property key="labeling/bufferSizeInMapUnits" value="false"/>
-    <property key="labeling/bufferSizeMapUnitMaxScale" value="0"/>
-    <property key="labeling/bufferSizeMapUnitMinScale" value="0"/>
-    <property key="labeling/bufferTransp" value="0"/>
-    <property key="labeling/centroidInside" value="false"/>
-    <property key="labeling/centroidWhole" value="false"/>
-    <property key="labeling/decimals" value="0"/>
-    <property key="labeling/displayAll" value="false"/>
-    <property key="labeling/dist" value="3"/>
-    <property key="labeling/distInMapUnits" value="false"/>
-    <property key="labeling/distMapUnitMaxScale" value="0"/>
-    <property key="labeling/distMapUnitMinScale" value="0"/>
-    <property key="labeling/enabled" value="true"/>
-    <property key="labeling/fieldName" value="obsid"/>
-    <property key="labeling/fontBold" value="false"/>
-    <property key="labeling/fontCapitals" value="0"/>
-    <property key="labeling/fontFamily" value="Arial"/>
-    <property key="labeling/fontItalic" value="true"/>
-    <property key="labeling/fontLetterSpacing" value="0"/>
-    <property key="labeling/fontLimitPixelSize" value="false"/>
-    <property key="labeling/fontMaxPixelSize" value="10000"/>
-    <property key="labeling/fontMinPixelSize" value="3"/>
-    <property key="labeling/fontSize" value="8.25"/>
-    <property key="labeling/fontSizeInMapUnits" value="false"/>
-    <property key="labeling/fontSizeMapUnitMaxScale" value="0"/>
-    <property key="labeling/fontSizeMapUnitMinScale" value="0"/>
-    <property key="labeling/fontStrikeout" value="false"/>
-    <property key="labeling/fontUnderline" value="false"/>
-    <property key="labeling/fontWeight" value="50"/>
-    <property key="labeling/fontWordSpacing" value="0"/>
-    <property key="labeling/formatNumbers" value="false"/>
-    <property key="labeling/isExpression" value="false"/>
-    <property key="labeling/labelOffsetInMapUnits" value="true"/>
-    <property key="labeling/labelOffsetMapUnitMaxScale" value="0"/>
-    <property key="labeling/labelOffsetMapUnitMinScale" value="0"/>
-    <property key="labeling/labelPerPart" value="false"/>
-    <property key="labeling/leftDirectionSymbol" value="&lt;"/>
-    <property key="labeling/limitNumLabels" value="false"/>
-    <property key="labeling/maxCurvedCharAngleIn" value="20"/>
-    <property key="labeling/maxCurvedCharAngleOut" value="-20"/>
-    <property key="labeling/maxNumLabels" value="2000"/>
-    <property key="labeling/mergeLines" value="false"/>
-    <property key="labeling/minFeatureSize" value="0"/>
-    <property key="labeling/multilineAlign" value="0"/>
-    <property key="labeling/multilineHeight" value="1"/>
-    <property key="labeling/namedStyle" value="Italic"/>
-    <property key="labeling/obstacle" value="true"/>
-    <property key="labeling/placeDirectionSymbol" value="0"/>
-    <property key="labeling/placement" value="0"/>
-    <property key="labeling/placementFlags" value="0"/>
-    <property key="labeling/plussign" value="false"/>
-    <property key="labeling/preserveRotation" value="true"/>
-    <property key="labeling/previewBkgrdColor" value="#ffffff"/>
-    <property key="labeling/priority" value="5"/>
-    <property key="labeling/quadOffset" value="4"/>
-    <property key="labeling/repeatDistance" value="0"/>
-    <property key="labeling/repeatDistanceMapUnitMaxScale" value="0"/>
-    <property key="labeling/repeatDistanceMapUnitMinScale" value="0"/>
-    <property key="labeling/repeatDistanceUnit" value="1"/>
-    <property key="labeling/reverseDirectionSymbol" value="false"/>
-    <property key="labeling/rightDirectionSymbol" value=">"/>
-    <property key="labeling/scaleMax" value="10000000"/>
-    <property key="labeling/scaleMin" value="1"/>
-    <property key="labeling/scaleVisibility" value="false"/>
-    <property key="labeling/shadowBlendMode" value="6"/>
-    <property key="labeling/shadowColorB" value="0"/>
-    <property key="labeling/shadowColorG" value="0"/>
-    <property key="labeling/shadowColorR" value="0"/>
-    <property key="labeling/shadowDraw" value="false"/>
-    <property key="labeling/shadowOffsetAngle" value="135"/>
-    <property key="labeling/shadowOffsetDist" value="1"/>
-    <property key="labeling/shadowOffsetGlobal" value="true"/>
-    <property key="labeling/shadowOffsetMapUnitMaxScale" value="0"/>
-    <property key="labeling/shadowOffsetMapUnitMinScale" value="0"/>
-    <property key="labeling/shadowOffsetUnits" value="1"/>
-    <property key="labeling/shadowRadius" value="1.5"/>
-    <property key="labeling/shadowRadiusAlphaOnly" value="false"/>
-    <property key="labeling/shadowRadiusMapUnitMaxScale" value="0"/>
-    <property key="labeling/shadowRadiusMapUnitMinScale" value="0"/>
-    <property key="labeling/shadowRadiusUnits" value="1"/>
-    <property key="labeling/shadowScale" value="100"/>
-    <property key="labeling/shadowTransparency" value="30"/>
-    <property key="labeling/shadowUnder" value="0"/>
-    <property key="labeling/shapeBlendMode" value="0"/>
-    <property key="labeling/shapeBorderColorA" value="255"/>
-    <property key="labeling/shapeBorderColorB" value="128"/>
-    <property key="labeling/shapeBorderColorG" value="128"/>
-    <property key="labeling/shapeBorderColorR" value="128"/>
-    <property key="labeling/shapeBorderWidth" value="0"/>
-    <property key="labeling/shapeBorderWidthMapUnitMaxScale" value="0"/>
-    <property key="labeling/shapeBorderWidthMapUnitMinScale" value="0"/>
-    <property key="labeling/shapeBorderWidthUnits" value="1"/>
-    <property key="labeling/shapeDraw" value="false"/>
-    <property key="labeling/shapeFillColorA" value="255"/>
-    <property key="labeling/shapeFillColorB" value="255"/>
-    <property key="labeling/shapeFillColorG" value="255"/>
-    <property key="labeling/shapeFillColorR" value="255"/>
-    <property key="labeling/shapeJoinStyle" value="64"/>
-    <property key="labeling/shapeOffsetMapUnitMaxScale" value="0"/>
-    <property key="labeling/shapeOffsetMapUnitMinScale" value="0"/>
-    <property key="labeling/shapeOffsetUnits" value="1"/>
-    <property key="labeling/shapeOffsetX" value="0"/>
-    <property key="labeling/shapeOffsetY" value="0"/>
-    <property key="labeling/shapeRadiiMapUnitMaxScale" value="0"/>
-    <property key="labeling/shapeRadiiMapUnitMinScale" value="0"/>
-    <property key="labeling/shapeRadiiUnits" value="1"/>
-    <property key="labeling/shapeRadiiX" value="0"/>
-    <property key="labeling/shapeRadiiY" value="0"/>
-    <property key="labeling/shapeRotation" value="0"/>
-    <property key="labeling/shapeRotationType" value="0"/>
-    <property key="labeling/shapeSVGFile" value=""/>
-    <property key="labeling/shapeSizeMapUnitMaxScale" value="0"/>
-    <property key="labeling/shapeSizeMapUnitMinScale" value="0"/>
-    <property key="labeling/shapeSizeType" value="0"/>
-    <property key="labeling/shapeSizeUnits" value="1"/>
-    <property key="labeling/shapeSizeX" value="0"/>
-    <property key="labeling/shapeSizeY" value="0"/>
-    <property key="labeling/shapeTransparency" value="0"/>
-    <property key="labeling/shapeType" value="0"/>
-    <property key="labeling/textColorA" value="255"/>
-    <property key="labeling/textColorB" value="0"/>
-    <property key="labeling/textColorG" value="0"/>
-    <property key="labeling/textColorR" value="0"/>
-    <property key="labeling/textTransp" value="0"/>
-    <property key="labeling/upsidedownLabels" value="0"/>
-    <property key="labeling/wrapChar" value=""/>
-    <property key="labeling/xOffset" value="0"/>
-    <property key="labeling/yOffset" value="0"/>
+    <property key="dualview/previewExpressions">
+      <value>obsid</value>
+    </property>
+    <property value="0" key="embeddedWidgets/count"/>
+    <property key="variableNames"/>
+    <property key="variableValues"/>
   </customproperties>
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
-  <layerTransparency>0</layerTransparency>
-  <displayfield>obsid</displayfield>
-  <label>0</label>
-  <labelattributes>
-    <label fieldname="" text="Label"/>
-    <family fieldname="" name="Sans"/>
-    <size fieldname="" units="pt" value="12"/>
-    <bold fieldname="" on="0"/>
-    <italic fieldname="" on="0"/>
-    <underline fieldname="" on="0"/>
-    <strikeout fieldname="" on="0"/>
-    <color fieldname="" red="0" blue="0" green="0"/>
-    <x fieldname=""/>
-    <y fieldname=""/>
-    <offset x="0" y="0" units="pt" yfieldname="" xfieldname=""/>
-    <angle fieldname="" value="0" auto="0"/>
-    <alignment fieldname="" value="center"/>
-    <buffercolor fieldname="" red="255" blue="255" green="255"/>
-    <buffersize fieldname="" units="pt" value="1"/>
-    <bufferenabled fieldname="" on=""/>
-    <multilineenabled fieldname="" on=""/>
-    <selectedonly on=""/>
-  </labelattributes>
-  <editform>../../midvatten/ui/obs_points_sv.ui</editform>
-  <editforminit/>
-  <featformsuppress>0</featformsuppress>
-  <annotationform>.</annotationform>
-  <editorlayout>tablayout</editorlayout>
+  <layerOpacity>1</layerOpacity>
+  <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
+    <DiagramCategory diagramOrientation="Up" minimumSize="0" backgroundAlpha="255" penColor="#000000" lineSizeType="MM" penAlpha="255" backgroundColor="#ffffff" sizeScale="3x:0,0,0,0,0,0" maxScaleDenominator="1e+8" barWidth="5" enabled="0" minScaleDenominator="0" scaleBasedVisibility="0" opacity="1" height="15" rotationOffset="270" labelPlacementMethod="XHeight" lineSizeScale="3x:0,0,0,0,0,0" penWidth="0" sizeType="MM" width="15" scaleDependency="Area">
+      <fontProperties description="Noto Sans,9,-1,5,50,0,0,0,0,0" style=""/>
+    </DiagramCategory>
+  </SingleCategoryDiagramRenderer>
+  <DiagramLayerSettings dist="0" zIndex="0" obstacle="0" linePlacementFlags="18" priority="0" showAll="1" placement="0">
+    <properties>
+      <Option type="Map">
+        <Option name="name" value="" type="QString"/>
+        <Option name="properties"/>
+        <Option name="type" value="collection" type="QString"/>
+      </Option>
+    </properties>
+  </DiagramLayerSettings>
+  <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+    <activeChecks/>
+    <checkConfiguration/>
+  </geometryOptions>
+  <fieldConfiguration>
+    <field name="rowid">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="obsid">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="name">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="place">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="type">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="length">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="drillstop">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="diam">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="material">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="screen">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="capacity">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="drilldate">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="wmeas_yn">
+      <editWidget type="CheckBox">
+        <config>
+          <Option type="Map">
+            <Option name="CheckedState" value="1" type="QString"/>
+            <Option name="UncheckedState" value="0" type="QString"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="wlogg_yn">
+      <editWidget type="CheckBox">
+        <config>
+          <Option type="Map">
+            <Option name="CheckedState" value="1" type="QString"/>
+            <Option name="UncheckedState" value="0" type="QString"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="east">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="north">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="ne_accur">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="ne_source">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="h_toc">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="h_tocags">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="h_gs">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="h_accur">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="h_syst">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="h_source">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="source">
+      <editWidget type="TextEdit">
+        <config>
+          <Option/>
+        </config>
+      </editWidget>
+    </field>
+    <field name="com_onerow">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="false" type="bool"/>
+            <Option name="UseHtml" value="false" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+    <field name="com_html">
+      <editWidget type="TextEdit">
+        <config>
+          <Option type="Map">
+            <Option name="IsMultiline" value="true" type="bool"/>
+            <Option name="UseHtml" value="true" type="bool"/>
+          </Option>
+        </config>
+      </editWidget>
+    </field>
+  </fieldConfiguration>
   <aliases>
-    <alias field="capacity" index="9" name="vg"/>
-    <alias field="com_html" index="25" name="flerradig kommentar"/>
-    <alias field="com_onerow" index="24" name="enkelradig kommentar"/>
-    <alias field="diam" index="6" name="diameter (mm)"/>
-    <alias field="drilldate" index="10" name="borrdatum"/>
-    <alias field="drillstop" index="5" name="avslut"/>
-    <alias field="east" index="13" name="östlig koord (CRS anges i db)"/>
-    <alias field="h_accur" index="20" name="höjdonoggrannhet"/>
-    <alias field="h_gs" index="19" name="marknivå"/>
-    <alias field="h_source" index="22" name="höjdinfo ursprung"/>
-    <alias field="h_syst" index="21" name="höjdsystem"/>
-    <alias field="h_toc" index="17" name="rök"/>
-    <alias field="h_tocags" index="18" name="röm"/>
-    <alias field="length" index="4" name="djup (längd) (m)"/>
-    <alias field="name" index="1" name="namn"/>
-    <alias field="ne_accur" index="15" name="lägesonoggrannhet"/>
-    <alias field="ne_source" index="16" name="lägesinfo ursprung"/>
-    <alias field="north" index="14" name="nordlig koord (CRS anges i db)"/>
-    <alias field="place" index="2" name="plats (t.ex. fastighet)"/>
-    <alias field="screen" index="8" name="filtertyp"/>
-    <alias field="source" index="23" name="referens/ursprung"/>
-    <alias field="type" index="3" name="obstyp"/>
-    <alias field="wlogg_yn" index="12" name="utrustad m logger?"/>
-    <alias field="wmeas_yn" index="11" name="ingår i mätprogram?"/>
+    <alias name="" index="0" field="rowid"/>
+    <alias name="" index="1" field="obsid"/>
+    <alias name="namn" index="2" field="name"/>
+    <alias name="plats (t.ex. fastighet)" index="3" field="place"/>
+    <alias name="obstyp" index="4" field="type"/>
+    <alias name="djup (längd) (m)" index="5" field="length"/>
+    <alias name="avslut" index="6" field="drillstop"/>
+    <alias name="diameter (mm)" index="7" field="diam"/>
+    <alias name="" index="8" field="material"/>
+    <alias name="filtertyp" index="9" field="screen"/>
+    <alias name="vg" index="10" field="capacity"/>
+    <alias name="borrdatum" index="11" field="drilldate"/>
+    <alias name="ingår i mätprogram?" index="12" field="wmeas_yn"/>
+    <alias name="utrustad m logger?" index="13" field="wlogg_yn"/>
+    <alias name="östlig koord (CRS anges i db)" index="14" field="east"/>
+    <alias name="nordlig koord (CRS anges i db)" index="15" field="north"/>
+    <alias name="lägesonoggrannhet" index="16" field="ne_accur"/>
+    <alias name="lägesinfo ursprung" index="17" field="ne_source"/>
+    <alias name="rök" index="18" field="h_toc"/>
+    <alias name="röm" index="19" field="h_tocags"/>
+    <alias name="marknivå" index="20" field="h_gs"/>
+    <alias name="höjdonoggrannhet" index="21" field="h_accur"/>
+    <alias name="höjdsystem" index="22" field="h_syst"/>
+    <alias name="höjdinfo ursprung" index="23" field="h_source"/>
+    <alias name="referens/ursprung" index="24" field="source"/>
+    <alias name="enkelradig kommentar" index="25" field="com_onerow"/>
+    <alias name="flerradig kommentar" index="26" field="com_html"/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
+  <defaults>
+    <default expression="" applyOnUpdate="0" field="rowid"/>
+    <default expression="" applyOnUpdate="0" field="obsid"/>
+    <default expression="" applyOnUpdate="0" field="name"/>
+    <default expression="" applyOnUpdate="0" field="place"/>
+    <default expression="" applyOnUpdate="0" field="type"/>
+    <default expression="" applyOnUpdate="0" field="length"/>
+    <default expression="" applyOnUpdate="0" field="drillstop"/>
+    <default expression="" applyOnUpdate="0" field="diam"/>
+    <default expression="" applyOnUpdate="0" field="material"/>
+    <default expression="" applyOnUpdate="0" field="screen"/>
+    <default expression="" applyOnUpdate="0" field="capacity"/>
+    <default expression="" applyOnUpdate="0" field="drilldate"/>
+    <default expression="" applyOnUpdate="0" field="wmeas_yn"/>
+    <default expression="" applyOnUpdate="0" field="wlogg_yn"/>
+    <default expression="" applyOnUpdate="0" field="east"/>
+    <default expression="" applyOnUpdate="0" field="north"/>
+    <default expression="" applyOnUpdate="0" field="ne_accur"/>
+    <default expression="" applyOnUpdate="0" field="ne_source"/>
+    <default expression="" applyOnUpdate="0" field="h_toc"/>
+    <default expression="" applyOnUpdate="0" field="h_tocags"/>
+    <default expression="" applyOnUpdate="0" field="h_gs"/>
+    <default expression="" applyOnUpdate="0" field="h_accur"/>
+    <default expression="" applyOnUpdate="0" field="h_syst"/>
+    <default expression="" applyOnUpdate="0" field="h_source"/>
+    <default expression="" applyOnUpdate="0" field="source"/>
+    <default expression="" applyOnUpdate="0" field="com_onerow"/>
+    <default expression="" applyOnUpdate="0" field="com_html"/>
+  </defaults>
+  <constraints>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="rowid"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="obsid"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="name"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="place"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="type"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="length"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="drillstop"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="diam"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="material"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="screen"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="capacity"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="drilldate"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="wmeas_yn"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="wlogg_yn"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="east"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="north"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="ne_accur"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="ne_source"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="h_toc"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="h_tocags"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="h_gs"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="h_accur"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="h_syst"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="h_source"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="source"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="com_onerow"/>
+    <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="com_html"/>
+  </constraints>
+  <constraintExpressions>
+    <constraint exp="" desc="" field="rowid"/>
+    <constraint exp="" desc="" field="obsid"/>
+    <constraint exp="" desc="" field="name"/>
+    <constraint exp="" desc="" field="place"/>
+    <constraint exp="" desc="" field="type"/>
+    <constraint exp="" desc="" field="length"/>
+    <constraint exp="" desc="" field="drillstop"/>
+    <constraint exp="" desc="" field="diam"/>
+    <constraint exp="" desc="" field="material"/>
+    <constraint exp="" desc="" field="screen"/>
+    <constraint exp="" desc="" field="capacity"/>
+    <constraint exp="" desc="" field="drilldate"/>
+    <constraint exp="" desc="" field="wmeas_yn"/>
+    <constraint exp="" desc="" field="wlogg_yn"/>
+    <constraint exp="" desc="" field="east"/>
+    <constraint exp="" desc="" field="north"/>
+    <constraint exp="" desc="" field="ne_accur"/>
+    <constraint exp="" desc="" field="ne_source"/>
+    <constraint exp="" desc="" field="h_toc"/>
+    <constraint exp="" desc="" field="h_tocags"/>
+    <constraint exp="" desc="" field="h_gs"/>
+    <constraint exp="" desc="" field="h_accur"/>
+    <constraint exp="" desc="" field="h_syst"/>
+    <constraint exp="" desc="" field="h_source"/>
+    <constraint exp="" desc="" field="source"/>
+    <constraint exp="" desc="" field="com_onerow"/>
+    <constraint exp="" desc="" field="com_html"/>
+  </constraintExpressions>
+  <expressionfields/>
+  <attributeactions>
+    <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
+  </attributeactions>
+  <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
+    <columns>
+      <column name="rowid" width="-1" hidden="0" type="field"/>
+      <column name="obsid" width="-1" hidden="0" type="field"/>
+      <column name="name" width="-1" hidden="0" type="field"/>
+      <column name="place" width="-1" hidden="0" type="field"/>
+      <column name="type" width="-1" hidden="0" type="field"/>
+      <column name="length" width="-1" hidden="0" type="field"/>
+      <column name="drillstop" width="-1" hidden="0" type="field"/>
+      <column name="diam" width="-1" hidden="0" type="field"/>
+      <column name="material" width="-1" hidden="0" type="field"/>
+      <column name="screen" width="-1" hidden="0" type="field"/>
+      <column name="capacity" width="-1" hidden="0" type="field"/>
+      <column name="drilldate" width="-1" hidden="0" type="field"/>
+      <column name="wmeas_yn" width="-1" hidden="0" type="field"/>
+      <column name="wlogg_yn" width="-1" hidden="0" type="field"/>
+      <column name="east" width="-1" hidden="0" type="field"/>
+      <column name="north" width="-1" hidden="0" type="field"/>
+      <column name="ne_accur" width="-1" hidden="0" type="field"/>
+      <column name="ne_source" width="-1" hidden="0" type="field"/>
+      <column name="h_toc" width="-1" hidden="0" type="field"/>
+      <column name="h_tocags" width="-1" hidden="0" type="field"/>
+      <column name="h_gs" width="-1" hidden="0" type="field"/>
+      <column name="h_accur" width="-1" hidden="0" type="field"/>
+      <column name="h_syst" width="-1" hidden="0" type="field"/>
+      <column name="h_source" width="-1" hidden="0" type="field"/>
+      <column name="source" width="-1" hidden="0" type="field"/>
+      <column name="com_onerow" width="-1" hidden="0" type="field"/>
+      <column name="com_html" width="-1" hidden="0" type="field"/>
+      <column width="-1" hidden="1" type="actions"/>
+    </columns>
+  </attributetableconfig>
+  <conditionalstyles>
+    <rowstyles/>
+    <fieldstyles/>
+  </conditionalstyles>
+  <editform tolerant="1"></editform>
+  <editforminit/>
+  <editforminitcodesource>0</editforminitcodesource>
+  <editforminitfilepath></editforminitfilepath>
+  <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
+"""
+QGIS forms can have a Python function that is called when the form is
+opened.
+
+Use this function to add extra logic to your forms.
+
+Enter the name of the function in the "Python Init function"
+field.
+An example follows:
+"""
+from qgis.PyQt.QtWidgets import QWidget
+
+def my_form_open(dialog, layer, feature):
+	geom = feature.geometry()
+	control = dialog.findChild(QWidget, "MyLineEdit")
+]]></editforminitcode>
+  <featformsuppress>0</featformsuppress>
+  <editorlayout>tablayout</editorlayout>
   <attributeEditorForm>
-    <attributeEditorContainer name="allmänt">
-      <attributeEditorContainer name="observationspunkten">
-        <attributeEditorField index="0" name="obsid"/>
+    <attributeEditorContainer name="allmänt" columnCount="0" groupBox="0" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+      <attributeEditorContainer name="observationspunkten" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="obsid" index="1" showLabel="1"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="referensinfo">
-        <attributeEditorField index="1" name="name"/>
-        <attributeEditorField index="2" name="place"/>
-        <attributeEditorField index="10" name="drilldate"/>
-        <attributeEditorField index="23" name="source"/>
+      <attributeEditorContainer name="referensinfo" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="name" index="2" showLabel="1"/>
+        <attributeEditorField name="place" index="3" showLabel="1"/>
+        <attributeEditorField name="drilldate" index="11" showLabel="1"/>
+        <attributeEditorField name="source" index="24" showLabel="1"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="teknisk info">
-        <attributeEditorField index="3" name="type"/>
-        <attributeEditorField index="4" name="length"/>
-        <attributeEditorField index="5" name="drillstop"/>
-        <attributeEditorField index="6" name="diam"/>
-        <attributeEditorField index="7" name="material"/>
-        <attributeEditorField index="8" name="screen"/>
-        <attributeEditorField index="9" name="capacity"/>
-      </attributeEditorContainer>
-    </attributeEditorContainer>
-    <attributeEditorContainer name="xyz">
-      <attributeEditorContainer name="observationspunkten">
-        <attributeEditorField index="0" name="obsid"/>
-      </attributeEditorContainer>
-      <attributeEditorContainer name="koordinater i plan - kopplade till läget på kartan">
-        <attributeEditorField index="13" name="east"/>
-        <attributeEditorField index="14" name="north"/>
-        <attributeEditorField index="15" name="ne_accur"/>
-        <attributeEditorField index="16" name="ne_source"/>
-      </attributeEditorContainer>
-      <attributeEditorContainer name="höjdinfo">
-        <attributeEditorField index="17" name="h_toc"/>
-        <attributeEditorField index="18" name="h_tocags"/>
-        <attributeEditorField index="19" name="h_gs"/>
-        <attributeEditorField index="20" name="h_accur"/>
-        <attributeEditorField index="21" name="h_syst"/>
-        <attributeEditorField index="22" name="h_source"/>
+      <attributeEditorContainer name="teknisk info" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="type" index="4" showLabel="1"/>
+        <attributeEditorField name="length" index="5" showLabel="1"/>
+        <attributeEditorField name="drillstop" index="6" showLabel="1"/>
+        <attributeEditorField name="diam" index="7" showLabel="1"/>
+        <attributeEditorField name="material" index="8" showLabel="1"/>
+        <attributeEditorField name="screen" index="9" showLabel="1"/>
+        <attributeEditorField name="capacity" index="10" showLabel="1"/>
       </attributeEditorContainer>
     </attributeEditorContainer>
-    <attributeEditorContainer name="administration">
-      <attributeEditorContainer name="observationspunkten">
-        <attributeEditorField index="0" name="obsid"/>
+    <attributeEditorContainer name="xyz" columnCount="0" groupBox="0" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+      <attributeEditorContainer name="observationspunkten" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="obsid" index="1" showLabel="1"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="kommentarer">
-        <attributeEditorField index="24" name="com_onerow"/>
-        <attributeEditorField index="25" name="com_html"/>
+      <attributeEditorContainer name="koordinater i plan - kopplade till läget på kartan" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="east" index="14" showLabel="1"/>
+        <attributeEditorField name="north" index="15" showLabel="1"/>
+        <attributeEditorField name="ne_accur" index="16" showLabel="1"/>
+        <attributeEditorField name="ne_source" index="17" showLabel="1"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="mätprogram m.m.">
-        <attributeEditorField index="11" name="wmeas_yn"/>
-        <attributeEditorField index="12" name="wlogg_yn"/>
+      <attributeEditorContainer name="höjdinfo" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="h_toc" index="18" showLabel="1"/>
+        <attributeEditorField name="h_tocags" index="19" showLabel="1"/>
+        <attributeEditorField name="h_gs" index="20" showLabel="1"/>
+        <attributeEditorField name="h_accur" index="21" showLabel="1"/>
+        <attributeEditorField name="h_syst" index="22" showLabel="1"/>
+        <attributeEditorField name="h_source" index="23" showLabel="1"/>
+      </attributeEditorContainer>
+    </attributeEditorContainer>
+    <attributeEditorContainer name="administration" columnCount="0" groupBox="0" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+      <attributeEditorContainer name="observationspunkten" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="obsid" index="1" showLabel="1"/>
+      </attributeEditorContainer>
+      <attributeEditorContainer name="kommentarer" columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="com_onerow" index="25" showLabel="1"/>
+        <attributeEditorField name="com_html" index="26" showLabel="1"/>
+      </attributeEditorContainer>
+      <attributeEditorContainer name="mätprogram m.m." columnCount="0" groupBox="1" showLabel="1" visibilityExpression="" visibilityExpressionEnabled="0">
+        <attributeEditorField name="wmeas_yn" index="12" showLabel="1"/>
+        <attributeEditorField name="wlogg_yn" index="13" showLabel="1"/>
       </attributeEditorContainer>
     </attributeEditorContainer>
   </attributeEditorForm>
-  <attributeactions/>
+  <editable>
+    <field name="capacity" editable="1"/>
+    <field name="com_html" editable="1"/>
+    <field name="com_onerow" editable="1"/>
+    <field name="diam" editable="1"/>
+    <field name="drilldate" editable="1"/>
+    <field name="drillstop" editable="1"/>
+    <field name="east" editable="1"/>
+    <field name="h_accur" editable="1"/>
+    <field name="h_gs" editable="1"/>
+    <field name="h_source" editable="1"/>
+    <field name="h_syst" editable="1"/>
+    <field name="h_toc" editable="1"/>
+    <field name="h_tocags" editable="1"/>
+    <field name="length" editable="1"/>
+    <field name="material" editable="1"/>
+    <field name="name" editable="1"/>
+    <field name="ne_accur" editable="1"/>
+    <field name="ne_source" editable="1"/>
+    <field name="north" editable="1"/>
+    <field name="obsid" editable="1"/>
+    <field name="place" editable="1"/>
+    <field name="rowid" editable="0"/>
+    <field name="screen" editable="1"/>
+    <field name="source" editable="1"/>
+    <field name="type" editable="1"/>
+    <field name="wlogg_yn" editable="1"/>
+    <field name="wmeas_yn" editable="1"/>
+  </editable>
+  <labelOnTop>
+    <field name="capacity" labelOnTop="0"/>
+    <field name="com_html" labelOnTop="0"/>
+    <field name="com_onerow" labelOnTop="0"/>
+    <field name="diam" labelOnTop="0"/>
+    <field name="drilldate" labelOnTop="0"/>
+    <field name="drillstop" labelOnTop="0"/>
+    <field name="east" labelOnTop="0"/>
+    <field name="h_accur" labelOnTop="0"/>
+    <field name="h_gs" labelOnTop="0"/>
+    <field name="h_source" labelOnTop="0"/>
+    <field name="h_syst" labelOnTop="0"/>
+    <field name="h_toc" labelOnTop="0"/>
+    <field name="h_tocags" labelOnTop="0"/>
+    <field name="length" labelOnTop="0"/>
+    <field name="material" labelOnTop="0"/>
+    <field name="name" labelOnTop="0"/>
+    <field name="ne_accur" labelOnTop="0"/>
+    <field name="ne_source" labelOnTop="0"/>
+    <field name="north" labelOnTop="0"/>
+    <field name="obsid" labelOnTop="0"/>
+    <field name="place" labelOnTop="0"/>
+    <field name="rowid" labelOnTop="0"/>
+    <field name="screen" labelOnTop="0"/>
+    <field name="source" labelOnTop="0"/>
+    <field name="type" labelOnTop="0"/>
+    <field name="wlogg_yn" labelOnTop="0"/>
+    <field name="wmeas_yn" labelOnTop="0"/>
+  </labelOnTop>
+  <widgets/>
+  <previewExpression>obsid</previewExpression>
+  <mapTip></mapTip>
+  <layerGeometryType>0</layerGeometryType>
 </qgis>

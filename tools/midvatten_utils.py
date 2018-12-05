@@ -1524,6 +1524,7 @@ def to_float_or_none(anything):
         else:
             return a_float
 
+
 class PlotTemplates(object):
     def __init__(self, plot_object,
                  template_list,
@@ -1756,22 +1757,36 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
 def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
         dbconnection = db_utils.DbConnectionManager()
+    existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
+
+    if dbconnection.dbtype == 'spatialite' and 'view_obs_points' in existing_tables:
+        use_view_obs_points = True
+    else:
+        use_view_obs_points = False
+
 
     for tablename in tablenames:  # first load all non-spatial layers
-        existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
+
         if not tablename in existing_tables:
             continue
 
+        if use_view_obs_points and tablename == 'obs_points':
+            tablename = 'view_obs_points'
+
         layer = create_layer(tablename, geometrycolumn=geometrycolumn)
-        if not layer.isValid():
+
+        valid = layer.isValid()
+        if not valid:
             #Try to add it as a view by adding key column
             layer = create_layer(tablename, geometrycolumn=geometrycolumn, sql=None, keycolumn='obsid',
                                  dbconnection=dbconnection)
-            if not layer.isValid():
-                MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
-            else:
-                resultlist.append(layer)
+            valid = layer.isValid()
+
+        if not valid:
+            MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
         else:
+            if use_view_obs_points and tablename == 'view_obs_points':
+                layer.setName('obs_points')
             resultlist.append(layer)
 
 
