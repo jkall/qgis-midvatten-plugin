@@ -1752,6 +1752,7 @@ class MatplotlibStyles(object):
                  available_settings_button,
                  last_used_style_settingskey,
                  defaultstyle_stylename,
+                 _plt,
                  msettings=None):
 
         # Gui objects
@@ -1759,6 +1760,7 @@ class MatplotlibStyles(object):
         self.import_button = import_button
         self.open_folder_button = open_folder_button
         self.available_settings_button = available_settings_button
+        self.plt = _plt
 
 
         self.style_extension = '.mplstyle'
@@ -1772,12 +1774,14 @@ class MatplotlibStyles(object):
 
         self.last_used_style_settingskey = last_used_style_settingskey
 
+        self.update_style_list()
+
         if not os.path.isfile(self.filename_from_style(self.defaultstyle_stylename[1])):
             self.save_style_to_stylelib(self.defaultstyle_stylename)
         try:
             last_used_style = self.ms.settingsdict[self.last_used_style_settingskey]
         except:
-            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Failed to load saved style, loading default style instead.')))
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Failed to load saved style, loading default style instead.')))
         else:
             self.select_style_in_list(last_used_style)
 
@@ -1793,8 +1797,9 @@ class MatplotlibStyles(object):
 
     def get_selected_style(self):
         selected = self.style_list.selectedItems()
+        print("Selected style" + str(selected))
         if selected:
-            return selected[0]
+            return selected[0].text()
 
     def style_from_filename(self, filename):
         return os.path.splitext(os.path.basename(filename))
@@ -1803,35 +1808,31 @@ class MatplotlibStyles(object):
         filename = os.path.join(self.style_folder, style + self.style_extension)
         return filename
 
-    def load_style(self, _plt, style):
+    def load_style(self, style):
         try:
-            _plt.style.use(style)
+            self.plt.style.use(style)
         except Exception as e:
-            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates',
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
                                                                                       'Failed to load style, check style settings in %s.')) % self.filename_from_style(style),
                                      log_msg=returnunicode(
-                                         QCoreApplication.translate('PlotTemplates', 'Error msg %s')) % str(e))
+                                         QCoreApplication.translate('MatplotlibStyles', 'Error msg %s')) % str(e))
             raise
+        else:
+            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (style, self.rcparams()))
 
     @general_exception_handler
-    def load(self, _plt, style=None):
-        if style is None:
-            style = self.get_selected_style()
-            if not style:
-                style = self.defaultstyle_stylename
-
-        try:
-            self.load_style(style)
-        except:
-            if style != self.defaultstyle_stylename:
-                try:
-                    self.load_style(self.defaultstyle_stylename)
-                except:
-                    self.save_style_to_stylelib(self.filename_from_style(self.fallbackstyle_stylename))
-                    self.load_style(self.fallbackstyle_stylename)
+    def load(self, style=None):
+        fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
+        styles = [style, self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style]
+        
+        for _style in styles:
+            try:
+                self.load_style(_style)
+            except:
+                pass
             else:
-                self.save_style_to_stylelib(self.filename_from_style(self.fallbackstyle_stylename))
-                self.load_style(self.fallbackstyle_stylename)
+                break
+        
 
     @general_exception_handler
     def import_style(self, filenames=None):
@@ -1864,7 +1865,7 @@ class MatplotlibStyles(object):
     def update_style_list(self):
         selected_style = self.get_selected_style()
         self.style_list.clear()
-        for style in sorted(plt.style.available):
+        for style in sorted(self.plt.style.available):
             qlistwidgetitem = qgis.PyQt.QtWidgets.QListWidgetItem()
             qlistwidgetitem.setText(style)
             self.style_list.addItem(qlistwidgetitem)
@@ -1872,16 +1873,21 @@ class MatplotlibStyles(object):
                 qlistwidgetitem.setSelected(True)
 
     def available_settings_to_log(self):
-        rows = ['{}: {}'.format(str(k), str(v)) for k, v in sorted(mpl.rcParams.items())]
-        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'rcParams written to log, see log messages')),
-                              log_msg='\n'.join(rows))
+        rows = self.rcparams()
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'rcParams written to log, see log messages')),
+                              log_msg=rows)
+
+    def rcparams(self):
+        return '\n'.join(['{}: {}'.format(str(k), str(v)) for k, v in sorted(mpl.rcParams.items())])
 
     def select_style_in_list(self, style):
-        for item in self.style_list:
+        for idx in range(self.style_list.count()):
+            item = self.style_list.item(idx)
             if item.text() == style:
                 item.setSelected(True)
             else:
                 item.setSelected(False)
+
 
 def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbconnection=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):

@@ -94,8 +94,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_plottype1':'line',
             'custplot_plottype2':'line',
             'custplot_plottype3':'line',
-            'custplot_templates': '',
-            'custplot_loaded_template': '',
+            'custplot_last_used_template': '',
             'customdrillreportstoredsettings': '',
             'piper_cl':'Klorid, Cl',
             'piper_hco3':'Alkalinitet, HCO3',
@@ -873,5 +872,10 @@ def custplot_default_template():
                 "labelrotation": 0}}
 
     return default
+
+def custplot_default_style():
+    style = ''
+    stylename = 'midv_custplot_default'
+    return (style, stylename)
 
 
