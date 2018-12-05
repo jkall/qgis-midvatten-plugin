@@ -463,7 +463,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             elif plottype == "marker":
                 self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', label=self.plabels[i])
             elif plottype == "line":
-                self.p[i], = self.axes.plot_date(numtime, table2.values,  marker='None', label=self.plabels[i])
+                self.p[i], = self.axes.plot_date(numtime, table2.values, '', marker='None', label=self.plabels[i])
             else:
                 self.p[i], = self.axes.plot_date(numtime, table2.values, label=self.plabels[i])
         elif FlagTimeXY == "XY":
