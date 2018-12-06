@@ -1552,7 +1552,6 @@ class PlotTemplates(object):
         self.import_button = import_button
         self.remove_button = remove_button
 
-
         self.ms = msettings
         self.templates = {}
         self.loaded_template = {}
@@ -1752,8 +1751,6 @@ class MatplotlibStyles(object):
                  available_settings_button,
                  last_used_style_settingskey,
                  defaultstyle_stylename,
-                 _plt,
-                 _mpl,
                  msettings=None):
 
         # Gui objects
@@ -1761,8 +1758,6 @@ class MatplotlibStyles(object):
         self.import_button = import_button
         self.open_folder_button = open_folder_button
         self.available_settings_button = available_settings_button
-        self.plt = _plt
-        self.mpl = _mpl
 
         self.style_extension = '.mplstyle'
         self.style_folder = os.path.join(mpl.get_configdir(), 'stylelib')
@@ -1795,6 +1790,7 @@ class MatplotlibStyles(object):
         filename = self.filename_from_style(stylestring_stylename[1])
         with io.open(filename, 'w', encoding='utf-8') as of:
             of.write(stylestring_stylename[0])
+        mpl.style.reload_library()
 
     def get_selected_style(self):
         selected = self.style_list.selectedItems()
@@ -1810,17 +1806,18 @@ class MatplotlibStyles(object):
 
     @general_exception_handler
     def load(self, drawfunc):
-        self.mpl.rcdefaults()
+        mpl.style.reload_library()
+        mpl.rcdefaults()
         fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
         self.save_style_to_stylelib([self.defaultstyle_stylename[0], fallback_style])
-        styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style]
+        styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style, 'default']
 
         use_style = None
         for _style in styles:
             if not _style:
                 continue
             try:
-                with self.plt.style.context(_style):
+                with plt.style.context(_style):
                     pass
             except Exception as e:
                 MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Failed to load style, check style settings in %s.')) % self.filename_from_style(_style),
@@ -1829,7 +1826,7 @@ class MatplotlibStyles(object):
                 use_style = _style
                 break
         if use_style is not None:
-            with self.plt.style.context(use_style):
+            with plt.style.context(use_style):
                 MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (use_style, self.rcparams()))
                 drawfunc()
         else:
@@ -1866,7 +1863,7 @@ class MatplotlibStyles(object):
     def update_style_list(self):
         selected_style = self.get_selected_style()
         self.style_list.clear()
-        for style in sorted(self.plt.style.available):
+        for style in sorted(plt.style.available):
             qlistwidgetitem = qgis.PyQt.QtWidgets.QListWidgetItem()
             qlistwidgetitem.setText(style)
             self.style_list.addItem(qlistwidgetitem)
@@ -1879,7 +1876,7 @@ class MatplotlibStyles(object):
                               log_msg=rows)
 
     def rcparams(self):
-        return '\n'.join(['{}: {}'.format(str(k), str(v)) for k, v in sorted(self.mpl.rcParams.items())])
+        return '\n'.join(['{}: {}'.format(str(k), str(v)) for k, v in sorted(mpl.rcParams.items())])
 
     def select_style_in_list(self, style):
         for idx in range(self.style_list.count()):

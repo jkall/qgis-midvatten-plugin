@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1077</width>
-         <height>794</height>
+         <width>996</width>
+         <height>821</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1868,7 +1868,7 @@
         <item>
          <widget class="QTabWidget" name="plot_tabwidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -2296,20 +2296,6 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="2">
-                    <widget class="QLabel" name="label_19">
-                     <property name="text">
-                      <string>Xaxis date format</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QLineEdit" name="xaxis_dateformat">
-                     <property name="toolTip">
-                      <string>Use python date formats ex: %Y-%m-%d %H:%M:%S.</string>
-                     </property>
-                    </widget>
-                   </item>
                   </layout>
                  </item>
                 </layout>
@@ -2443,7 +2429,7 @@
      <x>0</x>
      <y>0</y>
      <width>1028</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

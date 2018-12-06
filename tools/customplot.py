@@ -35,6 +35,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
+from matplotlib.axes import Axes
 
 import numpy as np
 
@@ -69,6 +70,9 @@ customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..
 
 class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def __init__(self, parent, msettings):#, parent as second arg?
+
+        replace_axes_legend()
+
         self.ms = msettings
         self.ms.loadSettings()
         QtWidgets.QDialog.__init__(self, parent)
@@ -138,8 +142,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              self.available_settings_button,
                                              self.custplot_last_used_style_settingskey,
                                              defs.custplot_default_style(),
-                                             plt,
-                                             mpl,
                                              msettings=self.ms)
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
@@ -197,7 +199,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         if hasattr(self, 'canvas'):
             self.layoutplot.removeWidget(self.canvas)
             self.canvas.close()
-        plt.close('all')
+        if hasattr(self, 'custplotfigure'):
+            fignum = self.custplotfigure.number
+            plt.close(fignum)
 
         figsize = mpl.rcParams['figure.figsize']
         self.plot_width.setText(str(figsize[0]))
@@ -724,17 +728,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             else:
                 self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))
             self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
-
-            if self.xaxis_dateformat.text():
-                xformatter = mdates.DateFormatter(self.xaxis_dateformat.text())
-            else:
-                xformatter = self.xaxis_formatters[0]
-            self.axes.xaxis.set_major_formatter(xformatter)
-
+            self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
             self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
         if self.Grid_checkBox.isChecked():
+            # TODO: This doesnt seem to work
             mpl.rcParams['axes.grid'] = True
+            mpl.rcParams['axes.grid.axis'] = 'both'
         else:
             mpl.rcParams['axes.grid'] = False
 
@@ -827,6 +827,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             return
         selected_values = utils.getselectedobjectnames(column_name=current_column)
         [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
+
+
 
 
 class PandasCalculations(object):
@@ -957,6 +959,49 @@ class PandasCalculations(object):
                     center=True
                 df = pd.rolling_mean(df, window=window, center=center)
         return df
+
+def replace_axes_legend():
+    """
+        This method restores the linewidth of the lines in the legend if a new legend is created.
+    :return:
+    """
+
+    def legend_restore_settings(ax, *args, **kwargs):
+        """
+        Replacement method for Axes.legend.
+        :param ax:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        old_linewidth = None
+        try:
+            ax.legend_
+        except Exception as e:
+            print(str(args))
+            raise
+        if ax.legend_ is not None:
+            old_legend = ax.get_legend()
+            for line in old_legend.get_lines():
+                old_linewidth = line.get_linewidth()
+                break
+        try:
+            new_leg = ax._org_leg(*args, **kwargs)
+        except:
+            print(str(args))
+            print(str(kwargs))
+            raise
+        if old_linewidth is not None:
+            for line in new_leg.get_lines():
+                line.set_linewidth(old_linewidth)
+        return new_leg
+
+    if Axes.legend is not legend_restore_settings:
+        Axes._org_leg = Axes.legend
+        Axes.legend = legend_restore_settings
+
+
+
 
 
 def horizontal_line():

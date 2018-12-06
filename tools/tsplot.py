@@ -113,7 +113,9 @@ class TimeSeriesPlot(object):
                 for label in ax.yaxis.get_ticklabels():
                     label.set_fontsize(10)
                 #plt.ion()#force interactivity to prevent the plot window from blocking the qgis app
-                plt.show()
+
+                fig.show()
+                #plt.close(fig)
                 #plt.draw()
             else:
                 utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select at least one point with time series data")))
