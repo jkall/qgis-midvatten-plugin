@@ -765,6 +765,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.change_plot_size(refresh=False)
 
         self.canvas.draw()
+        self.plot_tabwidget.setCurrentIndex(0)
         #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
     def storesettings(self):
