@@ -451,7 +451,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     
         # Load manual reading (full time series) for the obsid
         if self.meas_ts.size:
-            self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 5)
+            self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', 5)
         
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
@@ -460,7 +460,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             logger_line_style = '-'                
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger')), logger_line_style, picker=5, time_list=logger_time_list)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list)
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
@@ -478,6 +478,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             label.set_fontsize(8)
 
         self.calibrplotfigure.tight_layout()
+
+        if self.axes.legend_ is None:
+            leg = self.axes.legend()
+
         self.canvas.draw()
         #plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
         utils.stop_waiting_cursor()
