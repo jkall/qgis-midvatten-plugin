@@ -264,6 +264,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         data was changed in the background in for example spatialite gui. Now all time series are reloaded always.
         It's rather fast anyway.
         """
+        utils.start_waiting_cursor()
         obsid = self.selected_obsid
         if not obsid:
             try:
@@ -271,6 +272,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             except:
                 pass
             #utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "ERROR: no obsid is chosen")))
+            utils.stop_waiting_cursor()
             return None
 
         meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '%s' ORDER BY date_time"""%obsid
@@ -317,7 +319,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.update_combobox_with_calibration_info(obsid=obsid, _obsids_with_uncalibrated_data=calibration_status)
 
         self.setlastcalibration(obsid)
-
+        utils.stop_waiting_cursor()
         return obsid
 
     @fn_timer
@@ -358,9 +360,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def calibrate(self, obsid=None):
         self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Calibrating")))
 
-        utils.start_waiting_cursor()
         if obsid is None:
             obsid = self.load_obsid_and_init()
+
         if not obsid=='':
             fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
             to_d_t = self.ToDateTime.dateTime().toPyDateTime()
@@ -373,10 +375,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         else:
             self.INFO.setText(ru(QCoreApplication.translate('Calibrlogger', "Select the observation point with logger data to be calibrated.")))
         self.calib_help.setText("")
-        utils.stop_waiting_cursor()
 
     @fn_timer
     def update_level_masl_from_level_masl(self, obsid, fr_d_t, to_d_t, newzref):
+        utils.start_waiting_cursor()
         """ Updates the level masl using newzref
         :param obsid: (str) The obsid
         :param fr_d_t: (datetime) start of calibration
@@ -394,6 +396,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         sql += """ AND %s > %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
         sql += """ AND %s < %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
         dummy = db_utils.sql_alter_db(sql)
+        utils.stop_waiting_cursor()
 
     @fn_timer
     def update_level_masl_from_head(self, obsid, fr_d_t, to_d_t, newzref):
@@ -404,7 +407,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         :param newzref: (int/float/str [m]) The correction that should be made against the head [m]
         :return: None
         """
-
+        utils.start_waiting_cursor()
         sql =r"""UPDATE w_levels_logger SET level_masl = """
         sql += str(newzref)
         sql += """ + head_cm / 100 WHERE obsid = '"""
@@ -419,6 +422,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             print(str(dummy))
         except:
             pass
+        utils.stop_waiting_cursor()
 
     @fn_timer
     def sql_into_recarray(self, sql):
@@ -438,11 +442,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
         self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Updating plot")))
-        utils.start_waiting_cursor()
         last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
+        utils.start_waiting_cursor()
         if obsid == None:
-            utils.stop_waiting_cursor()
             self.calib_help.setText("")
             return
         self.axes.clear()
@@ -484,7 +487,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.canvas.draw()
         #plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
-        utils.stop_waiting_cursor()
         self.calib_help.setText("")
 
         if last_used_obsid == self.obsid:
@@ -492,6 +494,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         else:
             #Clear choices
             self.reset_settings()
+            self.mpltoolbar.update()
+
+        utils.stop_waiting_cursor()
 
     @fn_timer
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5, time_list=None):
@@ -672,6 +677,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             Then calculates the mean of all matches and set to self.LoggerPos.
         """
         obsid = self.load_obsid_and_init()
+        utils.start_waiting_cursor()
         self.reset_plot_selects_and_calib_help()
         search_radius = self.get_search_radius()
         if self.loggerpos_masl_or_offset_state == 1:# UPDATE TO RELEVANT TEXT
@@ -682,8 +688,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             logger_ts = self.level_masl_ts
             text_field = self.Add2Levelmasl
             calib_func = self.add_to_level_masl
-
-        utils.start_waiting_cursor()
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, search_radius)
         if not coupled_vals:
@@ -828,7 +832,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         really_delete = utils.Askuser("YesNo", ru(QCoreApplication.translate('Calibrlogger', "Do you want to delete the period %s to %s for obsid %s from table %s?"))%(str(self.FromDateTime.dateTime().toPyDateTime()), str(self.ToDateTime.dateTime().toPyDateTime()), selected_obsid, table_name)).result
         if really_delete:
+            utils.start_waiting_cursor()
             db_utils.sql_alter_db(sql)
+            utils.stop_waiting_cursor()
             self.update_plot()
 
     @fn_timer
@@ -924,5 +930,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 )
                 WHERE obsid = '{obsid}' AND date_time > '{adjust_start_date}' AND date_time < '{adjust_end_date}'
             """.format(**data)
+        utils.start_waiting_cursor()
         db_utils.sql_alter_db(sql)
+        utils.stop_waiting_cursor()
         self.update_plot()
