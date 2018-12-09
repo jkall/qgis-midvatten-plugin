@@ -1830,7 +1830,6 @@ class MatplotlibStyles(object):
                 break
         if use_style is not None:
             with plt.style.context(use_style):
-                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Loaded style %s:\n%s ')) % (use_style, self.rcparams()))
                 drawfunc()
         else:
             drawfunc()

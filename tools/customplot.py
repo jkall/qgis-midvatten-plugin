@@ -675,6 +675,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     @utils.general_exception_handler
     def refreshPlot( self):
         #If the user has not pressed "draw" before, do nothing
+        utils.MessagebarAndLog.info(
+            log_msg=ru(QCoreApplication.translate('Customplot', 'Loaded style:\n%s ')) % (
+            self.styles.rcparams()))
+
         if not self.drawn:
             return None
 
