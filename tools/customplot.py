@@ -187,7 +187,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.yaxis_label = None
 
         self.init_figure()
-
+        self.widgetplot_size_policy = self.widgetPlot.sizePolicy()
         self.show()
 
     def init_figure(self):
@@ -214,7 +214,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.canvas = FigureCanvas(self.custplotfigure)
         self.canvas_size_policy = self.canvas.sizePolicy()
-        self.widgetplot_size_policy = self.widgetPlot.sizePolicy()
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
         self.layoutplot.addWidget(self.canvas)
