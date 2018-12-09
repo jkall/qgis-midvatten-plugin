@@ -729,13 +729,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
 
         #self.canvas.updateGeometry()
-        figsize = mpl.rcParams['figure.figsize']
-        try:
-            dpi = mpl.rcParams['savefig.dpi']
-        except:
-            pass
-        else:
-            self.canvas.setFixedSize(dpi/float(figsize[0]), dpi/float(figsize[1]))
+        #figsize = mpl.rcParams['figure.figsize']
+        #try:
+        #    dpi = mpl.rcParams['savefig.dpi']
+        #except:
+        #    pass
+        #else:
+        #    self.canvas.setFixedSize(dpi/float(figsize[0]), dpi/float(figsize[1]))
 
         self.canvas.draw()
 
