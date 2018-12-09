@@ -46,7 +46,7 @@ except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg
 import datetime
-import new
+import types
 import matplotlib.ticker as tick
 import matplotlib.dates as mdates
 from cycler import cycler
@@ -983,9 +983,8 @@ def replace_axes_legend(axes):
         return new_leg
 
     if axes.legend.__name__ != legend_restore_settings.__name__:
-        axes.legend
-        axes._org_leg = axes.legend #new.instancemethod(axes.legend, axes, None)
-        axes.legend = new.instancemethod(legend_restore_settings, axes, None)
+        axes._org_leg = axes.legend
+        types.MethodType(legend_restore_settings, axes)
 
 
 def horizontal_line():
