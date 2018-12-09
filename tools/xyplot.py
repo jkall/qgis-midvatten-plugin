@@ -145,7 +145,7 @@ class XYPlot(object):
                     label.set_fontsize(10)
                 for label in ax.yaxis.get_ticklabels():
                     label.set_fontsize(10)
-                plt.show() # causes conflict with plugins "statist" and "chartmaker"
+                fig.show() # causes conflict with plugins "statist" and "chartmaker"
             else:
                 utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select at least one point with xy data")))
         else:

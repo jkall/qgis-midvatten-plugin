@@ -21,6 +21,7 @@ from __future__ import print_function
 from builtins import str
 
 from collections import OrderedDict
+import os
 
 import db_utils
 import midvatten_utils as utils
@@ -878,4 +879,5 @@ def custplot_default_style():
     stylename = 'midv_custplot_default'
     return (style, stylename)
 
-
+def piperplot_style():
+    return os.path.join(os.path.dirname(__file__), 'mpl_styles', 'midv_piperplot.mplstyle')

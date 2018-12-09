@@ -1417,6 +1417,7 @@ def fn_timer(function):
 class UserInterruptError(Exception):
     pass
 
+
 class UsageError(Exception):
     pass
 
