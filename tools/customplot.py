@@ -269,8 +269,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             #self.widgetPlot.setMaximumHeight(height)
 
         self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
-        if refresh:
-            self.refreshPlot()
+        #if refresh:
+        #    self.refreshPlot()
 
     def drawplot_with_styles(self):
         self.styles.load(self.drawPlot_all)
