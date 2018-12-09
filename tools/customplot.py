@@ -76,6 +76,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         # THESE SETTING CHANGES GLOBAL SETTING FOR ALL MATPLOTLIB PLOTS!
         #-----------------------
         mpl.rcParams['savefig.dpi'] = 450
+        replace_axes_legend()
         #-----------------------
 
         self.ms = msettings
@@ -210,7 +211,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.custplotfigure = plt.figure()
 
         self.axes = self.custplotfigure.add_subplot(111)
-        replace_axes_legend(self.axes)
 
         self.canvas = FigureCanvas(self.custplotfigure)
 
@@ -938,7 +938,7 @@ class PandasCalculations(object):
         return df
 
 
-def replace_axes_legend(axes):
+def replace_axes_legend():
     """
         This method restores the linewidth of the lines in the legend if a new legend is created.
         This setting is GLOBAL!
@@ -981,9 +981,14 @@ def replace_axes_legend(axes):
                 line.set_linewidth(old_linewidth)
         return new_leg
 
-    if axes.legend.__name__ != legend_restore_settings.__name__:
-        axes._org_leg = axes.legend
-        types.MethodType(legend_restore_settings, axes)
+    if Axes.legend.__name__ != legend_restore_settings.__name__:
+        print(str(Axes.legend))
+        Axes._org_leg = Axes.legend
+        Axes.legend = legend_restore_settings
+
+    #if axes.legend.__name__ != legend_restore_settings.__name__:
+    #    axes._org_leg = axes.legend
+    #    types.MethodType(legend_restore_settings, axes)
 
 
 def horizontal_line():
