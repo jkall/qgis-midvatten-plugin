@@ -737,7 +737,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #    pass
         #else:
         #    self.canvas.setFixedSize(dpi/float(figsize[0]), dpi/float(figsize[1]))
-        print("screen dpi: " + str(QApplication.screens().at(0).logicalDotsPerInch()))
+        print("screen dpi: " + str(QApplication.screens()[0].logicalDotsPerInch()))
 
         self.canvas.draw()
 
