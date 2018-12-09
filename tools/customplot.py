@@ -140,6 +140,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              self.import_button,
                                              self.open_folder_button,
                                              self.available_settings_button,
+                                             self.save_as_button,
                                              self.custplot_last_used_style_settingskey,
                                              defs.custplot_default_style(),
                                              msettings=self.ms)

@@ -1750,6 +1750,7 @@ class MatplotlibStyles(object):
                  import_button,
                  open_folder_button,
                  available_settings_button,
+                 save_as_button,
                  last_used_style_settingskey,
                  defaultstyle_stylename,
                  msettings=None):
@@ -1759,6 +1760,7 @@ class MatplotlibStyles(object):
         self.import_button = import_button
         self.open_folder_button = open_folder_button
         self.available_settings_button = available_settings_button
+        self.save_as_button = save_as_button
 
         self.style_extension = '.mplstyle'
         self.style_folder = os.path.join(mpl.get_configdir(), 'stylelib')
@@ -1852,6 +1854,17 @@ class MatplotlibStyles(object):
                         return
                 shutil.copy2(filename, new_fullname)
             self.update_style_list()
+            
+    @general_exception_handler
+    def save_as(self):
+        filename = get_save_file_name_no_extension(parent=None, caption=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Choose a file name')), directory=self.style_folder, filter='mplstyle (*.mplstyle)')
+
+        if not filename.endswith('.mplstyle'):
+            basename, ext = os.path.splitext(filename)
+            filename = basename + '.mplstyle'
+        with io.open(filename, 'w', encoding='utf8') as of:
+            of.write(self.rcparams())
+        self.update_style_list()
 
     def open_folder(self):
         url = QtCore.QUrl(self.style_folder)
@@ -1862,6 +1875,7 @@ class MatplotlibStyles(object):
         self.ms.save_settings(self.last_used_style_settingskey)
 
     def update_style_list(self):
+        mpl.style.reload_library()
         selected_style = self.get_selected_style()
         self.style_list.clear()
         for style in sorted(plt.style.available):
