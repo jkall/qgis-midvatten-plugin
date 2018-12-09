@@ -22,6 +22,7 @@ from builtins import str
 
 from collections import OrderedDict
 import os
+import io
 
 import db_utils
 import midvatten_utils as utils
@@ -875,8 +876,10 @@ def custplot_default_template():
     return default
 
 def custplot_default_style():
-    style = ''
     stylename = 'midv_custplot_default'
+    filename = os.path.join(os.path.dirname(__file__), 'mpl_styles', '{}.mplstyle'.format(stylename))
+    with io.open(filename, 'r', encoding='utf-8') as f:
+        style = f.read()
     return (style, stylename)
 
 def piperplot_style():
