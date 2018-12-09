@@ -725,7 +725,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             self.axes.legend_ = None
 
-        print("mpl.rcParams['figure.figsize'] " + str(mpl.rcParams['figure.figsize']))
+        #print("mpl.rcParams['figure.figsize'] " + str(mpl.rcParams['figure.figsize']))
         #self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
 
         #self.canvas.updateGeometry()
