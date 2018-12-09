@@ -1787,7 +1787,7 @@ class MatplotlibStyles(object):
         self.import_button.clicked.connect(lambda x: self.import_style())
         self.open_folder_button.clicked.connect(lambda x: self.open_folder())
         self.available_settings_button.clicked.connect(lambda x: self.available_settings_to_log())
-
+        self.save_as_button.clicked.connect(lambda x: self.save_as())
 
     def save_style_to_stylelib(self, stylestring_stylename):
         filename = self.filename_from_style(stylestring_stylename[1])
