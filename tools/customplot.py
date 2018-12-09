@@ -204,8 +204,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             fignum = self.custplotfigure.number
             plt.close(fignum)
 
-        figsize = mpl.rcParams['figure.figsize']
-
         self.custplotfigure = plt.figure()
 
         self.axes = self.custplotfigure.add_subplot(111)
@@ -737,7 +735,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #    pass
         #else:
         #    self.canvas.setFixedSize(dpi/float(figsize[0]), dpi/float(figsize[1]))
-        print("screen dpi: " + str(QApplication.screens()[0].logicalDotsPerInch()))
+
 
         """
         Todo figure size:
@@ -747,6 +745,16 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         
         I want the width and height on the screen to match the figure figuresize. 1 inch should BE 1 inch, nothing else.
         """
+
+        if self.fixed_figuresize_checkbox.isChecked():
+            width_inches, height_inches = mpl.rcParams['figure.figsize']
+            print("screen dpi: " + str(QApplication.screens()[0].logicalDotsPerInch()))
+            screen_dpi = QApplication.screens()[0].logicalDotsPerInch()
+            width_pixels = width_inches * screen_dpi
+            height_pixels = height_inches * screen_dpi
+            self.canvas.setFixedSize(width_pixels, height_pixels)
+
+
         self.canvas.draw()
 
         #self.custplotfigure.show()
