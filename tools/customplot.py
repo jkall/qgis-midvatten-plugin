@@ -187,7 +187,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.yaxis_label = None
 
         self.init_figure()
-        self.widgetplot_size_policy = self.widgetPlot.sizePolicy()
         self.show()
 
     def init_figure(self):
@@ -742,7 +741,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
         else:
             self.canvas.setSizePolicy(self.canvas_size_policy)
-            self.widgetPlot.setSizePolicy(self.widgetplot_size_policy)
+            self.widgetPlot.setMinimumHeight(10)
+            self.widgetPlot.setMaximumHeight(16777215)
 
         self.canvas.draw()
 
