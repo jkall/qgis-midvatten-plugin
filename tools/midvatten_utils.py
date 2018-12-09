@@ -1895,7 +1895,7 @@ class MatplotlibStyles(object):
         def format_v(v):
             if isinstance(v, (list, tuple)):
                 if v:
-                    return ','.join([str(_v) for _v in v])
+                    return str(v)
                 else:
                     return ''
             else:
