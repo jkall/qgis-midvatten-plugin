@@ -178,7 +178,7 @@ class PiperPlot(object):
         nosamples = len(self.obsrecarray.obsid) # Determine number of samples in file
         # Change default settings for figures
 
-        with plt.style.context(piperplot_style()):
+        with plt.style.context((piperplot_style())):
 
             # Make Figure
             # -------------------------------------------------------------------------------- #
@@ -300,7 +300,7 @@ class PiperPlot(object):
                     ph,l = ax1.get_legend_handles_labels()
                 leg = plt.figlegend(ph,l, ncol=6)
                 leg.draggable(state=True)
-                frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+                frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)    # set the frame face color transparent
             elif self.ms.settingsdict['piper_markers']=='obsid':
                 dummyplot=[]
@@ -309,7 +309,7 @@ class PiperPlot(object):
                     ph,l = ax1.get_legend_handles_labels()
                 leg = plt.figlegend(ph,l, ncol=6)
                 leg.draggable(state=True)
-                frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+                frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)    # set the frame face color transparent
             elif self.ms.settingsdict['piper_markers']=='date_time':
                 dummyplot=[]
@@ -318,7 +318,7 @@ class PiperPlot(object):
                     ph,l = ax1.get_legend_handles_labels()
                 leg = plt.figlegend(ph,l, ncol=6)
                 leg.draggable(state=True)
-                frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+                frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)    # set the frame face color transparent
             else:    #no legend if no unique markers
                 pass
