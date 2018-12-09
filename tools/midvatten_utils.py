@@ -1893,7 +1893,7 @@ class MatplotlibStyles(object):
 
     def rcparams(self):
         def format_v(v):
-            if isinstance(v, list, tuple):
+            if isinstance(v, (list, tuple)):
                 if v:
                     return ','.join([str(_v) for _v in v])
                 else:
