@@ -212,7 +212,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.axes = self.custplotfigure.add_subplot(111)
 
         self.canvas = FigureCanvas(self.custplotfigure)
-        self.canvas_size_policy = self.canvas.sizePolicy()
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
         self.layoutplot.addWidget(self.canvas)
@@ -737,13 +736,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.canvas.setFixedSize(width_pixels, height_pixels)
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
         else:
-            #self.canvas.setMinimumHeight(10)
-            #self.canvas.setMaximumHeight(16777215)
-            #self.canvas.setMinimumWidth(10)
-            #self.canvas.setMaximumWidth(16777215)
-            #self.canvas.setSizePolicy(self.canvas_size_policy)
-            self.widgetPlot.setMinimumHeight(10)
-            self.widgetPlot.setMaximumHeight(16777215)
             self.widgetPlot.setMinimumWidth(10)
             self.widgetPlot.setMaximumWidth(16777215)
 
