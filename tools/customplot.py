@@ -210,6 +210,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.axes = self.custplotfigure.add_subplot(111)
 
         self.canvas = FigureCanvas(self.custplotfigure)
+        self.custplotfigure.set_size_inches(w=figsize[0], h=figsize[1], forward=True)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
         self.layoutplot.addWidget(self.canvas)

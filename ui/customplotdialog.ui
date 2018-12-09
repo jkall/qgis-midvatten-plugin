@@ -1885,8 +1885,8 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>100</width>
-                <height>100</height>
+                <width>10</width>
+                <height>10</height>
                </size>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1962,7 +1962,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="0" colspan="6">
+                   <item row="4" column="0" colspan="6">
                     <widget class="QLabel" name="label_10">
                      <property name="font">
                       <font>
@@ -2192,7 +2192,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="6">
+                   <item row="4" column="6">
                     <widget class="QPushButton" name="Redraw_pushButton">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2219,6 +2219,16 @@
                      </property>
                      <property name="text">
                       <string>Redraw</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QCheckBox" name="fixed_figuresize_checkbox">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked:&lt;/p&gt;&lt;p&gt;Figure size is set to figure.figsize * savefig.dpi.&lt;/p&gt;&lt;p&gt;Ex: figure.figsize: 1, 1 (inches) and savefig.dpi: 450 gives an image of 450 * 450 pixels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                     <property name="text">
+                      <string>Fixed figure size</string>
                      </property>
                     </widget>
                    </item>
