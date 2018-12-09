@@ -739,6 +739,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             self.canvas.setMinimumHeight(10)
             self.canvas.setMaximumHeight(16777215)
+            self.canvas.setSizePolicy(self.canvas_size_policy)
             self.widgetPlot.setMinimumHeight(10)
             self.widgetPlot.setMaximumHeight(16777215)
 
