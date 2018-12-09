@@ -954,7 +954,10 @@ def replace_axes_legend():
         try:
             ax.legend_
         except Exception as e:
-            print(str(args))
+            try:
+                print(str(args))
+            except:
+                pass
             raise
         if ax.legend_ is not None:
             old_legend = ax.get_legend()
@@ -964,8 +967,11 @@ def replace_axes_legend():
         try:
             new_leg = ax._org_leg(*args, **kwargs)
         except:
-            print(str(args))
-            print(str(kwargs))
+            try:
+                print(str(args))
+                print(str(kwargs))
+            except:
+                pass
             raise
         if old_linewidth is not None:
             for line in new_leg.get_lines():
