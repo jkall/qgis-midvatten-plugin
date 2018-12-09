@@ -953,28 +953,26 @@ def replace_axes_legend():
         :param kwargs:
         :return:
         """
+        print("legend_restore_settings")
         old_linewidth = None
         try:
             ax.legend_
         except Exception as e:
-            try:
-                print(str(args))
-            except:
-                pass
+            print(str(args))
             raise
         if ax.legend_ is not None:
+            print("old legend was not onne")
             old_legend = ax.get_legend()
             for line in old_legend.get_lines():
                 old_linewidth = line.get_linewidth()
                 break
+        else:
+            print("Old legend was none")
         try:
             new_leg = ax._org_leg(*args, **kwargs)
         except:
-            try:
-                print(str(args))
-                print(str(kwargs))
-            except:
-                pass
+            print(str(args))
+            print(str(kwargs))
             raise
         if old_linewidth is not None:
             for line in new_leg.get_lines():
