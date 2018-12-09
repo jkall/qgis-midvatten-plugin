@@ -2225,7 +2225,7 @@
                    <item row="2" column="1">
                     <widget class="QCheckBox" name="fixed_figuresize_checkbox">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked:&lt;/p&gt;&lt;p&gt;Figure size is set to figure.figsize * savefig.dpi.&lt;/p&gt;&lt;p&gt;Ex: figure.figsize: 1, 1 (inches) and savefig.dpi: 450 gives an image of 450 * 450 pixels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked=Figure size is set to figure.figsize.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Fixed figure size</string>
