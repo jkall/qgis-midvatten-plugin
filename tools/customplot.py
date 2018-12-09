@@ -979,7 +979,7 @@ def replace_axes_legend():
                 line.set_linewidth(old_linewidth)
         return new_leg
 
-    if Axes.legend is not legend_restore_settings:
+    if Axes.legend.__name__ != legend_restore_settings.__name__:
         print(str(Axes.legend))
         Axes._org_leg = Axes.legend
         Axes.legend = legend_restore_settings
