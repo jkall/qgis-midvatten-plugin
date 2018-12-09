@@ -206,7 +206,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         figsize = mpl.rcParams['figure.figsize']
 
         self.custplotfigure = plt.figure()
-        self.custplotfigure.set_size_inches(figsize[0], figsize[1])
 
         self.axes = self.custplotfigure.add_subplot(111)
 
@@ -717,6 +716,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 line.set_linewidth(1.5)
         else:
             self.axes.legend_ = None
+
+        self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
 
         self.canvas.draw()
         self.plot_tabwidget.setCurrentIndex(0)
