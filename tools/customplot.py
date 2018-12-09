@@ -735,12 +735,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             width_pixels = width_inches * screen_dpi
             height_pixels = height_inches * screen_dpi
             self.canvas.setFixedSize(width_pixels, height_pixels)
-            toolbar_w = self.mpltoolbar.size().width()
-            toolbar_h = self.mpltoolbar.size().height()
-            print("toolbar_w {} toolbar_h {}".format(toolbar_w, toolbar_h))
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
         else:
-            self.canvas.setSizePolicy(self.canvas_size_policy)
+            self.canvas.setMinimumHeight(10)
+            self.canvas.setMaximumHeight(16777215)
             self.widgetPlot.setMinimumHeight(10)
             self.widgetPlot.setMaximumHeight(16777215)
 
