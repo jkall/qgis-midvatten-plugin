@@ -726,11 +726,19 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.axes.legend_ = None
 
         print("mpl.rcParams['figure.figsize'] " + str(mpl.rcParams['figure.figsize']))
-        self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
+        #self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
 
-        self.canvas.updateGeometry()
+        #self.canvas.updateGeometry()
+        figsize = mpl.rcParams['figure.figsize']
+        try:
+            dpi = mpl.rcParams['savefig.dpi']
+        except:
+            pass
+        else:
+            self.canvas.setFixedSize(width=float(figsize[0]*dpi, height=float(figsize[1]*dpi)))
 
         self.canvas.draw()
+
         #self.custplotfigure.show()
         self.plot_tabwidget.setCurrentIndex(0)
         #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
