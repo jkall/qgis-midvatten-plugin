@@ -129,7 +129,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.filtersettings3.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings3))
 
         self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawplot_with_styles())
-        self.Redraw_pushButton.clicked.connect(lambda x: self.refreshPlot())
+        self.Redraw_pushButton.clicked.connect(lambda x: self.redraw())
 
 
         self.custplot_last_used_style_settingskey = 'custplot_last_used_template'
@@ -669,6 +669,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
+    def redraw(self):
+        self.styles.load(self.refreshPlot)
+
+    @utils.general_exception_handler
     def refreshPlot( self):
         #If the user has not pressed "draw" before, do nothing
         if not self.drawn:
@@ -717,6 +721,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             self.axes.legend_ = None
 
+        print("mpl.rcParams['figure.figsize'] " + str(mpl.rcParams['figure.figsize']))
         self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
 
         self.canvas.draw()
