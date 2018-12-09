@@ -105,8 +105,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.table_ComboBox_3.currentIndexChanged.connect( partial(self.Table3Changed))
         self.Filter1_ComboBox_3.currentIndexChanged.connect( partial(self.Filter1_3Changed))
         self.Filter2_ComboBox_3.currentIndexChanged.connect( partial(self.Filter2_3Changed))
-        self.plot_width.editingFinished.connect( partial(self.change_plot_size))
-        self.plot_height.editingFinished.connect( partial(self.change_plot_size))
         self.plot_settings_1.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_1))
         self.plot_settings_2.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_2))
         self.plot_settings_3.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_3))
@@ -206,8 +204,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             plt.close(fignum)
 
         figsize = mpl.rcParams['figure.figsize']
-        self.plot_width.setText(str(figsize[0]))
-        self.plot_height.setText(str(figsize[1]))
 
         self.custplotfigure = plt.figure()
 
@@ -233,44 +229,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         freqs[0]=freqs[1]#assuming start frequency to get a nicer plot
 
         return freqs
-
-    def change_plot_size(self, refresh=True):
-        width = self.plot_width.text()
-        height = self.plot_height.text()
-
-        try:
-            width = float(width)
-        except ValueError:
-            pass
-            #mpl.rcParams['figure.figsize'][0] = 6.4 # Matplotlib default
-            #self.layoutplot.setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Extended)
-            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
-            #mpl.rcParams['figure.figzise']
-            #self.widgetPlot.setMinimumWidth(100)
-            #self.widgetPlot.setMaximumWidth(16777215)
-            #self.widgetPlot.adjustSize()
-        else:
-            mpl.rcParams['figure.figsize'][0] = width
-            #self.widgetPlot.setMinimum
-            #self.widgetPlot.setFixedWidth(width)
-            #self.widgetPlot.setMinimumWidth(width)
-           # self.widgetPlot.setMaximumWidth(width)
-
-        try:
-            height = float(height)
-        except ValueError:
-            pass
-            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
-            #self.widgetPlot.setMinimumHeight(100)
-            #self.widgetPlot.setMaximumHeight(16777215)
-        else:
-            mpl.rcParams['figure.figsize'][1] = height
-            #self.widgetPlot.setMinimumHeight(height)
-            #self.widgetPlot.setMaximumHeight(height)
-
-        self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
-        #if refresh:
-        #    self.refreshPlot()
 
     def drawplot_with_styles(self):
         self.styles.load(self.drawPlot_all)
@@ -758,8 +716,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 line.set_linewidth(1.5)
         else:
             self.axes.legend_ = None
-
-        self.change_plot_size(refresh=False)
 
         self.canvas.draw()
         self.plot_tabwidget.setCurrentIndex(0)
