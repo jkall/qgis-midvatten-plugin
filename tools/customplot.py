@@ -936,6 +936,7 @@ class PandasCalculations(object):
                 df = pd.rolling_mean(df, window=window, center=center)
         return df
 
+
 def replace_axes_legend():
     """
         This method restores the linewidth of the lines in the legend if a new legend is created.
@@ -979,11 +980,9 @@ def replace_axes_legend():
         return new_leg
 
     if Axes.legend is not legend_restore_settings:
+        print(str(Axes.legend))
         Axes._org_leg = Axes.legend
         Axes.legend = legend_restore_settings
-
-
-
 
 
 def horizontal_line():
