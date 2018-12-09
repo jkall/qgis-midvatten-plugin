@@ -735,7 +735,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         except:
             pass
         else:
-            self.canvas.setFixedSize(width=float(figsize[0]*dpi, height=float(figsize[1]*dpi)))
+            self.canvas.setFixedSize(width=float(figsize[0])*dpi, height=float(figsize[1])*dpi)
 
         self.canvas.draw()
 
