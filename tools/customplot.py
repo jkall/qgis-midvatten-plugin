@@ -955,6 +955,7 @@ def replace_axes_legend():
         """
         print("legend_restore_settings")
         old_linewidth = None
+        old_fontsize = None
         try:
             ax.legend_
         except Exception as e:
@@ -966,14 +967,21 @@ def replace_axes_legend():
             for line in old_legend.get_lines():
                 old_linewidth = line.get_linewidth()
                 break
+            for text in old_legend.get_text():
+                old_fontsize = text.get_fontsize()
+                break
+
         else:
             print("Old legend was none")
+        if old_fontsize is not None and 'fontsize' not in kwargs:
+            kwargs['fontsize'] = old_fontsize
         try:
             new_leg = ax._org_leg(*args, **kwargs)
         except:
             print(str(args))
             print(str(kwargs))
             raise
+
         if old_linewidth is not None:
             for line in new_leg.get_lines():
                 line.set_linewidth(old_linewidth)
