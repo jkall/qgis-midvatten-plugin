@@ -51,6 +51,7 @@ import matplotlib.dates as mdates
 from cycler import cycler
 import copy
 
+from qgis.PyQt.QtWidgets import QApplication
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
@@ -210,7 +211,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.axes = self.custplotfigure.add_subplot(111)
 
         self.canvas = FigureCanvas(self.custplotfigure)
-        self.custplotfigure.set_size_inches(w=figsize[0], h=figsize[1], forward=True)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
         self.layoutplot.addWidget(self.canvas)
@@ -737,6 +737,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #    pass
         #else:
         #    self.canvas.setFixedSize(dpi/float(figsize[0]), dpi/float(figsize[1]))
+        print("screen dpi: " + str(QApplication.screens().at(0).logicalDotsPerInch()))
 
         self.canvas.draw()
 
