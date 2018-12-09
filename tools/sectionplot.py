@@ -431,6 +431,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         Please note, this do not work completely as expected under windows. 
         """
 
+
         plt.close(self.secfig)#this closes reference to self.secfig
 
     def get_dem_selection(self):
