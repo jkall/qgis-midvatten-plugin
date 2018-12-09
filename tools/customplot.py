@@ -46,6 +46,7 @@ except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg
 import datetime
+import new
 import matplotlib.ticker as tick
 import matplotlib.dates as mdates
 from cycler import cycler
@@ -210,6 +211,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.custplotfigure = plt.figure()
 
         self.axes = self.custplotfigure.add_subplot(111)
+        replace_axes_legend(self.axes)
 
         self.canvas = FigureCanvas(self.custplotfigure)
 
@@ -937,9 +939,10 @@ class PandasCalculations(object):
         return df
 
 
-def replace_axes_legend():
+def replace_axes_legend(axes):
     """
         This method restores the linewidth of the lines in the legend if a new legend is created.
+        This setting is GLOBAL!
     :return:
     """
 
@@ -979,10 +982,10 @@ def replace_axes_legend():
                 line.set_linewidth(old_linewidth)
         return new_leg
 
-    if Axes.legend.__name__ != legend_restore_settings.__name__:
-        print(str(Axes.legend))
-        Axes._org_leg = Axes.legend
-        Axes.legend = legend_restore_settings
+    if axes.legend.__name__ != legend_restore_settings.__name__:
+        axes.legend
+        axes._org_leg = axes.legend #new.instancemethod(axes.legend, axes, None)
+        axes.legend = new.instancemethod(legend_restore_settings, axes, None)
 
 
 def horizontal_line():
