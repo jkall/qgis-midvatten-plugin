@@ -2396,7 +2396,7 @@
                    <item row="5" column="2">
                     <widget class="QPushButton" name="save_as_button">
                      <property name="toolTip">
-                      <string>Saves current rcParams (settings) to file.</string>
+                      <string>Save selected style to file.</string>
                      </property>
                      <property name="text">
                       <string>Save As...</string>
