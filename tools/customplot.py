@@ -72,13 +72,11 @@ customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..
 class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def __init__(self, parent, msettings):#, parent as second arg?
 
+        # THESE SETTING CHANGES GLOBAL SETTING FOR ALL MATPLOTLIB PLOTS!
+        #-----------------------
+        mpl.rcParams['savefig.dpi'] = 450
         replace_axes_legend()
-
-        # THIS SETTING CHANGES GLOBAL SETTING FOR ALL MATPLOTLIB PLOTS!
-        #mpl.rc
-        mpl.rc('savefig', dpi=450)
-        #mpl.rcParams['savefig.dpi'] = 450
-        #mpl.rc(
+        #-----------------------
 
         self.ms = msettings
         self.ms.loadSettings()

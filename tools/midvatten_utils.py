@@ -1810,7 +1810,7 @@ class MatplotlibStyles(object):
     @general_exception_handler
     def load(self, drawfunc):
         mpl.style.reload_library()
-        mpl.rcdefaults()
+        #mpl.rcdefaults()
         fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
         self.save_style_to_stylelib([self.defaultstyle_stylename[0], fallback_style])
         styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style, 'default']
