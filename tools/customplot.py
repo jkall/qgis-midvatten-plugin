@@ -733,7 +733,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         if self.fixed_figuresize_checkbox.isChecked():
             width_inches, height_inches = mpl.rcParams['figure.figsize']
-            print("screen dpi: " + str(QApplication.screens()[0].logicalDotsPerInch()))
             screen_dpi = QApplication.screens()[0].logicalDotsPerInch()
             width_pixels = width_inches * screen_dpi
             height_pixels = height_inches * screen_dpi
