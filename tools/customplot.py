@@ -206,6 +206,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         figsize = mpl.rcParams['figure.figsize']
 
         self.custplotfigure = plt.figure()
+        self.custplotfigure.set_size_inches(figsize[0], figsize[1])
 
         self.axes = self.custplotfigure.add_subplot(111)
 
