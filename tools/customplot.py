@@ -967,9 +967,11 @@ def replace_axes_legend():
             for line in old_legend.get_lines():
                 old_linewidth = line.get_linewidth()
                 break
+            """
             for text in old_legend.get_text():
                 old_fontsize = text.get_fontsize()
                 break
+            """
 
         else:
             print("Old legend was none")
