@@ -1896,6 +1896,8 @@ class MatplotlibStyles(object):
             if isinstance(v, list, tuple):
                 if v:
                     return ','.join([str(_v) for _v in v])
+                else:
+                    return ''
             else:
                 return str(v)
 
