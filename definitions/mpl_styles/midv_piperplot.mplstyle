@@ -11,9 +11,9 @@ figure.subplot.right: 0.95
 figure.subplot.top: 0.90
 figure.subplot.wspace: 0.4
 lines.markersize: 8
-legend.facecolor: '0.80'
+legend.facecolor: 0.80
 legend.fancybox: True
 legend.handlelength: 1
-legend.loc: 'lower center'
+legend.loc: lower center
 legend.numpoints: 1
 legend.shadow: False
