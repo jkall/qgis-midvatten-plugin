@@ -725,31 +725,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             leg.draggable(state=True)
 
             for line in leg.get_lines():
-                line.set_linewidth(1.5)
+                # Make lines in legend not thinner than 1.
+                line.set_linewidth(max(1, mpl.rcParams['lines.linewidth']))
         else:
             self.axes.legend_ = None
-
-        #print("mpl.rcParams['figure.figsize'] " + str(mpl.rcParams['figure.figsize']))
-        #self.custplotfigure.set_size_inches(mpl.rcParams['figure.figsize'][0], mpl.rcParams['figure.figsize'][1], forward=True)
-
-        #self.canvas.updateGeometry()
-        #figsize = mpl.rcParams['figure.figsize']
-        #try:
-        #    dpi = mpl.rcParams['savefig.dpi']
-        #except:
-        #    pass
-        #else:
-        #    self.canvas.setFixedSize(dpi/float(figsize[0]), dpi/float(figsize[1]))
-
-
-        """
-        Todo figure size:
-        Resolution
-        Dpi
-        Figuresize
-        
-        I want the width and height on the screen to match the figure figuresize. 1 inch should BE 1 inch, nothing else.
-        """
 
         if self.fixed_figuresize_checkbox.isChecked():
             width_inches, height_inches = mpl.rcParams['figure.figsize']
@@ -758,14 +737,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             width_pixels = width_inches * screen_dpi
             height_pixels = height_inches * screen_dpi
             self.canvas.setFixedSize(width_pixels, height_pixels)
-            #self.canvas.sizePolicy()
         else:
             self.canvas.setSizePolicy(self.canvas_size_policy)
 
-
         self.canvas.draw()
 
-        #self.custplotfigure.show()
         self.plot_tabwidget.setCurrentIndex(0)
         #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
