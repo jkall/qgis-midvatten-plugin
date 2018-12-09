@@ -76,7 +76,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         # THESE SETTING CHANGES GLOBAL SETTING FOR ALL MATPLOTLIB PLOTS!
         #-----------------------
         mpl.rcParams['savefig.dpi'] = 450
-        replace_axes_legend()
         #-----------------------
 
         self.ms = msettings
