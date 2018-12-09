@@ -731,12 +731,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
             self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
-        if self.Grid_checkBox.isChecked():
-            # TODO: This doesnt seem to work
-            mpl.rcParams['axes.grid'] = True
-            mpl.rcParams['axes.grid.axis'] = 'both'
-        else:
-            mpl.rcParams['axes.grid'] = False
+        self.axes.grid(self.Grid_checkBox.isChecked()) # grid
 
         for label in self.axes.xaxis.get_ticklabels():
             label.set_rotation(20)
