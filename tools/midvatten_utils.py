@@ -1858,12 +1858,13 @@ class MatplotlibStyles(object):
     @general_exception_handler
     def save_as(self):
         filename = get_save_file_name_no_extension(parent=None, caption=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Choose a file name')), directory=self.style_folder, filter='mplstyle (*.mplstyle)')
-
         if not filename.endswith('.mplstyle'):
             basename, ext = os.path.splitext(filename)
             filename = basename + '.mplstyle'
+        with plt.style.context(self.get_selected_style()):
+            rcparams = self.rcparams()
         with io.open(filename, 'w', encoding='utf8') as of:
-            of.write(self.rcparams())
+            of.write(rcparams)
         self.update_style_list()
 
     def open_folder(self):
