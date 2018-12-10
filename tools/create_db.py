@@ -72,7 +72,12 @@ class NewDb(object):
             utils.stop_waiting_cursor()
             return ''
 
+        #Create the database
+        conn = db_utils.connect_with_spatialite_connect(dbpath)
+        conn.close()
+
         self.db_settings = ru(utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}}))
+
 
         #dbconnection = db_utils.DbConnectionManager(self.db_settings)
         try:
@@ -203,14 +208,20 @@ class NewDb(object):
             f.readline()  # first line is encoding info....
             lines = [ru(line) for line in f]
         sql_lines = ['{};'.format(l) for l in ' '.join(lines).split(';') if l]
-        for line in sql_lines:
-            if all([line, not line.startswith("#"), 'InitSpatialMetadata' not in line, 'SPATIALITE' not in line]):
+        for linenr, line in enumerate(sql_lines):
+            if all([line, not line.startswith("#"), 'InitSpatialMetadata' not in line, 'SPATIALITE' not in line,
+                    line.replace(';', '').strip().replace('\n', '').replace('\r', '')]):
                 sql = self.replace_words(line, replace_word_replace_with)
                 try:
                     dbconnection.execute(sql)
                 except:
                     try:
                         print(str(sql))
+                        print("numlines: " + str(len(sql_lines)))
+                        print("Error on line nr {}".format(str(linenr)))
+                        print("before " + sql_lines[linenr - 1])
+                        if linenr + 1 < len(sql_lines):
+                            print("after " + sql_lines[linenr + 1 ])
                     except:
                         pass
                     raise

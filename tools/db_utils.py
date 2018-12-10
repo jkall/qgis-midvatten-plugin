@@ -99,19 +99,22 @@ class DbConnectionManager(object):
 
         if self.dbtype == 'spatialite':
             self.dbpath = ru(self.connection_settings['dbpath'])
+
+            if not os.path.isfile(self.dbpath):
+                raise utils.UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database error! File "%s" not found! Check db tab in Midvatten settings!'))%self.dbpath)
+
             self.check_db_is_locked()
 
             #Create the database if it's not existing
             self.uri.setDatabase(self.dbpath)
-            if not os.path.isfile(self.dbpath):
-                conn = connect_with_spatialite_connect(self.dbpath)
-                conn.close()
 
             try:
                 self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
             except Exception as e:
+
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.')) % self.dbpath,
                                                 log_msg=ru(QCoreApplication.translate('DbConnectionManager', 'msg %s'))%str(e))
+                raise
 
         elif self.dbtype == 'postgis':
             connection_name = self.connection_settings['connection'].split('/')[0]
@@ -282,11 +285,13 @@ def connect_with_spatialite_connect(dbpath):
     return conn
 
 def check_connection_ok():
-    dbconnection = DbConnectionManager()
     try:
+        dbconnection = DbConnectionManager()
         connection_ok = dbconnection.connect2db()
         dbconnection.closedb()
-    except:
+    except Exception as e:
+        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('check_connection_ok', 'Could not connect to db: %s'))%str(e),
+                                        duration=30)
         connection_ok = False
     return connection_ok
 

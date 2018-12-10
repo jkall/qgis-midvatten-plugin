@@ -270,3 +270,31 @@ def foreign_key_test_from_exception(e, dbtype):
     elif dbtype == 'postgis':
         return 'is not present in table' in str(e)
 
+
+def compare_strings(str1, str2):
+    if str1 and not str2:
+        return "Str2 was empty and str1 not."
+    elif str2 and not str1:
+        return "Str1 was empty and str2 not."
+
+    def return20chars(astr, idx, numidx):
+        min_idx = max(0, idx - numidx)
+        max_idx = min(len(astr), idx + numidx)
+        return astr[min_idx:max_idx]
+
+    diff = False
+    for idx in range(len(str1)):
+
+        str1_t = return20chars(str1, idx, 40)
+        str2_t = return20chars(str2, idx, 40)
+
+        if str1[idx] != str2[idx]:
+            #print(str(str1_t))
+            #print(str(str2_t))
+            diff = True
+            break
+    if diff:
+        return "diff at idx {}, \nstr1:{}\nstr2:{}".format(str(idx), str1_t, str2_t)
+    else:
+        return 'The same'
+

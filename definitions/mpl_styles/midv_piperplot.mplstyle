@@ -3,7 +3,7 @@ xtick.labelsize: 10
 ytick.labelsize: 10
 font.size: 12
 legend.fontsize: 12
-figure.figsize: (14,4.5)
+figure.figsize: 14,4.5
 figure.subplot.bottom: 0.2
 figure.subplot.hspace: 0.0
 figure.subplot.left: 0.05

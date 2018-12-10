@@ -326,14 +326,9 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)[fk_table]
             column_headers_types = dict([(row[1], row[2]) for row in table_info])
 
-            concatted_from_string = '||'.join(["CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in from_list])
-            concatted_to_string = '||'.join(["CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in to_list])
-            sql = 'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s NOT IN (SELECT %s FROM %s) AND %s'%(fk_table,
-                                                                                                         ', '.join(['"{}"'.format(k) for k in to_list]),
-                                                                                                         ', '.join(['''CAST("b"."%s" as "%s")'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
-            null_replacement_string = u'NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL'
-            concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL THEN '%s' ELSE %s END"%(x, null_replacement_string, x) for x in from_list])
-            concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL THEN '%s' ELSE %s END"%(x, null_replacement_string, x) for x in to_list])
+            null_replacement_string = 'NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL'
+            concatted_from_string = '||'.join(["CASE WHEN %s is NULL THEN '%s' ELSE %s END"%(x, null_replacement_string, x) for x in from_list])
+            concatted_to_string = '||'.join(["CASE WHEN %s is NULL THEN '%s' ELSE %s END"%(x, null_replacement_string, x) for x in to_list])
             sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s NOT IN (SELECT %s FROM %s) AND %s'%(fk_table,
                                                                                                          u', '.join([u'"{}"'.format(k) for k in to_list]),
                                                                                                          u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),

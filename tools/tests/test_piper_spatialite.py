@@ -38,7 +38,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
 
-    @mock.patch('piper.fig.show')
+    @mock.patch('matplotlib.pyplot.Figure.show')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_piper_plot_default_settings(self, mock_showplot):
         mock_ms = mock.MagicMock()
@@ -57,7 +57,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         ref = '''["(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')", "(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')", "(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')", "(lower(parameter) like '%natrium%')", "(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')", "(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')", "(lower(parameter) like '%magnesium%')"]'''
         assert test == ref
 
-    @mock.patch('piper.fig.show')
+    @mock.patch('matplotlib.pyplot.Figure.show')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_piper_plot_user_chosen_settings(self, mock_showplot):
         mock_ms = mock.MagicMock()
@@ -78,7 +78,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.getselectedobjectnames')
-    @mock.patch('piper.fig.show')
+    @mock.patch('matplotlib.pyplot.Figure.show')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_piper_plot_get_data(self, mock_showplot, mock_selected, mock_messagebar):
 

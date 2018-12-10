@@ -1444,7 +1444,8 @@ def general_exception_handler(func):
             stop_waiting_cursor()
             msg = str(e)
             if msg:
-                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('general_exception_handler', 'Usage error: %s'))%str(e))
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('general_exception_handler', 'Usage error: %s'))%str(e),
+                                          duration=30)
         except:
             stop_waiting_cursor()
             raise

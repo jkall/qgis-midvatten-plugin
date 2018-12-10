@@ -566,7 +566,7 @@ class MetadataFilter(VRowEntry):
 
         #Select all items for chosen rows.
 
-        [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in range(nr_of_cols)]
+        [[self.table.item(rownr, colnr).setSelected(True) for colnr in range(nr_of_cols)]
          for header, selectionlist in table_header.items()
          for rownr in range(nr_of_rows)
          if self.table.item(rownr, table_header_colnr[header]).text() in selectionlist]
