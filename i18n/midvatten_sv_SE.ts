@@ -6019,7 +6019,7 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="343"/>
+        <location filename="../tools/import_data_to_db.py" line="344"/>
         <source>In total %s rows were imported to foreign key table %s while importing to %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6078,18 +6078,18 @@ Msg:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="348"/>
+        <location filename="../tools/import_data_to_db.py" line="349"/>
         <source>It is a strong recommendation that you do vacuum the database now, do you want to do so?
 (If unsure - then answer &quot;yes&quot;.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="348"/>
+        <location filename="../tools/import_data_to_db.py" line="349"/>
         <source>Vacuum the database?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="368"/>
+        <location filename="../tools/import_data_to_db.py" line="369"/>
         <source>Import error, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
