@@ -331,6 +331,12 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             sql = 'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s NOT IN (SELECT %s FROM %s) AND %s'%(fk_table,
                                                                                                          ', '.join(['"{}"'.format(k) for k in to_list]),
                                                                                                          ', '.join(['''CAST("b"."%s" as "%s")'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
+            null_replacement_string = u'NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL_NULL'
+            concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL THEN '%s' ELSE %s END"%(x, null_replacement_string, x) for x in from_list])
+            concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL THEN '%s' ELSE %s END"%(x, null_replacement_string, x) for x in to_list])
+            sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s NOT IN (SELECT %s FROM %s) AND %s'%(fk_table,
+                                                                                                         u', '.join([u'"{}"'.format(k) for k in to_list]),
+                                                                                                         u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                                          temptablename,
                                                                                                          concatted_from_string,
                                                                                                          concatted_to_string,
