@@ -962,7 +962,7 @@ def replace_axes_legend():
             print(str(args))
             raise
         if ax.legend_ is not None:
-            print("old legend was not onne")
+            #print("old legend was not onne")
             old_legend = ax.get_legend()
             for line in old_legend.get_lines():
                 old_linewidth = line.get_linewidth()
@@ -974,7 +974,8 @@ def replace_axes_legend():
             """
 
         else:
-            print("Old legend was none")
+            #print("Old legend was none")
+            pass
         if old_fontsize is not None and 'fontsize' not in kwargs:
             kwargs['fontsize'] = old_fontsize
         try:
