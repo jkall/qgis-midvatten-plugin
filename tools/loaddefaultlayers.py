@@ -19,8 +19,8 @@
 """
 import os
 import qgis.utils
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QgsDataSourceURI, QgsMapLayerRegistry, QgsProject, QgsVectorLayer
+from qgis.gui import QgsMapCanvasLayer
 
 import db_utils
 import midvatten_utils as utils

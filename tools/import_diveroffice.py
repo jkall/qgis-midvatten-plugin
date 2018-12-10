@@ -20,14 +20,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
+
 import io
 import os
 from collections import OrderedDict
 from datetime import datetime
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import import_data_to_db
@@ -41,6 +40,7 @@ import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),
 class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
     def __init__(self, parent, msettings=None):
         self.status = False
+        self.default_charset = 'cp1252'
         self.iface = parent
         self.ms = msettings
         self.ms.loadSettings()
@@ -52,6 +52,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.file_data = None
         self.status = True
         self.parse_func = self.parse_diveroffice_file
+        self.use_skiprows = True
 
     def select_files_and_load_gui(self):
         self.files = self.select_files()
@@ -65,9 +66,13 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.skip_rows = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Skip rows without water level'),
                                                 QCoreApplication.translate('DiverofficeImport', u'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.'))
-        self.skip_rows.checked = True
-        self.add_row(self.skip_rows.widget)
-        self.add_row(get_line())
+        if self.use_skiprows:
+            self.skip_rows.checked = True
+            self.add_row(self.skip_rows.widget)
+            self.add_row(get_line())
+        else:
+            self.skip_rows.checked = False
+
         self.confirm_names = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Confirm each logger obsid before import'),
                                                     QCoreApplication.translate('DiverofficeImport', u'Checked = The obsid will be requested of the user for every file.\n\n') +
                                                     QCoreApplication.translate('DiverofficeImport', u'Unchecked = the location attribute, both as is and capitalized, in the\n') +
@@ -98,7 +103,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
 
     def select_files(self):
-        self.charsetchoosen = utils.ask_for_charset(default_charset='cp1252')
+        self.charsetchoosen = utils.ask_for_charset(default_charset=self.default_charset)
         if not self.charsetchoosen:
             self.status = 'True'
             return u'cancel'

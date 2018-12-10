@@ -15,6 +15,7 @@ SOURCES = \
 ./tools/import_diveroffice.py \
 ./tools/import_fieldlogger.py \
 ./tools/import_general_csv_gui.py \
+./tools/import_hobologger.py \
 ./tools/import_interlab4.py \
 ./tools/import_levelogger.py \
 ./tools/loaddefaultlayers.py \
@@ -27,12 +28,16 @@ SOURCES = \
 ./tools/w_flow_calc_aveflow.py \
 ./tools/wlevels_calc_calibr.py \
 ./tools/wqualreport.py \
+./tools/wqualreport_compact.py \
 ./tools/xyplot.py \
 
 FORMS = \
 ui/calc_aveflow_dialog.ui \
 ui/calc_lvl_dialog.ui \
+ui/calculate_statistics_ui.ui \
 ui/calibr_logger_dialog_integrated.ui \
+ui/compact_w_qual_report.ui \
+ui/custom_drillreport.ui \
 ui/customplotdialog.ui \
 ui/export_fieldlogger_ui_dialog.ui \
 ui/fieldlogger_parameter_browser.ui \

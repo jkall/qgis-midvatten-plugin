@@ -9,8 +9,7 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
-
-from qgis.core import *
+from qgis.core import QgsProject
 
 from PyQt4.QtCore import QCoreApplication
 

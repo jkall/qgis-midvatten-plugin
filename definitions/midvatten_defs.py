@@ -58,7 +58,9 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotlabelsplotted':0,
             'secplot_loaded_template': '',
             'secplot_templates': '',
+            'secplotwidthofplot': 1,
             'settingslocation':1,
+            'compactwqualreport':'',
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
             'custplot_table2':'',
@@ -90,6 +92,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_plottype1':'line',
             'custplot_plottype2':'line',
             'custplot_plottype3':'line',
+            'custplot_templates': '',
+            'custplot_loaded_template': '',
             'customdrillreportstoredsettings': '',
             'piper_cl':'Klorid, Cl',
             'piper_hco3':'Alkalinitet, HCO3',
@@ -774,5 +778,101 @@ def secplot_default_template():
                                                                  'linestyle': '-',
                                                                  'linewidth': 1}}
         return loaded_template
+
+def custplot_default_template():
+    default = {
+            "Axes_axhline": {
+            },
+            "Axes_axvline": {
+            },
+            "Axes_plot": {
+                "linewidth": 1,
+                "markersize": 6,
+                "zorder": 8},
+            "Axes_plot_date": {
+                "linewidth": 1,
+                "markersize": 6,
+                "zorder": 8},
+            "Axes_set_title": {
+                "label": u""},
+            "Axes_set_xlabel": {
+                "fontsize": 10,
+                "xlabel": u""},
+            "Axes_set_ylabel": {
+                "fontsize": 10,
+                "ylabel": u""},
+            "Axes_tick_param": {
+                "axis": "both",
+                "labelsize": 10},
+            "Figure_add_subplot": {},
+            "Figure_subplots_adjust": {
+            },
+            "grid_Axes_grid": {
+                "b": True,
+                "color": "0.65",
+                "linestyle": "-",
+                "which": "both",
+                "zorder": 0},
+            "legend_Axes_legend": {
+                "fontsize": 10,
+                "framealpha": 1,
+                "loc": 10,
+                "numpoints": 1},
+            "legend_Frame_set_facecolor": "1",
+            "legend_Frame_set_fill": False,
+            "legend_Text_set_fontsize": 10,
+            "legend_Line2D_methods": {'set_linewidth': 1.5},
+            "plot_height": u"",
+            "plot_width": u"",
+            "rcParams": {"savefig.dpi": 450},
+            "styles_colors": [
+                "b",
+                "r",
+                "lime",
+                "salmon",
+                "darkcyan",
+                "magenta",
+                "turquoise",
+                "pink",
+                "cyan",
+                "gray"],
+            "styles_frequenzy": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "styles_line": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "styles_line_and_cross": [
+                "+-"],
+            "styles_line_and_marker": [
+                "o-"],
+            "styles_marker": [
+                "o",
+                "+",
+                "s",
+                "x"],
+            "styles_step-post": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "styles_step-pre": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "tight_layout": False,
+            "x_Axes_tick_param": {
+                "axis": "x",
+                "labelrotation": 45},
+            "y_Axes_tick_param": {
+                "axis": "y",
+                "labelrotation": 0}}
+
+    return default
 
 

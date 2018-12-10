@@ -20,25 +20,24 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4.QtCore
-import PyQt4.QtGui
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4 import uic
-
-import os
-import numpy as np
 import math
-import matplotlib.pyplot as plt   
+import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
-from matplotlib.dates import datestr2num, num2date
+import os
+from PyQt4 import uic
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.dates import datestr2num, num2date
+import numpy as np
+
+import PyQt4
+from PyQt4.QtCore import QCoreApplication, Qt
+from PyQt4.QtGui import QCursor
+
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
-from PyQt4.QtCore import QCoreApplication
 import midvatten_utils as utils
 from midvatten_utils import fn_timer, returnunicode as ru
 from date_utils import dateshift, datestring_to_date, long_dateformat

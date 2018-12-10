@@ -23,8 +23,7 @@ import os
 import re
 from qgis.core import QGis
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils
@@ -55,7 +54,9 @@ class NewDb():
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
         dbpath = ru(PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if not dbpath:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return u''

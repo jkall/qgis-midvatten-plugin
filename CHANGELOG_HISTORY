@@ -7,6 +7,128 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+2018-05-07 changes until 1.5
+        Version 1.5.15b:
+        - Calculate w-levels: Fix so that the dialog only closes when a calculation has been made.
+        Version 1.5.14b:
+        - Section plot: Moved grid lines behind the plots as default
+        Version 1.5.13b:
+        - Section plot: Fixed bug where os.path.samefile was used but doesn't exist in windows.
+        Version 1.5.12b:
+        - Stratigraphy: Button for minimizing and maximizing stratigraphy plot (Thanks to Simon O'Connor!)
+        - Calculate w-levels: Added checkboxes for more finegrained filtration.
+        Version 1.5.11b:
+        - Fixed better size for NotFoundQuestion.
+        - Custom general report: User defined decimal separator. Upper left table colspan 2 if upper right table is not existing.
+        - Fieldlogger import: Fixed a bug where import of depth didn't work. It's now added as an import method instead.
+        - Feature to write hydro explanation text for stratigraphy plots (gis.stackexchange.com #272315)
+        - Export to spatialite: Fixed bug where new database didn't get old zz-table information.
+        - Custom plot: Added function to filter list by word. Added function for dependency between the filters.
+        - Section plot: Changed bar line width to 0.5 as default for prettier plots.
+        - Section plot: Renamed "customized plots" into Templates. Also changed the user interaction with the templates.
+                        The templates them selves are still the same.
+        Version 1.5.10b:
+        - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
+        Version 1.5.8b:
+        - New utility: List of obsids from selected features.
+        - Setting db from a new unsaved project now loads the default settings for midvatten settings dialog.
+        Version 1.5.7b:
+        - Section plot: Cleaned the code and interface a lot for the customizable settings. Much easier to use now..
+        - Custom general report: Fixed better rounding. Settings are now saved in the project.
+        - Sectionplot: The hidden feature that prints lengthalong now prints to log instead of python print.
+        - Export csv fixed for postgis (github issue #257).
+        - Logger calibration: Fix to only write "uncalibrated" if level_masl is null AND head_cm is NOT NULL. (instead
+                              of only check if level_masl is null). The fix is for loggers that only have conductivity
+                              or temperature.
+        Version 1.5.6b:
+        - Support for Levelogger import.
+        - Added factor column to general csv import.
+        Version 1.5.5b:
+        - Section plot: Added some plot settings and a redraw button.
+        - PrepareForQgis2Threejs: Fixed a db closed to early bug.
+        - PrepareForQgis2Threejs: Colors are now set using zz_stratigraphy_plots.
+        - Export fieldlogger: Fixed bug.
+        - Probably fixed crash occuring when access to spatialite db isn't working.
+        - Utility to calculate statistics for chosen column in chosen table.
+        - Custom plot: Added some settings and a savebutton.
+        - Stratigraphy: If h_gs is missing, h_toc is tested, if that doesn't work, stratigraphy starts at -1.
+        - Section plot: Added "hidden" settings for setting much more options than the buttons support in the form of a
+                        long string. Saving string in project not working at the moment.
+        Version 1.5.4b:
+        - Fixed bug in custom_drillreport. Added some internal settings for the obsid-header and skipping empty values.
+        Version 1.5.3b:
+        - Section plot: "date time f w level" table is splitted using \n only (space and tab doesn't split now)
+        - Section plot Added some hidden features to "date time f w level" table:
+          * 1901-01-01;Obs1;Obs2 <- Giving obsids after date includes only those obsids for that date (; as separator)
+          * 1901-01-01[LABEL] <- Adding a label in brackets after the date uses the given LABEL as label instead of the date
+        - Drillreport2: Added a new drillreport format. All headers are set using translation files.
+        Version 1.5.2b:
+        - Fixed export to spatialite.
+        - Updated PrepareForQgis2Threejs to support db_utils.
+        Version 1.5.1b:
+        - Stratigrpahy and section plots fixed getting geocolorsymbols where zz_-tables were missing.
+		- Stratigraphy plot: Skipped obsids where h_gs is NULL.
+		- Stratigraphy plot: Added empty layers where there is gaps in stratigraphy.
+        Version 1.5.0b:
+        - Lots and lots of changes, but mostly in the background.
+        - Customplot: Buttom to select rows in filterlists from selected rows in selected layer.
+        - Customplot: Added rolling mean center parameter.
+        Version 1.4.10
+        - Piper: Fixed bug where list objects for piper markers were automatically translated
+        Version 1.4.9:
+        - Merged internationalization branch into master.
+        Version 1.4.8:
+        - Logger calibration: Added function for adjusting trend for logger line.
+        - Fieldlogger import: Connected instrument id to sublocation instead of obsid.
+        - Fieldlogger import: Added function for calculating level_masl directly from meas
+        - Logger calibration: Fixed better error msg.
+        - Added translation support for fieldlogger import, wlevels_calc_calibr.py, gui_utils.py, export_fieldlogger2.py,
+          (piper.py didn't need it), midvsettings.py, midvatten.py, midvsettingsdialog.py, xyplot.py, wqualreport.py,
+          tsplot, stratigraphy.py, sectionplot.py, midvsettings.py, export_data.py, drillreport.py.
+        Version 1.4.7:
+        - Fixed bug where sql questions with special characters could cause an error.
+        Version 1.4.6:
+        - Logger calibration: Fix for normalize when head_cm is None..
+        - Customplot: Fix bug when setting colors to steps-pre/post that caused crash using figure options.
+        Version 1.4.5:
+        - Logger calibration: More performance related fixes..
+        Version 1.4.4:
+        - Import dialogs: Added checkbox to close after import.
+        - Added Qt internationalization support for modules midvatten_defs.py, import_general_csv_gui.py,
+        loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
+        import_interlab4.py, midvatten_utils.py, customplot.py.
+        - Customplot: Fixed bug where not selecting filter1 and filter2 resulted in a crash..
+        Version 1.4.3:
+        - Logger calibration: Performance fix related to the obsid list which made calibration and updates very slow.
+        - Added table zz_lab_parameters for merging parameter synonyms into a shared parameter name. Added support for it for piper plot.
+        - Diveroffice import: Fixed the format and width for the datetime filter.
+        - Diveroffice import: Bug fix where button "skip" did not work.
+        - Stratigraphy: Fixed bug where stratas with umlauts were not found (ex. morän).
+        Version 1.4.2:
+        - Added Qt internationalization support and Portuguese translations for ui-files and some modules (with special thanks to Luiz Pacheco Motta (IBAMA/QGISBrasil), Mariana Muniz Blank (Rede Guarani/Serra Geral/QGISBrasil), Arthur Schmidt Nanni (Rede Guarani/Serra Geral/QGISBrasil) and Luiz Fernando Scheibe (Rede Guarani/Serra Geral/QGISBrasil)!.
+        Version 1.4.1:
+        - Fixed bug in export Fieldlogger.
+        - Fixed bug when using spatialite 4.3.0a (Added ElementaryGeometries to SQLiteInternalTables).
+        - Replaced sqlite3 to pyspatialite where sqlite3 caused problems with Spatialite 4.3.0a.
+        - Interlab4 import: Fix where mätvärdetal didn't exist but mätvärdetext and mätvärdetalanm did.
+        - Fieldlogger Export: Sublocations appearing more than once are now merged. When parameters appear more than once, the last one overwrites the previous.
+        Version 1.4:
+        Most important changes since version 1.3.3 are listed below
+        - Database: Table w_qual_field: new column depth replaces column flow_lmp. Column depth is assumed to be the depth from which the measured or sampled water was extracted.
+        - Database: Table comments: New table to store any type of comment for obsids.
+        - Database: A couple of new data domain tables (zz_tables)
+        - Database: Hard coded plot settings like colors migrated to zz_tables (ex: zz_capacity_plots, zz_stratigraphy_plots)
+        - Database: Automatically updated geometries and east-north fields in obs_points: Database triggers in table obs_points keeps the geometries and east and north field synced.
+        - General csv import: New feature for importing csv-files or QGis vector layers into any of the database table. This feature removes the need for separate import features for each table. The older import features remain but will be removed in future versions.
+        - Diveroffice import: New feature for importing files from diver office (useful for importing many diveroffice files at once instead of only one at the time).
+        - Interlab4 import: New feature for importing files using interlab4 format (some Swedish labs use this format).
+        - FieldLogger import: New feature for importing files using the Fieldlogger (Android/ios app) output format.
+        - Fieldlogger Export: New feature for creating input files for FieldLogger (Android/ios app). Very useful when making field measurements.
+        - Calcultate logger w level from logger water head: Many new features to speed ut the process of calculating the logger position (and thus calculating level above sea level from logger head).
+        - Custom plot: New features for adjusting the plots (remove mean, apply factor, apply offset) and features only appearing if python pandas is correctly installed (resampling and rolling mean)
+        - Custom plot: The built in matplotlib "Edit curves lines and axes parameters" can now be used (clicking _Redraw_ button fixes the axes and lables).
+        - plot stratigraphy: Stratigraphy units, plot color and symbols are now editable by the user, so is also the water capacity (by making changes in the tables zz_capacity_plots and zz_stratigraphy_plots)
+
 2017-05-29 changes until 1.3.33
         Version 1.3.33
         - Customplot: Much faster pandas calculations.

@@ -20,14 +20,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
 import copy
 import io
 import os
 from operator import itemgetter
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import date_utils
@@ -106,6 +104,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.show()
 
     @utils.waiting_cursor
+    @utils.general_exception_handler
     def load_files(self):
         charset = utils.ask_for_charset()
         if not charset:

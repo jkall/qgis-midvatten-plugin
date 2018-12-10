@@ -20,9 +20,8 @@ from functools import partial  # only to get combobox signals to work
 import db_utils
 import gui_utils
 import midvatten_utils as utils
-from PyQt4.QtCore import *
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QCoreApplication, Qt, SIGNAL
+from PyQt4.QtGui import QComboBox, QDockWidget, QFileDialog
 from midvatten_utils import returnunicode as ru
 
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings

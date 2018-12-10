@@ -19,12 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
+
 import sys
 from operator import itemgetter
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils
@@ -108,8 +107,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             #Special cases for some tables
             if goal_table == u'stratigraphy':
                 self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
-            if goal_table in (u'obs_lines', u'obs_points'):
-                self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
+            # Check if current table has geometry:
+            geom_columns = db_utils.get_geometry_types(dbconnection, goal_table)
+            for geom_col in geom_columns.keys():
+                if geom_col in existing_columns_in_temptable:
+                    self.calculate_geometry(geom_col, goal_table, dbconnection)
 
             # Import foreign keys in some special cases
             foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
@@ -164,8 +166,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     dbconnection.execute(sql)
                 except Exception as e:
-                    utils.MessagebarAndLog.critical(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)), duration=999)
-                    raise
+                    try:
+                        str(e)
+                    except UnicodeDecodeError:
+                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import failed, see log message panel')),
+                                                        log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.')) % (sql), duration=999)
+                    else:
+                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import failed, see log message panel')),
+                                                        log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, ru(str(e))), duration=999)
 
             recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
 
@@ -207,12 +215,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         numskipped = 0
         sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([placeholder_sign for x in xrange(len(file_data[0]))]))
         for row in file_data[1:]:
-            concatted = u'|'.join([row[idx] for idx in concat_cols])
-            if concatted in added_rows:
-                numskipped += 1
-                continue
-            else:
-                added_rows.add(concatted)
+            if  primary_keys_for_concat:
+                concatted = u'|'.join([row[idx] for idx in concat_cols])
+                if concatted in added_rows:
+                    numskipped += 1
+                    continue
+                else:
+                    added_rows.add(concatted)
             args = tuple([None if any([r is None, not r.strip() if r is not None else None]) else r for r in row])
             dbconnection.cursor.execute(sql, args)
 
@@ -260,18 +269,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           goal_table)
         dbconnection.execute(sql)
 
-    def calculate_geometry(self, existing_columns, table_name, dbconnection):
+    def calculate_geometry(self, geom_col, table_name, dbconnection):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
         srid = dbconnection.execute_and_fetchall(u"""SELECT srid FROM geometry_columns WHERE f_table_name = '%s'""" % table_name)[0][0]
-        if u'WKT' in existing_columns:
-            geocol = u'WKT'
-        elif u'geometry' in existing_columns:
-            geocol = u'geometry'
-        else:
-            return None
-
-        sql = u"""UPDATE %s SET geometry = ST_GeomFromText(%s, %s)"""%(self.temptable_name, geocol, srid)
+        sql = u"""UPDATE {} SET {} = ST_GeomFromText({}, {})""".format(self.temptable_name, geom_col, geom_col, srid)
         dbconnection.execute(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns, dbconnection):

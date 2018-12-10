@@ -164,14 +164,15 @@ class DateTimeFilter(RowEntry):
         self.to_datetimeedit.setDateTime(datestring_to_date(value))
 
 
-def set_combobox(combobox, value):
+def set_combobox(combobox, value, add_if_not_exists=True):
     index = combobox.findText(ru(value))
     if index != -1:
         combobox.setCurrentIndex(index)
     else:
-        combobox.addItem(ru(value))
-        index = combobox.findText(ru(value))
-        combobox.setCurrentIndex(index)
+        if add_if_not_exists:
+            combobox.addItem(ru(value))
+            index = combobox.findText(ru(value))
+            combobox.setCurrentIndex(index)
 
 
 class DistinctValuesBrowser(VRowEntry):
@@ -251,3 +252,4 @@ class DistinctValuesBrowser(VRowEntry):
     @distinct_value.setter
     def distinct_value(self, value):
         set_combobox(self._distinct_value, value)
+

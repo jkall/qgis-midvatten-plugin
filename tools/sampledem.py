@@ -13,9 +13,10 @@
 This code is inspired from the PointSamplingTool plugin Copyright (C) 2008 Borys Jurgiel
 and qchainage plugin (C) 2012 by Werner Macho
 """
-import PyQt4.QtCore
-import PyQt4.QtGui
-from qgis.core import *
+
+import PyQt4
+from qgis.core import QGis, QgsFeature, QgsField, QgsFields, QgsMapLayerRegistry, QgsMessageLog, QgsRaster, QgsVectorLayer
+
 
 def qchain(sectionlinelayer, distance): #original start function from qchainage
     layer = sectionlinelayer

@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 import PyQt4
+import ast
 import cStringIO
 import codecs
 import copy
@@ -28,20 +29,19 @@ import difflib
 import io
 import locale
 import math
-import numpy as np
 import os
 import qgis.utils
 import tempfile
 import time
-import ast
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QgsLogger, QgsMapLayer, QgsMapLayerRegistry, QgsMessageLog, QgsProject
+from qgis.gui import QgsMessageBar
 
+import numpy as np
 from PyQt4.QtCore import QCoreApplication
 
 try:
@@ -1480,12 +1480,17 @@ def general_exception_handler(func):
         try:
             result = func(*args, **kwargs)
         except UserInterruptError:
+            # The user interrupted the process.
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            pass
         except UsageError as e:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
+        except:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            raise
         else:
             return result
     return new_func
@@ -1567,3 +1572,220 @@ def to_float_or_none(anything):
             return None
         else:
             return a_float
+
+class PlotTemplates(object):
+    def __init__(self, plot_object,
+                 template_list,
+                 edit_button,
+                 load_button,
+                 save_as_button,
+                 import_button,
+                 remove_button,
+                 template_folder,
+                 templates_settingskey,
+                 loaded_template_settingskey,
+                 fallback_template,
+                 msettings=None):
+
+        # Gui objects
+        self.template_list = template_list
+        self.edit_button = edit_button
+        self.load_button = load_button
+        self.save_as_button = save_as_button
+        self.import_button = import_button
+        self.remove_button = remove_button
+
+
+        self.ms = msettings
+        self.templates = {}
+        self.loaded_template = {}
+
+        self.template_folder = template_folder
+        self.fallback_template = fallback_template
+        self.templates_settingskey = templates_settingskey
+        self.loaded_template_settingskey = loaded_template_settingskey
+
+        self.templates = {}
+
+        self.import_saved_templates()
+        self.import_from_template_folder()
+
+        try:
+            self.loaded_template = self.string_to_dict(self.ms.settingsdict[self.loaded_template_settingskey])
+        except:
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Failed to load saved template, loading default template instead.')))
+        if self.loaded_template:
+            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from midvatten settings %s.'))%self.loaded_template_settingskey)
+
+        default_filename = os.path.join(self.template_folder, 'default.txt')
+
+        if not self.loaded_template:
+            if not os.path.isfile(default_filename):
+                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
+                                                                                     u'Default template not found, loading hard coded default template.')))
+            else:
+                try:
+                    self.load(self.templates[default_filename]['template'])
+                except Exception as e:
+                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
+                                                                                         u'Failed to load default template, loading hard coded default template.')),
+                                                   log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Error msg %s'))%str(e))
+            if self.loaded_template:
+                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from default template file.')))
+
+        if not self.loaded_template:
+            self.loaded_template = self.fallback_template
+            if self.loaded_template:
+                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from default hard coded template.')))
+
+        plot_object.connect(self.edit_button, PyQt4.QtCore.SIGNAL("clicked()"), self.edit)
+        plot_object.connect(self.load_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load)
+        plot_object.connect(self.save_as_button, PyQt4.QtCore.SIGNAL("clicked()"), self.save_as)
+        plot_object.connect(self.import_button, PyQt4.QtCore.SIGNAL("clicked()"), self.import_templates)
+        plot_object.connect(self.remove_button, PyQt4.QtCore.SIGNAL("clicked()"), self.remove)
+
+    @general_exception_handler
+    def edit(self):
+        old_string = self.readable_output(self.loaded_template)
+
+        msg = returnunicode(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
+        new_string = PyQt4.QtGui.QInputDialog.getText(None, returnunicode(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
+                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        if not new_string[1]:
+            raise UserInterruptError()
+
+        as_dict = self.string_to_dict(returnunicode(new_string[0]))
+
+        self.loaded_template = as_dict
+
+    @general_exception_handler
+    def load(self, template=None):
+        if isinstance(template, dict):
+            self.loaded_template = template
+        else:
+            selected = self.template_list.selectedItems()
+            if selected:
+                filename = selected[0].filename
+                self.loaded_template = self.templates[filename]['template']
+
+    @general_exception_handler
+    def save_as(self):
+        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
+        if filename is None or not filename:
+            raise UserInterruptError()
+        as_str = self.readable_output(self.loaded_template)
+        with io.open(filename, 'w', encoding='utf8') as of:
+            of.write(as_str)
+
+        name = os.path.splitext(os.path.basename(filename))[0]
+        template = copy.deepcopy(self.loaded_template)
+        self.templates[filename] = {'filename': filename, 'template': template, 'name': name}
+
+        self.update_settingsdict()
+        self.update_template_list()
+
+    @general_exception_handler
+    def import_templates(self, filenames=None):
+        if filenames is None:
+            filenames = select_files(only_one_file=False, extension='')
+        if filenames is None or not filenames:
+            raise UserInterruptError()
+        templates = {}
+        if filenames:
+            for filename in filenames:
+                if not filename:
+                    continue
+
+                processed_before = filename in self.templates.keys()
+                processed_now = filename in templates.keys()
+
+                if not processed_before and not processed_now:
+                    template = self.parse_template(filename)
+                    if template:
+                        templates[filename] = template
+                
+        self.templates.update(templates)
+        self.update_settingsdict()
+        self.update_template_list()
+
+    @general_exception_handler
+    def remove(self):
+        selected = self.template_list.selectedItems()
+        if selected:
+            filename = selected[0].filename
+            del self.templates[filename]
+            self.update_settingsdict()
+            self.update_template_list()
+
+    @general_exception_handler
+    def import_from_template_folder(self):
+        for root, dirs, files in os.walk(self.template_folder):
+            if files:
+                filenames = [os.path.join(root, filename) for filename in files]
+                self.import_templates(filenames)
+
+    @general_exception_handler
+    def import_saved_templates(self):
+        filenames = [x for x in self.ms.settingsdict[self.templates_settingskey].split(';') if x]
+        if filenames:
+            MessagebarAndLog.info(
+                log_msg=returnunicode(QCoreApplication.translate(u'', u'Loading saved templates %s')) % u'\n'.join(filenames))
+            self.import_templates(filenames)
+
+    def parse_template(self, filename):
+        name = os.path.splitext(os.path.basename(filename))[0]
+        if not os.path.isfile(filename):
+            raise UsageError(returnunicode(QCoreApplication.translate(u'PlotTemplates', u'"%s" was not a file.')) % filename)
+        try:
+            with io.open(filename, 'rt', encoding='utf-8') as f:
+                lines = u''.join([line for line in f if line])
+        except Exception as e:
+            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
+                                                                                  u'Loading template %s failed, see log message panel')) % filename,
+                                            log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Reading file failed, msg:\n%s'))%returnunicode(str(e)))
+            raise
+
+        if lines:
+            try:
+                template = self.string_to_dict(u''.join(lines))
+            except Exception as e:
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
+                                                                                      u'Loading template %s failed, see log message panel')) % filename,
+                                                log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
+                                                                                      u'Parsing file rows failed, msg:\n%s')) % returnunicode(str(e)))
+                raise
+            else:
+                return {'filename': filename, 'template': template, 'name': name}
+        else:
+            return {}
+
+    def update_settingsdict(self):
+        self.ms.settingsdict[self.templates_settingskey] = u';'.join(self.templates.keys())
+        self.ms.save_settings(self.templates_settingskey)
+
+    def update_template_list(self):
+        self.template_list.clear()
+        for filename, template in sorted(self.templates.iteritems(), key=lambda x: os.path.basename(x[0])):
+            qlistwidgetitem = PyQt4.QtGui.QListWidgetItem()
+            qlistwidgetitem.setText(template['name'])
+            qlistwidgetitem.filename = template['filename']
+            self.template_list.addItem(qlistwidgetitem)
+
+    def readable_output(self, a_dict=None):
+        if a_dict is None:
+            a_dict = self.loaded_template
+        return anything_to_string_representation(a_dict, itemjoiner=u',\n', pad=u'    ',
+                                                dictformatter=u'{\n%s}',
+                                                listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+
+    def string_to_dict(self, the_string):
+        the_string = returnunicode(the_string)
+        if not the_string:
+            return u''
+        try:
+            as_dict = ast.literal_eval(the_string)
+        except Exception as e:
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'StoredSettings', u'Translating string to dict failed, see log message panel')),
+                                           log_msg=returnunicode(QCoreApplication.translate(u'StoredSettings', u'Error %s\nfor string\n%s'))%(str(e), the_string))
+        else:
+            return as_dict

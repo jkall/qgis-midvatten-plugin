@@ -212,8 +212,9 @@ class DbConnectionManager(object):
 
     def check_db_is_locked(self):
         if self.dbtype == u'spatialite':
-            if os.path.exists(u'%s-journal'%self.dbpath):
-                raise DatabaseLockedError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Error, The database is already in use (a journal-file was found)")))
+            for ext in (u'journal', u'wal'):
+                if os.path.exists(u'%s-%s'%(self.dbpath, ext)):
+                    raise DatabaseLockedError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Error, The database is already in use (a %s-file was found)".format(ext))))
 
     def vacuum(self):
         if self.dbtype == u'spatialite':
@@ -471,7 +472,7 @@ def get_foreign_keys(table, dbconnection=None):
         result_list = dbconnection.execute_and_fetchall(sql)
         for row in result_list:
             info = row[2]
-            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ\-\_]+)\(([a-zA-ZåäöÅÄÖ\-\_]+)\)', info)
+            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ0-9\-\_]+)\(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\)', info)
             res = m.groups()
             if res:
                 foreign_keys.setdefault(res[1], []).append((res[0], res[2]))

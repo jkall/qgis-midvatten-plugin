@@ -10,8 +10,6 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/
 """
-import db_utils
-
 """
 Major parts of the code is re-used from the profiletool plugin:
 # Copyright (C) 2008  Borys Jurgiel
@@ -22,20 +20,20 @@ SAKNAS:
 1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
 2. ((input och plottning av markyta från DEM)) - efter release beta
 """
-import PyQt4.QtCore
-import PyQt4.QtGui
-from qgis.core import *
-from functools import partial
-
-import ast
-import numpy as np
-import os
-import io
 import copy
-from operator import itemgetter
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+import os
+from functools import partial
+from matplotlib import container, patches
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from qgis.core import QgsCoordinateReferenceSystem, QgsMapLayerRegistry
+
+import PyQt4
+import numpy as np
+
+import db_utils
+
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
@@ -43,6 +41,7 @@ except:
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
+from midvatten_utils import PlotTemplates
 
 from PyQt4.QtCore import QCoreApplication
 
@@ -71,6 +70,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         self.initUI()
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
+        self.template_plot_label.setOpenExternalLinks(True)
+
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
@@ -121,12 +122,19 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.fill_dem_list()
 
         
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        PyQt4.QtGui.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
         
         #get PlotData
         self.get_plot_data()
 
-        self.secplot_templates = SecplotTemplates(self, self.template_list, self.ms)
+        template_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions', 'secplot_templates')
+        self.secplot_templates = PlotTemplates(self, self.template_list, self.edit_button, self.load_button,
+                                               self.save_as_button, self.import_button, self.remove_button,
+                                               template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                               defs.secplot_default_template(), self.ms)
+
+
+
 
         #draw plot
         self.draw_plot()
@@ -138,6 +146,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             pass
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
             self.dbconnection = db_utils.DbConnectionManager()
+
+        # Only set to stored xlim if the plot has been drawn before
+        if self.secax.get_xlim()[0] and self.secax.get_xlim()[1] != 1:
+            self.secplot_templates.loaded_template["Axes_set_xlim"] = self.secax.get_xlim()
+            self.secplot_templates.loaded_template["Axes_set_ylim"] = self.secax.get_ylim()
 
         width = self.secplot_templates.loaded_template.get('plot_width', None)
         height = self.secplot_templates.loaded_template.get('plot_height', None)
@@ -246,7 +259,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if self.ms.settingsdict['secplotlabelsplotted']==2:
             self.Labels_checkBox.setChecked(True)
         else:
-            self.Labels_checkBox.setChecked(False)        
+            self.Labels_checkBox.setChecked(False)
+
+        if self.ms.settingsdict['secplotwidthofplot'] == 2:
+            self.width_of_plot.setChecked(True)
+        else:
+            self.width_of_profile.setChecked(True)
 
     def fill_combo_boxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
@@ -344,6 +362,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     def finish_plot(self):
         leg = self.secax.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+        leg.set_zorder(999)
         leg.draggable(state=True)
         frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
         frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])    # set the frame face color to white
@@ -390,6 +409,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         if self.secplot_templates.loaded_template['Figure_subplots_adjust']:
             self.secfig.subplots_adjust(**self.secplot_templates.loaded_template['Figure_subplots_adjust'])
+
+        if self.width_of_plot.isChecked():
+            self.ms.settingsdict['secplotwidthofplot'] = 2
+            self.update_barwidths_from_plot()
+        else:
+            self.ms.settingsdict['secplotwidthofplot'] = 1
 
         self.canvas.draw()
         """
@@ -641,11 +666,33 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             return label + '_' + str(label_occurence + 1)
 
     def plot_geology(self):
-        settings = copy.deepcopy(self.secplot_templates.loaded_template['geology_Axes_bar'])
-        settings['width'] = settings.get('width', self.barwidth)
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
+            #Try to get one setting per geoshort.
+            _settings = copy.deepcopy(self.secplot_templates.loaded_template['geology_Axes_bar'])
+            try:
+                settings = _settings[Typ]
+            except KeyError:
+                try:
+                    settings = _settings['DEFAULT']
+                except KeyError:
+                    settings = _settings
+
+            for _Typ in self.ExistingPlotTypes:
+                try:
+                    del settings[_Typ]
+                except KeyError:
+                    pass
+            try:
+                del settings['DEFAULT']
+            except KeyError:
+                pass
+
+            settings['width'] = settings.get('width', self.barwidth)
+            settings['color'] = settings.get('color', self.Colors[Typ])
+            settings['hatch'] = settings.get('hatch', self.Hatches[Typ])
+
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
-            self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], hatch=self.Hatches[Typ], bottom=self.plotbottom[Typ], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
+            self.p.append(self.secax.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
     def plot_obs_lines_data(self):
@@ -702,9 +749,14 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.save_settings('secplotselectedDEMs')
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
-        utils.save_stored_settings(self.ms, self.secplot_templates.loaded_template, 'secplot_loaded_template')
-        self.ms.save_settings('secplot_templates')
+        self.ms.save_settings('secplotwidthofplot')
 
+        #Don't save plot min/max for next plot. If a specific is to be used, it should be set in a saved template file.
+        loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)
+        loaded_template["Axes_set_xlim"] = None
+        loaded_template["Axes_set_ylim"] = None
+        utils.save_stored_settings(self.ms, loaded_template, 'secplot_loaded_template')
+        self.ms.save_settings('secplot_templates')
         
     def set_location(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
@@ -825,198 +877,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.widget.setMinimumHeight(height)
             self.widget.setMaximumHeight(height)
 
-
-class SecplotTemplates(object):
-    def __init__(self, sectionplot, template_list, msettings=None):
-        self.ms = msettings
-        self.templates = {}
-        self.loaded_template = {}
-        self.sectionplot = sectionplot
-        self.template_list = template_list
-        self.template_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions', 'secplot_templates')
-
-        self.templates = {}
-
-        self.import_saved_templates()
-        self.import_from_template_folder()
-
-        try:
-            self.loaded_template = self.string_to_dict(self.ms.settingsdict['secplot_loaded_template'])
-        except:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Failed to load saved template, loading default template instead.')))
-        if self.loaded_template:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from midvatten settings secplot_loaded_template.')))
-
-        default_filename = os.path.join(self.template_folder, 'default.txt')
-
-        if not self.loaded_template:
-            if not os.path.isfile(default_filename):
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
-                                                                                     u'Default template not found, loading hard coded default template.')))
-            else:
-                try:
-                    self.load(self.templates[default_filename]['template'])
-                except Exception as e:
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
-                                                                                         u'Failed to load default template, loading hard coded default template.')),
-                                                   log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Error msg %s'))%str(e))
-            if self.loaded_template:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from default template file.')))
-
-        if not self.loaded_template:
-            self.loaded_template = defs.secplot_default_template()
-            if self.loaded_template:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from default hard coded template.')))
-
-
-        sectionplot.connect(sectionplot.edit_button, PyQt4.QtCore.SIGNAL("clicked()"), self.edit)
-        sectionplot.connect(sectionplot.load_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load)
-        sectionplot.connect(sectionplot.save_as_button, PyQt4.QtCore.SIGNAL("clicked()"), self.save_as)
-        sectionplot.connect(sectionplot.import_button, PyQt4.QtCore.SIGNAL("clicked()"), self.import_templates)
-        sectionplot.connect(sectionplot.remove_button, PyQt4.QtCore.SIGNAL("clicked()"), self.remove)
-
-    @utils.general_exception_handler
-    def edit(self):
-        old_string = self.readable_output(self.loaded_template)
-
-        msg = ru(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
-        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
-                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
-        if not new_string[1]:
-            raise utils.UserInterruptError()
-
-        as_dict = self.string_to_dict(ru(new_string[0]))
-
-        self.loaded_template = as_dict
-
-    @utils.general_exception_handler
-    def load(self, template=None):
-        if isinstance(template, dict):
-            self.loaded_template = template
-        else:
-            selected = self.template_list.selectedItems()
-            if selected:
-                filename = selected[0].filename
-                self.loaded_template = self.templates[filename]['template']
-
-    @utils.general_exception_handler
-    def save_as(self):
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(QCoreApplication.translate(u'SecplotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
-        if filename is None or not filename:
-            raise utils.UserInterruptError()
-        as_str = self.readable_output(self.loaded_template)
-        with io.open(filename, 'w', encoding='utf8') as of:
-            of.write(as_str)
-
-        name = os.path.splitext(os.path.basename(filename))[0]
-        template = copy.deepcopy(self.loaded_template)
-        self.templates[filename] = {'filename': filename, 'template': template, 'name': name}
-
-        self.update_settingsdict()
-        self.update_template_list()
-
-    @utils.general_exception_handler
-    def import_templates(self, filenames=None):
-        if filenames is None:
-            filenames = utils.select_files(only_one_file=False, extension='')
-        if filenames is None or not filenames:
-            raise utils.UserInterruptError()
-        templates = {}
-        if filenames:
-            for filename in filenames:
-                if not filename:
-                    continue
-
-                processed_before = filename in self.templates.keys()
-                processed_now = filename in templates.keys()
-
-                if not processed_before and not processed_now:
-                    template = self.parse_template(filename)
-                    if template:
-                        templates[filename] = template
-                
-        self.templates.update(templates)
-        self.update_settingsdict()
-        self.update_template_list()
-
-    @utils.general_exception_handler
-    def remove(self):
-        selected = self.template_list.selectedItems()
-        if selected:
-            filename = selected[0].filename
-            del self.templates[filename]
-            self.update_settingsdict()
-            self.update_template_list()
-
-    @utils.general_exception_handler
-    def import_from_template_folder(self):
-        for root, dirs, files in os.walk(self.template_folder):
-            if files:
-                filenames = [os.path.join(root, filename) for filename in files]
-                self.import_templates(filenames)
-
-    @utils.general_exception_handler
-    def import_saved_templates(self):
-        filenames = [x for x in self.ms.settingsdict['secplot_templates'].split(';') if x]
-        if filenames:
-            utils.MessagebarAndLog.info(
-                log_msg=ru(QCoreApplication.translate(u'', u'Loading saved templates %s')) % u'\n'.join(filenames))
-            self.import_templates(filenames)
-
-    def parse_template(self, filename):
-        name = os.path.splitext(os.path.basename(filename))[0]
-        if not os.path.isfile(filename):
-            raise utils.UsageError(ru(QCoreApplication.translate(u'SecplotTemplates', u'"%s" was not a file.')) % filename)
-        try:
-            with io.open(filename, 'rt', encoding='utf-8') as f:
-                lines = u''.join([line for line in f if line])
-        except Exception as e:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
-                                                                                  u'Loading template %s failed, see log message panel')) % filename,
-                                            log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Reading file failed, msg:\n%s'))%ru(str(e)))
-            raise
-
-        if lines:
-            try:
-                template = self.string_to_dict(u''.join(lines))
-            except Exception as e:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
-                                                                                      u'Loading template %s failed, see log message panel')) % filename,
-                                                log_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
-                                                                                      u'Parsing file rows failed, msg:\n%s')) % ru(str(e)))
-                raise
-            else:
-                return {'filename': filename, 'template': template, 'name': name}
-        else:
-            return {}
-
-    def update_settingsdict(self):
-        self.ms.settingsdict['secplot_templates'] = u';'.join(self.templates.keys())
-        self.ms.save_settings('secplot_templates')
-
-    def update_template_list(self):
-        self.template_list.clear()
-        for filename, template in sorted(self.templates.iteritems(), key=lambda x: os.path.basename(x[0])):
-            qlistwidgetitem = PyQt4.QtGui.QListWidgetItem()
-            qlistwidgetitem.setText(template['name'])
-            qlistwidgetitem.filename = template['filename']
-            self.template_list.addItem(qlistwidgetitem)
-
-    def readable_output(self, a_dict=None):
-        if a_dict is None:
-            a_dict = self.loaded_template
-        return utils.anything_to_string_representation(a_dict, itemjoiner=u',\n', pad=u'    ',
-                                                dictformatter=u'{\n%s}',
-                                                listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
-
-    def string_to_dict(self, the_string):
-        the_string = ru(the_string)
-        if not the_string:
-            return u''
-        try:
-            as_dict = ast.literal_eval(the_string)
-        except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'StoredSettings', u'Translating string to dict failed, see log message panel')),
-                                           log_msg=ru(QCoreApplication.translate(u'StoredSettings', u'Error %s\nfor string\n%s'))%(str(e), the_string))
-        else:
-            return as_dict
+    def update_barwidths_from_plot(self):
+        used_xmin, used_xmax = self.secax.get_xlim()
+        total_width = float(used_xmax) - float(used_xmin)
+        barwidth = total_width * float(self.ms.settingsdict['secplotbw']) * 0.01
+        for p in self.p:
+            if isinstance(p, container.BarContainer):
+                children = p.get_children()
+                for child in children:
+                    if isinstance(child, patches.Rectangle):
+                        prev_middle = child.get_x() + child.get_width()/2
+                        child.set_width(barwidth)
+                        child.set_x(prev_middle - child.get_width()/2)

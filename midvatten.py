@@ -18,19 +18,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtCore import QDir
-from PyQt4.QtGui import *
-from qgis.core import *
-import qgis.utils
-import shutil
-import ast
-import resources  # Initialize Qt resources from file resources.py
-
 # Import some general python modules
 import os.path
+import qgis.utils
+import shutil
 import sys
+# Import the PyQt and QGIS libraries
+from qgis.core import QGis, QgsMessageLog
+import PyQt4
+from PyQt4.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt, SIGNAL
+from PyQt4.QtGui import QAction, QApplication, QCursor, QFileDialog, QIcon, QMenu
 
 #add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -44,6 +41,7 @@ from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import Wqualreport
+from wqualreport_compact import CompactWqualReportUi
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
@@ -55,7 +53,6 @@ from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
-import PyQt4
 import db_utils
 #import profilefromdem
 
@@ -70,58 +67,61 @@ class midvatten:
 
     def initGui(self):
         # Create actions that will start plugin configuration
-        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), ru(QCoreApplication.translate("Midvatten","Create a new Midvatten project DB")), self.iface.mainWindow())
+        self.actionNewDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), ru(QCoreApplication.translate("Midvatten","Create a new Midvatten project DB")), self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
 
-        self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), ru(QCoreApplication.translate("Midvatten", "Populate a postgis database to a new Midvatten project DB")), self.iface.mainWindow())
+        self.actionNewPostgisDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), ru(QCoreApplication.translate("Midvatten", "Populate a postgis database to a new Midvatten project DB")), self.iface.mainWindow())
         QObject.connect(self.actionNewPostgisDB, SIGNAL("triggered()"), self.new_postgis_db)
 
-        self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddefaultlayers.png")), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load default layers from the selected database"))
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
         QObject.connect(self.actionloadthelayers, SIGNAL("activated()"), self.loadthelayers)
 
-        self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
+        self.actionsetup = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "MidvSettings.png")), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
         self.actionsetup.setWhatsThis(QCoreApplication.translate("Midvatten","Configuration for Midvatten toolset"))
         self.iface.registerMainWindowAction(self.actionsetup, "F6")   # The function should also be triggered by the F6 key
         QObject.connect(self.actionsetup, SIGNAL("activated()"), self.setup)
         
-        self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
+        self.actionresetSettings = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "ResetSettings.png")), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
         QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.reset_settings)
         
-        self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), QCoreApplication.translate("Midvatten","About"), self.iface.mainWindow())
+        self.actionabout = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "about.png")), QCoreApplication.translate("Midvatten","About"), self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
 
-        self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), ru(QCoreApplication.translate("Midvatten", "Calculate w level from manual measurements")), self.iface.mainWindow())
+        self.action_wlvlcalculate = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_level_masl.png")), ru(QCoreApplication.translate("Midvatten", "Calculate w level from manual measurements")), self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
-        self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate("Midvatten","Calculate Aveflow from Accvol"), self.iface.mainWindow())
+        self.action_aveflowcalculate = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "import_wflow.png")), QCoreApplication.translate("Midvatten","Calculate Aveflow from Accvol"), self.iface.mainWindow())
         QObject.connect(self.action_aveflowcalculate , SIGNAL("triggered()"), self.aveflowcalculate)
 
-        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Diver-Office csv-format"), self.iface.mainWindow())
+        self.action_import_diverofficedata = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "load_wlevels_logger.png")), QCoreApplication.translate("Midvatten","Import logger data using Diver-Office csv-format"), self.iface.mainWindow())
         QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
         
-        self.action_import_leveloggerdata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Levelogger csv-format"), self.iface.mainWindow())
+        self.action_import_leveloggerdata = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "load_wlevels_logger.png")), QCoreApplication.translate("Midvatten","Import logger data using Levelogger csv-format"), self.iface.mainWindow())
         QObject.connect(self.action_import_leveloggerdata, SIGNAL("triggered()"), self.import_leveloggerdata)
         
-        self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
+        self.action_import_hobologgerdata = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "load_wlevels_logger.png")), QCoreApplication.translate("Midvatten","Import logger data using HOBO logger csv-format"), self.iface.mainWindow())
+        QObject.connect(self.action_import_hobologgerdata, SIGNAL("triggered()"), self.import_hobologgerdata)
+        
+        self.action_wlvlloggcalibrate = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calibr_level_logger_masl.png")), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
         QObject.connect(self.action_wlvlloggcalibrate , SIGNAL("triggered()"), self.wlvlloggcalibrate)
 
-        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), QCoreApplication.translate("Midvatten","Import w quality from lab data using interlab4 format"), self.iface.mainWindow())
+        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "import_wqual_lab.png")), QCoreApplication.translate("Midvatten","Import w quality from lab data using interlab4 format"), self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_lab_from_interlab4, SIGNAL("triggered()"), self.import_wqual_lab_from_interlab4)
 
-        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import data using FieldLogger format"), self.iface.mainWindow())
+        self.actionimport_fieldlogger = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "import_wqual_field.png")), QCoreApplication.translate("Midvatten","Import data using FieldLogger format"), self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
 
-        self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import data using general csv format"), self.iface.mainWindow())
+        self.actiongeneral_import_csv = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "import_wqual_field.png")), QCoreApplication.translate("Midvatten","Import data using general csv format"), self.iface.mainWindow())
         QObject.connect(self.actiongeneral_import_csv, SIGNAL("triggered()"), self.import_csv)
 
-        self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), QCoreApplication.translate("Midvatten","Time series plot"), self.iface.mainWindow())
+        self.actionPlotTS = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "PlotTS.png")), QCoreApplication.translate("Midvatten","Time series plot"), self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis(QCoreApplication.translate("Midvatten","Plot time series for selected objects"))
         self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
         QObject.connect(self.actionPlotTS, SIGNAL("triggered()"), self.plot_timeseries)
         
-        self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), QCoreApplication.translate("Midvatten","Scatter plot"), self.iface.mainWindow())
+        self.actionPlotXY = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "PlotXY.png")), QCoreApplication.translate("Midvatten","Scatter plot"), self.iface.mainWindow())
         self.actionPlotXY.setWhatsThis(QCoreApplication.translate("Midvatten","Plot XY scatter data (e.g. seismic profile) for the selected objects"))
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.plot_xy)
@@ -134,67 +134,71 @@ class midvatten:
         self.actionPlotSQLite.setWhatsThis(QCoreApplication.translate("Midvatten","Create custom plots for your reports"))
         QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.plot_sqlite)
         
-        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), QCoreApplication.translate("Midvatten","Stratigraphy plot"), self.iface.mainWindow())
+        self.actionPlotStratigraphy = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "PlotStratigraphy.png")), QCoreApplication.translate("Midvatten","Stratigraphy plot"), self.iface.mainWindow())
         self.actionPlotStratigraphy.setWhatsThis(QCoreApplication.translate("Midvatten","Show stratigraphy for selected objects (modified ARPAT)"))
         self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F10")   # The function should also be triggered by the F10 key
         QObject.connect(self.actionPlotStratigraphy, SIGNAL("triggered()"), self.plot_stratigraphy)
         
-        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate("Midvatten","General report"), self.iface.mainWindow())
+        self.actiondrillreport = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "drill_report.png")), QCoreApplication.translate("Midvatten","General report"), self.iface.mainWindow())
         self.actiondrillreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show a general report for the selected obs point"))
         self.iface.registerMainWindowAction(self.actiondrillreport, "F11")   # The function should also be triggered by the F11 key
         QObject.connect(self.actiondrillreport, SIGNAL("triggered()"), self.drillreport)
 
-        self.action_custom_drillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate("Midvatten", "Custom general report"), self.iface.mainWindow())
+        self.action_custom_drillreport = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "drill_report.png")), QCoreApplication.translate("Midvatten", "Custom general report"), self.iface.mainWindow())
         self.action_custom_drillreport.setWhatsThis(QCoreApplication.translate("Midvatten", "Create a user adjustable general report"))
         QObject.connect(self.action_custom_drillreport, SIGNAL("triggered()"), self.custom_drillreport)
 
-        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), QCoreApplication.translate("Midvatten","Water quality report"), self.iface.mainWindow())
+        self.actionwqualreport = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "wqualreport.png")), QCoreApplication.translate("Midvatten","Water quality report"), self.iface.mainWindow())
         self.actionwqualreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
         self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
 
-        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), QCoreApplication.translate("Midvatten","Section plot"), self.iface.mainWindow())
+        self.actionwqualreportcompact = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "wqualreport.png")), QCoreApplication.translate("Midvatten","Compact water quality report for report attachments"), self.iface.mainWindow())
+        self.actionwqualreportcompact.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
+        QObject.connect(self.actionwqualreportcompact, SIGNAL("triggered()"), self.waterqualityreportcompact)
+
+        self.actionPlotSection = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "PlotSection.png")), QCoreApplication.translate("Midvatten","Section plot"), self.iface.mainWindow())
         self.actionPlotSection.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a section with stratigraphy and water levels"))
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.plot_section)
         
-        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), QCoreApplication.translate("Midvatten","Prepare 3D-data for Qgis2threejs plugin"), self.iface.mainWindow())
+        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "qgis2threejs.png")), QCoreApplication.translate("Midvatten","Prepare 3D-data for Qgis2threejs plugin"), self.iface.mainWindow())
         self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis(QCoreApplication.translate("Midvatten","Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot"))
         QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
 
-        self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
+        self.actionloaddatadomains = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
         QObject.connect(self.actionloaddatadomains, SIGNAL("activated()"), self.load_data_domains)
 
-        self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
+        self.actionVacuumDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "vacuum.png")), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
         self.actionVacuumDB.setWhatsThis(QCoreApplication.translate("Midvatten","Perform database vacuuming"))
         QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.vacuum_db)
 
-        self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), QCoreApplication.translate("Midvatten","Backup the database"), self.iface.mainWindow())
+        self.actionZipDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "zip.png")), QCoreApplication.translate("Midvatten","Backup the database"), self.iface.mainWindow())
         self.actionZipDB.setWhatsThis(QCoreApplication.translate("Midvatten","A compressed copy of the database will be placed in same directory as the db."))
         QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.zip_db)
 
-        self.action_export_csv = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate("Midvatten","Export to a set of csv files"), self.iface.mainWindow())
+        self.action_export_csv = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_csv.png")), QCoreApplication.translate("Midvatten","Export to a set of csv files"), self.iface.mainWindow())
         self.action_export_csv.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files."))
         QObject.connect(self.action_export_csv, SIGNAL("triggered()"), self.export_csv)
 
-        self.action_export_spatialite = QAction(QIcon(":/plugins/midvatten/icons/export_spatialite.png"), QCoreApplication.translate("Midvatten","Export to another spatialite db"), self.iface.mainWindow())
+        self.action_export_spatialite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_spatialite.png")), QCoreApplication.translate("Midvatten","Export to another spatialite db"), self.iface.mainWindow())
         self.action_export_spatialite.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db."))
         QObject.connect(self.action_export_spatialite, SIGNAL("triggered()"), self.export_spatialite)
 
-        self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate("Midvatten","Export to FieldLogger format"), self.iface.mainWindow())
+        self.action_export_fieldlogger = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_csv.png")), QCoreApplication.translate("Midvatten","Export to FieldLogger format"), self.iface.mainWindow())
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
 
-        self.action_calculate_statistics_for_selected_obsids = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten", "Calculate statistics for selected obsids"), self.iface.mainWindow())
+        self.action_calculate_statistics_for_selected_obsids = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_statistics.png")), QCoreApplication.translate("Midvatten", "Calculate statistics for selected obsids"), self.iface.mainWindow())
         self.action_calculate_statistics_for_selected_obsids.setWhatsThis(self.calculate_statistics_for_selected_obsids.__doc__)
         QObject.connect(self.action_calculate_statistics_for_selected_obsids, SIGNAL("triggered()"), self.calculate_statistics_for_selected_obsids)
 
-        self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate database table rows"), self.iface.mainWindow())
+        self.action_calculate_db_table_rows = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_statistics.png")), QCoreApplication.translate("Midvatten","Calculate database table rows"), self.iface.mainWindow())
         self.action_calculate_db_table_rows.setWhatsThis(self.calculate_db_table_rows.__doc__)
         QObject.connect(self.action_calculate_db_table_rows, SIGNAL("triggered()"), self.calculate_db_table_rows)
 
-        self.action_list_of_obsids_from_selected_features = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","List of obsids from selected features"), self.iface.mainWindow())
+        self.action_list_of_obsids_from_selected_features = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_statistics.png")), QCoreApplication.translate("Midvatten","List of obsids from selected features"), self.iface.mainWindow())
         self.action_list_of_obsids_from_selected_features.setWhatsThis(self.list_of_obsids_from_selected_features.__doc__)
         QObject.connect(self.action_list_of_obsids_from_selected_features, SIGNAL("triggered()"), self.list_of_obsids_from_selected_features)
 
@@ -237,6 +241,7 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.actiongeneral_import_csv)
         self.menu.import_data_menu.addAction(self.action_import_diverofficedata)
         self.menu.import_data_menu.addAction(self.action_import_leveloggerdata)
+        self.menu.import_data_menu.addAction(self.action_import_hobologgerdata)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
         self.menu.import_data_menu.addAction(self.actionimport_fieldlogger)
         
@@ -270,6 +275,7 @@ class midvatten:
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.action_custom_drillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
+        self.menu.report_menu.addAction(self.actionwqualreportcompact)
         
         self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
         self.menu.addMenu(self.menu.db_manage_menu)
@@ -395,7 +401,9 @@ class midvatten:
 
             #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
+            QApplication.restoreOverrideCursor()
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
@@ -409,18 +417,22 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))  # show the user this may take a long time..
             dbconnection = db_utils.DbConnectionManager()
             dbtype = dbconnection.dbtype
             dbconnection.closedb()
             if dbtype != u'spatialite':
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'export_spatialite', u'Export to spatialite only works when source db is spatialite.')))
+                QApplication.restoreOverrideCursor()
                 return
 
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
+            QApplication.restoreOverrideCursor()
             sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
+
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
@@ -617,6 +629,39 @@ class midvatten:
             else: 
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         QApplication.restoreOverrideCursor()  
+
+    @utils.general_exception_handler
+    def import_hobologgerdata(self):
+        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:
+            if not (self.ms.settingsdict['database'] == ''):
+                longmessage = ru(QCoreApplication.translate(u"Midvatten",
+                               u"""You are about to import water head data, recorded with a HOBO temperature logger.\n"""
+                               u"""Data is supposed to be in utf-8 and using this format:\n"""
+                               u'''"Plot Title: temp_aname"\n'''
+                               u'''"#","Date Time, GMT+02:00","Temp, °C (LGR S/N: 1234, SEN S/N: 1234, LBL: obsid)",...\n'''
+                               u'''1,07/19/18 11:00:00 fm,7.654,...\n'''
+                               u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
+                               u"""The charset is usually utf8!\n\n"""
+                               u"""Continue?"""))
+                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate(u"Midvatten", 'Are you sure?')))
+                if sanity.result == 1:
+                    from import_hobologger import HobologgerImport
+                    importinstance = HobologgerImport(self.iface.mainWindow(), self.ms)
+                    importinstance.select_files_and_load_gui()
+
+                    if not importinstance.status:
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                    else:
+                        try:
+                            self.midvsettingsdialog.ClearEverything()
+                            self.midvsettingsdialog.LoadAndSelectLastSettings()
+                        except:
+                            pass
+            else:
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        QApplication.restoreOverrideCursor()
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
@@ -848,6 +893,14 @@ class midvatten:
                     fail = 1
             if not fail == 1:#only if all objects has data
                 Wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
+
+    def waterqualityreportcompact(self):
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
+            err_flag += 1
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
+        if err_flag == 0:
+            CompactWqualReportUi(self.iface.mainWindow(), self.ms)
 
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
