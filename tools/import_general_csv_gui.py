@@ -93,8 +93,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 7, 0)
-        self.start_import_button.clicked.connect(
-                     self.start_import)
+        self.start_import_button.clicked.connect(lambda x: self.start_import())
 
         self.gridLayout_buttons.setRowStretch(8, 1)
 
