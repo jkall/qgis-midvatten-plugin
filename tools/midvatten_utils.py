@@ -1868,7 +1868,7 @@ class MatplotlibStyles(object):
         self.update_style_list()
 
     def open_folder(self):
-        url = QtCore.QUrl(self.style_folder)
+        url = QtCore.QUrl(self.style_folder, QtCore.QUrl.TolerantMode)
         QDesktopServices.openUrl(url)
 
     def update_settingsdict(self):

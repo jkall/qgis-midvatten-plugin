@@ -70,23 +70,18 @@ class DbConnectionManager(object):
                 db_settings = {'spatialite': {'dbpath': db_settings}}
             else:
                 if not db_settings:
-                    # TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
-                    # TODO An exception feels better but is uglier for the user.
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Database not chosen correctly. Check DB tab in Midvatten settings.')))
-                    return None
+                    raise utils.UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database setting was empty. Check DB tab in Midvatten settings.' )))
                 else:
                     try:
                         db_settings = ast.literal_eval(db_settings)
                     except:
-                        #TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
-                        #TODO An exception feels better but is uglier for the user.
-                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Database connection failed. Try reset settings.')))
-                        return None
+                        raise utils.UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database could not be set. Check DB tab in Midvatten settings.')))
+
         elif isinstance(db_settings, dict):
             # Assume it the dict is a valid db_settings dict.
             pass
         else:
-            raise Exception(ru(QCoreApplication.translate('DbConnectionManager', "DbConnectionManager error: db_settings must be either a dict like {'spatialite': {'dbpath': 'x'} or a string representation of it. Was: %s"))%ru(db_settings))
+            raise Exception(ru(QCoreApplication.translate('DbConnectionManager', "DbConnectionManager programming error: db_settings must be either a dict like {'spatialite': {'dbpath': 'x'} or a string representation of it. Was: %s"))%ru(db_settings))
 
         db_settings = ru(db_settings, keep_containers=True)
 

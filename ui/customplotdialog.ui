@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1056</width>
-         <height>800</height>
+         <width>1045</width>
+         <height>821</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -2228,7 +2228,7 @@
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked=Figure size is set to figure.figsize.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
-                      <string>Fixed figure size</string>
+                      <string>Use style figuresize</string>
                      </property>
                     </widget>
                    </item>
@@ -2276,7 +2276,7 @@
                    <item row="3" column="2">
                     <widget class="QPushButton" name="open_folder_button">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the selected template.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open stylelib folder.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Open folder</string>
@@ -2286,7 +2286,7 @@
                    <item row="4" column="2">
                     <widget class="QPushButton" name="available_settings_button">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the loaded template to file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Write a list of available settings to log.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Available settings</string>
@@ -2296,31 +2296,19 @@
                    <item row="2" column="2">
                     <widget class="QPushButton" name="import_button">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import template files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import a *-mplstyle file to stylelib folder.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Import</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="template_plot_label">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>(manual)</string>
-                     </property>
-                     <property name="openExternalLinks">
-                      <bool>true</bool>
+                   <item row="2" column="0" rowspan="5" colspan="2">
+                    <widget class="QListWidget" name="template_list">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select style to be used for plotting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                     </widget>
-                   </item>
-                   <item row="2" column="0" rowspan="5" colspan="2">
-                    <widget class="QListWidget" name="template_list"/>
                    </item>
                    <item row="0" column="2">
                     <widget class="QLabel" name="label_22">
@@ -2336,6 +2324,29 @@
                      </property>
                      <property name="text">
                       <string>Save As...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="2">
+                    <widget class="QLabel" name="template_plot_label">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>(manual)</string>
+                     </property>
+                     <property name="openExternalLinks">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_17">
+                     <property name="text">
+                      <string>Select style in list</string>
                      </property>
                     </widget>
                    </item>
@@ -2375,7 +2386,7 @@
      <x>0</x>
      <y>0</y>
      <width>1078</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
