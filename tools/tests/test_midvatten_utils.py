@@ -327,6 +327,11 @@ class TestNextUniqueStyleCombo(object):
         color_cycler = (cycler('color', ['r', 'g', 'b']))()
         marker_cycler = (cycler('marker', ['o', '+', 's']))()
         line_cycler = (cycler('linestyle', ['-', '--', '-.']))()
+        te = cycler('color', ['r', 'g', 'b'])
+
+        print(str(color_cycler))
+        print(str(next(color_cycler)))
+        print(str(len(te)))
 
         used_style_color = set()
 
