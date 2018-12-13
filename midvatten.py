@@ -60,11 +60,13 @@ from piper import PiperPlot
 from export_data import ExportData
 import db_utils
 from qgis.core import QgsWkbTypes, QgsVectorLayer
+import matplotlib_replacements
 #import profilefromdem
 
 
 class midvatten(object):
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
+        matplotlib_replacements.replace_all()
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported

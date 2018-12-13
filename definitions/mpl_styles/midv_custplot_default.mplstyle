@@ -6,3 +6,4 @@ lines.markersize: 6.0
 xtick.labelsize: 8
 ytick.labelsize: 8
 figure.autolayout: True
+savefig.dpi: 450

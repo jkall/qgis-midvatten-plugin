@@ -37,6 +37,7 @@ import shutil
 import glob
 import io
 import codecs
+import six
 import copy
 import csv
 import datetime
@@ -1809,9 +1810,9 @@ class MatplotlibStyles(object):
         return filename
 
     @general_exception_handler
-    def load(self, drawfunc):
-        mpl.style.reload_library()
+    def load(self, drawfunc, plot_widget_navigationtoolbar_name=None):
         #mpl.rcdefaults()
+        mpl.style.reload_library()
         fallback_style = 'fallback_' + self.defaultstyle_stylename[1]
         self.save_style_to_stylelib([self.defaultstyle_stylename[0], fallback_style])
         styles = [self.get_selected_style(), self.defaultstyle_stylename[1], fallback_style, 'default']
@@ -1832,6 +1833,9 @@ class MatplotlibStyles(object):
         if use_style is not None:
             with plt.style.context(use_style):
                 drawfunc()
+            if plot_widget_navigationtoolbar_name is not None:
+                navigationtoolbar = getattr(plot_widget_navigationtoolbar_name[0], plot_widget_navigationtoolbar_name[1])
+                navigationtoolbar.midv_use_style = use_style
         else:
             drawfunc()
 

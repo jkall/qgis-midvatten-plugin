@@ -35,7 +35,6 @@ from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
-from matplotlib.axes import Axes
 
 import numpy as np
 
@@ -72,12 +71,6 @@ customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..
 
 class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def __init__(self, parent, msettings):#, parent as second arg?
-
-        # THESE SETTING CHANGES GLOBAL SETTING FOR ALL MATPLOTLIB PLOTS!
-        #-----------------------
-        mpl.rcParams['savefig.dpi'] = 450
-        replace_axes_legend()
-        #-----------------------
 
         self.ms = msettings
         self.ms.loadSettings()
@@ -234,7 +227,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         return freqs
 
     def drawplot_with_styles(self):
-        self.styles.load(self.drawPlot_all)
+        self.styles.load(self.drawPlot_all, (self, 'mpltoolbar'))
 
     @utils.general_exception_handler
     def drawPlot_all(self):
@@ -673,7 +666,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
     @utils.general_exception_handler
     def redraw(self):
-        self.styles.load(self.refreshPlot)
+        self.styles.load(self.refreshPlot, (self, 'mpltoolbar'))
 
     @utils.general_exception_handler
     def refreshPlot( self):
@@ -722,10 +715,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
             leg.set_zorder(999)
             leg.draggable(state=True)
-
-            for line in leg.get_lines():
-                # Make lines in legend not thinner than 1.
-                line.set_linewidth(max(1, mpl.rcParams['lines.linewidth']))
         else:
             self.axes.legend_ = None
 
@@ -936,69 +925,6 @@ class PandasCalculations(object):
                     center=True
                 df = pd.rolling_mean(df, window=window, center=center)
         return df
-
-
-def replace_axes_legend():
-    """
-        This method restores the linewidth of the lines in the legend if a new legend is created.
-        This setting is GLOBAL!
-    :return:
-    """
-
-    def legend_restore_settings(ax, *args, **kwargs):
-        """
-        Replacement method for Axes.legend.
-        :param ax:
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        print("legend_restore_settings")
-        old_linewidth = None
-        old_fontsize = None
-        try:
-            ax.legend_
-        except Exception as e:
-            print(str(args))
-            raise
-        if ax.legend_ is not None:
-            #print("old legend was not onne")
-            old_legend = ax.get_legend()
-            for line in old_legend.get_lines():
-                old_linewidth = line.get_linewidth()
-                break
-            """
-            for text in old_legend.get_text():
-                old_fontsize = text.get_fontsize()
-                break
-            """
-
-        else:
-            #print("Old legend was none")
-            pass
-        if old_fontsize is not None and 'fontsize' not in kwargs:
-            kwargs['fontsize'] = old_fontsize
-        try:
-            new_leg = ax._org_leg(*args, **kwargs)
-        except:
-            print(str(args))
-            print(str(kwargs))
-            raise
-
-        if old_linewidth is not None:
-            for line in new_leg.get_lines():
-                line.set_linewidth(old_linewidth)
-        return new_leg
-
-    if Axes.legend.__name__ != legend_restore_settings.__name__:
-        print(str(Axes.legend))
-        Axes._org_leg = Axes.legend
-        Axes.legend = legend_restore_settings
-
-    #if axes.legend.__name__ != legend_restore_settings.__name__:
-    #    axes._org_leg = axes.legend
-    #    types.MethodType(legend_restore_settings, axes)
-
 
 def horizontal_line():
     line = qgis.PyQt.QtWidgets.QFrame()
