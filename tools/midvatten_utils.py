@@ -2004,14 +2004,12 @@ def get_save_file_name_no_extension(**kwargs):
     else:
         return filename[0]
 
-
-def cycler_length(_cycler):
-    return len(tuple(_cycler.by_key())[0][1])
+def dict_to_list(adict):
+    return [(k, v) for k, v in sorted(adict.items())]
 
 def next_unique_style_combo(stylecycler_len, colorcycler_len, used_style_color):
     stylecycler, s_length = stylecycler_len
     colorcycler, c_length = colorcycler_len
-    next_combo = {}
     # Go one lap around the cycle
     [next(stylecycler) for _ in range(s_length - 1)]
 
@@ -2019,15 +2017,15 @@ def next_unique_style_combo(stylecycler_len, colorcycler_len, used_style_color):
         s = next(stylecycler)
         for _ in range(c_length):
             c = next(colorcycler)
-            combo = (tuple(s), tuple(c))
-            if combo not in used_style_color:
-                used_style_color.add(combo)
-                next_combo.update(s)
-                next_combo.update(c)
+            next_combo = dict(c)
+            next_combo.update(s)
+            next_combo_str = dict_to_list(next_combo)
+            if next_combo_str not in used_style_color:
+                used_style_color.add(next_combo_str)
                 return next_combo
     else:
         MessagebarAndLog.info(
             bar_msg=returnunicode(QCoreApplication.translate('Customplot', 'Style cycler ran out of unique combinations')))
-        next_combo.update(next(stylecycler))
+        next_combo = dict(next(stylecycler))
         next_combo.update(next(colorcycler))
         return next_combo
