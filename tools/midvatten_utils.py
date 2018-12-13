@@ -2008,9 +2008,9 @@ def get_save_file_name_no_extension(**kwargs):
 def cycler_length(_cycler):
     return len(tuple(_cycler.by_key())[0][1])
 
-def next_unique_style_combo(stylecycler, colorcycler, used_style_color):
-    s_length = len(stylecycler)
-    c_length = len(colorcycler)
+def next_unique_style_combo(stylecycler_len, colorcycler_len, used_style_color):
+    stylecycler, s_length = stylecycler_len
+    colorcycler, c_length = colorcycler_len
 
     # Go one lap around the cycle
     [next(stylecycler) for _ in range(s_length - 1)]

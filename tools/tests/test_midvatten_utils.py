@@ -324,11 +324,16 @@ class TestNextUniqueStyleCombo(object):
         perform_all_replacements()
 
     def test_next_unique_style_combo(self):
-        color_cycler = (cycler('color', ['r', 'g', 'b']))()
-        marker_cycler = (cycler('marker', ['o', '+', 's']))()
-        line_cycler = (cycler('linestyle', ['-', '--', '-.']))()
-        te = cycler('color', ['r', 'g', 'b'])
+        color_cycler = (cycler('color', ['r', 'g', 'b']))
+        marker_cycler = (cycler('marker', ['o', '+', 's']))
+        line_cycler = (cycler('linestyle', ['-', '--', '-.']))
 
+        len_c = len(color_cycler)
+        color_cycler = color_cycler()
+        len_m = len(marker_cycler)
+        marker_cycler = marker_cycler()
+        len_l = len(line_cycler)
+        line_cycler = line_cycler()
         print(str(color_cycler))
         print(str(next(color_cycler)))
         print(str(len(te)))
@@ -336,7 +341,7 @@ class TestNextUniqueStyleCombo(object):
 
         used_style_color = set()
 
-        combo = utils.next_unique_style_combo(line_cycler, color_cycler, used_style_color)
+        combo = utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
 
         print(str(combo))
         assert False
