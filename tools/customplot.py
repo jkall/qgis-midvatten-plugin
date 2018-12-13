@@ -71,7 +71,6 @@ customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..
 
 class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def __init__(self, parent, msettings):#, parent as second arg?
-
         self.ms = msettings
         self.ms.loadSettings()
         QtWidgets.QDialog.__init__(self, parent)
@@ -234,9 +233,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         utils.start_waiting_cursor()  # show the user this may take a long time...
 
         ccycler = mpl.rcParams['axes.prop_cycle']
-
-        self.line_cycler = (cycler('linestyle', ['-', '--', '-.', ':']) * copy.deepcopy(ccycler))()
-        self.marker_cycler = (cycler('marker', ['o', '+', 's', 'x']) * copy.deepcopy(ccycler))()
+        self.line_cycler = (mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
+        self.marker_cycler = (mpl.rcParams['axes.midv_marker_cycle'] * ccycler)()
+        self.line_and_marker_cycler = (mpl.rcParams['axes.midv_marker_cycle']* mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
 
         self.init_figure()
 
@@ -385,8 +384,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             numtime[pos] = np.nan
             table2.values[pos] = np.nan
 
-        default_lines = ['-', '--', '-.', ':']
-
         if FlagTimeXY == "time" and plottype == "frequency":
             table2.values[:] = self.calc_frequency(table2)[:]
 
@@ -440,7 +437,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 self.plabels[i]='frequency '+str(self.plabels[i])
         else:
             # line and marker
-            self.p[i], = plotfunc(numtime, table2.values, '', marker='o', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', label=self.plabels[i], **next(self.line_and_marker_cycler))
 
 
     def LastSelections(self):#set same selections as last plot

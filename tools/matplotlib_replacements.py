@@ -22,6 +22,8 @@ import six
 import matplotlib as mpl
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib import pyplot as plt
+from matplotlib import rcsetup
+from cycler import cycler
 
 
 def replace_matplotlib_style_core_update_nested_dict():
@@ -68,6 +70,22 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions():
         setattr(NavigationToolbar2QT, new_name, getattr(NavigationToolbar2QT, old_func))
         setattr(NavigationToolbar2QT, old_func, apply_func(new_name))
 
+def add_to_rc_defaultParams():
+    """
+    Adds parameters to rcParams
+
+    :return:
+    """
+    params_to_add = {'axes.midv_line_cycle': [cycler('linestyle', ['-', '--', '-.', ':']), rcsetup.validate_cycler],
+                     'axes.midv_marker_cycle': [cycler('marker', ['o', '+', 's', 'x']), rcsetup.validate_cycler]}
+
+    rcsetup.defaultParams.update(params_to_add)
+    mpl.RcParams.validate = dict((key, converter) for key, (default, converter) in
+                    six.iteritems(rcsetup.defaultParams))
+    mpl.rcParamsDefault.update({k: v[0] for k, v in params_to_add.items()})
+    mpl.rcdefaults()
+
 def replace_all():
+    add_to_rc_defaultParams()
     replace_matplotlib_style_core_update_nested_dict()
     replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions()
