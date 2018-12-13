@@ -85,7 +85,7 @@ def add_to_rc_defaultParams():
     mpl.rcParamsDefault.update({k: v[0] for k, v in params_to_add.items()})
     mpl.rcdefaults()
 
-def do_all_replacements():
+def perform_all_replacements():
     add_to_rc_defaultParams()
     replace_matplotlib_style_core_update_nested_dict()
     replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions()

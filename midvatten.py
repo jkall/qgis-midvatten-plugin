@@ -66,7 +66,7 @@ import matplotlib_replacements
 
 class midvatten(object):
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
-        matplotlib_replacements.replace_all()
+        matplotlib_replacements.perform_all_replacements()
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported

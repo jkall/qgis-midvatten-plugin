@@ -24,7 +24,7 @@ from builtins import str
 from builtins import object
 import io
 from cycler import cycler
-from matplotlib_replacements import do_all_replacements
+from matplotlib_replacements import perform_all_replacements
 
 import db_utils
 import midvatten_utils as utils
@@ -321,7 +321,7 @@ class TestGeneralExceptionHandler(object):
 @attr(status='only')
 class TextNextUniqueStyleCombo(object):
     def setUp(self):
-        do_all_replacements()
+        perform_all_replacements()
 
     def text_next_unique_style_combo(self):
         color_cycler = cycler('color', ['r', 'g', 'b'])
