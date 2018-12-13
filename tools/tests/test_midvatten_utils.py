@@ -334,10 +334,6 @@ class TestNextUniqueStyleCombo(object):
         marker_cycler = marker_cycler()
         len_l = len(line_cycler)
         line_cycler = line_cycler()
-        print(str(color_cycler))
-        print(str(next(color_cycler)))
-        print(str(len(te)))
-        print(str(next(te)))
 
         used_style_color = set()
 
