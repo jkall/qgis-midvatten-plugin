@@ -2009,8 +2009,8 @@ def cycler_length(_cycler):
     return len(tuple(_cycler.by_key())[0][1])
 
 def next_unique_style_combo(stylecycler, colorcycler, used_style_color):
-    s_length = cycler_length(stylecycler)
-    c_length = cycler_length(colorcycler)
+    s_length = len(stylecycler)
+    c_length = len(colorcycler)
 
     # Go one lap around the cycle
     [next(stylecycler) for _ in range(s_length - 1)]
