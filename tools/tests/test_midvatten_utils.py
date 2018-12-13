@@ -335,6 +335,9 @@ class TextNextUniqueStyleCombo(object):
         print(str(combo))
         assert False
 
+    def test_2(self):
+        assert False
+
 
 
 
