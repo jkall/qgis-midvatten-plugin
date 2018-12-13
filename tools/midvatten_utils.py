@@ -1766,6 +1766,26 @@ class MatplotlibStyles(object):
 
         self.style_extension = '.mplstyle'
         self.style_folder = os.path.join(mpl.get_configdir(), 'stylelib')
+        if os.path.isdir(mpl.get_configdir()):
+            if os.path.exists(self.style_folder):
+                if not os.path.isdir(self.style_folder):
+                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
+                                                                                              '''Matplotlib style folder %s was not a directory!'''))%self.style_folder)
+            else:
+                try:
+                    os.makedirs(self.style_folder)
+                except Exception as e:
+                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
+                                                                                              '''Could not create style folder %s, see log message panel!''')) % self.style_folder,
+                                             log_msg=str(e))
+                else:
+                    MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
+                                                                                              '''Matplotlib style folder created %s.''')) % self.style_folder)
+        else:
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', '''Matplotlib config directory not found. User styles not used.''')))
+
+
+
         if not os.path.isdir(self.style_folder):
             os.mkdir(self.style_folder)
 
