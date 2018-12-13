@@ -34,7 +34,8 @@ from nose.plugins.attrib import attr
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
-from .utils_for_tests import create_test_string, dict_to_list
+from .utils_for_tests import create_test_string
+from midvatten_utils import dict_to_list
 
 
 @attr(status='on')
