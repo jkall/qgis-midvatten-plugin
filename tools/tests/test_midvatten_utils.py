@@ -332,6 +332,7 @@ class TestNextUniqueStyleCombo(object):
         print(str(color_cycler))
         print(str(next(color_cycler)))
         print(str(len(te)))
+        print(str(next(te)))
 
         used_style_color = set()
 
