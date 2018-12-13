@@ -347,6 +347,7 @@ class TestNextUniqueStyleCombo(object):
         res.append(dict_to_tuple(utils.next_unique_style_combo((marker_cycler, len_l), (color_cycler, len_c), used_style_color)))
         res.append(dict_to_tuple(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)))
 
+        assert tuple(res) == ''
         print(str(res))
         assert False
 
