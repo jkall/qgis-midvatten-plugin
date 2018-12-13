@@ -339,11 +339,12 @@ class TestNextUniqueStyleCombo(object):
         next(marker_cycler)
         used_style_color = set()
 
-        next_combo = utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
-        next_combo += utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
-        next_combo += utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
+        res = []
+        res.append(tuple(sorted(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color))))
+        res.append(tuple(sorted(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color))))
+        res.append(tuple(sorted(utils.next_unique_style_combo((marker_cycler, len_l), (color_cycler, len_c), used_style_color))))
 
-        print(str(next_combo))
+        print(str(res))
         assert False
 
 
