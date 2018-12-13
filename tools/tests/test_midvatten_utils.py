@@ -23,6 +23,7 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import object
 import io
+from cycler import cycler
 
 import db_utils
 import midvatten_utils as utils
@@ -315,6 +316,20 @@ class TestGeneralExceptionHandler(object):
         assert one_arg_args_kwargs('a')[0] == 'a'
         assert len(one_arg_args_kwargs('a')[1]) == 0
         assert len(one_arg_args_kwargs('a')[2]) == 0
+
+@attr(status='only')
+class TextNextUniqueStyleCombo(object):
+    def text_next_unique_style_combo(self):
+        color_cycler = cycler('color', ['r', 'g', 'b'])
+        marker_cycler = cycler('marker', ['o', '+', 's'])
+        line_cycler = cycler('linestyle', ['-', '--', '-.'])
+
+        used_style_color = set()
+
+        combo = utils.next_unique_style_combo(line_cycler, color_cycler, used_style_color)
+
+        print(str(combo))
+        assert False
 
 
 

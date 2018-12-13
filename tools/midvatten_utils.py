@@ -37,7 +37,6 @@ import shutil
 import glob
 import io
 import codecs
-import six
 import copy
 import csv
 import datetime
@@ -2006,3 +2005,25 @@ def get_save_file_name_no_extension(**kwargs):
         return filename[0]
 
 
+def cycler_length(_cycler):
+    return len(tuple(_cycler.by_key())[0][1])
+
+def next_unique_style_combo(stylecycler, colorcycler, used_style_color):
+    s_length = cycler_length(stylecycler)
+    c_length = cycler_length(colorcycler)
+
+    # Go one lap around the cycle
+    [next(stylecycler) for _ in range(s_length - 1)]
+
+    for _ in range(s_length):
+        s = next(stylecycler)
+        for _ in range(c_length):
+            c = next(colorcycler)
+            combo = (tuple(s), tuple(c))
+            if combo not in used_style_color:
+                used_style_color.add(combo)
+                return (s, c)
+    else:
+        MessagebarAndLog.info(
+            bar_msg=returnunicode(QCoreApplication.translate('Customplot', 'Style cycler ran out of unique combinations')))
+        return (next(stylecycler), next(colorcycler))
