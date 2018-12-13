@@ -335,6 +335,7 @@ class TestNextUniqueStyleCombo(object):
         len_l = len(line_cycler)
         line_cycler = line_cycler()
 
+        next(color_cycler)
         used_style_color = set()
 
         combo = utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
