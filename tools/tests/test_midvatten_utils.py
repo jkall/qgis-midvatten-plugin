@@ -336,11 +336,14 @@ class TestNextUniqueStyleCombo(object):
         line_cycler = line_cycler()
 
         next(line_cycler)
+        next(marker_cycler)
         used_style_color = set()
 
-        combo = utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
+        next_combo = utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
+        next_combo += utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
+        next_combo += utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)
 
-        print(str(combo))
+        print(str(next_combo))
         assert False
 
 
