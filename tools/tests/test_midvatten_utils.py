@@ -324,7 +324,7 @@ class TestNextUniqueStyleCombo(object):
         perform_all_replacements()
 
     def test_next_unique_style_combo(self):
-        color_cycler = (cycler('color', ['r', 'g', 'b'])))()
+        color_cycler = (cycler('color', ['r', 'g', 'b']))()
         marker_cycler = (cycler('marker', ['o', '+', 's']))()
         line_cycler = (cycler('linestyle', ['-', '--', '-.']))()
 
