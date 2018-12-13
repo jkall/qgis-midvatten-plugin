@@ -323,7 +323,7 @@ class TestNextUniqueStyleCombo(object):
     def setUp(self):
         perform_all_replacements()
 
-    def text_next_unique_style_combo(self):
+    def test_next_unique_style_combo(self):
         color_cycler = cycler('color', ['r', 'g', 'b'])
         marker_cycler = cycler('marker', ['o', '+', 's'])
         line_cycler = cycler('linestyle', ['-', '--', '-.'])
@@ -335,8 +335,6 @@ class TestNextUniqueStyleCombo(object):
         print(str(combo))
         assert False
 
-    def test_2(self):
-        assert False
 
 
 
