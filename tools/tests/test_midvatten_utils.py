@@ -319,7 +319,7 @@ class TestGeneralExceptionHandler(object):
         assert len(one_arg_args_kwargs('a')[2]) == 0
 
 @attr(status='only')
-class TextNextUniqueStyleCombo(object):
+class TestNextUniqueStyleCombo(object):
     def setUp(self):
         perform_all_replacements()
 
