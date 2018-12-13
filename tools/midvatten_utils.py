@@ -2004,8 +2004,8 @@ def get_save_file_name_no_extension(**kwargs):
     else:
         return filename[0]
 
-def dict_to_list(adict):
-    return [(k, v) for k, v in sorted(adict.items())]
+def dict_to_tuple(adict):
+    return tuple([(k, v) for k, v in sorted(adict.items())])
 
 def next_unique_style_combo(stylecycler_len, colorcycler_len, used_style_color):
     stylecycler, s_length = stylecycler_len
@@ -2019,7 +2019,7 @@ def next_unique_style_combo(stylecycler_len, colorcycler_len, used_style_color):
             c = next(colorcycler)
             next_combo = dict(c)
             next_combo.update(s)
-            next_combo_str = dict_to_list(next_combo)
+            next_combo_str = dict_to_tuple(next_combo)
             if next_combo_str not in used_style_color:
                 used_style_color.add(next_combo_str)
                 return next_combo
