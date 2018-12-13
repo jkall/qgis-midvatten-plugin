@@ -298,3 +298,6 @@ def compare_strings(str1, str2):
     else:
         return 'The same'
 
+def dict_to_list(adict):
+    return [(k, v) for k, v in sorted(adict.items())]
+

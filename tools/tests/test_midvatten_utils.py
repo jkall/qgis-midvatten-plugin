@@ -34,7 +34,7 @@ from nose.plugins.attrib import attr
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
-from .utils_for_tests import create_test_string
+from .utils_for_tests import create_test_string, dict_to_list
 
 
 @attr(status='on')
@@ -339,10 +339,12 @@ class TestNextUniqueStyleCombo(object):
         next(marker_cycler)
         used_style_color = set()
 
+
+
         res = []
-        res.append(tuple(sorted(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color))))
-        res.append(tuple(sorted(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color))))
-        res.append(tuple(sorted(utils.next_unique_style_combo((marker_cycler, len_l), (color_cycler, len_c), used_style_color))))
+        res.append(dict_to_list(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)))
+        res.append(dict_to_list(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)))
+        res.append(dict_to_list(utils.next_unique_style_combo((marker_cycler, len_l), (color_cycler, len_c), used_style_color)))
 
         print(str(res))
         assert False
