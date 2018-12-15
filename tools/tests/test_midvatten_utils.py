@@ -380,14 +380,11 @@ class TestNextUniqueStyleCombo(object):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.np.random.rand')
-    def test_next_unique_style_combo_ran_out(self, mock_messagebar, mock_np_random_rand):
+    def test_next_unique_style_combo_ran_out(self, mock_np_random_rand, mock_messagebar):
         # TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
         color_cycler = (cycler('color', ['r', 'g']))
         line_cycler = (cycler('linestyle', ['-', '--']))
 
-        #random_colors = lambda: next((i for i in ['123', '456', '789']))
-        #return_color = mock.MagicMock()
-        #return_color
         mock_np_random_rand.side_effect = ['123', '456', '789']
 
         color_cycle_len = len(color_cycler)
@@ -409,17 +406,13 @@ class TestNextUniqueStyleCombo(object):
         res = tuple(res)
         print(str(res))
         print(str(mock_messagebar.mock_calls))
-        assert res == ((('color', 'r'), ('linestyle', '-'), ('marker', 'o')),
-                       (('color', 'g'), ('linestyle', '-'), ('marker', 'o')),
-                       (('color', 'b'), ('marker', 'o')),
-                       (('color', 'r'), ('linestyle', '-')),
-                       (('color', 'b'), ('linestyle', '-'), ('marker', 'o')),
-                       (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
-
-
-
-
-
+        assert res == ((('color', 'r'), ('linestyle', '-')),
+                       (('color', 'g'), ('linestyle', '-')),
+                       (('color', 'r'), ('linestyle', '--')),
+                       (('color', 'g'), ('linestyle', '--')),
+                       (('color', '123'), ('linestyle', '--')),
+                       (('color', '456'), ('linestyle', '--')),
+                       (('color', '789'), ('linestyle', '--')))
 
 
 
