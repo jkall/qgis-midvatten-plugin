@@ -1,7 +1,7 @@
 axes.labelsize: 8
 axes.titlesize: 10
 axes.midv_line_cycle: cycler('linestyle', ['-', '--', '-.', ':'])
-axes.midv_marker_cycle: cycler('marker', ['o',
+axes.midv_marker_cycle: cycler('marker', ['o', '+', 's', 'x'])
 legend.fontsize: 6
 lines.linewidth: 1.0
 lines.markersize: 6.0
