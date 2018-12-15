@@ -364,8 +364,9 @@ class TestNextUniqueStyleCombo(object):
 
         res = []
         res.append(dict_to_tuple(next(color_style_cycler)))
-        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_style_cycler)))
         res.append(dict_to_tuple(next(color_marker_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
         res.append(dict_to_tuple(next(color_style_cycler)))
         res = tuple(res)
         print(str(res))
