@@ -386,7 +386,9 @@ class TestNextUniqueStyleCombo(object):
         line_cycler = (cycler('linestyle', ['-', '--']))
 
         #random_colors = lambda: next((i for i in ['123', '456', '789']))
-        mock_np_random_rand.side_effect(['123', '456', '789'])
+        #return_color = mock.MagicMock()
+        #return_color
+        mock_np_random_rand.side_effect = ['123', '456', '789']
 
         color_cycle_len = len(color_cycler)
         color_cycle = color_cycler()
