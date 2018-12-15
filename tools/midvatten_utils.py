@@ -1764,29 +1764,7 @@ class MatplotlibStyles(object):
         self.save_as_button = save_as_button
 
         self.style_extension = '.mplstyle'
-        self.style_folder = os.path.join(mpl.get_configdir(), 'stylelib')
-        if os.path.isdir(mpl.get_configdir()):
-            if os.path.exists(self.style_folder):
-                if not os.path.isdir(self.style_folder):
-                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
-                                                                                              '''Matplotlib style folder %s was not a directory!'''))%self.style_folder)
-            else:
-                try:
-                    os.makedirs(self.style_folder)
-                except Exception as e:
-                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
-                                                                                              '''Could not create style folder %s, see log message panel!''')) % self.style_folder,
-                                             log_msg=str(e))
-                else:
-                    MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
-                                                                                              '''Matplotlib style folder created %s.''')) % self.style_folder)
-        else:
-            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles', '''Matplotlib config directory not found. User styles not used.''')))
-
-
-
-        if not os.path.isdir(self.style_folder):
-            os.mkdir(self.style_folder)
+        self._style_folder = os.path.join(mpl.get_configdir(), 'stylelib')
 
         self.ms = msettings
 
@@ -1796,8 +1774,8 @@ class MatplotlibStyles(object):
 
         self.update_style_list()
 
-        if not os.path.isfile(self.filename_from_style(self.defaultstyle_stylename[1])):
-            self.save_style_to_stylelib(self.defaultstyle_stylename)
+        self.save_default_style_to_stylelib()
+
         try:
             last_used_style = self.ms.settingsdict[self.last_used_style_settingskey]
         except:
@@ -1810,6 +1788,12 @@ class MatplotlibStyles(object):
         self.available_settings_button.clicked.connect(lambda x: self.available_settings_to_log())
         self.save_as_button.clicked.connect(lambda x: self.save_as())
 
+    @general_exception_handler
+    def save_default_style_to_stylelib(self):
+        if not os.path.isfile(self.filename_from_style(self.defaultstyle_stylename[1])):
+            self.save_style_to_stylelib(self.defaultstyle_stylename)
+
+    @general_exception_handler
     def save_style_to_stylelib(self, stylestring_stylename):
         filename = self.filename_from_style(stylestring_stylename[1])
         with io.open(filename, 'w', encoding='utf-8') as of:
@@ -1823,6 +1807,7 @@ class MatplotlibStyles(object):
 
     def style_from_filename(self, filename):
         return os.path.splitext(os.path.basename(filename))
+
 
     def filename_from_style(self, style):
         filename = os.path.join(self.style_folder, style + self.style_extension)
@@ -1877,10 +1862,40 @@ class MatplotlibStyles(object):
                         return
                 shutil.copy2(filename, new_fullname)
             self.update_style_list()
-            
+
+    @property
+    def style_folder(self):
+        if os.path.exists(self._style_folder):
+            if not os.path.isdir(self._style_folder):
+                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
+                                                                                          '''Matplotlib style folder %s was not a directory!'''))%self.style_folder)
+                return None
+            else:
+                return self._style_folder
+        else:
+            answer = Askuser(question="YesNo", msg=returnunicode(
+                QCoreApplication.translate('MatplotlibStyles', "The matplotlib style folder %s didn't exist, Do you want to create it?"))%self._style_folder)
+            if not answer:
+                return UserInterruptError()
+            else:
+                try:
+                    os.makedirs(self._style_folder)
+                except Exception as e:
+                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('MatplotlibStyles',
+                                                                                              '''Could not create style folder %s, see log message panel!''')) % self.style_folder,
+                                             log_msg=str(e))
+                    raise
+                else:
+                    return self._style_folder
+
     @general_exception_handler
     def save_as(self):
-        filename = get_save_file_name_no_extension(parent=None, caption=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Choose a file name')), directory=self.style_folder, filter='mplstyle (*.mplstyle)')
+        try:
+            suggested_folder = self.style_folder
+        except:
+            suggested_folder = ''
+
+        filename = get_save_file_name_no_extension(parent=None, caption=returnunicode(QCoreApplication.translate('MatplotlibStyles', 'Choose a file name')), directory=suggested_folder, filter='mplstyle (*.mplstyle)')
         if not filename.endswith('.mplstyle'):
             basename, ext = os.path.splitext(filename)
             filename = basename + '.mplstyle'
@@ -1890,6 +1905,7 @@ class MatplotlibStyles(object):
             of.write(rcparams)
         self.update_style_list()
 
+    @general_exception_handler
     def open_folder(self):
         url = QtCore.QUrl(self.style_folder, QtCore.QUrl.TolerantMode)
         QDesktopServices.openUrl(url)
