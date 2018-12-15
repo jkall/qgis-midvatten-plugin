@@ -371,9 +371,58 @@ class TestNextUniqueStyleCombo(object):
         res.append(dict_to_tuple(next(color_style_cycler)))
         res = tuple(res)
         print(str(res))
-        assert res == (
-        (('color', 'r'), ('linestyle', '-')), (('color', 'g'), ('linestyle', '-')), (('color', 'b'), ('marker', 'o')),
-        (('color', 'b'), ('linestyle', '-')))
+        assert res == ((('color', 'r'), ('linestyle', '-'), ('marker', 'o')),
+                       (('color', 'g'), ('linestyle', '-'), ('marker', 'o')),
+                       (('color', 'b'), ('marker', 'o')),
+                       (('color', 'r'), ('linestyle', '-')),
+                       (('color', 'b'), ('linestyle', '-'), ('marker', 'o')),
+                       (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_next_unique_style_combo_ran_out(self, mock_messagebar):
+        # TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
+        color_cycler = (cycler('color', ['r', 'g']))
+        line_cycler = (cycler('linestyle', ['-', '--']))
+
+        color_cycle_len = len(color_cycler)
+        color_cycle = color_cycler()
+
+        used_style_color_combo = set()
+
+        color_line_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+
+        res = []
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+
+        res = tuple(res)
+        print(str(res))
+        print(str(mock_messagebar.mock_calls))
+        assert res == ((('color', 'r'), ('linestyle', '-'), ('marker', 'o')),
+                       (('color', 'g'), ('linestyle', '-'), ('marker', 'o')),
+                       (('color', 'b'), ('marker', 'o')),
+                       (('color', 'r'), ('linestyle', '-')),
+                       (('color', 'b'), ('linestyle', '-'), ('marker', 'o')),
+                       (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
