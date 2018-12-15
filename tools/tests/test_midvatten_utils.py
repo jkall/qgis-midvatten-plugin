@@ -341,7 +341,9 @@ class TestNextUniqueStyleCombo(object):
         res.append(dict_to_tuple(next(color_marker_cycle)))
         res.append(dict_to_tuple(next(color_marker_cycle)))
         res.append(dict_to_tuple(next(color_line_cycle)))
-        assert tuple(res) == ((('color', 'r'), ('linestyle', '-')), (('color', 'g'), ('linestyle', '-')), (('color', 'b'), ('marker', 'o')), (('color', 'b'), ('linestyle', '-')))
+        res = tuple(res)
+        print(str(res))
+        assert res == ((('color', 'r'), ('linestyle', '-')), (('color', 'g'), ('linestyle', '-')), (('color', 'b'), ('marker', 'o')), (('color', 'b'), ('linestyle', '-')))
 
     def test_next_unique_style_combo_line_and_markers(self):
         #TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
