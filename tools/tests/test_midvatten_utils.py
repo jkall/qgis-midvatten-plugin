@@ -319,12 +319,12 @@ class TestGeneralExceptionHandler(object):
         assert len(one_arg_args_kwargs('a')[1]) == 0
         assert len(one_arg_args_kwargs('a')[2]) == 0
 
-@attr(status='only')
-class TestNextUniqueStyleCombo(object):
+@attr(status='on')
+class TestContinousColorCycle(object):
     def setUp(self):
         perform_all_replacements()
 
-    def test_next_unique_style_combo(self):
+    def test_continous_color_cycle_combo(self):
         color_cycler = (cycler('color', ['r', 'g', 'b']))
         marker_cycler = (cycler('marker', ['o', '+', 's']))
         line_cycler = (cycler('linestyle', ['-', '--', '-.']))
@@ -346,7 +346,7 @@ class TestNextUniqueStyleCombo(object):
         print(str(res))
         assert res == ((('color', 'r'), ('linestyle', '-')), (('color', 'g'), ('linestyle', '-')), (('color', 'b'), ('marker', 'o')), (('color', 'b'), ('linestyle', '-')))
 
-    def test_next_unique_style_combo_line_and_markers(self):
+    def test_continous_color_cycle_line_and_markers(self):
         #TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
         color_cycler = (cycler('color', ['r', 'g', 'b']))
         marker_cycler = (cycler('marker', ['o', '+', 's']))
@@ -381,7 +381,7 @@ class TestNextUniqueStyleCombo(object):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.np.random.rand')
-    def test_next_unique_style_combo_ran_out(self, mock_np_random_rand, mock_messagebar):
+    def test_continous_color_cycle_ran_out(self, mock_np_random_rand, mock_messagebar):
         # TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
         color_cycler = (cycler('color', ['r', 'g']))
         line_cycler = (cycler('linestyle', ['-', '--']))
