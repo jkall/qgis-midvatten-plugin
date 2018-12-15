@@ -30,6 +30,7 @@ import db_utils
 import midvatten_utils as utils
 import mock
 import nose
+from mock import call
 from nose.plugins.attrib import attr
 
 import utils_for_tests
@@ -413,6 +414,10 @@ class TestNextUniqueStyleCombo(object):
                        (('color', '123'), ('linestyle', '-')),
                        (('color', '456'), ('linestyle', '--')),
                        (('color', '789'), ('linestyle', '-')))
+        assert mock_messagebar.mock_calls == [call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!'),
+         call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!'),
+         call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!')]
+
 
 
 
