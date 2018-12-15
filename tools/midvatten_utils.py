@@ -1880,7 +1880,7 @@ class MatplotlibStyles(object):
                 return self._style_folder
         else:
             answer = Askuser(question="YesNo", msg=returnunicode(
-                QCoreApplication.translate('MatplotlibStyles', "The matplotlib style folder %s didn't exist, Do you want to create it?"))%self._style_folder)
+                QCoreApplication.translate('MatplotlibStyles', "The matplotlib style folder %s didn't exist, Do you want to create it?\n\nIf not created, custom user styles will not be used."))%self._style_folder)
             if not answer:
                 return UserInterruptError()
             else:
