@@ -328,22 +328,19 @@ class TestNextUniqueStyleCombo(object):
         marker_cycler = (cycler('marker', ['o', '+', 's']))
         line_cycler = (cycler('linestyle', ['-', '--', '-.']))
 
-        len_c = len(color_cycler)
-        color_cycler = color_cycler()
-        len_m = len(marker_cycler)
-        marker_cycler = marker_cycler()
-        len_l = len(line_cycler)
-        line_cycler = line_cycler()
+        color_cycle_len = len(color_cycler)
+        color_cycle = color_cycler()
 
-        next(line_cycler)
-        next(marker_cycler)
-        used_style_color = set()
+        used_style_color_combo = set()
+        color_line_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_marker_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, marker_cycler, used_style_color_combo)
+
 
         res = []
-        res.append(dict_to_tuple(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)))
-        res.append(dict_to_tuple(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)))
-        res.append(dict_to_tuple(utils.next_unique_style_combo((marker_cycler, len_l), (color_cycler, len_c), used_style_color)))
-        res.append(dict_to_tuple(utils.next_unique_style_combo((line_cycler, len_l), (color_cycler, len_c), used_style_color)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_marker_cycle)))
+        res.append(dict_to_tuple(next(color_marker_cycle)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
         assert tuple(res) == ((('color', 'r'), ('linestyle', '-')), (('color', 'g'), ('linestyle', '-')), (('color', 'b'), ('marker', 'o')), (('color', 'b'), ('linestyle', '-')))
 
     def test_next_unique_style_combo_line_and_markers(self):

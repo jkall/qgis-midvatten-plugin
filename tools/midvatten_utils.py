@@ -2007,25 +2007,35 @@ def get_save_file_name_no_extension(**kwargs):
 def dict_to_tuple(adict):
     return tuple([(k, v) for k, v in sorted(adict.items())])
 
-def next_unique_style_combo(stylecycler_len, colorcycler_len, used_style_color):
-    stylecycler, s_length = stylecycler_len
-    colorcycler, c_length = colorcycler_len
-    # Go one lap around the cycle
-    [next(stylecycler) for _ in range(s_length - 1)]
 
-    for _ in range(s_length):
-        s = next(stylecycler)
-        for _ in range(c_length):
-            c = next(colorcycler)
-            next_combo = dict(c)
-            next_combo.update(s)
-            next_combo_str = dict_to_tuple(next_combo)
-            if next_combo_str not in used_style_color:
-                used_style_color.add(next_combo_str)
-                return next_combo
-    else:
-        MessagebarAndLog.info(
-            bar_msg=returnunicode(QCoreApplication.translate('Customplot', 'Style cycler ran out of unique combinations')))
-        next_combo = dict(next(stylecycler))
-        next_combo.update(next(colorcycler))
-        return next_combo
+class ContinousColorCycle(object):
+    def __init__(self, color_cycle, color_cycle_len, style_cycler, used_style_color_combo):
+        self.color_cycle = color_cycle
+        self.color_cycle_len = color_cycle_len
+        self.style_cycler_len = len(style_cycler)
+        self.style_cycle = style_cycler()
+        # Initiate the first to match the logic in __next__
+        next(self.style_cycle)
+        self.used_style_color_combo = used_style_color_combo
+
+    def __next__(self):
+        # Go one lap around the cycle
+        [next(self.style_cycle) for _ in range(self.style_cycler_len - 1)]
+
+        for _ in range(self.style_cycler_len):
+            s = next(self.style_cycle)
+            for _ in range(self.color_cycle_len):
+                c = next(self.color_cycle)
+                next_combo = dict(c)
+                next_combo.update(s)
+                next_combo_str = dict_to_tuple(next_combo)
+                if next_combo_str not in self.used_style_color_combo:
+                    self.used_style_color_combo.add(next_combo_str)
+                    return next_combo
+        else:
+            MessagebarAndLog.info(
+                bar_msg=returnunicode(QCoreApplication.translate('Customplot', 'Style cycler ran out of unique combinations')))
+            next_combo = dict(next(self.style_cycle))
+            next_combo.update(next(self.color_cycle))
+            return next_combo
+
