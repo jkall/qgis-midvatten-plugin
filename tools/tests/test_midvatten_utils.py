@@ -410,9 +410,9 @@ class TestNextUniqueStyleCombo(object):
                        (('color', 'g'), ('linestyle', '-')),
                        (('color', 'r'), ('linestyle', '--')),
                        (('color', 'g'), ('linestyle', '--')),
-                       (('color', '123'), ('linestyle', '--')),
+                       (('color', '123'), ('linestyle', '-')),
                        (('color', '456'), ('linestyle', '--')),
-                       (('color', '789'), ('linestyle', '--')))
+                       (('color', '789'), ('linestyle', '-')))
 
 
 
