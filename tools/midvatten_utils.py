@@ -1924,7 +1924,14 @@ class MatplotlibStyles(object):
         mpl.style.reload_library()
         selected_style = self.get_selected_style()
         self.style_list.clear()
-        for style in sorted(plt.style.available):
+        available = sorted(plt.style.available)
+        midv = [x for x in available if 'midv' in x]
+        other = [x for x in available if 'midv' not in x]
+        styles = ['default']
+        styles.extend(midv)
+        styles.extend(other)
+
+        for style in styles:
             qlistwidgetitem = qgis.PyQt.QtWidgets.QListWidgetItem()
             qlistwidgetitem.setText(style)
             self.style_list.addItem(qlistwidgetitem)
