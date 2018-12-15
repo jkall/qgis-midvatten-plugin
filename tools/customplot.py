@@ -232,10 +232,23 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def drawPlot_all(self):
         utils.start_waiting_cursor()  # show the user this may take a long time...
 
-        ccycler = mpl.rcParams['axes.prop_cycle']
-        self.line_cycler = (mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
-        self.marker_cycler = (mpl.rcParams['axes.midv_marker_cycle'] * ccycler)()
-        self.line_and_marker_cycler = (mpl.rcParams['axes.midv_marker_cycle']* mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
+        continous_color = True
+        if continous_color:
+            self.used_style_color_combo = set()
+            color_cycler = mpl.rcParams['axes.prop_cycle']
+            color_cycle_len = len(color_cycler)
+            color_cycle = color_cycler()
+            self.line_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_line_cycle'], self.used_style_color_combo)
+            self.marker_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_marker_cycle'], self.used_style_color_combo)
+            self.line_and_marker_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len,
+                                                                    mpl.rcParams['axes.midv_marker_cycle'] * mpl.rcParams['axes.midv_line_cycle'],
+                                                                    self.used_style_color_combo)
+        else:
+            ccycler = mpl.rcParams['axes.prop_cycle']
+            self.line_cycler = (mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
+            self.marker_cycler = (mpl.rcParams['axes.midv_marker_cycle'] * ccycler)()
+            self.line_and_marker_cycler = (
+            mpl.rcParams['axes.midv_marker_cycle'] * mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
 
         self.init_figure()
 
