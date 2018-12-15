@@ -379,10 +379,14 @@ class TestNextUniqueStyleCombo(object):
                        (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_next_unique_style_combo_ran_out(self, mock_messagebar):
+    @mock.patch('midvatten_utils.np.random.rand')
+    def test_next_unique_style_combo_ran_out(self, mock_messagebar, mock_np_random_rand):
         # TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
         color_cycler = (cycler('color', ['r', 'g']))
         line_cycler = (cycler('linestyle', ['-', '--']))
+
+        random_colors = (i for i in ['123', '456', '789'])
+        mock_np_random_rand.side_effect(lambda: next(random_colors))
 
         color_cycle_len = len(color_cycler)
         color_cycle = color_cycler()

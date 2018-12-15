@@ -2036,6 +2036,7 @@ class ContinousColorCycle(object):
             MessagebarAndLog.info(
                 bar_msg=returnunicode(QCoreApplication.translate('Customplot', 'Style cycler ran out of unique combinations')))
             next_combo = dict(next(self.style_cycle))
+            next_combo.update({'color': np.random.rand(3, 1)})
             next_combo.update(next(self.color_cycle))
             return next_combo
 
