@@ -347,7 +347,32 @@ class TestNextUniqueStyleCombo(object):
 
     def test_next_unique_style_combo_line_and_markers(self):
         #TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
-        assert False
+        color_cycler = (cycler('color', ['r', 'g', 'b']))
+        marker_cycler = (cycler('marker', ['o', '+', 's']))
+        line_cycler = (cycler('linestyle', ['-', '--', '-.']))
+
+        style_cycler = (marker_cycler*line_cycler)
+
+        color_cycle_len = len(color_cycler)
+        color_cycle = color_cycler()
+
+        used_style_color_combo = set()
+        color_style_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len, style_cycler, used_style_color_combo)
+        color_line_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_marker_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, marker_cycler,
+                                                       used_style_color_combo)
+
+        res = []
+        res.append(dict_to_tuple(next(color_style_cycler)))
+        res.append(dict_to_tuple(next(color_line_cycle)))
+        res.append(dict_to_tuple(next(color_marker_cycle)))
+        res.append(dict_to_tuple(next(color_style_cycler)))
+        res = tuple(res)
+        print(str(res))
+        assert res == (
+        (('color', 'r'), ('linestyle', '-')), (('color', 'g'), ('linestyle', '-')), (('color', 'b'), ('marker', 'o')),
+        (('color', 'b'), ('linestyle', '-')))
+
 
 
 
