@@ -654,7 +654,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     lineplot, = self.secax.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                     self.p.append(lineplot)
 
-                    self.plot_graded_dems(temp_memorylayer, xarray, DEMdata)
+                    if layername == 'dem_alvk_skut':
+                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata)
         except:
             raise
         finally:
@@ -687,8 +688,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             _y.append(DEMdata[idx])
             if prev_geoshort is not None and prev_geoshort != geoshort:
                 plot_spec.append([prev_geoshort, _x, _y])
-                _x = []
-                _y = []
+                _x = [xarray[idx]]
+                _y = [DEMdata[idx]]
             prev_geoshort = geoshort
         else:
             plot_spec.append([prev_geoshort, _x, _y])
@@ -866,14 +867,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         3 = UnknownGeometry,
         4 = ?
         """
-
         try:
             if layer.geometryType() != 1:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
                 return False
         except:
             utils.MessagebarAndLog.critical(
-                bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry")) % layer.name())
+                bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is not MultiLineString geometry")) % layer.name())
             return False
 
         self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, ['dummyfield TEXT'], ['geometry', 'LINESTRING', srid])
@@ -881,7 +881,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         feature = selected_features[0]
 
         geom = feature.geometry()
-        wkt = geom.asWkt()
+        geom_linestring = geom.convertToType(1)
+        wkt = geom_linestring.asWkt()
         sql = """INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid)
         self.dbconnection.execute(sql)
         return True

@@ -796,7 +796,9 @@ class midvatten(object):
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         if not isinstance(SectionLineLayer, QgsVectorLayer):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten",
-                                                                               'You must activate the vector line layer that defines the section.'))
+                                                                               'You must activate the vector line layer that defines the section.'),
+                                            log_msg=ru(QCoreApplication.translate("Midvatten",
+                                                                               'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(SectionLineLayer)))
             raise utils.UsageError()
 
         msg = None
@@ -805,10 +807,14 @@ class midvatten(object):
             for feat in SectionLineLayer.getFeatures():
                 geom = feat.geometry()
                 # ...and that the active layer is a line vector layer
-                if geom.wkbType() == QgsWkbTypes.LineString:
+                if geom.wkbType() == QgsWkbTypes.LineString or geom.wkbType() == QgsWkbTypes.MultiLineString:
                     pass
                 else:
-                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'))
+                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
+                                                    log_msg=ru(QCoreApplication.translate("Midvatten",
+                                                                                          'The feature geometry must be of type LineString, but was "%s".')) % str(
+                                                        str(type(geom.wkbType()))))
+
                     raise utils.UsageError()
         else:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer and select exactly one feature that defines the section'))
@@ -817,8 +823,6 @@ class midvatten(object):
         #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
         obs_points_layer = utils.find_layer('obs_points')
         selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
-        print(str(selectedobspoints))
-        obsidlist = []
         if len(selectedobspoints)>1:
             # We cannot send unicode as string to sql because it would include the '
             # Made into tuple because module sectionplot depends on obsid being a tuple
