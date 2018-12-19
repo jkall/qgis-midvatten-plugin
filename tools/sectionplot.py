@@ -17,6 +17,7 @@ from builtins import range
 import copy
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+import matplotlib as mpl
 import os
 from functools import partial
 from matplotlib import container, patches
@@ -39,6 +40,7 @@ from midvatten_utils import PlotTemplates
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
+from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu
 
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
@@ -80,13 +82,27 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
         self.template_plot_label.setOpenExternalLinks(True)
 
-
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
         #show the user this may take a long time...
         utils.start_waiting_cursor()
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
+
+        template_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions', 'secplot_templates')
+        self.secplot_templates = PlotTemplates(self, self.template_list, self.edit_button, self.load_button,
+                                               self.save_as_button, self.import_button, self.remove_button,
+                                               template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                               defs.secplot_default_template(), self.ms)
+
+        rcparams = self.secplot_templates.loaded_template.get('rcParams', {})
+        for k, v in rcparams.items():
+            try:
+                mpl.rcParams[k] = v
+            except KeyError:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', "rcParams key %s didn't exist"))%ru(k))
+
+
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)
@@ -134,15 +150,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         
         #get PlotData
         self.get_plot_data()
-
-        template_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions', 'secplot_templates')
-        self.secplot_templates = PlotTemplates(self, self.template_list, self.edit_button, self.load_button,
-                                               self.save_as_button, self.import_button, self.remove_button,
-                                               template_folder, 'secplot_templates', 'secplot_loaded_template',
-                                               defs.secplot_default_template(), self.ms)
-
-
-
 
         #draw plot
         self.draw_plot()
@@ -702,8 +709,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             else:
                 geoshort = ru(geoshort).lower()
 
-            plotlable = self.get_plot_label_name('{}_{}'.format(poly_layer_name, geoshort), self.Labels)
-
+            plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, geoshort), self.Labels)
 
             try:
                 hatch = self.Hatches[geoshort.lower()]
