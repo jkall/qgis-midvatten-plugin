@@ -38,6 +38,8 @@ from midvatten_utils import returnunicode as ru
 from midvatten_utils import PlotTemplates
 
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
+
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from qgis.PyQt import uic
@@ -637,19 +639,45 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
             temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
             for layername in self.ms.settingsdict['secplotselectedDEMs']:
-                DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
 
-                plotlable = self.get_plot_label_name(layername, self.Labels)
+                DEMdata = sampling(temp_memorylayer, self.rastItems[str(layername)])
 
-                settings = self.secplot_templates.loaded_template['dems_Axes_plot'].get(plotlable,
-                                                                                 self.secplot_templates.loaded_template['dems_Axes_plot']['DEFAULT'])
-                self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable] = copy.deepcopy(settings)
-                settings = self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable]
-                settings['label'] = settings.get('label', plotlable)
-                self.Labels.append(settings['label'])
+                poly_layer_name = 'soil'
+                poly_geoshortfield = 'JBAS_TEXT'
+                if poly_layer_name:
+                    poly_layer = utils.find_layer(poly_layer_name)
+                    geoshorts = self.sample_polygon(self, temp_memorylayer, poly_layer, poly_geoshortfield)
 
-                lineplot, = self.secax.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
-                self.p.append(lineplot)
+                plot_spec = []
+                _x = []
+                _y = []
+                prev_geoshort = None
+                for idx, geoshort in enumerate(geoshorts):
+                    if prev_geoshort is not None and prev_geoshort != geoshort:
+                        plot_spec.append([prev_geoshort, _x, _y])
+                        _x.append(xarray[idx])
+                        _y.append(DEMdata[idx])
+                        prev_geoshort = geoshort
+                    else:
+                        _x.append(xarray[idx])
+                        _y.append(DEMdata[idx])
+                else:
+                    plot_spec.append([prev_geoshort, _x, _y])
+
+                #TODO: Gå igenom listan på alla punkters geoshorts. Varje gång föregående geoshort inte är samma som
+                # aktuell geoshort, plotta listan av värden.
+                for geoshort, x_vals, y_vals in plot_spec:
+                    plotlable = self.get_plot_label_name(layername + '_' + geoshort, self.Labels)
+
+                    settings = self.secplot_templates.loaded_template['dems_Axes_plot'].get(plotlable,
+                                                                                     self.secplot_templates.loaded_template['dems_Axes_plot']['DEFAULT'])
+                    self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable] = copy.deepcopy(settings)
+                    settings = self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable]
+                    settings['label'] = settings.get('label', plotlable)
+                    self.Labels.append(settings['label'])
+
+                    lineplot, = self.secax.plot(x_vals, y_vals, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+                    self.p.append(lineplot)
 
             QgsProject.instance().removeMapLayer(temp_memorylayer.id())
 
@@ -885,3 +913,31 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         prev_middle = child.get_x() + child.get_width()/2
                         child.set_width(barwidth)
                         child.set_x(prev_middle - child.get_width()/2)
+
+    def sample_polygon(self, pointLayer, polyLayer, poly_geoshortfield):
+        pointProvider = pointLayer.dataProvider()
+        polyProvider = polyLayer.dataProvider()
+
+        sampled_values = []
+
+        for pointFeat in pointProvider.getFeatures():
+            attr = None
+            pointGeom = pointFeat.geometry()
+            if pointGeom.wkbType() == QgsWkbTypes.WKBMultiPoint:
+                pointPoint = pointGeom.asMultiPoint()[0]
+            else:
+                pointPoint = pointGeom.asPoint()
+            bBox = QgsRectangle(pointPoint.x() - 0.001, pointPoint.y() - 0.001, pointPoint.x() + 0.001,
+                                pointPoint.y() + 0.001)  # reuseable rectangle buffer around the point feature
+
+            pointGeom = QgsGeometry().fromPoint(pointPoint)
+
+            for iFeat in polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox)):
+                if pointGeom.intersects(iFeat.geometry()):
+                    polyFeat = iFeat
+                    attr = polyFeat.attributes()[polyProvider.fieldNameIndex(poly_geoshortfield)]
+            sampled_values.append(attr)
+        return sampled_values
+
+
+
