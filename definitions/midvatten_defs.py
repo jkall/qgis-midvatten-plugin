@@ -512,6 +512,7 @@ def PlotColorDict():
             "Peat" : "DarkGray",
             "Fill":"white"}
     #print Dict#debug!
+    Dict = {k.lower(): v for k, v in Dict.items()}
     return Dict
 
 def PlotHatchDict():
@@ -556,6 +557,7 @@ def PlotHatchDict():
             "Till" : "/",
             "Peat" : "+",
             "Fill":"+"}
+    Dict = {k.lower(): v for k, v in Dict.items()}
     return Dict
 
 def staff_list():

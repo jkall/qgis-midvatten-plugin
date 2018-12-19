@@ -63,7 +63,7 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions():
                     old_f = getattr(self, old_func)
                     old_f(*args, **kwargs)
             else:
-                self.old_func(*args, **kwargs)
+                getattr(self, old_func)(*args, **kwargs)
         return use_style_context
     for old_func in ['edit_parameters', 'configure_subplots', 'save_figure']:
         new_name = '_midv_old_{}'.format(old_func)

@@ -636,38 +636,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.mplplotlayout.addWidget( self.mpltoolbar )
 
     def plot_dems(self):
-        if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
-            temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
-            for layername in self.ms.settingsdict['secplotselectedDEMs']:
+        try:
+            if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
+                temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
+                for layername in self.ms.settingsdict['secplotselectedDEMs']:
+                    DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
 
-                DEMdata = sampling(temp_memorylayer, self.rastItems[str(layername)])
-
-                poly_layer_name = 'soil'
-                poly_geoshortfield = 'JBAS_TEXT'
-                if poly_layer_name:
-                    poly_layer = utils.find_layer(poly_layer_name)
-                    geoshorts = self.sample_polygon(self, temp_memorylayer, poly_layer, poly_geoshortfield)
-
-                plot_spec = []
-                _x = []
-                _y = []
-                prev_geoshort = None
-                for idx, geoshort in enumerate(geoshorts):
-                    if prev_geoshort is not None and prev_geoshort != geoshort:
-                        plot_spec.append([prev_geoshort, _x, _y])
-                        _x.append(xarray[idx])
-                        _y.append(DEMdata[idx])
-                        prev_geoshort = geoshort
-                    else:
-                        _x.append(xarray[idx])
-                        _y.append(DEMdata[idx])
-                else:
-                    plot_spec.append([prev_geoshort, _x, _y])
-
-                #TODO: Gå igenom listan på alla punkters geoshorts. Varje gång föregående geoshort inte är samma som
-                # aktuell geoshort, plotta listan av värden.
-                for geoshort, x_vals, y_vals in plot_spec:
-                    plotlable = self.get_plot_label_name(layername + '_' + geoshort, self.Labels)
+                    plotlable = self.get_plot_label_name(layername, self.Labels)
 
                     settings = self.secplot_templates.loaded_template['dems_Axes_plot'].get(plotlable,
                                                                                      self.secplot_templates.loaded_template['dems_Axes_plot']['DEFAULT'])
@@ -676,10 +651,86 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     settings['label'] = settings.get('label', plotlable)
                     self.Labels.append(settings['label'])
 
-                    lineplot, = self.secax.plot(x_vals, y_vals, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+                    lineplot, = self.secax.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                     self.p.append(lineplot)
 
-            QgsProject.instance().removeMapLayer(temp_memorylayer.id())
+                    self.plot_graded_dems(temp_memorylayer, xarray, DEMdata)
+        except:
+            raise
+        finally:
+            try:
+                QgsProject.instance().removeMapLayer(temp_memorylayer.id())
+            except:
+                pass
+
+    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata):
+        poly_layer_name = 'soil'
+        poly_geoshortfield = 'JBAS_TEXT'
+        if poly_layer_name:
+            poly_layer = utils.find_layer(poly_layer_name)
+            points_srid = temp_memorylayer.crs().authid()
+            poly_layer_srid = poly_layer.crs().authid()
+            if points_srid != poly_layer_srid:
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
+                return None
+            #Skip the first starting point as that one isn't used for the other dem plottings!
+            geoshorts = self.sample_polygon(temp_memorylayer, poly_layer, poly_geoshortfield)[1:]
+        else:
+            return None
+
+        plot_spec = []
+        _x = []
+        _y = []
+        prev_geoshort = None
+        for idx, geoshort in enumerate(geoshorts):
+            _x.append(xarray[idx])
+            _y.append(DEMdata[idx])
+            if prev_geoshort is not None and prev_geoshort != geoshort:
+                plot_spec.append([prev_geoshort, _x, _y])
+                _x = []
+                _y = []
+            prev_geoshort = geoshort
+        else:
+            plot_spec.append([prev_geoshort, _x, _y])
+
+        plotted_geoshorts = set()
+        for geoshort, x_vals, y_vals in plot_spec:
+            if geoshort is None:
+                #print("Was none")
+                continue
+            else:
+                geoshort = ru(geoshort).lower()
+
+            plotlable = self.get_plot_label_name('{}_{}'.format(poly_layer_name, geoshort), self.Labels)
+
+
+            try:
+                hatch = self.Hatches[geoshort.lower()]
+            except KeyError:
+                utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: No hatch defined for the geoshort '%s' in table zz_stratigraphy_plots.")) % (geoshort))
+                hatch = '+'
+
+            try:
+                color = self.Colors[geoshort]
+            except KeyError:
+                utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: No color defined for the geoshort '%s' in table zz_stratigraphy_plots.")) % (geoshort))
+                color = 'white'
+
+            alpha_max = 1
+            alpha_min = 0
+            number_of_plots = 10
+            graded_depth_m = 2
+            graded_plot_height = float(graded_depth_m) / float(number_of_plots)
+
+            for grad in np.linspace(alpha_max, alpha_min, number_of_plots):
+                y1 = [_y - graded_plot_height for _y in y_vals]
+                theplot = self.secax.fill_between(x_vals, y1, y_vals, alpha=grad, hatch=hatch, facecolor=color, edgecolor='black', linewidth=0)
+                if geoshort not in plotted_geoshorts:
+                    self.p.append(theplot)
+                    self.Labels.append(plotlable)
+                    plotted_geoshorts.add(geoshort)
+                y_vals = list(y1)
+
 
     def plot_drill_stop(self):
         settings = copy.deepcopy(self.secplot_templates.loaded_template['drillstop_Axes_plot'])
@@ -725,7 +776,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             settings['hatch'] = settings.get('hatch', self.Hatches[Typ])
 
             plotxleftbarcorner = [float(i) - float(self.barwidth)/2.0 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
-            print("barwidth {} self.plotx[Typ] {}".format(str(self.barwidth), self.plotx))
+            #print("barwidth {} self.plotx[Typ] {}".format(str(self.barwidth), self.plotx))
             self.p.append(self.secax.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
@@ -915,28 +966,43 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         child.set_x(prev_middle - child.get_width()/2)
 
     def sample_polygon(self, pointLayer, polyLayer, poly_geoshortfield):
+        """
+        Code reused from PointSamplingTool
+        :param pointLayer:
+        :param polyLayer:
+        :param poly_geoshortfield:
+        :return:
+        """
         pointProvider = pointLayer.dataProvider()
         polyProvider = polyLayer.dataProvider()
-
         sampled_values = []
 
         for pointFeat in pointProvider.getFeatures():
-            attr = None
             pointGeom = pointFeat.geometry()
-            if pointGeom.wkbType() == QgsWkbTypes.WKBMultiPoint:
+            if pointGeom.wkbType() == QgsWkbTypes.MultiPoint:
                 pointPoint = pointGeom.asMultiPoint()[0]
             else:
                 pointPoint = pointGeom.asPoint()
             bBox = QgsRectangle(pointPoint.x() - 0.001, pointPoint.y() - 0.001, pointPoint.x() + 0.001,
                                 pointPoint.y() + 0.001)  # reuseable rectangle buffer around the point feature
 
-            pointGeom = QgsGeometry().fromPoint(pointPoint)
+            pointGeom = QgsGeometry().fromPointXY(pointPoint)
+            #print("pointGeom" + str(pointGeom))
+            #print("bBox" + str(bBox))
+            # If there is two intersecting polygon features, then the last one will be used!
+            #print("features in box " + str(polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox))))
+            #polyProvider.getFeatures(QgsFeatureRequest()): #.setFilterRect(bBox)
+            features = polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox))
+            intersections = [iFeat for iFeat in polyProvider.getFeatures()
+                             if pointGeom.intersects(iFeat.geometry())]
 
-            for iFeat in polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox)):
-                if pointGeom.intersects(iFeat.geometry()):
-                    polyFeat = iFeat
-                    attr = polyFeat.attributes()[polyProvider.fieldNameIndex(poly_geoshortfield)]
-            sampled_values.append(attr)
+            if len(intersections) == 0:
+                sampled_values.append(None)
+                continue
+            else:
+
+                sampled_values.append(ru(intersections[-1].attributes()[polyProvider.fieldNameIndex(poly_geoshortfield)]))
+
         return sampled_values
 
 

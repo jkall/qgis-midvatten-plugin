@@ -817,6 +817,7 @@ class midvatten(object):
         #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
         obs_points_layer = utils.find_layer('obs_points')
         selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
+        print(str(selectedobspoints))
         obsidlist = []
         if len(selectedobspoints)>1:
             # We cannot send unicode as string to sql because it would include the '
