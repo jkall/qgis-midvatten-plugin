@@ -22,7 +22,7 @@ import os
 from functools import partial
 from matplotlib import container, patches
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from qgis.core import QgsCoordinateReferenceSystem, QgsProject
+from qgis.core import QgsProject
 
 import qgis.PyQt
 import numpy as np
@@ -39,7 +39,7 @@ from midvatten_utils import returnunicode as ru
 from midvatten_utils import PlotTemplates
 
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
+from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes, QgsRenderContext
 from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu
 
 
@@ -155,6 +155,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.draw_plot()
 
     def draw_plot(self): #replot
+
+        rcparams = self.secplot_templates.loaded_template.get('rcParams', {})
+        for k, v in rcparams.items():
+            try:
+                mpl.rcParams[k] = v
+            except KeyError:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', "rcParams key %s didn't exist"))%ru(k))
+
+
         try:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', 'Plotting using settings:\n%s'))%self.secplot_templates.readable_output())
         except:
@@ -311,6 +320,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                                                          'w_qual_field',
                                                          'stratigraphy',
                                                          'about_db']]
+
+        tabeller.append('view_w_levels_agg')
 
 
         self.wlvltableComboBox.addItem('')         
@@ -672,7 +683,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 pass
 
     def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata):
-        poly_layer_name = 'soil'
+        poly_layer_name = 'SGU'
         poly_geoshortfield = 'JBAS_TEXT'
         if poly_layer_name:
             poly_layer = utils.find_layer(poly_layer_name)
@@ -682,60 +693,55 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
                 return None
             #Skip the first starting point as that one isn't used for the other dem plottings!
-            geoshorts = self.sample_polygon(temp_memorylayer, poly_layer, poly_geoshortfield)[1:]
+            polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer, poly_geoshortfield)[1:]
         else:
             return None
 
         plot_spec = []
         _x = []
         _y = []
-        prev_geoshort = None
-        for idx, geoshort in enumerate(geoshorts):
+        prev_label = None
+        for idx, polylabel_color in enumerate(polylabels_colors):
+            polylabel = polylabel_color[0]
             _x.append(xarray[idx])
             _y.append(DEMdata[idx])
-            if prev_geoshort is not None and prev_geoshort != geoshort:
-                plot_spec.append([prev_geoshort, _x, _y])
+            if prev_label is not None and prev_label != polylabel:
+                plot_spec.append([prev_label, _x, _y])
                 _x = [xarray[idx]]
                 _y = [DEMdata[idx]]
-            prev_geoshort = geoshort
+            prev_label = polylabel
         else:
-            plot_spec.append([prev_geoshort, _x, _y])
+            plot_spec.append([prev_label, _x, _y])
 
-        plotted_geoshorts = set()
-        for geoshort, x_vals, y_vals in plot_spec:
-            if geoshort is None:
-                #print("Was none")
-                continue
-            else:
-                geoshort = ru(geoshort).lower()
+        labels_colors = {lbl: color for lbl, color in polylabels_colors}
 
-            plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, geoshort), self.Labels)
+        plotted_polylabels = set()
+        for label, x_vals, y_vals in plot_spec:
 
-            try:
-                hatch = self.Hatches[geoshort.lower()]
-            except KeyError:
-                utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: No hatch defined for the geoshort '%s' in table zz_stratigraphy_plots.")) % (geoshort))
-                hatch = '+'
+            plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, label), self.Labels)
 
-            try:
-                color = self.Colors[geoshort]
-            except KeyError:
-                utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: No color defined for the geoshort '%s' in table zz_stratigraphy_plots.")) % (geoshort))
-                color = 'white'
-
-            alpha_max = 1
+            alpha_max = 0.5
             alpha_min = 0
-            number_of_plots = 10
+            number_of_plots = 30
             graded_depth_m = 2
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
+            skip_hatch_last_percent = 0.2
+            color = labels_colors[label]
+            print(str(color))
 
-            for grad in np.linspace(alpha_max, alpha_min, number_of_plots):
+            gradients = np.linspace(alpha_max, alpha_min, number_of_plots)
+            for grad_idx, grad in enumerate(gradients):
                 y1 = [_y - graded_plot_height for _y in y_vals]
-                theplot = self.secax.fill_between(x_vals, y1, y_vals, alpha=grad, hatch=hatch, facecolor=color, edgecolor='black', linewidth=0)
-                if geoshort not in plotted_geoshorts:
+                """
+                if grad_idx >= len(gradients) - int(float(number_of_plots)*skip_hatch_last_percent):
+                    #This fix skips hatch for the last layers. This is done because of a "bug" when saving the figure that makes the hatch alpha become 1 instead of 0.
+                """
+                theplot = self.secax.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0)
+
+                if label not in plotted_polylabels:
                     self.p.append(theplot)
                     self.Labels.append(plotlable)
-                    plotted_geoshorts.add(geoshort)
+                    plotted_polylabels.add(label)
                 y_vals = list(y1)
 
 
@@ -980,8 +986,28 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         :param poly_geoshortfield:
         :return:
         """
-        pointProvider = pointLayer.dataProvider()
+
+        #Styles
         polyProvider = polyLayer.dataProvider()
+        renderer = polyLayer.renderer()
+        category_column = renderer.classAttribute()
+        categories = renderer.categories()
+
+        # Category values are returned as strings.
+        categoryvalue_symbol = {cat.value(): (cat.symbol(), cat.label()) for cat in categories}
+        #print(layer.renderer().symbol().symbolLayers()[0].properties())
+
+        """
+        for val, symbol in categoryvalue_symbol.items():
+            symbol_layers = symbol.symbolLayers()
+            for lyr in symbol_layers:
+                properties = lyr.properties()
+                print(str(properties))
+            symbol_layer
+            properties = symbol.properties()
+        """
+
+        pointProvider = pointLayer.dataProvider()
         sampled_values = []
 
         for pointFeat in pointProvider.getFeatures():
@@ -1007,8 +1033,18 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 sampled_values.append(None)
                 continue
             else:
+                feat = intersections[-1]
+                feat_category_value = str(feat.attributes()[polyProvider.fieldNameIndex(category_column)])
+                print("feat_category_value {}".format(feat_category_value))
+                print(str(categoryvalue_symbol.keys()))
+                symbol = categoryvalue_symbol[feat_category_value][0]
+                label = ru(categoryvalue_symbol[feat_category_value][1])
+                symbol_layers = symbol.symbolLayers()
+                #Use the bottom layer color
+                _color = symbol_layers[0].properties()['color']
+                color = tuple([float(c)/float(255) for c in _color.split(',')])
 
-                sampled_values.append(ru(intersections[-1].attributes()[polyProvider.fieldNameIndex(poly_geoshortfield)]))
+                sampled_values.append((label, color))
 
         return sampled_values
 
