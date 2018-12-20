@@ -684,7 +684,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata):
         poly_layer_name = 'SGU'
-        poly_geoshortfield = 'JBAS_TEXT'
         if poly_layer_name:
             poly_layer = utils.find_layer(poly_layer_name)
             points_srid = temp_memorylayer.crs().authid()
@@ -693,7 +692,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
                 return None
             #Skip the first starting point as that one isn't used for the other dem plottings!
-            polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer, poly_geoshortfield)[1:]
+            polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)[1:]
         else:
             return None
 
@@ -725,17 +724,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             number_of_plots = 30
             graded_depth_m = 2
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
-            skip_hatch_last_percent = 0.2
             color = labels_colors[label]
-            print(str(color))
 
             gradients = np.linspace(alpha_max, alpha_min, number_of_plots)
             for grad_idx, grad in enumerate(gradients):
                 y1 = [_y - graded_plot_height for _y in y_vals]
-                """
-                if grad_idx >= len(gradients) - int(float(number_of_plots)*skip_hatch_last_percent):
-                    #This fix skips hatch for the last layers. This is done because of a "bug" when saving the figure that makes the hatch alpha become 1 instead of 0.
-                """
                 theplot = self.secax.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0)
 
                 if label not in plotted_polylabels:
@@ -816,13 +809,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 if len(datum_obsids) > 1:
                     if obs not in datum_obsids[1:]:
                         continue
-                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
-                if res:
-                    WL.append(res[0][0])
-                    x_wl.append(float(self.LengthAlong[k]))
-                    if obs not in self.obsids_w_wl:
-                        self.obsids_w_wl.append(obs)
+                try:
+                    val = res[0][0]
+                except IndexError:
+                    continue
+                if val is None:
+                    continue
+
+                WL.append(val)
+                x_wl.append(float(self.LengthAlong[k]))
+                if obs not in self.obsids_w_wl:
+                    self.obsids_w_wl.append(obs)
 
             plotlable = self.get_plot_label_name(datum, self.Labels)
 
@@ -978,15 +977,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         child.set_width(barwidth)
                         child.set_x(prev_middle - child.get_width()/2)
 
-    def sample_polygon(self, pointLayer, polyLayer, poly_geoshortfield):
+    def sample_polygon(self, pointLayer, polyLayer):
         """
         Code reused from PointSamplingTool
         :param pointLayer:
         :param polyLayer:
-        :param poly_geoshortfield:
         :return:
         """
-
         #Styles
         polyProvider = polyLayer.dataProvider()
         renderer = polyLayer.renderer()
@@ -995,17 +992,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         # Category values are returned as strings.
         categoryvalue_symbol = {cat.value(): (cat.symbol(), cat.label()) for cat in categories}
-        #print(layer.renderer().symbol().symbolLayers()[0].properties())
-
-        """
-        for val, symbol in categoryvalue_symbol.items():
-            symbol_layers = symbol.symbolLayers()
-            for lyr in symbol_layers:
-                properties = lyr.properties()
-                print(str(properties))
-            symbol_layer
-            properties = symbol.properties()
-        """
 
         pointProvider = pointLayer.dataProvider()
         sampled_values = []
@@ -1020,30 +1006,23 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                                 pointPoint.y() + 0.001)  # reuseable rectangle buffer around the point feature
 
             pointGeom = QgsGeometry().fromPointXY(pointPoint)
-            #print("pointGeom" + str(pointGeom))
-            #print("bBox" + str(bBox))
-            # If there is two intersecting polygon features, then the last one will be used!
-            #print("features in box " + str(polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox))))
-            #polyProvider.getFeatures(QgsFeatureRequest()): #.setFilterRect(bBox)
             features = polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox))
-            intersections = [iFeat for iFeat in polyProvider.getFeatures()
+            intersections = [iFeat for iFeat in features
                              if pointGeom.intersects(iFeat.geometry())]
 
             if len(intersections) == 0:
                 sampled_values.append(None)
                 continue
             else:
+                # If there is two intersecting polygon features, then the last one will be used!
                 feat = intersections[-1]
                 feat_category_value = str(feat.attributes()[polyProvider.fieldNameIndex(category_column)])
-                print("feat_category_value {}".format(feat_category_value))
-                print(str(categoryvalue_symbol.keys()))
                 symbol = categoryvalue_symbol[feat_category_value][0]
                 label = ru(categoryvalue_symbol[feat_category_value][1])
                 symbol_layers = symbol.symbolLayers()
                 #Use the bottom layer color
                 _color = symbol_layers[0].properties()['color']
                 color = tuple([float(c)/float(255) for c in _color.split(',')])
-
                 sampled_values.append((label, color))
 
         return sampled_values
