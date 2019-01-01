@@ -23,6 +23,7 @@
 import copy
 import io
 import os
+import csv
 from datetime import datetime
 
 import PyQt4
@@ -69,6 +70,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.connect(self.metadata_filter.update_selection_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
+        self.connect(self.metadata_filter.buttonSave, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.handleSave())
+
         self.start_import_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
@@ -83,7 +86,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'2. Make a list of entries (one row per entry).\n'
                                    u'3. Click "Update selection".\n'
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
-                                   u'Hover over a column header to see which database column it will go to.')))
+                                   u'Hover over a column header to see which database column it will go to.\n\n'
+                                   u'("Save table to file" is a feature to save the metadata table into a csv file for examination in another application.)')))
 
         self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
@@ -91,6 +95,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
         self.gridLayout_buttons.addWidget(self.help_label, 2, 0)
+
         self.gridLayout_buttons.setRowStretch(3, 1)
 
         self.show()
@@ -481,6 +486,26 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         else:
             layout.addWidget(line)
 
+    def handleSave(self):
+        """
+        An extra, non-critical, feature to save metadata (as shown in the gui) as a csv file for examination in other application
+        """
+        path = PyQt4.QtGui.QFileDialog.getSaveFileName(
+                self, 'Save File', '', 'CSV(*.csv)')
+        if path:
+            with open(unicode(path), 'wb') as stream:
+                writer = csv.writer(stream,delimiter=';')
+                for row in range(self.metadata_filter.table.rowCount()):
+                    rowdata = []
+                    for column in range(self.metadata_filter.table.columnCount()):
+                        item = self.metadata_filter.table.item(row, column)
+                        if item is not None:
+                            rowdata.append(
+                                unicode(item.text()).encode('utf8'))
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
 
 class MetaFilterSelection(VRowEntry):
     def __init__(self, all_lab_results):
@@ -520,7 +545,14 @@ class MetadataFilter(VRowEntry):
         self.layout.addWidget(self.button_layout.widget)
 
         self.label = PyQt4.QtGui.QLabel()
-        self.layout.addWidget(self.label)
+        self.label_layout = RowEntry()
+        self.label_layout.layout.addWidget(self.label)
+
+        self.buttonSave = PyQt4.QtGui.QPushButton(u'Save table to file')
+        self.buttonSave.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import','save the metadata table into a csv file for examination in another application'))) 
+        self.label_layout.layout.addWidget(self.buttonSave)
+
+        self.layout.addWidget(self.label_layout.widget)
 
         self.table = PyQt4.QtGui.QTableWidget()
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
@@ -637,7 +669,6 @@ class MetadataFilter(VRowEntry):
         labeltext = ru(QCoreApplication.translate(u'MetadataFilter',u'Select lablitteras to import'))
         nr_of_selected = str(len(self.get_selected_lablitteras()))
         self.label.setText(u' '.join([labeltext, ru(QCoreApplication.translate(u'MetadataFilter',u'(%s rows selected)'))%nr_of_selected]))
-
 
 def get_metadata_headers(all_lab_results):
     table_header = set()
