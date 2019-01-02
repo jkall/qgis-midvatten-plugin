@@ -33,6 +33,9 @@ import datetime
 import re
 from collections import OrderedDict
 from pyspatialite import dbapi2 as sqlite
+import sys
+import tempfile
+import csv
 
 import  qgis.core
 from PyQt4.QtCore import QCoreApplication
@@ -43,6 +46,7 @@ import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
 import midvatten_utils as utils
+from export_data import UnicodeWriter
 
 class DbConnectionManager(object):
     def __init__(self, db_settings=None):
@@ -258,6 +262,23 @@ class DbConnectionManager(object):
                 sql = u"""ALTER TABLE %s ADD COLUMN %s geometry(%s, %s);""" % (temptable_name, geom_column, geom_type, srid)
                 self.execute(sql)
         return temptable_name
+
+    def dump_table_2_csv(self, table_name=None):
+        self.cursor.execute(u'select * from {}'.format(table_name))
+        #dumpfile = os.path.join(tempfile.gettempdir(), '{}.csv'.format(table_name))
+        #if sys.version_info < (3,):# python 2.x
+        #    with open(dumpfile, "wb") as csv_file: 
+        #        csv_writer = csv.writer(csv_file,delimiter=';')
+        #        csv_writer.writerow([i[0] for i in self.cursor.description]) # write headers
+        #        csv_writer.writerows(self.cursor)
+        #else:# python 3
+        #    with open(dumpfile, "w", newline='') as csv_file:
+        #        csv_writer = csv.writer(csv_file,delimiter=';')
+        #        csv_writer.writerow([i[0] for i in self.cursor.description]) # write headers
+        #        csv_writer.writerows(self.cursor)
+        output = UnicodeWriter(file(os.path.join(tempfile.gettempdir(), '{}.csv'.format(table_name)), 'w'))
+        output.writerow([col[0] for col in self.cursor.description])#write headers
+        filter(None, (output.writerow(row) for row in self.cursor))#write data rows
 
 
 def check_connection_ok():

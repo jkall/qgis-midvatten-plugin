@@ -87,16 +87,22 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'3. Click "Update selection".\n'
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
                                    u'Hover over a column header to see which database column it will go to.\n\n'
-                                   u'("Save table to file" is a feature to save the metadata table into a csv file for examination in another application.)')))
+                                   u'("Save data table to csv" is a feature to save the data table into a csv file for examination in another application.)\n'
+                                   u'("Save metadata table to file" is a feature to save the metadata table into a csv file, at system temporary path, for examination in another application.)')))
 
         self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
-        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
-        self.gridLayout_buttons.addWidget(self.help_label, 2, 0)
+        self.dump_2_temptable = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Save datatable to csv')))
+        self.dump_2_temptable.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import','save the data table into a csv file, at system temporary path, for examination in another application'))) 
+        self.dump_2_temptable.setChecked(False)
+        self.gridLayout_buttons.addWidget(self.dump_2_temptable, 1, 0)
 
-        self.gridLayout_buttons.setRowStretch(3, 1)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
+        self.gridLayout_buttons.addWidget(self.help_label, 3, 0)
+
+        self.gridLayout_buttons.setRowStretch(4, 1)
 
         self.show()
 
@@ -134,7 +140,10 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.wquallab_data_table = self.to_table(all_lab_results)
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table)
+        if self.dump_2_temptable.isChecked():
+            answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table,dump_temptable=True)
+        else:
+            answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table)
 
         importer.SanityCheckVacuumDB()
 
@@ -548,7 +557,7 @@ class MetadataFilter(VRowEntry):
         self.label_layout = RowEntry()
         self.label_layout.layout.addWidget(self.label)
 
-        self.buttonSave = PyQt4.QtGui.QPushButton(u'Save table to file')
+        self.buttonSave = PyQt4.QtGui.QPushButton(u'Save metadata table to file')
         self.buttonSave.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import','save the metadata table into a csv file for examination in another application'))) 
         self.label_layout.layout.addWidget(self.buttonSave)
 
