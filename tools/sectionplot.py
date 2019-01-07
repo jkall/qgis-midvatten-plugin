@@ -656,8 +656,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def plot_dems(self):
         try:
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
-                temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
                 for layername in self.ms.settingsdict['secplotselectedDEMs']:
+                    if layername == 'alvbotten_2m_cell_3006_2':
+                        distance = 2
+                    else:
+                        distance = self.barwidth / 2
+                    temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
 
                     plotlable = self.get_plot_label_name(layername, self.Labels)
@@ -674,6 +678,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                     if layername == 'dem_alvk_skut':
                         self.plot_graded_dems(temp_memorylayer, xarray, DEMdata)
+                    QgsProject.instance().removeMapLayer(temp_memorylayer.id())
         except:
             raise
         finally:
@@ -692,7 +697,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
                 return None
             #Skip the first starting point as that one isn't used for the other dem plottings!
-            polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)[1:]
+            #polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)[1:]
+            polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)
         else:
             return None
 

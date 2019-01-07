@@ -71,7 +71,7 @@ def create_points_at(startpoint, endpoint, distance, geom, fid,unit): #original 
 
     feature.setGeometry(point)
     feats.append(feature)
-    xarray=[]
+    xarray=[feature['dist']]
 
     while startpoint + current_distance <= length:
         # Get a point along the line at the current distance
@@ -157,7 +157,7 @@ def sampling(pointsamplinglayer, rastersamplinglayer): # main process from point
             #print (float(rastSample[0]))
             print (float(rastSample[1]))
         """
-        if np > 1:
+        if np >= 1:
             try:
                 DEMLEV.append(float(rastSample[1])) ##### !! float() - I HAVE TO IMPLEMENT RASTER TYPE HANDLING!!!!
             except: # point is out of raster extent
