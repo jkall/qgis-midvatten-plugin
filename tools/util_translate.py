@@ -25,31 +25,33 @@ For create file 'qm'
 4) Create 'qm': lrelease PLUGIN_NAME_LOCALE.ts (Ex.: _pt_BR)
 
 """
-
+import os
 from qgis.PyQt.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication
-from qgis.core import QgsApplication
+from qgis.core import QgsApplication, Qgis
 
 def getTranslate(namePlugin, nameDir=None):
     if nameDir is None:
       nameDir = namePlugin
 
-    pluginPath = "python/plugins/{}".format( nameDir )
+    pluginPath = os.path.join('python', 'plugins', nameDir)
 
-    userPath = QFileInfo( QgsApplication.qgisUserDatabaseFilePath() ).path()
-    userPluginPath = "{0}{1}".format( userPath, pluginPath)
+    userPath = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path()
+    userPluginPath = os.path.join(userPath, pluginPath)
     
     systemPath = QgsApplication.prefixPath()
-    systemPluginPath = "{0}/{1}".format( systemPath, pluginPath )
-    
+    systemPluginPath = os.path.join(systemPath, pluginPath)
+
     overrideLocale = QSettings().value('locale/overrideFlag', False, type=bool)
     localeFullName = QLocale.system().name() if not overrideLocale else QSettings().value('locale/userLocale', '')
 
-    qmPathFile = "/i18n/{0}_{1}.qm".format( namePlugin, localeFullName )
+    qmPathFile = os.path.join('i18n', '{0}_{1}.qm'.format(namePlugin, localeFullName))
     pp = userPluginPath if QFileInfo(userPluginPath).exists() else systemPluginPath
-    translationFile = "{0}{1}".format( pp, qmPathFile )
+    translationFile = os.path.join(pp, qmPathFile)
 
-    if QFileInfo( translationFile ).exists():
+    if QFileInfo(translationFile).exists():
         translator = QTranslator()
-        translator.load( translationFile )
-        QCoreApplication.installTranslator( translator )
+        translator.load(translationFile)
+        QCoreApplication.installTranslator(translator)
+        QgsApplication.messageLog().logMessage(('Installed translationFile {}'.format(translationFile)), 'Midvatten',
+                                               level=Qgis.Info)
         return translator
