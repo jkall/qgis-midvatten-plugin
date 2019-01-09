@@ -107,22 +107,22 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
         1		1	/	35,453	=	0,028206357713029
         1		2	/	61,0168	=	0,032777857901431
         2	*	3	/	96,063	=	0,062459011273852
-        
+
         1		4	/	22,9898	=	0,173990204351495
         1		5	/	39,0983	=	0,127882797973313
         sum                         0,301873002
-        
+
         2	*	6	/	40,078	=	0,299416138529867
         2	*	7	/	24,305	=	0,576013166015223
                     /			
         1		10	/	35,453	=	0,282063577130285
         1		20	/	61,0168	=	0,327778579014304
         2	*	30	/	96,063	=	0,624590112738515
-        
+
         1		40	/	22,9898	=	1,73990204351495
         1		50	/	39,0983	=	1,27882797973313
         sum                         3,018730023
-        
+
         2	*	60	/	40,078	=	2,99416138529867
         2	*	70	/	24,305	=	5,76013166015223
 
@@ -148,17 +148,17 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
             for idx in range(3, 9):
                 l[idx] = '{0:.10f}'.format(float(l[idx]))
         print("data: " + str(data))
-        # data[0]
-        test_data = utils.anything_to_string_representation(data)
 
         test_paramlist = utils.anything_to_string_representation(piperplot.ParameterList)
         ref_paramlist = '''["(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')", "(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')", "(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')", "(lower(parameter) like '%natrium%')", "(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')", "(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')", "(lower(parameter) like '%magnesium%')"]'''
         assert test_paramlist == ref_paramlist
 
-        ref_data = """[['P1' '2017-01-01' 'well' '0.0282063577' '0.0327778579' '0.0624590113'
-  '0.3018730023' '0.2994161385' '0.5760131660']
- ['P2' '2017-01-01' 'notwell' '0.2820635771' '0.3277785790' '0.6245901127'
-  '3.0187300232' '2.9941613853' '5.7601316602']]"""
+        test_data = tuple([tuple(_) for _ in data])
+
+        ref_data = (('P1', '2017-01-01', 'well', '0.0282063577', '0.0327778579', '0.0624590113', '0.3018730023',
+                     '0.2994161385', '0.5760131660'), ('P2', '2017-01-01', 'notwell', '0.2820635771', '0.3277785790',
+                                                       '0.6245901127', '3.0187300232', '2.9941613853', '5.7601316602'))
+
         print("test")
         print(test_data)
         print("REF")
