@@ -41,7 +41,7 @@
     "legend_Frame_set_facecolor": "white",
     "legend_Frame_set_fill": True,
     "legend_Text_set_fontsize": 6,
-    "legend_Line2D_methods": {'set_linewidth': 1},
+    "legend_Line2D_methods": {},
     "plot_height": u"350",
     "plot_width": u"469",
     "rcParams": {
