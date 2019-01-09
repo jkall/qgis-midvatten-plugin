@@ -65,6 +65,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
 
+    @utils.general_exception_handler
     def parse_observations_and_populate_gui(self):
         splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.add_row(splitter)
