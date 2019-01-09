@@ -52,7 +52,7 @@ def getTranslate(namePlugin, nameDir=None):
         translator = QTranslator()
         translator.load(translationFile)
         QCoreApplication.installTranslator(translator)
-        QgsApplication.messageLog().logMessage(('Installed translationFile {}'.format(translationFile)), 'Midvatten',
+        QgsApplication.messageLog().logMessage(('Installed translation file {}'.format(translationFile)), 'Midvatten',
                                                level=Qgis.Info)
         return translator
     else:
