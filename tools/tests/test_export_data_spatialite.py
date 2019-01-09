@@ -317,7 +317,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         test_string = utils_for_tests.create_test_string(test_list)
         reference_string = [u'''[''',
                             u'''select obsid, ST_AsText(geometry) from obs_points''',
-                            u''', [(P1, POINT(-517888.383773 1.002821))], ''',
+                            u''', [(P1, POINT(-517888.383737 1.002821))], ''',
                             u'''select staff from zz_staff''',
                             u''', [(s1)], ''',
                             u'''select obsid, date_time, staff, comment from comments''',
