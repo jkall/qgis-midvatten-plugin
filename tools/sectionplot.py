@@ -657,10 +657,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         try:
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
                 for layername in self.ms.settingsdict['secplotselectedDEMs']:
-                    if layername == 'alvbotten_2m_cell_3006_2':
-                        distance = 2
-                    else:
-                        distance = self.barwidth / 2
+
+                    #TODO: This should be a setting in the gui for each dem layer instead of hardcoded
+                    distance = self.barwidth / 2
+
                     temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
 
@@ -676,8 +676,16 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     lineplot, = self.secax.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                     self.p.append(lineplot)
 
-                    if layername == 'dem_alvk_skut':
-                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata)
+                    #TODO: This feature should have settings in gui to activate grading for the current layer.
+                    grade_layer = False
+                    if grade_layer:
+                        #TODO: These settings should be in gui in some way.
+                        polylayer_name = 'polylager_with_color'
+                        alpha_max = 0.5
+                        alpha_min = 0
+                        number_of_plots = 20
+                        graded_depth_m = 2
+                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata, polylayer_name, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m)
                     QgsProject.instance().removeMapLayer(temp_memorylayer.id())
         except:
             raise
@@ -687,20 +695,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             except:
                 pass
 
-    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata):
-        poly_layer_name = 'SGU'
-        if poly_layer_name:
-            poly_layer = utils.find_layer(poly_layer_name)
-            points_srid = temp_memorylayer.crs().authid()
-            poly_layer_srid = poly_layer.crs().authid()
-            if points_srid != poly_layer_srid:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
-                return None
-            #Skip the first starting point as that one isn't used for the other dem plottings!
-            #polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)[1:]
-            polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)
-        else:
+    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, poly_layer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2):
+        poly_layer = utils.find_layer(poly_layer_name)
+        points_srid = temp_memorylayer.crs().authid()
+        poly_layer_srid = poly_layer.crs().authid()
+        if points_srid != poly_layer_srid:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
             return None
+        polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)
 
         plot_spec = []
         _x = []
@@ -724,11 +726,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         for label, x_vals, y_vals in plot_spec:
 
             plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, label), self.Labels)
-
-            alpha_max = 0.5
-            alpha_min = 0
-            number_of_plots = 30
-            graded_depth_m = 2
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
             color = labels_colors[label]
 
@@ -815,7 +812,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 if len(datum_obsids) > 1:
                     if obs not in datum_obsids[1:]:
                         continue
-                query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                #TODO: There should probably be a setting for using avg(level_masl)
+                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                #query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
                 try:
                     val = res[0][0]
@@ -986,6 +985,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def sample_polygon(self, pointLayer, polyLayer):
         """
         Code reused from PointSamplingTool
+
+        Hard coded to use the last intersecting feature if there are multiple.
+        Hard coded to use the color from the bottom symbol layer if there are multiple.
+
         :param pointLayer:
         :param polyLayer:
         :return:
