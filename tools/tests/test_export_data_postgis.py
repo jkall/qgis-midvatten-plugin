@@ -22,16 +22,12 @@
 
 import io
 import os
-import unittest
-from pyspatialite import dbapi2 as sqlite
 
 import db_utils
-import midvatten_utils as utils
 import mock
-from midvatten.midvatten import midvatten
 
 import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn
 
 EXPORT_DB_PATH = u'/tmp/tmp_midvatten_export_db.sqlite'
 TEMP_DIR = u'/tmp/'

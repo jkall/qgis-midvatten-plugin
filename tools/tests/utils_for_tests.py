@@ -31,10 +31,10 @@ import db_utils
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer
-from midvatten.midvatten import midvatten
+from midvatten import midvatten
 
-from mocks_for_tests import DummyInterface2
-from tools.tests.mocks_for_tests import DummyInterface
+from mocks_for_tests import DummyInterface2, DummyInterface
+
 
 
 class test_qapplication_is_running():
