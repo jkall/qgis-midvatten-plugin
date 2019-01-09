@@ -52,10 +52,10 @@ def getTranslate(namePlugin, nameDir=None):
         translator = QTranslator()
         translator.load(translationFile)
         QCoreApplication.installTranslator(translator)
-        QgsApplication.messageLog().logMessage(('Installed translation file {}'.format(translationFile)), 'Midvatten',
+        QgsMessageLog.logMessage(('Installed translation file {}'.format(translationFile)), 'Midvatten',
                                                level=QgsMessageLog.INFO)
         return translator
     else:
-        QgsApplication.messageLog().logMessage(
+        QgsMessageLog.logMessage(
             ("translationFile {} didn't exist, no translation file installed!".format(translationFile)), 'Midvatten',
                                                level=QgsMessageLog.INFO)
