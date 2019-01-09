@@ -151,7 +151,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             try_capitalize = True
 
         existing_obsids = utils.get_all_obsids()
+        utils.stop_waiting_cursor()
         filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value='obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names)
+        utils.start_waiting_cursor()
 
         if len(filename_location_obsid) < 2:
             utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', 'Warning. All files were skipped, nothing imported!'))
