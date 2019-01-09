@@ -143,8 +143,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.canvas = FigureCanvas( self.custplotfigure )
 
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
-        lstActions = self.mpltoolbar.actions()
-        self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
 

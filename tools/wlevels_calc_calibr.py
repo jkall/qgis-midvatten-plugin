@@ -157,8 +157,6 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.axes = self.calibrplotfigure.add_subplot( 111 )
         self.canvas = FigureCanvas( self.calibrplotfigure )
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
-        lstActions = self.mpltoolbar.actions()
-        self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
         self.calibrplotfigure.tight_layout()
@@ -479,11 +477,17 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
 
+
         if last_used_obsid == self.obsid:
             self.mpltoolbar.forward()
         else:
             #Clear choices
             self.reset_settings()
+            # Matplotlib > 2.0
+            try:
+                self.mpltoolbar.update()
+            except:
+                pass
 
     @fn_timer
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5, time_list=None):
@@ -542,7 +546,12 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.ToDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
         self.Add2Levelmasl.setText('')
         self.bestFitSearchRadius.setText('10 minutes')
-        self.mpltoolbar._views.clear()
+
+        # Matplotlib < 2.0
+        try:
+            self.mpltoolbar._views.clear()
+        except:
+            pass
 
         last_calibration = self.getlastcalibration(self.obsid)
         try:
