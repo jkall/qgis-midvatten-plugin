@@ -134,6 +134,8 @@ class NewDb(object):
 
         self.execute_sqlfile(self.get_full_filename("insert_obs_points_triggers.sql"), dbconnection)
 
+        self.execute_sqlfile(self.get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
+
         self.add_metadata_to_about_db(dbconnection)
 
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS

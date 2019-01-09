@@ -1956,19 +1956,14 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         dbconnection = db_utils.DbConnectionManager()
     existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
 
-    if dbconnection.dbtype == 'spatialite' and 'view_obs_points' in existing_tables:
-        use_view_obs_points = True
-    else:
-        use_view_obs_points = False
-
-
     for tablename in tablenames:  # first load all non-spatial layers
+        orig_tablename = tablename
 
         if not tablename in existing_tables:
             continue
 
-        if use_view_obs_points and tablename == 'obs_points':
-            tablename = 'view_obs_points'
+        if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
+            tablename = 'view_{}'.format(tablename)
 
         layer = create_layer(tablename, geometrycolumn=geometrycolumn)
 
@@ -1982,8 +1977,8 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if not valid:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
         else:
-            if use_view_obs_points and tablename == 'view_obs_points':
-                layer.setName('obs_points')
+            if tablename in ['view_obs_points', 'view_obs_lines']:
+                layer.setName(orig_tablename)
             resultlist.append(layer)
 
 
