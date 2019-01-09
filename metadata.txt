@@ -18,7 +18,6 @@ tags=hydrogeology,groundwater,time series,stratigraphy,piper diagram,borehole
 homepage=https://github.com/jkall/qgis-midvatten-plugin/wiki
 tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
-; authorName=Josef Källgården
 
 changelog=
         Version 1.6.0b1:
