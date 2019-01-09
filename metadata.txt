@@ -21,7 +21,7 @@ deprecated=False
 changelog=
         Version 1.5.4:
         - Interlab4 import: Feature to dump csv-file.
-        - general_impor: Feature to dump csv-file.
+        - general_import: Feature to dump csv-file.
         - finddateformat: Support for more formats.
         Version 1.5.3:
         - Customplot: Fixed default values for customplot templates. Added style_-lists for linestyles, colors and markers.
