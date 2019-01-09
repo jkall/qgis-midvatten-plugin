@@ -20,6 +20,7 @@ deprecated=False
 
 changelog=
         Version 1.5.4:
+        - Fixed translation plugin.
         - Interlab4 import: Feature to dump csv-file.
         - general_import: Feature to dump csv-file.
         - finddateformat: Support for more formats.
