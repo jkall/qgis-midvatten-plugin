@@ -465,14 +465,14 @@ class midvatten(object):
                 from create_db import NewDb
                 newdbinstance = NewDb()
                 newdbinstance.create_new_spatialite_db(verno,user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False)
-                if not newdbinstance.db_settings=='':
+                utils.start_waiting_cursor()
+                if newdbinstance.db_settings:
                     new_dbpath = db_utils.get_spatialite_db_path_from_dbsettings_string(newdbinstance.db_settings)
                     if not new_dbpath:
                         utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite failed, see log message panel')),
                                                         button=True)
                         utils.stop_waiting_cursor()
                         return
-
                     exportinstance = ExportData(OBSID_P, OBSID_L)
                     exportinstance.export_2_splite(new_dbpath, user_chosen_EPSG_code)
             
