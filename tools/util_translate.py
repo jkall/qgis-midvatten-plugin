@@ -55,3 +55,7 @@ def getTranslate(namePlugin, nameDir=None):
         QgsApplication.messageLog().logMessage(('Installed translationFile {}'.format(translationFile)), 'Midvatten',
                                                level=Qgis.Info)
         return translator
+    else:
+        QgsApplication.messageLog().logMessage(
+            ("translationFile {} didn't exist, no translation file installed!".format(translationFile)), 'Midvatten',
+                                               level=Qgis.Info)
