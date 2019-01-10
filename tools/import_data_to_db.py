@@ -347,15 +347,6 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             if nr_fk_after > nr_fk_before:
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total %s rows were imported to foreign key table %s while importing to %s.'))%(str(nr_fk_after - nr_fk_before), fk_table, goal_table))
 
-    def SanityCheckVacuumDB(self, dbconnection=None):
-        if dbconnection is None:
-            dbconnection = db_utils.DbConnectionManager()
-        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate('midv_data_importer', """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""")), ru(QCoreApplication.translate('midv_data_importer', 'Vacuum the database?')))
-        if sanity.result == 1:
-            utils.start_waiting_cursor()
-            dbconnection.vacuum()    # since a temporary table was loaded and then deleted - the db may need vacuuming
-            utils.stop_waiting_cursor()
-
     def import_error_msg(self):
         return ru(QCoreApplication.translate('midv_data_importer', 'Import error, see log message panel'))
 
