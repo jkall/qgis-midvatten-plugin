@@ -502,12 +502,13 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 self, 'Save File', '', 'CSV(*.csv)')
         if path:
             path = ru(path[0])
+            printlist = [self.metadata_filter.sorted_table_header]
 
-            printlist = [[self.metadata_filter.table.item(row, column)
+            printlist.extend([[ru(self.metadata_filter.table.item(row, column).text())
                           if self.metadata_filter.table.item(row, column) is not None
                           else ''
                           for column in range(self.metadata_filter.table.columnCount())]
-                         for row in range(self.metadata_filter.table.rowCount())]
+                         for row in range(self.metadata_filter.table.rowCount())])
 
             utils.write_printlist_to_file(path, printlist)
 

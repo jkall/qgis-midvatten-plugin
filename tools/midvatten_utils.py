@@ -1987,6 +1987,7 @@ def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';
         csvwriter = csv.writer(csvfile, delimiter=delimiter, dialect=dialect, **kwds)
         #csvwriter.writerows([[bytes(returnunicode(col), encoding) for col in row] for row in printlist])
         csvwriter.writerows(returnunicode(printlist, keep_containers=True))
+    MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('write_printlist_to_file', 'Data written to file %s.'))%filename)
 
 
 def sql_unicode_list(an_iterator):
