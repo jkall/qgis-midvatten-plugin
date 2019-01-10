@@ -71,6 +71,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.metadata_filter.update_selection_button.clicked.connect(lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
+        self.metadata_filter.buttonSave.clicked.connect(lambda: self.handle_save())
+
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('Interlab4Import', 'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
@@ -85,15 +87,23 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                    '2. Make a list of entries (one row per entry).\n'
                                    '3. Click "Update selection".\n'
                                    'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
-                                   'Hover over a column header to see which database column it will go to.')))
+                                   'Hover over a column header to see which database column it will go to.\n\n'
+                                   '("Save data table to csv" is a feature to save the data table into a csv file for examination in another application.)\n'
+                                   '("Save metadata table to file" is a feature to save the metadata table into a csv file, at system temporary path, for examination in another application.)')))
 
         self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
-        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
-        self.gridLayout_buttons.addWidget(self.help_label, 2, 0)
-        self.gridLayout_buttons.setRowStretch(3, 1)
+        self.dump_2_temptable = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Save datatable to csv')))
+        self.dump_2_temptable.setToolTip(ru(QCoreApplication.translate('Interlab4Import','save the data table into a csv file, at system temporary path, for examination in another application')))
+        self.dump_2_temptable.setChecked(False)
+        self.gridLayout_buttons.addWidget(self.dump_2_temptable, 1, 0)
+
+        self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
+        self.gridLayout_buttons.addWidget(self.help_label, 3, 0)
+
+        self.gridLayout_buttons.setRowStretch(4, 1)
 
         self.show()
 
@@ -131,7 +141,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         self.wquallab_data_table = self.to_table(all_lab_results)
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(goal_table='w_qual_lab', file_data=self.wquallab_data_table)
+
+        answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table, dump_temptable=self.dump_2_temptable.isChecked())
 
         importer.SanityCheckVacuumDB()
 
@@ -483,6 +494,24 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         else:
             layout.addWidget(line)
 
+    def handle_save(self):
+        """
+        An extra, non-critical, feature to save metadata (as shown in the gui) as a csv file for examination in other application
+        """
+        path = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(
+                self, 'Save File', '', 'CSV(*.csv)')
+        if path:
+            path = ru(path[0])
+
+            printlist = [[self.metadata_filter.table.item(row, column)
+                          if self.metadata_filter.table.item(row, column) is not None
+                          else ''
+                          for column in range(self.metadata_filter.table.columnCount())]
+                         for row in range(self.metadata_filter.table.rowCount())]
+
+            utils.write_printlist_to_file(path, printlist)
+
+
 
 class MetaFilterSelection(VRowEntry):
     def __init__(self, all_lab_results):
@@ -522,7 +551,14 @@ class MetadataFilter(VRowEntry):
         self.layout.addWidget(self.button_layout.widget)
 
         self.label = qgis.PyQt.QtWidgets.QLabel()
-        self.layout.addWidget(self.label)
+        self.label_layout = RowEntry()
+        self.label_layout.layout.addWidget(self.label)
+
+        self.buttonSave = qgis.PyQt.QtWidgets.QPushButton('Save metadata table to file')
+        self.buttonSave.setToolTip(ru(QCoreApplication.translate('Interlab4Import','save the metadata table into a csv file for examination in another application')))
+        self.label_layout.layout.addWidget(self.buttonSave)
+
+        self.layout.addWidget(self.label_layout.widget)
 
         self.table = qgis.PyQt.QtWidgets.QTableWidget()
         self.table.setSelectionBehavior(qgis.PyQt.QtWidgets.QAbstractItemView.SelectRows)
@@ -533,7 +569,7 @@ class MetadataFilter(VRowEntry):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
-        self.table.itemSelectionChanged.connect( self.update_nr_of_selected)
+        self.table.itemSelectionChanged.connect(self.update_nr_of_selected)
 
         self.table_items = {}
 

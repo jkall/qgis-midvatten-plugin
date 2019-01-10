@@ -48,7 +48,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_import(self, goal_table, file_data, allow_obs_fk_import=False, _dbconnection=None):
+    def general_import(self, goal_table, file_data, allow_obs_fk_import=False, _dbconnection=None, dump_temptable=False):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -115,6 +115,10 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             for geom_col in geom_columns.keys():
                 if geom_col in existing_columns_in_temptable:
                     self.calculate_geometry(geom_col, goal_table, dbconnection)
+
+            # Dump temptable to csv for debugging
+            if dump_temptable:
+                dbconnection.dump_table_2_csv(self.temptable_name)
 
             # Import foreign keys in some special cases
             foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)

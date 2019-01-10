@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.0b1:
         - Sectionplot: Methods for producing graded dems but not implemented in gui yet.
+        - Interlab4: feature to dump tables to csv.
         Version 2.0b1:
         - Update for QGIS3.
         For changes until ver 2.0, see separate document changelog_history

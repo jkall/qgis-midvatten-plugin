@@ -50,7 +50,8 @@ def find_date_format(datestring, suppress_error_msg=False):
                            '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S',
                            '%d-%m-%Y %H:%M', '%d-%m-%Y %H', '%Y/%m/%d %H:%M',
                            '%Y/%m/%d %H', '%Y%m%d %H%M%S', '%Y%m%d %H%M',
-                           '%Y%m%d %H', '%m/%d/%y %H:%M:%S']
+                           '%Y%m%d %H', '%m/%d/%y %H:%M:%S', u'%d-%b-%y %H:%M:%S',
+                           u'%d-%b-%Y %H:%M:%S', u'%d-%B-%y %H:%M:%S', u'%d-%B-%Y %H:%M:%S']
     found_format = None
     for dateformat in date_formats_to_try:
         try:
@@ -157,7 +158,7 @@ def reformat_date_time(astring):
     if date_format is None:
         return None
 
-    date = '-'.join(['%{}'.format(letter) for letter in ['Y', 'm', 'd'] if letter in date_format])
+    date = u'-'.join([u'%{}'.format(letter) for letter in [u'Y', u'm', u'd'] if letter in date_format.replace(u'b', u'm').replace(u'B', u'm').replace(u'y', u'Y')]) # fix for rare cases where date_format contains month names instead of month no.
     time = ':'.join(['%{}'.format(letter) for letter in ['H', 'M', 'S'] if letter in date_format])
     outformat = ' '.join([date, time])
     new_datestring = datetime.datetime.strftime(datetime.datetime.strptime(astring, date_format), outformat)

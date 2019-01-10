@@ -34,6 +34,7 @@ except:
 
 import datetime
 import re
+import tempfile
 from collections import OrderedDict
 import sqlite3 as sqlite
 
@@ -275,9 +276,20 @@ class DbConnectionManager(object):
                 self.execute(sql)
         return temptable_name
 
+    def dump_table_2_csv(self, table_name=None):
+        self.cursor.execute(u'select * from {}'.format(table_name))
+        header = [col[0] for col in self.cursor.description]
+        rows = self.cursor.fetchall()
+        if rows:
+            filename = os.path.join(tempfile.gettempdir(), '{}.csv'.format(table_name))
+            printlist = [header]
+            printlist.extend(rows)
+            utils.write_printlist_to_file(filename, printlist)
+
 def connect_with_spatialite_connect(dbpath):
     conn = spatialite_connect(dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
     return conn
+
 
 def check_connection_ok():
     try:
