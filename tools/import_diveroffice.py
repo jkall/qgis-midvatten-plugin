@@ -186,8 +186,6 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         answer = importer.general_import('w_levels_logger', file_to_import_to_db)
 
         utils.stop_waiting_cursor()
-        importer.SanityCheckVacuumDB()
-        utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():
             self.close()

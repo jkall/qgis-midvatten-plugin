@@ -144,8 +144,6 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table, dump_temptable=self.dump_2_temptable.isChecked())
 
-        importer.SanityCheckVacuumDB()
-
         if self.close_after_import.isChecked():
             self.close()
 

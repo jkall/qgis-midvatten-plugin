@@ -259,8 +259,6 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         importer = import_data_to_db.midv_data_importer()
         answer = importer.general_import(goal_table=goal_table, file_data=file_data)
         utils.stop_waiting_cursor()
-        importer.SanityCheckVacuumDB()
-        utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():
             self.close()

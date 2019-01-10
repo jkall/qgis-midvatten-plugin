@@ -454,8 +454,6 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
 
                 importer.general_import(file_data=file_data, goal_table=import_method)
 
-        importer.SanityCheckVacuumDB()
-
         if self.close_after_import.isChecked():
             self.close()
         utils.stop_waiting_cursor()
