@@ -146,8 +146,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
                      self.update_sublocations_and_inputfields_on_date_change)
 
         #Button click first filters data from the settings and then updates input fields.
-        self.input_fields.update_parameters_button.clicked.connect(
-                     self.update_input_fields_from_button)
+        self.input_fields.update_parameters_button.clicked.connect(lambda: self.update_input_fields_from_button())
 
         self.gridLayout_buttons.setRowStretch(4, 1)
 
