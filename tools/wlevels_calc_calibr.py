@@ -454,22 +454,22 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     
         # Load manual reading (full time series) for the obsid
         if self.meas_ts.size:
-            self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15)
+            self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15, color='#1f77b4ff')
         
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
             logger_line_style = '.-'
-            original_head_style = 'x--'
+            original_head_style = '--'
         else:
             logger_line_style = '-'
             original_head_style = '--'
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' original logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5)
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' original logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5, color='#c1c1c1ff')
 
         """ Finish plot """
         self.axes.grid(True)
@@ -501,11 +501,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         utils.stop_waiting_cursor()
 
     @fn_timer
-    def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5, time_list=None, zorder=None, markersize=None):
+    def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5, time_list=None, zorder=None, markersize=None, color=None):
         """ Plots a recarray to the supplied axes object """
         if time_list is None:
             time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(a_recarray))
-        self.plot_the_recarray(axes, time_list, a_recarray, lable, line_style, picker=picker, zorder=zorder, markersize=markersize)
+        self.plot_the_recarray(axes, time_list, a_recarray, lable, line_style, picker=picker, zorder=zorder, markersize=markersize, color=color)
         
     @fn_timer
     def a_recarray_to_timestring_list(self, a_recarray):
@@ -517,12 +517,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         return datestr2num(timestring_list)
         
     @fn_timer
-    def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5, zorder=None, markersize=None):
+    def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5, zorder=None, markersize=None, color=None):
         kwargs = {'label': lable, 'picker':picker}
         if zorder is not None:
             kwargs['zorder'] = zorder
         if markersize is not None:
             kwargs['markersize'] = markersize
+        if color is not None:
+            kwargs['color'] = color
 
         axes.plot_date(time_list, a_recarray.values, line_style, **kwargs) #, xdate=True)
 
