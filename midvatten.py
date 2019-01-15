@@ -47,6 +47,8 @@ from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import Wqualreport
 from wqualreport_compact import CompactWqualReportUi
+from column_values_from_selected_features import ValuesFromSelectedFeaturesGui
+from calculate_statistics import CalculateStatisticsGui
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
@@ -206,9 +208,9 @@ class midvatten(object):
         self.action_calculate_db_table_rows.setWhatsThis(self.calculate_db_table_rows.__doc__)
         self.action_calculate_db_table_rows.triggered.connect(lambda x: self.calculate_db_table_rows())
 
-        self.action_list_of_obsids_from_selected_features = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_statistics.png")), QCoreApplication.translate("Midvatten","List of obsids from selected features"), self.iface.mainWindow())
-        self.action_list_of_obsids_from_selected_features.setWhatsThis(self.list_of_obsids_from_selected_features.__doc__)
-        self.action_list_of_obsids_from_selected_features.triggered.connect(lambda x: self.list_of_obsids_from_selected_features())
+        self.action_list_of_obsids_from_selected_features = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_statistics.png")), QCoreApplication.translate("Midvatten","List of values from selected features"), self.iface.mainWindow())
+        self.action_list_of_obsids_from_selected_features.setWhatsThis(self.list_of_values_from_selected_features.__doc__)
+        self.action_list_of_obsids_from_selected_features.triggered.connect(lambda x: self.list_of_values_from_selected_features())
 
 
         # Add toolbar with buttons 
@@ -971,8 +973,6 @@ class midvatten(object):
 
             Uses GetStatistics from drillreport for the calculations
         """
-        from calculate_statistics import CalculateStatisticsGui
-
         stats_gui = CalculateStatisticsGui(self.iface.mainWindow(), self.ms)
 
     @utils.general_exception_handler
@@ -983,24 +983,9 @@ class midvatten(object):
         utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
-    def list_of_obsids_from_selected_features(self):
-        """ Writes a concatted list of obsids from column obsid from selected features
-
-            Select features/rows in a layer containing the column obsid. A sorted list of unique obsids will
-            be written to the log. The list could be used in other layer filters or selections.
+    def list_of_values_from_selected_features(self):
+        """ Writes a concatted list of values from selected column from selected features
+            The list could be used in other layer filters or selections.
         """
-        selected_obsids = utils.getselectedobjectnames(column_name='obsid')
 
-        if not selected_obsids:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('list_of_obsids_from_selected_features',
-                                                                              'No obsids selected!')))
-        else:
-            selected_obsids = sorted(set(selected_obsids))
-            nr = len(selected_obsids)
-            utils.MessagebarAndLog.info(bar_msg=ru(
-                QCoreApplication.translate('list_of_obsids_from_selected_features',
-                                           'List of %s selected obsids written to log'))%str(nr),
-                                        log_msg='obsid IN ({})'.format(
-                                            ', '.join(["'{}'".format(obsid)
-                                                        for obsid in sorted(selected_obsids)])))
-
+        ValuesFromSelectedFeaturesGui(self.iface.mainWindow())

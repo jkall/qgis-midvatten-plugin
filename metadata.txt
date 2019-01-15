@@ -23,6 +23,7 @@ changelog=
         Version 1.6.0b2:
         - Sectionplot: Methods for producing graded dems but not implemented in gui yet.
         - Interlab4: feature to dump tables to csv.
+        - Improved utility to get values from selected features.
         Version 1.6.0b1:
         - Update for QGIS3.
         For changes until ver 1.6, see separate document changelog_history
