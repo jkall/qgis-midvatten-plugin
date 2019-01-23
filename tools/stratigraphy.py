@@ -109,10 +109,11 @@ class Stratigraphy(object):
 
 class SurveyInfo(object):   # This class is to define the data structure... 
     
-    def __init__(self, obsid='', top_lvl=0, coord=None, strata=None):  #_CHANGE_ added obsid
+    def __init__(self, obsid='', top_lvl=0, coord=None, strata=None, length=None):  #_CHANGE_ added obsid
         self.obsid = obsid # _CHANGE_
         self.top_lvl = top_lvl
         self.coord = coord
+        self.length = length
         if strata == None:
             strata = []
         self.strata = strata
@@ -160,6 +161,7 @@ class SurveyStore(object):
         h_toc_ColNo = provider.fieldNameIndex('h_toc') # _CHANGE_  THIS IS TSPLOT-method To find the column named 'h_toc'
         if h_gs_ColNo == -1 and h_toc_ColNo == -1:
             h_gs_ColNo = provider.fieldNameIndex('SURF_LVL') # backwards compatibility
+        length_ColNo = provider.fieldNameIndex('length')
         surveys = {}
         strata = {}
         if(vlayer):
@@ -203,8 +205,18 @@ class SurveyStore(object):
                             self.warning_popup = False
                     toplvl_list[i] = level_val
                     coord_list[i]= feature.geometry().asPoint()
+
+                    if length_ColNo == -1:
+                        length = None
+                    else:
+                        try:
+                            length = float(ru(attributes[length_ColNo]))
+                        except:
+                            length = None
+
+
                     # add to array
-                    surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
+                    surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i], length=length)
         else:
             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
         return surveys
@@ -219,6 +231,9 @@ class SurveyStore(object):
             sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
             sql += """' ORDER BY stratid"""
             recs = dbconnection.execute_and_fetchall(sql)
+            if not recs:
+                if survey.length is not None:
+                    recs.append([1, 0.0, survey.length, '', '', '', '', ''])
             # parse attributes
             prev_depthbot = 0
             for record in recs:
