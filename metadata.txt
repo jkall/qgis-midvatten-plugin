@@ -5,7 +5,7 @@ name=Midvatten
 qgisMinimumVersion=3.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
-version=Version 1.6.0b4
+version=Version 1.6.0b5
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
@@ -20,6 +20,9 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
+        Version 1.6.0b5
+        - Customplot: Fixes #293. Added checkbox "Regular xaxis interval".
+        - Customplot: Fixed tab widget resizing bugs. Restructured settings.
         Version 1.6.0b4:
         - Stratigraphy: Hidden feature: If selected layer is missing in table stratigraphy but has "length" column, it will be plottet as a layer with no geology.
         Version 1.6.0b3:

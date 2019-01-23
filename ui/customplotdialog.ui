@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>944</width>
-    <height>575</height>
+    <width>1053</width>
+    <height>772</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +17,9 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="1">
      <widget class="QScrollArea" name="plot_scrollArea">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
       <property name="widgetResizable">
        <bool>true</bool>
       </property>
@@ -25,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>575</width>
-         <height>699</height>
+         <width>703</width>
+         <height>701</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -35,7 +38,7 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QTabWidget" name="plot_tabwidget">
           <property name="sizePolicy">
@@ -57,7 +60,7 @@
            <attribute name="title">
             <string>Plot</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
              <widget class="QWidget" name="widgetPlot" native="true">
               <property name="sizePolicy">
@@ -72,8 +75,8 @@
                 <height>10</height>
                </size>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_21">
+               <item row="0" column="0">
                 <layout class="QVBoxLayout" name="layoutplot"/>
                </item>
               </layout>
@@ -93,7 +96,7 @@
            </attribute>
            <layout class="QGridLayout" name="gridLayout_6">
             <item row="0" column="0">
-             <layout class="QVBoxLayout" name="verticalLayout_2">
+             <layout class="QVBoxLayout" name="verticalLayout_7">
               <item>
                <widget class="QGroupBox" name="chart_settings">
                 <property name="sizePolicy">
@@ -131,11 +134,16 @@
                    </item>
                    <item>
                     <widget class="QGroupBox" name="Legend_checkBox">
+                     <property name="font">
+                      <font>
+                       <kerning>true</kerning>
+                      </font>
+                     </property>
                      <property name="title">
                       <string>Legend</string>
                      </property>
                      <property name="flat">
-                      <bool>true</bool>
+                      <bool>false</bool>
                      </property>
                      <property name="checkable">
                       <bool>true</bool>
@@ -232,7 +240,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>Axes</string>
+                      <string>Axes limits</string>
                      </property>
                     </widget>
                    </item>
@@ -470,8 +478,55 @@
                 <property name="checked">
                  <bool>false</bool>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_21">
-                 <item row="2" column="0">
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <item>
+                  <widget class="QLabel" name="matplotlib_style_sheet_reference">
+                   <property name="text">
+                    <string>Matplotlib style sheet reference</string>
+                   </property>
+                   <property name="openExternalLinks">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout">
+                   <item>
+                    <widget class="QLabel" name="label_20">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic plotsize: The plot size will adjust to the customplot window size.&lt;br/&gt;Fixed: The plot size will be set to the parameter figure.figsize from the used style file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                     <property name="text">
+                      <string>Plotsize:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QRadioButton" name="dynamic_plot_size">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic plotsize: The plot size will adjust to the customplot window size.&lt;br/&gt;Fixed: The plot size will be set to the parameter figure.figsize from the used style file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                     <property name="text">
+                      <string>Dynamic</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QRadioButton" name="radioButton_2">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic plotsize: The plot size will adjust to the customplot window size.&lt;br/&gt;Fixed: The plot size will be set to the parameter figure.figsize from the used style file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                     <property name="text">
+                      <string>Fixed</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
                   <layout class="QGridLayout" name="gridLayout_23">
                    <property name="sizeConstraint">
                     <enum>QLayout::SetDefaultConstraint</enum>
@@ -554,29 +609,6 @@
                     </widget>
                    </item>
                   </layout>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QCheckBox" name="dynamic_plot_size">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the plot size will adjust to the customplot window size.&lt;br/&gt;If unchecked, the plot size will be set to the parameter figure.figsize from the used style file.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="text">
-                    <string>Dynamic plot size</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="matplotlib_style_sheet_reference">
-                   <property name="text">
-                    <string>Matplotlib style sheet reference</string>
-                   </property>
-                   <property name="openExternalLinks">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -2513,7 +2545,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>944</width>
+     <width>1053</width>
      <height>27</height>
     </rect>
    </property>

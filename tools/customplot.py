@@ -112,6 +112,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.chart_settings.clicked.connect( partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.styles_settings.clicked.connect(partial(self.set_groupbox_children_visibility, self.styles_settings))
         self.plot_tabwidget.currentChanged.connect(self.uncheck_settings)
+        self.plot_tabwidget.currentChanged.connect(lambda : self.tabwidget_resize(self.plot_tabwidget))
+        self.tabWidget.currentChanged.connect(lambda :self.tabwidget_resize(self.tabWidget))
 
         self.select_button_t1f1.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_1, self.Filter1_ComboBox_1))
         self.select_button_t1f2.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_1, self.Filter2_ComboBox_1))
@@ -145,8 +147,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              msettings=self.ms)
         self.styles.select_style_in_list(defs.custplot_default_style()[1])
 
-        self.show()
-
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
         regexp = QtCore.QRegExp('[+-]?\\d*[\\.,]?\\d+') 
         validator = QtGui.QRegExpValidator(regexp)
@@ -178,6 +178,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.yaxis_label = None
 
         self.init_figure()
+        self.tabwidget_resize(self.tabWidget)
+        self.tabwidget_resize(self.plot_tabwidget)
+        self.show()
 
 
     def init_figure(self):
@@ -737,6 +740,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         if self.dynamic_plot_size.isChecked():
             self.widgetPlot.setMinimumWidth(10)
             self.widgetPlot.setMaximumWidth(16777215)
+            self.widgetPlot.setMinimumHeight(10)
+            self.widgetPlot.setMaximumHeight(16777215)
+            #self.widgetPlot.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         else:
             width_inches, height_inches = mpl.rcParams['figure.figsize']
             screen_dpi = QApplication.screens()[0].logicalDotsPerInch()
@@ -744,6 +750,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             height_pixels = height_inches * screen_dpi
             self.canvas.setFixedSize(width_pixels, height_pixels)
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
+            print("toolbar " + str(self.mpltoolbar.size().height()))
+            print("canvas " + str(self.canvas.size().height()))
+            self.widgetPlot.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*2)
+            #self.tabwidget_resize(self.plot_tabwidget)
 
         self.canvas.draw()
 
@@ -853,6 +863,21 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.set_groupbox_children_visibility(self.styles_settings)
         self.set_groupbox_children_visibility(self.chart_settings)
+
+    def tabwidget_resize(self, tabwidget):
+        current_index = tabwidget.currentIndex()
+        for tabnr in range(tabwidget.count()):
+            if tabnr != current_index:
+                tabwidget.widget(tabnr).setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
+        tab = tabwidget.currentWidget()
+        #tab = tabwidget.widget(current_index)
+        tab.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        tab.adjustSize()
+        tabwidget.resize(tabwidget.minimumSizeHint())
+        tabwidget.adjustSize()
+        self.plot_scrollArea.resize(self.plot_scrollArea.minimumSizeHint())
+        self.plot_scrollArea.adjustSize()
+
 
 
 
