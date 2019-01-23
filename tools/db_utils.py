@@ -428,22 +428,19 @@ def get_tables(dbconnection=None, skip_views=False):
 
 
 def get_table_info(tablename, dbconnection=None):
+
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
 
     if dbconnection.dbtype == 'spatialite':
-        columns_sql = """PRAGMA table_info (%s)""" % tablename
+        columns_sql = """PRAGMA table_info ('%s')""" % (tablename)
         try:
             columns = dbconnection.execute_and_fetchall(columns_sql)
         except Exception as e:
-            if dbconnection.dbtype == 'spatialite':
-                columns_sql = """PRAGMA table_info ("%s")""" % tablename
-                try:
-                    columns = dbconnection.execute_and_fetchall(columns_sql)
-                except Exception as e:
-                    utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), log_msg=ru(
-                        QCoreApplication.translate('get_table_info', 'Sql failed: %s\msg:%s')) % (columns_sql, str(e)))
-                    return None
+            utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), log_msg=ru(
+                QCoreApplication.translate('get_table_info', 'Sql failed: %s\msg:%s')) % (columns_sql, str(e)))
+            return None
+
     else:
         columns_sql = "SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
         columns = [list(x) for x in dbconnection.execute_and_fetchall(columns_sql)]
@@ -467,7 +464,7 @@ def get_foreign_keys(table, dbconnection=None):
         dbconnection = DbConnectionManager()
     foreign_keys = {}
     if dbconnection.dbtype == 'spatialite':
-        result_list = dbconnection.execute_and_fetchall("""PRAGMA foreign_key_list(%s)"""%table)
+        result_list = dbconnection.execute_and_fetchall("""PRAGMA foreign_key_list('%s')"""%table)
         for row in result_list:
             foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
     else:

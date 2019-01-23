@@ -321,14 +321,14 @@ class ExportData(object):
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', "Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate('ExportData', '%s\nmsg:\n%s'))%(sql, str(e)))
 
     def get_foreign_keys(self, tname):
-        result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()
+        result_list = self.curs.execute("""PRAGMA foreign_key_list('%s')"""%(tname)).fetchall()
         foreign_keys = {}
         for row in result_list:
             foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
         return foreign_keys
 
     def get_primary_keys(self, tname):
-        result_list = self.curs.execute("""PRAGMA table_info(%s)"""%(tname)).fetchall()
+        result_list = self.curs.execute("""PRAGMA table_info('%s')"""%(tname)).fetchall()
         primary_keys = [column_tuple[1] for column_tuple in result_list if column_tuple[5] != 0]
         return primary_keys
 
@@ -389,9 +389,9 @@ class ExportData(object):
     def get_column_names(self, tname, prefix=None):
 
         if prefix is None:
-            sql = """PRAGMA table_info(%s)"""%tname
+            sql = """PRAGMA table_info('%s')"""%tname
         else:
-            sql = '''PRAGMA "%s".table_info(%s)'''%(prefix, tname)
+            sql = '''PRAGMA "%s".table_info('%s')'''%(prefix, tname)
 
         try:
             result_list = self.curs.execute(sql).fetchall()
