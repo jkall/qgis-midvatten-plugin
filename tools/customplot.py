@@ -56,6 +56,7 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.PyQt
+from pandas.plotting._converter import PandasAutoDateLocator
 
 
 try:
@@ -84,6 +85,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
         self.drawn = False
         self.used_format = None
+        self.matplotlib_style_sheet_reference.setText("""<a href="https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html">Matplotlib style sheet reference</a>""")
+        self.matplotlib_style_sheet_reference.setOpenExternalLinks(True)
 
     def initUI(self):
         self.table_ComboBox_1.clear()  
@@ -107,7 +110,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.plot_settings_2.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_2))
         self.plot_settings_3.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_3))
         self.chart_settings.clicked.connect( partial(self.set_groupbox_children_visibility, self.chart_settings))
-        self.template_wid.clicked.connect(partial(self.set_groupbox_children_visibility, self.template_wid))
+        self.styles_settings.clicked.connect(partial(self.set_groupbox_children_visibility, self.styles_settings))
+        self.plot_tabwidget.currentChanged.connect(self.uncheck_settings)
 
         self.select_button_t1f1.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_1, self.Filter1_ComboBox_1))
         self.select_button_t1f2.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_1, self.Filter2_ComboBox_1))
@@ -129,7 +133,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawplot_with_styles())
         self.Redraw_pushButton.clicked.connect(lambda x: self.redraw())
 
-
         self.custplot_last_used_style_settingskey = 'custplot_last_used_template'
         self.styles = utils.MatplotlibStyles(self,
                                              self.template_list,
@@ -141,6 +144,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                              defs.custplot_default_style(),
                                              msettings=self.ms)
         self.styles.select_style_in_list(defs.custplot_default_style()[1])
+
+        self.show()
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
         regexp = QtCore.QRegExp('[+-]?\\d*[\\.,]?\\d+') 
@@ -160,27 +165,20 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.pandas_calc_2 = PandasCalculations(self.gridLayout_14)
             self.pandas_calc_3 = PandasCalculations(self.gridLayout_19)
 
-        self.chart_settings.setChecked(True)
-        self.template_wid.setChecked(True)
-        self.filtersettings1.setChecked(False)
-        self.filtersettings2.setChecked(False)
-        self.filtersettings3.setChecked(False)
-        self.set_groupbox_children_visibility(self.chart_settings)
-        self.set_groupbox_children_visibility(self.filtersettings1)
-        self.set_groupbox_children_visibility(self.filtersettings2)
-        self.set_groupbox_children_visibility(self.filtersettings3)
-        for plot_item_settings in [self.plot_settings_1, self.plot_settings_2, self.plot_settings_3]:
-            plot_item_settings.setChecked(False)
-            self.set_groupbox_children_visibility(plot_item_settings)
-
-        self.set_groupbox_children_visibility(self.template_wid)
+        self.plot_tabwidget.setCurrentIndex(0)
+        for group_box in [self.plot_settings_1, self.plot_settings_2, self.plot_settings_3,
+                          self.filtersettings1, self.filtersettings2, self.filtersettings3,
+                          self.chart_settings, self.styles_settings]:
+            group_box.setChecked(False)
+            self.set_groupbox_children_visibility(group_box)
+        self.uncheck_settings(0)
 
         self.title = None
         self.xaxis_label = None
         self.yaxis_label = None
 
         self.init_figure()
-        self.show()
+
 
     def init_figure(self):
         try:
@@ -278,7 +276,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'Plot not updated.')))
             return None
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
-    
+
+        try:
+            self.xaxis_formatters[1].__dict__['intervald'][3] = [1, 2, 4, 8, 16]  # Fix to not have the date ticks overlap at month end/start
+        except Exception as e:
+            utils.MessagebarAndLog.warning(log_msg=ru(
+                QCoreApplication.translate('Customplot', 'Setting intervald failed! msg:\n%s ')) % str(e))
+
         self.drawn = True
 
         self.refreshPlot()
@@ -500,16 +504,10 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #max time step, titles, grid, legend
         self.spnmaxtstep.setValue(self.ms.settingsdict['custplot_maxtstep'])
 
-        if self.ms.settingsdict['custplot_legend']==2:
-            self.Legend_checkBox.setChecked(True)
-        else:
-            self.Legend_checkBox.setChecked(False)
-
-        if mpl.rcParams['axes.grid']:
-            self.Grid_checkBox.setChecked(True)
-        else:
-            self.Grid_checkBox.setChecked(False)
-
+        self.Legend_checkBox.setChecked(self.ms.settingsdict['custplot_legend'])
+        self.regular_xaxis_interval.setChecked(self.ms.settingsdict['custplot_regular_xaxis_interval'])
+        self.Grid_checkBox.setChecked(self.ms.settingsdict['custplot_grid'])
+    
     def set_last_selection(self, table_combobox, xcol_combobox, ycol_combobox, custplot_table, custplot_xcol, custplot_ycol, table_changed):
         searchindex = table_combobox.findText(self.ms.settingsdict[custplot_table])
         if searchindex >= 0:
@@ -705,6 +703,14 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
             self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
+            try:
+                if self.regular_xaxis_interval.isChecked():
+                    self.xaxis_formatters[1].__dict__['interval_multiples'] = False
+                else:
+                    self.xaxis_formatters[1].__dict__['interval_multiples'] = True
+            except Exception as e:
+                utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('Customplot', 'Setting regular xaxis interval failed! msg:\n%s '))%str(e))
+
         self.axes.grid(self.Grid_checkBox.isChecked()) # grid
 
         for label in self.axes.xaxis.get_ticklabels():
@@ -728,16 +734,16 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             self.axes.legend_ = None
 
-        if self.fixed_figuresize_checkbox.isChecked():
+        if self.dynamic_plot_size.isChecked():
+            self.widgetPlot.setMinimumWidth(10)
+            self.widgetPlot.setMaximumWidth(16777215)
+        else:
             width_inches, height_inches = mpl.rcParams['figure.figsize']
             screen_dpi = QApplication.screens()[0].logicalDotsPerInch()
             width_pixels = width_inches * screen_dpi
             height_pixels = height_inches * screen_dpi
             self.canvas.setFixedSize(width_pixels, height_pixels)
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
-        else:
-            self.widgetPlot.setMinimumWidth(10)
-            self.widgetPlot.setMaximumWidth(16777215)
 
         self.canvas.draw()
 
@@ -782,12 +788,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_plottype2']=str(self.PlotType_comboBox_2.currentText())
         self.ms.settingsdict['custplot_plottype3']=str(self.PlotType_comboBox_3.currentText())
         self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()
-        self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.checkState()
-        #self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
+        self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.isChecked()
+        self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.isChecked()
         #self.ms.settingsdict['custplot_title'] = unicode(self.axes.get_title())
         #self.ms.settingsdict['custplot_xtitle'] = unicode(self.axes.get_xlabel())
         #self.ms.settingsdict['custplot_ytitle'] = unicode(self.axes.get_ylabel())
         self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
+        self.ms.settingsdict['custplot_regular_xaxis_interval'] = self.regular_xaxis_interval.isChecked()
         self.ms.save_settings()
 
         self.ms.save_settings(self.custplot_last_used_style_settingskey)
@@ -797,12 +804,56 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
+        """
+        TODO: Must find out how to manually resize the plot window when changing to 
+        self.widgetPlot.update()   #updateGeometry()
+        #self.plot_tabwidget.updateGeometry()
+        #self.Filter1_QListWidget_1.updateGeometry()
+        #self.tabWidget.update()   #Geometry()
+        #print("layoutplot before " + str(self.layoutplot.height))
+
+        for wid in [self.layoutplot, self.widgetPlot, self.plot_tab, self.settings_tab,
+                    self.chart_settings, self.styles_settings]: #self.widgetPlot, self.settings_tab, self.plot_tab, self.plot_tabwidget, self.scrollAreaWidgetContents, self.plot_scrollArea]:
+            try:
+                wid.repaint()
+            except:
+                pass
+            try:
+
+                wid.update()
+            except:
+                pass
+            try:
+                wid.updateGeometry()
+            except:
+                pass
+            try:
+                wid.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+            except:
+                pass
+        """
+
+
+
     def select_in_filterlist_from_selection(self, filter_listwidget, filter_combobox):
         current_column = ru(filter_combobox.currentText())
         if not current_column:
             return
         selected_values = utils.getselectedobjectnames(column_name=current_column)
         [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
+
+    def uncheck_settings(self, current_index):
+        if current_index == 0:
+            self.chart_settings.setChecked(False)
+            self.styles_settings.setChecked(False)
+            pass
+        elif current_index == 1:
+            self.chart_settings.setChecked(True)
+            self.styles_settings.setChecked(True)
+
+        self.set_groupbox_children_visibility(self.styles_settings)
+        self.set_groupbox_children_visibility(self.chart_settings)
+
 
 
 

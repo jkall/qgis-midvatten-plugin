@@ -9,3 +9,11 @@ xtick.labelsize: 8
 ytick.labelsize: 8
 figure.autolayout: True
 savefig.dpi: 450
+figure.figsize: 6.4,4.8
+date.autoformatter.day: %Y-%m-%d
+date.autoformatter.hour: %Y-%m-%d %H
+date.autoformatter.microsecond: %M:%S.%f
+date.autoformatter.minute: %Y-%m-%d %H:%M
+date.autoformatter.month: %Y-%m
+date.autoformatter.second: %Y-%m-%d %H:%M:%S
+date.autoformatter.year: %Y
