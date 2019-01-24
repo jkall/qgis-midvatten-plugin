@@ -296,10 +296,15 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                         utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext %s was used."'))%current_txt)
                                         #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
                                         pass
+                        else:
+                            # If two parameter with the same name exists in the report, use the highest resolution one, that is, the one with the lowest value.
+                            duplicate_data = lab_results[data['lablittera']].get(data['parameter'], None)
+                            if duplicate_data is not None:
+                                lab_results[data['lablittera']][data['parameter']] = self.compare_duplicate_parameters(data, duplicate_data)
+                                continue
 
                         lab_results[data['lablittera']][data['parameter']] = data
 
-                        continue
                 if not file_error:
                     all_lab_results.update(lab_results)
 
@@ -509,6 +514,69 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                          for row in range(self.metadata_filter.table.rowCount())])
 
             utils.write_printlist_to_file(path, printlist)
+
+    def unitconversion_factor(self, unit):
+        unit_conversion = {'g/l': ('mg/l', 1000.0),
+                           'mg/l': ('mg/l', 1.0),
+                           'µg/l': ('mg/l', 0.001),
+                           'ng/l': ('mg/l', 0.000001),
+                           'cfu/ml': ('cfu/ml', 1.0),
+                           'cfu/100ml': ('cfu/ml', 0.01),
+                           'cfu/10ml': ('cfu/ml', 0.01),
+                           'mS/m': ('mS/m', 1.0),
+                           'µS/m': ('mS/m', 0.001),
+                           'mS/cm': ('mS/m', 100.0),
+                           'µS/cm': ('mS/m', 0.001 * 100.0),
+                           'g/l Pt': ('mg/l Pt', 1000.0),
+                           'mg/l Pt': ('mg/l Pt', 1.0),
+                           'µg/l Pt': ('mg/l Pt', 0.001),
+                           'ng/l Pt': ('mg/l Pt', 0.000001)}
+        return unit_conversion.get(unit, None)
+
+    def reading_num_as_float(self, reading_num, reading_txt):
+        if reading_num is None and reading_txt is not None:
+            reading_num = reading_txt.replace('<', '').replace('>', '').replace(',', '.')
+        try:
+            reading_num = float(reading_num)
+        except ValueError:
+            reading_num = None
+        return reading_num
+
+    def compare_duplicate_parameters(self, data, duplicate_data):
+        """
+        Compares data when a report has a duplicate parameter and returns the row with the smallest value.
+
+        The smallest value is assumed to be of higher resolution.
+
+        :param data:
+        :param duplicate_data:
+        :return:
+        """
+        duplicate_value = self.reading_num_as_float(duplicate_data['mätvärdetal'], duplicate_data['mätvärdetext'])
+        current_value = self.reading_num_as_float(data['mätvärdetal'], data['mätvärdetext'])
+
+        # Return previous_data if the new data value isn't less.
+        resulting_data = duplicate_data
+
+        if duplicate_value is None and current_value is not None:
+            resulting_data = data
+        elif current_value is None:
+            # No comparison can be made
+            pass
+        else:
+            current_unit_factor = self.unitconversion_factor(data.get('enhet', None))
+            duplicate_unit_factor = self.unitconversion_factor(duplicate_data.get('enhet', None))
+
+            if current_unit_factor and duplicate_unit_factor:
+                current_unit, current_factor = current_unit_factor
+                duplicate_unit, duplicate_factor = duplicate_unit_factor
+
+                if current_unit == duplicate_unit:
+                    if current_value * current_factor < duplicate_value * duplicate_factor:
+                        # Current value is less than previous value, so replace data with new data.
+                        resulting_data = data
+        return resulting_data
+
 
 
 

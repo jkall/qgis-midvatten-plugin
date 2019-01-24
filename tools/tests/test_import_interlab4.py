@@ -423,6 +423,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
+        print(str(result_string))
+        print(str(reference_string))
         assert result_string == reference_string
 
     def test_interlab4_to_table_matvardetalanm(self):
@@ -473,4 +475,58 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_duplicate_parameters_mg_l_pt(self):
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;obsid',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;anobsid',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Iron;<2,5;2,5;;mg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 1234-1/4;Iron;1,5;1,5;;µg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 4567-1/4;Iron;35000;35000;;ng/l Pt;;;;;;;',
+            '#Slut'
+                )
+
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_duplicate_parameters_mg_l(self):
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;obsid',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;anobsid',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Iron;<2,5;2,5;;mg/l;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 1234-1/4;Iron;1,5;1,5;;µg/l;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 4567-1/4;Iron;35000;35000;;ng/l;;;;;;;',
+            '#Slut'
+                )
+
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string

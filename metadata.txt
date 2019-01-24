@@ -23,6 +23,7 @@ changelog=
         Version 1.6.0b5
         - Customplot: Fixes #293. Added checkbox "Regular xaxis interval".
         - Customplot: Fixed tab widget resizing bugs. Restructured settings.
+        - Interlab4: Fix so that the highest resolution parameter is imported if there are duplicates
         Version 1.6.0b4:
         - Stratigraphy: Hidden feature: If selected layer is missing in table stratigraphy but has "length" column, it will be plottet as a layer with no geology.
         Version 1.6.0b3:

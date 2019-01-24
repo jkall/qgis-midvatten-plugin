@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3c07f76e-23a5-46a6-97c9-651f38d0f1b6" name="Default Changelist" comment="Wqualreport: Ongoing dev.">
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/qgis-midvatten-plugin.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/wqualreport.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/wqualreport.py" afterDir="false" />
+    <list default="true" id="3c07f76e-23a5-46a6-97c9-651f38d0f1b6" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/import_interlab4.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/import_interlab4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/tests/test_import_interlab4.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/tests/test_import_interlab4.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,20 +15,6 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/customplot.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="11595">
-              <caret line="813" column="8" selection-start-line="813" selection-start-column="8" selection-end-line="813" selection-end-column="8" />
-              <folding>
-                <element signature="e#24#1321#1" />
-                <element signature="e#1906#2066#0" />
-                <element signature="e#2079#2245#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tools/wqualreport.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="156">
@@ -42,17 +24,161 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/wqualreport_compact.py">
+        <entry file="file://$PROJECT_DIR$/tools/import_interlab4.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3751" />
+            <state relative-caret-position="407">
+              <caret line="309" lean-forward="true" selection-start-line="309" selection-end-line="309" />
+              <folding>
+                <element signature="e#24#1188#1" />
+                <element signature="e#1937#2500#0" />
+                <element signature="e#2561#6124#0" />
+                <element signature="e#3961#5186#0" />
+                <element signature="e#6287#8191#0" />
+                <element signature="e#6711#6833#0" />
+                <element signature="e#7086#7132#0" />
+                <element signature="e#7170#7319#0" />
+                <element signature="e#7580#7757#0" />
+                <element signature="e#7643#7757#0" />
+                <element signature="e#18292#20469#0" />
+                <element signature="e#18292#18464#1" />
+                <element signature="e#18695#19219#0" />
+                <element signature="e#18716#19161#0" />
+                <element signature="e#18794#19161#0" />
+                <element signature="e#18835#19161#0" />
+                <element signature="e#18896#19072#0" />
+                <element signature="e#19478#19641#0" />
+                <element signature="e#19750#20397#0" />
+                <element signature="e#19783#20397#0" />
+                <element signature="e#19834#19964#0" />
+                <element signature="e#20330#20397#0" />
+                <element signature="e#20515#27467#0" />
+                <element signature="e#20515#21090#1" />
+                <element signature="e#21560#27160#0" />
+                <element signature="e#21917#22169#0" />
+                <element signature="e#22204#22787#0" />
+                <element signature="e#22467#22787#0" />
+                <element signature="e#22887#23378#0" />
+                <element signature="e#23857#27160#0" />
+                <element signature="e#24207#25248#0" />
+                <element signature="e#24436#25162#0" />
+                <element signature="e#24562#25063#0" />
+                <element signature="e#24977#25061#0" />
+                <element signature="e#25449#25540#0" />
+                <element signature="e#25721#26162#0" />
+                <element signature="e#26499#27125#0" />
+                <element signature="e#27514#27609#0" />
+                <element signature="e#27514#27555#1" />
+                <element signature="e#27656#28400#0" />
+                <element signature="e#27688#27737#0" />
+                <element signature="e#28437#29254#0" />
+                <element signature="e#28437#28582#1" />
+                <element signature="e#28729#29254#0" />
+                <element signature="e#28845#29193#0" />
+                <element signature="e#28846#29111#0" />
+                <element signature="e#31148#31737#0" />
+                <element signature="e#31577#31866#0" />
+                <element signature="e#30878#32104#0" />
+                <element signature="e#30885#31163#1" />
+                <element signature="e#31331#31375#0" />
+                <element signature="e#31402#32065#0" />
+                <element signature="e#31654#32065#0" />
+                <element signature="e#31850#32065#0" />
+                <element signature="e#31837#31948#0" />
+                <element signature="e#29300#29928#0" />
+                <element signature="e#29345#29781#0" />
+                <element signature="e#29345#29361#1" />
+                <element signature="e#29821#29928#0" />
+                <element signature="e#29968#36903#0" />
+                <element signature="e#30013#31911#0" />
+                <element signature="e#30013#30029#1" />
+                <element signature="e#31991#33553#0" />
+                <element signature="e#31991#32087#1" />
+                <element signature="e#32466#32815#1" />
+                <element signature="e#32869#33137#1" />
+                <element signature="e#33191#33553#1" />
+                <element signature="e#33634#35614#0" />
+                <element signature="e#33634#33788#1" />
+                <element signature="e#33943#34238#0" />
+                <element signature="e#34946#35536#0" />
+                <element signature="e#35307#35536#0" />
+                <element signature="e#35664#35845#0" />
+                <element signature="e#35883#36562#0" />
+                <element signature="e#35883#36054#1" />
+                <element signature="e#36308#36531#0" />
+                <element signature="e#36609#36903#0" />
+                <element signature="e#36953#37316#0" />
+                <element signature="e#37032#37107#0" />
+                <element signature="e#37181#37284#0" />
+              </folding>
+            </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/metadata.txt">
+        <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4_postgis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="23" selection-start-line="23" selection-end-line="24" selection-end-column="76" />
+            <state relative-caret-position="75">
+              <caret line="35" column="16" selection-start-line="35" selection-start-column="16" selection-end-line="35" selection-end-column="16" />
+              <folding>
+                <element signature="e#24#1173#1" />
+                <element signature="e#1503#9080#0" />
+                <element signature="e#1528#1643#0" />
+                <element signature="e#1953#5293#0" />
+                <element signature="e#2154#3317#0" />
+                <element signature="e#3428#4743#0" />
+                <element signature="e#4195#4708#0" />
+                <element signature="e#5611#9080#0" />
+                <element signature="e#5732#6894#0" />
+                <element signature="e#7006#8321#0" />
+                <element signature="e#7773#8286#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="90">
+              <caret line="34" column="79" selection-start-line="34" selection-start-column="79" selection-end-line="34" selection-end-column="79" />
+              <folding>
+                <element signature="e#24#1173#1" />
+                <element signature="e#1484#50013#0" />
+                <element signature="e#1509#1624#0" />
+                <element signature="e#1689#2478#0" />
+                <element signature="e#1729#2072#0" />
+                <element signature="e#2542#3329#0" />
+                <element signature="e#2582#2924#0" />
+                <element signature="e#3382#8853#0" />
+                <element signature="e#3422#6242#0" />
+                <element signature="e#8911#14390#0" />
+                <element signature="e#8951#11775#0" />
+                <element signature="e#14441#19910#0" />
+                <element signature="e#14481#17300#0" />
+                <element signature="e#19974#25467#0" />
+                <element signature="e#20014#22857#0" />
+                <element signature="e#25523#26706#0" />
+                <element signature="e#25563#26146#0" />
+                <element signature="e#26772#27958#0" />
+                <element signature="e#26812#27396#0" />
+                <element signature="e#28007#30057#0" />
+                <element signature="e#28039#29132#0" />
+                <element signature="e#30123#32248#0" />
+                <element signature="e#30155#31324#0" />
+                <element signature="e#32322#34460#0" />
+                <element signature="e#32354#33532#0" />
+                <element signature="e#34524#36656#0" />
+                <element signature="e#34556#35731#0" />
+                <element signature="e#36729#38884#0" />
+                <element signature="e#36761#37938#0" />
+                <element signature="e#38986#41137#0" />
+                <element signature="e#39018#40193#0" />
+                <element signature="e#41201#43273#0" />
+                <element signature="e#43365#45437#0" />
+                <element signature="e#43397#44493#0" />
+                <element signature="e#45519#47657#0" />
+                <element signature="e#47799#50013#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -303,11 +429,9 @@
         <option value="$PROJECT_DIR$/tools/sectionplot.py" />
         <option value="$PROJECT_DIR$/tools/date_utils.py" />
         <option value="$PROJECT_DIR$/tools/tests/test_create_spatialite_db.py" />
-        <option value="$PROJECT_DIR$/tools/tests/test_import_interlab4.py" />
         <option value="$PROJECT_DIR$/tools/tests/test_import_interlab4_postgis.py" />
         <option value="$PROJECT_DIR$/tools/tests/test_import_interlab4_spatialite.py" />
         <option value="$PROJECT_DIR$/tools/midvatten_utils.py" />
-        <option value="$PROJECT_DIR$/tools/import_interlab4.py" />
         <option value="$PROJECT_DIR$/tools/import_general_csv_gui.py" />
         <option value="$PROJECT_DIR$/tools/import_diveroffice.py" />
         <option value="$PROJECT_DIR$/tools/import_data_to_db.py" />
@@ -323,6 +447,8 @@
         <option value="$PROJECT_DIR$/metadata.txt" />
         <option value="$PROJECT_DIR$/tools/customplot.py" />
         <option value="$PROJECT_DIR$/tools/wqualreport.py" />
+        <option value="$PROJECT_DIR$/tools/import_interlab4.py" />
+        <option value="$PROJECT_DIR$/tools/tests/test_import_interlab4.py" />
       </list>
     </option>
   </component>
@@ -352,6 +478,12 @@
               <item name="qgis-midvatten-plugin" type="b2602c69:ProjectViewProjectNode" />
               <item name="qgis-midvatten-plugin" type="462c0819:PsiDirectoryNode" />
               <item name="tools" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="qgis-midvatten-plugin" type="b2602c69:ProjectViewProjectNode" />
+              <item name="qgis-midvatten-plugin" type="462c0819:PsiDirectoryNode" />
+              <item name="tools" type="462c0819:PsiDirectoryNode" />
+              <item name="tests" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -590,17 +722,25 @@
       <option name="project" value="LOCAL" />
       <updated>1548342441863</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Wqualreport: Ongoing dev.">
+      <created>1548342629457</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1548342629457</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-3" y="0" width="1666" height="950" extended-state="6" />
+    <frame x="-3" y="0" width="1665" height="950" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20195241" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1984127" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info active="true" anchor="bottom" id="Find" order="1" sideWeight="0.49481392" visible="true" weight="0.33373785" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4945055" visible="true" weight="0.33373785" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -608,7 +748,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49657354" weight="0.33860466" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5051861" side_tool="true" visible="true" weight="0.33373785" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50549453" side_tool="true" visible="true" weight="0.33373785" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="bottom" id="Messages" order="11" sideWeight="0.49920928" visible="true" weight="0.3293023" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -650,9 +790,9 @@
     <MESSAGE value="Customplot: Fixed figure size change to &quot;Dynamic plot size&quot; checkbox." />
     <MESSAGE value="- Customplot: Fixes #293. Added checkbox &quot;Regular xaxis interval&quot;.&#10;- Customplot: Fixed tab widget resizing bugs. Restructured settings." />
     <MESSAGE value="Customplot: Fixes some resizing issues." />
-    <MESSAGE value="Wqualreport: Ongoing dev." />
     <MESSAGE value="Wqualreport: Fixes #294" />
-    <option name="LAST_COMMIT_MESSAGE" value="Wqualreport: Fixes #294" />
+    <MESSAGE value="Wqualreport: Ongoing dev." />
+    <option name="LAST_COMMIT_MESSAGE" value="Wqualreport: Ongoing dev." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -895,70 +1035,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="33" column="16" selection-start-line="33" selection-start-column="16" selection-end-line="33" selection-end-column="16" />
-          <folding>
-            <element signature="e#24#1173#1" />
-            <element signature="e#1484#45437#0" />
-            <element signature="e#1509#1624#0" />
-            <element signature="e#1689#2478#0" />
-            <element signature="e#1729#2072#0" />
-            <element signature="e#2542#3329#0" />
-            <element signature="e#2582#2924#0" />
-            <element signature="e#3382#8853#0" />
-            <element signature="e#3422#6242#0" />
-            <element signature="e#8911#14390#0" />
-            <element signature="e#8951#11775#0" />
-            <element signature="e#14441#19910#0" />
-            <element signature="e#14481#17300#0" />
-            <element signature="e#19974#25467#0" />
-            <element signature="e#20014#22857#0" />
-            <element signature="e#25523#26706#0" />
-            <element signature="e#25563#26146#0" />
-            <element signature="e#26772#27958#0" />
-            <element signature="e#26812#27396#0" />
-            <element signature="e#28007#30057#0" />
-            <element signature="e#28039#29132#0" />
-            <element signature="e#30123#32248#0" />
-            <element signature="e#30155#31324#0" />
-            <element signature="e#32322#34460#0" />
-            <element signature="e#32354#33532#0" />
-            <element signature="e#34524#36656#0" />
-            <element signature="e#34556#35731#0" />
-            <element signature="e#36729#38884#0" />
-            <element signature="e#36761#37938#0" />
-            <element signature="e#38986#41137#0" />
-            <element signature="e#39018#40193#0" />
-            <element signature="e#41201#43273#0" />
-            <element signature="e#41233#42329#0" />
-            <element signature="e#43365#45437#0" />
-            <element signature="e#43397#44493#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4_postgis.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="35" column="16" selection-start-line="35" selection-start-column="16" selection-end-line="35" selection-end-column="16" />
-          <folding>
-            <element signature="e#24#1173#1" />
-            <element signature="e#1503#9080#0" />
-            <element signature="e#1528#1643#0" />
-            <element signature="e#1953#5293#0" />
-            <element signature="e#2154#3317#0" />
-            <element signature="e#3428#4743#0" />
-            <element signature="e#4195#4708#0" />
-            <element signature="e#5611#9080#0" />
-            <element signature="e#5732#6894#0" />
-            <element signature="e#7006#8321#0" />
-            <element signature="e#7773#8286#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4_spatialite.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -1119,13 +1195,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1545">
           <caret line="114" selection-start-line="114" selection-end-line="114" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/import_interlab4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1590">
-          <caret line="122" column="114" selection-start-line="122" selection-start-column="99" selection-end-line="122" selection-end-column="114" />
         </state>
       </provider>
     </entry>
@@ -1551,6 +1620,9 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tools/wqualreport_compact.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/metadata.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
@@ -1719,15 +1791,164 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tools/wqualreport_compact.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3751" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/wqualreport.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="156">
           <caret line="147" column="129" selection-start-line="147" selection-start-column="129" selection-end-line="147" selection-end-column="129" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4_postgis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="35" column="16" selection-start-line="35" selection-start-column="16" selection-end-line="35" selection-end-column="16" />
+          <folding>
+            <element signature="e#24#1173#1" />
+            <element signature="e#1503#9080#0" />
+            <element signature="e#1528#1643#0" />
+            <element signature="e#1953#5293#0" />
+            <element signature="e#2154#3317#0" />
+            <element signature="e#3428#4743#0" />
+            <element signature="e#4195#4708#0" />
+            <element signature="e#5611#9080#0" />
+            <element signature="e#5732#6894#0" />
+            <element signature="e#7006#8321#0" />
+            <element signature="e#7773#8286#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/import_interlab4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="407">
+          <caret line="309" lean-forward="true" selection-start-line="309" selection-end-line="309" />
+          <folding>
+            <element signature="e#24#1188#1" />
+            <element signature="e#1937#2500#0" />
+            <element signature="e#2561#6124#0" />
+            <element signature="e#3961#5186#0" />
+            <element signature="e#6287#8191#0" />
+            <element signature="e#6711#6833#0" />
+            <element signature="e#7086#7132#0" />
+            <element signature="e#7170#7319#0" />
+            <element signature="e#7580#7757#0" />
+            <element signature="e#7643#7757#0" />
+            <element signature="e#18292#20469#0" />
+            <element signature="e#18292#18464#1" />
+            <element signature="e#18695#19219#0" />
+            <element signature="e#18716#19161#0" />
+            <element signature="e#18794#19161#0" />
+            <element signature="e#18835#19161#0" />
+            <element signature="e#18896#19072#0" />
+            <element signature="e#19478#19641#0" />
+            <element signature="e#19750#20397#0" />
+            <element signature="e#19783#20397#0" />
+            <element signature="e#19834#19964#0" />
+            <element signature="e#20330#20397#0" />
+            <element signature="e#20515#27467#0" />
+            <element signature="e#20515#21090#1" />
+            <element signature="e#21560#27160#0" />
+            <element signature="e#21917#22169#0" />
+            <element signature="e#22204#22787#0" />
+            <element signature="e#22467#22787#0" />
+            <element signature="e#22887#23378#0" />
+            <element signature="e#23857#27160#0" />
+            <element signature="e#24207#25248#0" />
+            <element signature="e#24436#25162#0" />
+            <element signature="e#24562#25063#0" />
+            <element signature="e#24977#25061#0" />
+            <element signature="e#25449#25540#0" />
+            <element signature="e#25721#26162#0" />
+            <element signature="e#26499#27125#0" />
+            <element signature="e#27514#27609#0" />
+            <element signature="e#27514#27555#1" />
+            <element signature="e#27656#28400#0" />
+            <element signature="e#27688#27737#0" />
+            <element signature="e#28437#29254#0" />
+            <element signature="e#28437#28582#1" />
+            <element signature="e#28729#29254#0" />
+            <element signature="e#28845#29193#0" />
+            <element signature="e#28846#29111#0" />
+            <element signature="e#31148#31737#0" />
+            <element signature="e#31577#31866#0" />
+            <element signature="e#30878#32104#0" />
+            <element signature="e#30885#31163#1" />
+            <element signature="e#31331#31375#0" />
+            <element signature="e#31402#32065#0" />
+            <element signature="e#31654#32065#0" />
+            <element signature="e#31850#32065#0" />
+            <element signature="e#31837#31948#0" />
+            <element signature="e#29300#29928#0" />
+            <element signature="e#29345#29781#0" />
+            <element signature="e#29345#29361#1" />
+            <element signature="e#29821#29928#0" />
+            <element signature="e#29968#36903#0" />
+            <element signature="e#30013#31911#0" />
+            <element signature="e#30013#30029#1" />
+            <element signature="e#31991#33553#0" />
+            <element signature="e#31991#32087#1" />
+            <element signature="e#32466#32815#1" />
+            <element signature="e#32869#33137#1" />
+            <element signature="e#33191#33553#1" />
+            <element signature="e#33634#35614#0" />
+            <element signature="e#33634#33788#1" />
+            <element signature="e#33943#34238#0" />
+            <element signature="e#34946#35536#0" />
+            <element signature="e#35307#35536#0" />
+            <element signature="e#35664#35845#0" />
+            <element signature="e#35883#36562#0" />
+            <element signature="e#35883#36054#1" />
+            <element signature="e#36308#36531#0" />
+            <element signature="e#36609#36903#0" />
+            <element signature="e#36953#37316#0" />
+            <element signature="e#37032#37107#0" />
+            <element signature="e#37181#37284#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/tests/test_import_interlab4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="34" column="79" selection-start-line="34" selection-start-column="79" selection-end-line="34" selection-end-column="79" />
+          <folding>
+            <element signature="e#24#1173#1" />
+            <element signature="e#1484#50013#0" />
+            <element signature="e#1509#1624#0" />
+            <element signature="e#1689#2478#0" />
+            <element signature="e#1729#2072#0" />
+            <element signature="e#2542#3329#0" />
+            <element signature="e#2582#2924#0" />
+            <element signature="e#3382#8853#0" />
+            <element signature="e#3422#6242#0" />
+            <element signature="e#8911#14390#0" />
+            <element signature="e#8951#11775#0" />
+            <element signature="e#14441#19910#0" />
+            <element signature="e#14481#17300#0" />
+            <element signature="e#19974#25467#0" />
+            <element signature="e#20014#22857#0" />
+            <element signature="e#25523#26706#0" />
+            <element signature="e#25563#26146#0" />
+            <element signature="e#26772#27958#0" />
+            <element signature="e#26812#27396#0" />
+            <element signature="e#28007#30057#0" />
+            <element signature="e#28039#29132#0" />
+            <element signature="e#30123#32248#0" />
+            <element signature="e#30155#31324#0" />
+            <element signature="e#32322#34460#0" />
+            <element signature="e#32354#33532#0" />
+            <element signature="e#34524#36656#0" />
+            <element signature="e#34556#35731#0" />
+            <element signature="e#36729#38884#0" />
+            <element signature="e#36761#37938#0" />
+            <element signature="e#38986#41137#0" />
+            <element signature="e#39018#40193#0" />
+            <element signature="e#41201#43273#0" />
+            <element signature="e#43365#45437#0" />
+            <element signature="e#43397#44493#0" />
+            <element signature="e#45519#47657#0" />
+            <element signature="e#47799#50013#0" />
+          </folding>
         </state>
       </provider>
     </entry>
