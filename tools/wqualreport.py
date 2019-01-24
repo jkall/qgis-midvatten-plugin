@@ -145,7 +145,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             return
         else:
             if any([x[1] is None for x in date_times]):
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Error: Found rows with datetime = NULL. The report might not work!")))
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Warning: Found rows with datetime = NULL. Column without date_time might be aggregated from multiple reports!")))
 
         if self.settingsdict['wqual_sortingcolumn']:
             self.nr_header_rows = 3
