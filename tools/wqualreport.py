@@ -170,7 +170,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                 ReportTable[parametercounter][0] = p
 
         try:
-            print('now go for each parameter value for ' + obsid + ', at time: ' + str(time.time()))#debug
+            print('Prepare ReportTable for ' + obsid + ', at time: ' + str(time.time()))#debug
         except:
             pass
         ReportTable[0][0] = 'obsid'
@@ -183,38 +183,35 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                 ReportTable[2][0] = self.settingsdict['wqual_sortingcolumn']
                 ReportTable[2][datecounter] = r
 
-
+        try:
+            print('now go for each parameter value for ' + obsid + ', at time: ' + str(time.time()))#debug
+        except:
+            pass
         for datecounter, sorting_date_time in enumerate(date_times, start=1):    # Loop through all report
             sorting, date_time = sorting_date_time
 
             # Parameter rows starts after date or sorting row
             for parametercounter, p_u in enumerate(parameters, start=self.nr_header_rows):
                 p, u = p_u
-                sql =r"""SELECT """
-                sql += self.settingsdict['wqual_valuecolumn']
-                sql += r""" from """
-                sql += self.settingsdict['wqualtable']
-                sql += """ where obsid = '"""
-                sql += obsid
-                if len(self.settingsdict['wqual_date_time_format'])>16:
-                    sql += "' and date_time  = '"
+                sql = r"""SELECT {wqual_valuecolumn} FROM {wqualtable} WHERE obsid = '{obsid}' """.format(**{'wqual_valuecolumn': self.settingsdict['wqual_valuecolumn'],
+                                                                                                        'wqualtable': self.settingsdict['wqualtable'],
+                                                                                                        'obsid': obsid})
+                if date_time is None or not date_time:
+                    sql += r""" AND (date_time IS NULL OR date_time = '') """
                 else:
-                    sql += "' and substr(date_time,1,%s)  = '"%str(len(self.settingsdict['wqual_date_time_format']))
-                sql += date_time
-                if not(self.settingsdict['wqual_unitcolumn'] == '') and u:
-                    sql += """' and parameter = '"""
-                    sql += p
-                    sql += """' and """
-                    sql += self.settingsdict['wqual_unitcolumn']
-                    sql += """ = '"""
-                    sql += u
-                    sql += """'"""
-                else:
-                    sql += """' and parameter = '"""
-                    sql += p
-                    sql += """'"""
+                    if len(self.settingsdict['wqual_date_time_format'])>16:
+                        sql += " AND date_time  = '{}' ".format(date_time)
+                    else:
+                        sql += " AND substr(date_time,1,{})  = '{}' ".format(str(len(self.settingsdict['wqual_date_time_format'])), date_time)
+
+                sql += r""" AND parameter = '{}' """.format(p)
+
+                if self.settingsdict['wqual_unitcolumn'] and u:
+                    sql += r""" AND {unitcol} = '{unit}' """.format(**{'unitcol': self.settingsdict['wqual_unitcolumn'],
+                                                                       'unit': u})
+
                 if self.settingsdict['wqual_sortingcolumn']:
-                    sql += """ and "%s" = '%s'"""%(self.settingsdict['wqual_sortingcolumn'], sorting)
+                    sql += """ AND {} = '{}'""".format(self.settingsdict['wqual_sortingcolumn'], sorting)
 
                 connection_ok, recs = db_utils.sql_load_fr_db(sql, dbconnection)
                 #each value must be in unicode or string to be written as html report
