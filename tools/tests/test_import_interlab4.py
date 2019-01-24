@@ -27,6 +27,8 @@ from builtins import str
 import midvatten_utils as utils
 from import_interlab4 import Interlab4Import
 from nose.plugins.attrib import attr
+import mock
+from mock import call
 
 import utils_for_tests
 
@@ -504,7 +506,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
-    def test_interlab4_to_table_duplicate_parameters_mg_l(self):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_interlab4_to_table_duplicate_parameters_mg_l(self, mock_messagebar):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -530,3 +533,9 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
+
+        assert mock_messagebar.mock_calls == [call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved out of ('2.5', 'mg/l') and ('1.5', 'µg/l')."),
+                                              call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved out of ('1.5', 'µg/l') and ('35000.0', 'ng/l').")]
+
+
+

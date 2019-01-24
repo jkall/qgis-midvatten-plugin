@@ -553,10 +553,14 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         :return:
         """
         duplicate_value = self.reading_num_as_float(duplicate_data['mätvärdetal'], duplicate_data['mätvärdetext'])
+        duplicate_unit = duplicate_data.get('enhet', None)
         current_value = self.reading_num_as_float(data['mätvärdetal'], data['mätvärdetext'])
+        current_unit = data.get('enhet', None)
 
         # Return previous_data if the new data value isn't less.
         resulting_data = duplicate_data
+        resulting_value = duplicate_value
+        resulting_unit = duplicate_unit
 
         if duplicate_value is None and current_value is not None:
             resulting_data = data
@@ -564,17 +568,31 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
             # No comparison can be made
             pass
         else:
-            current_unit_factor = self.unitconversion_factor(data.get('enhet', None))
-            duplicate_unit_factor = self.unitconversion_factor(duplicate_data.get('enhet', None))
+            current_unit_factor = self.unitconversion_factor(current_unit)
+            duplicate_unit_factor = self.unitconversion_factor(duplicate_unit)
 
             if current_unit_factor and duplicate_unit_factor:
-                current_unit, current_factor = current_unit_factor
-                duplicate_unit, duplicate_factor = duplicate_unit_factor
+                converted_current_unit, current_factor = current_unit_factor
+                converted_duplicate_unit, duplicate_factor = duplicate_unit_factor
 
-                if current_unit == duplicate_unit:
+                if converted_current_unit == converted_duplicate_unit:
                     if current_value * current_factor < duplicate_value * duplicate_factor:
                         # Current value is less than previous value, so replace data with new data.
                         resulting_data = data
+                        resulting_value = current_value
+                        resulting_unit = current_unit
+
+
+        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(
+            'Interlab4Import', """Duplicate parameter '%s' found! Value and unit ('%s', '%s') was saved out of ('%s', '%s') and ('%s', '%s')."""))%(
+                data['parameter'],
+                resulting_value,
+                resulting_unit,
+                duplicate_value,
+                duplicate_unit,
+                current_value,
+                current_unit))
+
         return resulting_data
 
 
