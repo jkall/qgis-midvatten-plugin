@@ -750,10 +750,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             height_pixels = height_inches * screen_dpi
             self.canvas.setFixedSize(width_pixels, height_pixels)
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
-            print("toolbar " + str(self.mpltoolbar.size().height()))
-            print("canvas " + str(self.canvas.size().height()))
-            self.widgetPlot.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*2)
-            #self.tabwidget_resize(self.plot_tabwidget)
+            self.widgetPlot.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*3)
 
         self.canvas.draw()
 
@@ -814,37 +811,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
-        """
-        TODO: Must find out how to manually resize the plot window when changing to 
-        self.widgetPlot.update()   #updateGeometry()
-        #self.plot_tabwidget.updateGeometry()
-        #self.Filter1_QListWidget_1.updateGeometry()
-        #self.tabWidget.update()   #Geometry()
-        #print("layoutplot before " + str(self.layoutplot.height))
-
-        for wid in [self.layoutplot, self.widgetPlot, self.plot_tab, self.settings_tab,
-                    self.chart_settings, self.styles_settings]: #self.widgetPlot, self.settings_tab, self.plot_tab, self.plot_tabwidget, self.scrollAreaWidgetContents, self.plot_scrollArea]:
-            try:
-                wid.repaint()
-            except:
-                pass
-            try:
-
-                wid.update()
-            except:
-                pass
-            try:
-                wid.updateGeometry()
-            except:
-                pass
-            try:
-                wid.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-            except:
-                pass
-        """
-
-
-
     def select_in_filterlist_from_selection(self, filter_listwidget, filter_combobox):
         current_column = ru(filter_combobox.currentText())
         if not current_column:
@@ -870,13 +836,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             if tabnr != current_index:
                 tabwidget.widget(tabnr).setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         tab = tabwidget.currentWidget()
-        #tab = tabwidget.widget(current_index)
         tab.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         tab.adjustSize()
-        tabwidget.resize(tabwidget.minimumSizeHint())
-        tabwidget.adjustSize()
-        self.plot_scrollArea.resize(self.plot_scrollArea.minimumSizeHint())
-        self.plot_scrollArea.adjustSize()
+
 
 
 
