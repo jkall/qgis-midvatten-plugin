@@ -143,6 +143,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         if not date_times:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Debug, Something is wrong, no parameters are found in table w_qual_lab for %s"))%obsid)
             return
+        else:
+            if any([x[1] is None for x in date_times]):
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Error: Found rows with datetime = NULL. The report might not work!")))
 
         if self.settingsdict['wqual_sortingcolumn']:
             self.nr_header_rows = 3
@@ -150,6 +153,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             self.nr_header_rows = 2
 
         ReportTable = [''] * (len(parameters) + self.nr_header_rows)    # Define size of ReportTable
+
 
         for i in range(len(parameters)+self.nr_header_rows): # Fill the table with ''
             ReportTable[i] = [''] * (len(date_times)+1)
@@ -238,11 +242,11 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             try:
                 if counter < self.nr_header_rows:
                     rpt = "  <tr><th>"
-                    rpt += "    </th><th width =\"75\">".join(sublist)
+                    rpt += "    </th><th width =\"75\">".join([x if x is not None else '' for x in sublist])
                     rpt += "  </th></tr>\n"
                 else:
                     rpt = "  <tr><td>"
-                    rpt += "    </td><td align=\"right\">".join(sublist)
+                    rpt += "    </td><td align=\"right\">".join([x if x is not None else '' for x in sublist])
                     rpt += "  </td></tr>\n"
             except:
                 try:
