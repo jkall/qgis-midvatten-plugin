@@ -405,7 +405,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             table2.values[pos] = np.nan
 
         if FlagTimeXY == "time" and plottype == "frequency":
-            table2.values[:] = self.calc_frequency(table2)[:]
+            if len(table2) < 2:
+                utils.MessagebarAndLog.warning(bar_msg=ru(
+                    QCoreApplication.translate('plotsqlitewindow', 'Frequency plot failed for %s. The timeseries must be longer than 1 value!')) % ru(self.plabels[i]),
+                                                duration=30)
+                table2.values[:] = [None] * len(table2)
+            else:
+                table2.values[:] = self.calc_frequency(table2)[:]
 
         if remove_mean:
             table2.values[:] = utils.remove_mean_from_nparray(table2.values)[:]
