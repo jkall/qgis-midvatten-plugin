@@ -483,8 +483,10 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         test_calls_list = [call.info(log_msg='In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.'),
                          call.info(log_msg='In total "0" rows were deleted due to foreign keys restrictions and "2" rows remain.'),
-                         call.info(bar_msg='1 rows imported and 1 excluded for table w_qual_field. See log message panel for details')]
+                         call.info(bar_msg='1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
+        print(str(mock_messagebar.mock_calls))
         for test_call in test_calls_list:
+
             assert test_call in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
@@ -510,7 +512,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
         self.importinstance.general_import(goal_table='w_qual_field', file_data=f)
 
         test_calls_list = [call.info(log_msg='In total "0" rows were deleted due to foreign keys restrictions and "2" rows remain.'),
-                            call.info(bar_msg='2 rows imported and 0 excluded for table w_qual_field. See log message panel for details')]
+                            call.info(bar_msg='2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
         for test_call in test_calls_list:
             assert test_call in mock_messagebar.mock_calls
 
