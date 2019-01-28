@@ -297,7 +297,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
-    def test_interlab4_to_table_kalium_above_2_5(self):
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    def test_interlab4_to_table_duplicate_kalium(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -313,6 +314,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;4;4;;mg/l Pt;;;;;;;',
             '#Slut'
                 )
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
@@ -320,10 +322,13 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (duplicate 1), 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        print(reference_string)
+        print(result_string)
         assert result_string == reference_string
 
-    def test_interlab4_to_table_kalium_between_1_and_2_5(self):
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    def test_interlab4_to_table_duplicate_kalium_between_1_and_2_5(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -339,6 +344,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;1,5;1,5;;mg/l Pt;;;;;;;',
             '#Slut'
                 )
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
@@ -346,10 +352,13 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (duplicate 1), 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        print(reference_string)
+        print(result_string)
         assert result_string == reference_string
 
-    def test_interlab4_to_table_kalium_below_1(self):
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    def test_interlab4_to_table_duplicate_kalium_largest_value_most_high_resolution(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -365,6 +374,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
             '#Slut'
                 )
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
@@ -372,10 +382,13 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (duplicate 1), 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        print(reference_string)
+        print(result_string)
         assert result_string == reference_string
 
-    def test_interlab4_to_table_kalium_using_resolution(self):
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    def test_interlab4_to_table_duplicate_kalium_2(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -391,6 +404,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;10;10;;mg/l Pt;;;±0.1;;;;',
             '#Slut'
                 )
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
@@ -398,10 +412,13 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±0.1]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 3, 3, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (duplicate 1), 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±0.1]]'
+        print(reference_string)
+        print(result_string)
         assert result_string == reference_string
 
-    def test_interlab4_to_table_kalium_using_resolution_same_resolution_use_last_one(self):
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    def test_interlab4_to_table_kalium_using_resolution_same_resolution_use_last_one(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -418,13 +435,16 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             '#Slut'
                 )
 
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
+
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
+        #reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 3, 3, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (duplicate 1), 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
         print(str(result_string))
         print(str(reference_string))
         assert result_string == reference_string
@@ -479,7 +499,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
         assert result_string == reference_string
 
-    def test_interlab4_to_table_duplicate_parameters_mg_l_pt(self):
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    def test_interlab4_to_table_duplicate_parameters_mg_l_pt(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -497,17 +518,20 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             '#Slut'
                 )
 
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
+
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Iron (duplicate 1), 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 4567-1/4, Iron (duplicate 2), 35000, 35000, ng/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
+    @mock.patch('midvatten_utils.getcurrentlocale')
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_interlab4_to_table_duplicate_parameters_mg_l(self, mock_messagebar):
+    def test_interlab4_to_table_duplicate_parameters_mg_l_en(self, mock_messagebar, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
             '#Version=4.0',
@@ -525,17 +549,96 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             '#Slut'
                 )
 
+        mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
+
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Iron (duplicate 1), 2.5, <2,5, mg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 4567-1/4, Iron (duplicate 2), 35000, 35000, ng/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        print(str(reference_string))
+        print(str(result_string))
         assert result_string == reference_string
+        print(str(mock_messagebar.mock_calls))
+        assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('2.5', 'mg/l') and ('1.5', 'µg/l').") in mock_messagebar.mock_calls
+        assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('1.5', 'µg/l') and ('35000', 'ng/l').")  in mock_messagebar.mock_calls
 
-        assert mock_messagebar.mock_calls == [call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved out of ('2.5', 'mg/l') and ('1.5', 'µg/l')."),
-                                              call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved out of ('1.5', 'µg/l') and ('35000.0', 'ng/l').")]
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_interlab4_to_table_duplicate_parameters_mg_l_sv(self, mock_messagebar, mock_getcurrentlocale):
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;obsid',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;anobsid',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Iron;<2,5;2,5;;mg/l;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 1234-1/4;Iron;1,5;1,5;;µg/l;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 4567-1/4;Iron;35000;35000;;ng/l;;;;;;;',
+            '#Slut'
+                )
+        mock_getcurrentlocale.return_value = ['sv_SE', 'UTF-8']
 
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse([testfile])
 
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Iron (dubblett 1), 2.5, <2,5, mg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 4567-1/4, Iron (dubblett 2), 35000, 35000, ng/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        print("Ref")
+        print(str(reference_string))
+        print("Test")
+        print(str(result_string))
+        assert result_string == reference_string
+        print("Mock calls")
+        print(str(mock_messagebar.mock_calls))
+        assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('2.5', 'mg/l') and ('1.5', 'µg/l').") in mock_messagebar.mock_calls
+        assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('1.5', 'µg/l') and ('35000', 'ng/l').")  in mock_messagebar.mock_calls
+
+    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_interlab4_to_table_duplicate_parameters_mg_l_sv_with_color(self, mock_messagebar, mock_getcurrentlocale):
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;obsid',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;anobsid',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Iron;<2,5;2,5;;mg/l;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 1234-1/4;Iron;1,5;1,5;;µg/l;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 4567-1/4;Iron;35000;35000;;ng/l;;;;;;;',
+            'DM-990908-2773;testmethod;Färg;svag;;;enhet;;;;;;;',
+            '#Slut'
+                )
+        mock_getcurrentlocale.return_value = ['sv_SE', 'UTF-8']
+
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 1234-1/4, Iron, 1.5, 1,5, µg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Iron (dubblett 1), 2.5, <2,5, mg/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 4567-1/4, Iron (dubblett 2), 35000, 35000, ng/l, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, testmethod, Färg, None, svag, enhet, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        print("Ref")
+        print(str(reference_string))
+        print("Test")
+        print(str(result_string))
+        assert result_string == reference_string
+        print("Mock calls")
+        print(str(mock_messagebar.mock_calls))
+        assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('2.5', 'mg/l') and ('1.5', 'µg/l').") in mock_messagebar.mock_calls
+        assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('1.5', 'µg/l') and ('35000', 'ng/l').")  in mock_messagebar.mock_calls
 

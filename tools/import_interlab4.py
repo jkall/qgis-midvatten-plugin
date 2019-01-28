@@ -235,73 +235,25 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                             file_error = True
                             break
 
-                        """
-                        Kalium (This part is VERY specific to Midvatten data analyses and probably doesn't affect anyone else)
+                        # If two parameter with the same name exists in the report, use the highest resolution one, that is, the one with the lowest value.
+                        existing_data = lab_results[data['lablittera']].get(data['parameter'], None)
+                        if existing_data is not None:
+                            primary_data, _duplicate_data = self.compare_duplicate_parameters(data, existing_data)
 
-                        Kalium is (in our very specific case) measured using two different methods. A high and a low resolution method.
-                        The lowest value for low resolution method is '<2,5' (in the parameter 'mätvärdetext') and '<1' for the high resolution method.
-                        If two kalium is present, we try to extract the high resolution method and store that one in the database.
-                        If kalium is between 1 and 2,5, the high resolution method will show 1,5 (for example) while the low resolution will show '<2,5'.
-                        If kalium is below 1, they will have values '<2,5' and '<1' in 'mätvärdetext'
-                        If both are above 2,5, there is no good way to separate them. In that case, use the last one.
-                        """
-                        if 'kalium' in data['parameter'].lower():
-                            current_kalium_name = data['parameter'].lower()
-                            existing_same_names = [x for x in lab_results[data['lablittera']] if x == current_kalium_name]
-                            if not existing_same_names:
-                                #kalium has not been parsed yet. Keep the current one.
-                                pass
+                            lab_results[data['lablittera']][data['parameter']] = primary_data
+
+                            dupl_index = 1
+                            duplicate_parname = _duplicate_data['parameter']
+                            while duplicate_parname in lab_results[data['lablittera']]:
+                                duplicate_translation = 'dubblett' if utils.getcurrentlocale()[0] == 'sv_SE' else 'duplicate'
+                                duplicate_parname = '%s (%s %s)'%(_duplicate_data['parameter'], duplicate_translation, str(dupl_index))
+                                dupl_index += 1
                             else:
-                                parameter_chosen = False
-                                #Method 1: Use mätosäkerhet to find the high resolution kalium.
-                                _previous_resolution = lab_results[data['lablittera']][current_kalium_name].get('mätosäkerhet', '')
-                                previous_resolution = _previous_resolution.replace('±', '').replace('<', '')
-                                _current_resolution = data.get('mätosäkerhet', '')
-                                current_resolution = _current_resolution.replace('±', '').replace('<', '')
-                                if previous_resolution and current_resolution:
-                                    try:
-                                        previous_resolution = float(previous_resolution)
-                                        current_resolution = float(current_resolution)
-                                    except ValueError:
-                                        #mätosäkerhet could not be used. Try the other method
-                                        parameter_chosen = False
-                                        pass
-                                    else:
-                                        if previous_resolution > current_resolution:
-                                            # The current one is the high resolution one. Keep it to overwrite the other one.
-                                            parameter_chosen = True
-                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_current_resolution)
-                                        elif current_resolution > previous_resolution:
-                                            # The current one is the low resolution one, skip it.
-                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_previous_resolution)
-                                            parameter_chosen = True
-                                            continue
-                                        elif current_resolution == previous_resolution:
-                                            # This method could not be used to find the high resolution one. Try the other method.
-                                            parameter_chosen = False
+                                _duplicate_data['parameter'] = duplicate_parname
+                                lab_results[data['lablittera']][_duplicate_data['parameter']] = _duplicate_data
 
-                                if not parameter_chosen:
-                                    current_txt = data.get('mätvärdetext', '').strip(' ')
-                                    previous_txt = lab_results[data['lablittera']][current_kalium_name].get('mätvärdetext', '')
-                                    #Method 2: Use < and <2.5 limits to try to find the high resolution one.
-                                    if current_txt == '<1' or previous_txt.strip(' ').replace(',', '.') == '<2.5':
-                                        #The current one is the high resolution one. Keep it to overwrite the other one.
-                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätvärdetext %s was used."'))%current_txt)
-                                        pass
-                                    elif current_txt == '<2.5' or previous_txt.strip(' ') == '<1':
-                                        #The current one is the low resolution one, skip it.
-                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätvärdetext %s was used."'))%previous_txt)
-                                        continue
-                                    else:
-                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext %s was used."'))%current_txt)
-                                        #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
-                                        pass
-                        else:
-                            # If two parameter with the same name exists in the report, use the highest resolution one, that is, the one with the lowest value.
-                            duplicate_data = lab_results[data['lablittera']].get(data['parameter'], None)
-                            if duplicate_data is not None:
-                                lab_results[data['lablittera']][data['parameter']] = self.compare_duplicate_parameters(data, duplicate_data)
-                                continue
+                            continue
+
 
                         lab_results[data['lablittera']][data['parameter']] = data
 
@@ -533,67 +485,117 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                            'ng/l Pt': ('mg/l Pt', 0.000001)}
         return unit_conversion.get(unit, None)
 
-    def reading_num_as_float(self, reading_num, reading_txt):
+
+    def get_reading_num(self, reading_num, reading_txt):
         if reading_num is None and reading_txt is not None:
             reading_num = reading_txt.replace('<', '').replace('>', '').replace(',', '.')
-        try:
-            reading_num = float(reading_num)
-        except ValueError:
-            reading_num = None
         return reading_num
 
-    def compare_duplicate_parameters(self, data, duplicate_data):
+    def as_float(self, _value):
+        try:
+            value = float(_value)
+        except ValueError:
+            value = None
+        return value
+
+    def number_of_decimals(self, str_value):
+        if self.as_float(str_value) is None:
+            return None
+
+        try:
+            splitted = str_value.split('.')
+        except:
+            return None
+
+        if len(splitted) == 0:
+            return None
+        if len(splitted) == 1:
+            return 0
+        elif len(splitted) == 2:
+            return len(splitted[1])
+
+    def compare_duplicate_parameters(self, new_data, existing_data):
         """
         Compares data when a report has a duplicate parameter and returns the row with the smallest value.
 
         The smallest value is assumed to be of higher resolution.
 
-        :param data:
-        :param duplicate_data:
+        :param new_data:
+        :param existing_data:
         :return:
         """
-        duplicate_value = self.reading_num_as_float(duplicate_data['mätvärdetal'], duplicate_data['mätvärdetext'])
-        duplicate_unit = duplicate_data.get('enhet', None)
-        current_value = self.reading_num_as_float(data['mätvärdetal'], data['mätvärdetext'])
-        current_unit = data.get('enhet', None)
+        existing_value = self.get_reading_num(existing_data.get('mätvärdetal', None), existing_data.get('mätvärdetext', None))
+        existing_value_float = self.as_float(existing_value)
+        existing_unit = existing_data.get('enhet', None)
+        new_value = self.get_reading_num(new_data.get('mätvärdetal', None), new_data.get('mätvärdetext', None))
+        new_value_float = self.as_float(new_value)
+        new_unit = new_data.get('enhet', None)
 
-        # Return previous_data if the new data value isn't less.
-        resulting_data = duplicate_data
-        resulting_value = duplicate_value
-        resulting_unit = duplicate_unit
+        # Return new_data as primary data if the existing_data value isn't less.
+        primary_data = new_data
+        primary_value = new_value
+        primary_unit = new_unit
+        duplicate_data = existing_data
 
-        if duplicate_value is None and current_value is not None:
-            resulting_data = data
-        elif current_value is None:
-            # No comparison can be made
+        done = False
+
+        if new_value_float is None and existing_value_float is not None:
+            primary_data = existing_data
+            primary_value = existing_value
+            primary_unit = existing_unit
+            duplicate_data = new_data
+        elif new_value_float is not None and existing_value_float is None:
+            # Use new data.
+            pass
+
+        elif new_value_float is None and existing_value_float is None:
+            # No comparison of float values can be made
             pass
         else:
-            current_unit_factor = self.unitconversion_factor(current_unit)
-            duplicate_unit_factor = self.unitconversion_factor(duplicate_unit)
+            # Compare number of decimals. Use the one with most decimals. That one is assumed to be of highest resolution
+            if existing_unit == new_unit:
+                new_nr_of_decimals = self.number_of_decimals(new_value)
+                existing_nr_of_decimals = self.number_of_decimals(existing_value)
+                if new_nr_of_decimals > existing_nr_of_decimals:
+                    done = True
+                elif new_nr_of_decimals < existing_nr_of_decimals:
+                    primary_data = existing_data
+                    primary_value = existing_value
+                    primary_unit = existing_unit
+                    duplicate_data = new_data
+                    done = True
+                else:
+                    # Both have equal length and this comparison fails.
+                    done = False
 
-            if current_unit_factor and duplicate_unit_factor:
-                converted_current_unit, current_factor = current_unit_factor
-                converted_duplicate_unit, duplicate_factor = duplicate_unit_factor
+            if not done:
+                # Compare the float values and use the smallest one
+                new_unit_factor = self.unitconversion_factor(new_unit)
+                existing_unit_factor = self.unitconversion_factor(existing_unit)
 
-                if converted_current_unit == converted_duplicate_unit:
-                    if current_value * current_factor < duplicate_value * duplicate_factor:
-                        # Current value is less than previous value, so replace data with new data.
-                        resulting_data = data
-                        resulting_value = current_value
-                        resulting_unit = current_unit
+                if new_unit_factor and existing_unit_factor:
+                    converted_new_unit, new_factor = new_unit_factor
+                    converted_existing_unit, existing_factor = existing_unit_factor
 
+                    if converted_new_unit == converted_existing_unit:
+                        if existing_value_float * existing_factor < new_value_float * new_factor:
+                            # Current value is less than previous value, so replace data with new data.
+                            primary_data = existing_data
+                            primary_value = existing_value
+                            primary_unit = existing_unit
+                            duplicate_data = new_data
 
-        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(
-            'Interlab4Import', """Duplicate parameter '%s' found! Value and unit ('%s', '%s') was saved out of ('%s', '%s') and ('%s', '%s')."""))%(
-                data['parameter'],
-                resulting_value,
-                resulting_unit,
-                duplicate_value,
-                duplicate_unit,
-                current_value,
-                current_unit))
+            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(
+                'Interlab4Import', """Duplicate parameter '%s' found! Value and unit ('%s', '%s') was saved as primary parameter out of ('%s', '%s') and ('%s', '%s')."""))%(
+                                                       new_data['parameter'],
+                                                       primary_value,
+                                                       primary_unit,
+                                                       existing_value,
+                                                       existing_unit,
+                                                       new_value,
+                                                       new_unit))
 
-        return resulting_data
+        return primary_data, duplicate_data
 
 
 

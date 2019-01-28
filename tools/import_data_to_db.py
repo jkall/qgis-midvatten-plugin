@@ -187,8 +187,8 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             nr_imported = recsafter - recsbefore
             nr_excluded = recsinfile - nr_imported
 
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('midv_data_importer', '%s rows imported and %s excluded for table %s. See log message panel for details'))%(nr_imported, nr_excluded, goal_table))
-            utils.MessagebarAndLog.info(log_msg='--------------------')
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('midv_data_importer', '%s rows imported and %s excluded for table %s. See log message panel for details'))%(nr_imported, nr_excluded, goal_table),
+                                        log_msg='--------------------')
 
             #If an external dbconnection is supplied, do not close it.
             if _dbconnection is None:
