@@ -119,8 +119,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.capacity_txt = []
         self.development_txt = []
         self.comment_txt = []
-        self.sectionlinelayer = SectionLineLayer       
-        self.obsids_w_wl = []
+        self.sectionlinelayer = SectionLineLayer
         
         #upload vector line layer as temporary table in sqlite db
         self.line_crs = self.sectionlinelayer.crs()
@@ -155,7 +154,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.draw_plot()
 
     def draw_plot(self): #replot
-
         rcparams = self.secplot_templates.loaded_template.get('rcParams', {})
         for k, v in rcparams.items():
             try:
@@ -608,19 +606,39 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         q=0
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
-            if obs in self.obsids_w_wl and self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:
+            labellevel = None
+            if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0 and self.ms.settingsdict['secplotwlvltab']:
                 query = """select avg(level_masl) from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
                 #print(query)#debug
-                recs = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
-                if recs:
-                    self.obsid_wlid.append(obs)
-                    self.x_id_wwl.append(float(self.LengthAlong[q]))
+                worked, recs = db_utils.sql_load_fr_db(query, self.dbconnection)
+                if worked and recs:
                     if utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
-                        self.z_id_wwl.append(recs[0][0])
-                    else:
-                        self.z_id_wwl.append(0)
+                        labellevel = recs[0][0]
                 del recs
 
+            if labellevel is None:
+                worked, recs = db_utils.sql_load_fr_db('''SELECT h_toc, h_gs, h_tocags FROM obs_points WHERE obsid = '{}' '''.format(obs), self.dbconnection)
+                if worked and recs:
+                    row = recs[0]
+                    try:
+                        labellevel = float(row[1])
+                    except (ValueError, TypeError):
+                        if row[0] is not None and row[2] is not None:
+                            try:
+                                labellevel = float(row[0]) - float(row[2])
+                            except (ValueError, TypeError):
+                                if row[0] is not None:
+                                    try:
+                                        labellevel = float(row[0])
+                                    except (ValueError, TypeError):
+                                        pass
+
+            if labellevel is None:
+                labellevel = 0
+
+            self.z_id_wwl.append(labellevel)
+            self.obsid_wlid.append(obs)
+            self.x_id_wwl.append(float(self.LengthAlong[q]))
                     
             if obs in self.obs_p_w_drill_stops:
                 self.x_ds.append(float(self.LengthAlong[q]))
@@ -801,7 +819,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.p.append(lineplot)
 
     def plot_water_level(self):   # Adding a plot for each water level date identified
-        self.obsids_w_wl = []
+        if not self.ms.settingsdict['secplotwlvltab']:
+            return
+
         for _datum in self.ms.settingsdict['secplotdates']:
             datum_obsids = _datum.split(';')
             datum = datum_obsids[0]
@@ -825,8 +845,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                 WL.append(val)
                 x_wl.append(float(self.LengthAlong[k]))
-                if obs not in self.obsids_w_wl:
-                    self.obsids_w_wl.append(obs)
 
             plotlable = self.get_plot_label_name(datum, self.Labels)
 
@@ -934,8 +952,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
-        else: #obsid written close to average water level (average of all water levels between given min and max date) 
-            if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated            
+        else: #obsid written close to average water level (average of all water levels between given min and max date)
+            if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id_wwl,self.z_id_wwl,self.obsid_wlid):#change last arg to the one to be written in plot
                     text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
