@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3c07f76e-23a5-46a6-97c9-651f38d0f1b6" name="Default Changelist" comment="Interlab4: Fix so that the highest resolution parameter (the one with lowest value) is imported as the original parameter name. Duplicates are given a duplicate suffix.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG_HISTORY" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG_HISTORY" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,435 +13,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/tests/test_sectionplot_postgis.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="35" column="12" selection-start-line="35" selection-start-column="6" selection-end-line="35" selection-end-column="12" />
-              <folding>
-                <element signature="e#24#1136#1" />
-                <element signature="e#1486#16259#0" />
-                <element signature="e#1845#2079#0" />
-                <element signature="e#2386#2952#0" />
-                <element signature="e#3317#5428#0" />
-                <element signature="e#4527#5041#0" />
-                <element signature="e#5811#7906#0" />
-                <element signature="e#6966#7520#0" />
-                <element signature="e#8282#9695#0" />
-                <element signature="e#9194#9549#0" />
-                <element signature="e#10074#11928#0" />
-                <element signature="e#11280#11805#0" />
-                <element signature="e#12313#13911#0" />
-                <element signature="e#13097#13533#0" />
-                <element signature="e#13679#13808#0" />
-                <element signature="e#14289#16069#0" />
-                <element signature="e#15165#15612#0" />
-                <element signature="e#16103#16259#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/db_utils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="487">
-              <caret line="430" selection-start-line="430" selection-end-line="430" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/tests/utils_for_tests.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="223">
-              <caret line="195" column="45" selection-start-line="195" selection-start-column="45" selection-end-line="195" selection-end-column="45" />
-              <folding>
-                <element signature="e#4873#5858#0" />
-                <element signature="e#5935#6809#0" />
-                <element signature="e#6885#7759#0" />
-                <element signature="e#7843#8103#0" />
-                <element signature="e#8156#10575#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/definitions/midvatten_defs.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="487">
-              <caret line="82" column="26" selection-start-line="82" selection-start-column="13" selection-end-line="82" selection-end-column="26" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/definitions/create_db.sql">
+        <entry file="file://$PROJECT_DIR$/metadata.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="487">
-              <caret line="60" column="93" selection-start-line="60" selection-start-column="93" selection-end-line="60" selection-end-column="93" />
+            <state relative-caret-position="240">
+              <caret line="34" column="88" lean-forward="true" selection-start-line="34" selection-start-column="88" selection-end-line="34" selection-end-column="88" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/tests/test_sectionplot_templates.py">
+        <entry file="file://$PROJECT_DIR$/CHANGELOG_HISTORY">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="40" column="16" selection-start-line="40" selection-start-column="16" selection-end-line="40" selection-end-column="16" />
-              <folding>
-                <element signature="e#24#1146#1" />
-                <element signature="e#1612#14087#0" />
-                <element signature="e#1637#2236#0" />
-                <element signature="e#2355#3198#0" />
-                <element signature="e#3246#5947#0" />
-                <element signature="e#4787#5695#0" />
-                <element signature="e#4958#5630#0" />
-                <element signature="e#5995#7870#0" />
-                <element signature="e#6208#7502#0" />
-                <element signature="e#6454#7417#0" />
-                <element signature="e#7907#10562#0" />
-                <element signature="e#9399#10306#0" />
-                <element signature="e#9570#10241#0" />
-                <element signature="e#10600#12670#0" />
-                <element signature="e#10608#10638#0" />
-                <element signature="e#10780#12492#0" />
-                <element signature="e#10840#12492#0" />
-                <element signature="e#11212#12392#0" />
-                <element signature="e#12923#14087#0" />
-                <element signature="e#14156#14304#0" />
-                <element signature="e#14205#14304#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/midvatten.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="12345">
-              <caret line="837" column="33" selection-start-line="837" selection-start-column="28" selection-end-line="837" selection-end-column="33" />
-              <folding>
-                <element signature="e#1125#1163#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/loaddefaultlayers.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2100">
-              <caret line="151" column="30" selection-start-line="151" selection-start-column="30" selection-end-line="151" selection-end-column="30" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/customplot.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5505">
-              <caret line="407" column="31" lean-forward="true" selection-start-line="407" selection-start-column="31" selection-end-line="407" selection-end-column="31" />
-              <folding>
-                <element signature="e#24#1321#1" />
-                <element signature="e#1906#2066#0" />
-                <element signature="e#2079#2245#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/midvatten_utils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1155">
-              <caret line="132" column="49" selection-start-line="132" selection-start-column="41" selection-end-line="132" selection-end-column="49" />
-              <folding>
-                <element signature="e#24#1158#1" />
-                <element signature="e#2546#3968#1" />
-                <element signature="e#4001#4005#0" />
-                <element signature="e#4858#5023#0" />
-                <element signature="e#5919#6149#0" />
-                <element signature="e#6190#8922#0" />
-                <element signature="e#6331#8922#0" />
-                <element signature="e#6417#6716#0" />
-                <element signature="e#6794#7610#0" />
-                <element signature="e#7004#7054#0" />
-                <element signature="e#7661#8922#0" />
-                <element signature="e#7800#8922#0" />
-                <element signature="e#8249#8297#0" />
-                <element signature="e#8340#8922#0" />
-                <element signature="e#8447#8773#0" />
-                <element signature="e#8517#8580#0" />
-                <element signature="e#8990#11832#0" />
-                <element signature="e#9245#10840#0" />
-                <element signature="e#9639#9717#0" />
-                <element signature="e#9772#10021#0" />
-                <element signature="e#10328#10585#0" />
-                <element signature="e#10904#11039#0" />
-                <element signature="e#11119#11254#0" />
-                <element signature="e#11294#11440#0" />
-                <element signature="e#11494#11639#0" />
-                <element signature="e#11682#11832#0" />
-                <element signature="e#11877#13075#0" />
-                <element signature="e#11928#12026#0" />
-                <element signature="e#12076#13026#0" />
-                <element signature="e#13063#13075#0" />
-                <element signature="e#13121#13262#0" />
-                <element signature="e#13121#13155#1" />
-                <element signature="e#13308#13631#0" />
-                <element signature="e#13308#13511#1" />
-                <element signature="e#13722#14442#0" />
-                <element signature="e#13877#14364#0" />
-                <element signature="e#14477#14623#0" />
-                <element signature="e#14554#14623#0" />
-                <element signature="e#14670#14968#0" />
-                <element signature="e#14670#14756#1" />
-                <element signature="e#14996#15126#0" />
-                <element signature="e#15185#15757#0" />
-                <element signature="e#15185#15294#1" />
-                <element signature="e#15333#15444#0" />
-                <element signature="e#15514#15567#0" />
-                <element signature="e#15833#16513#0" />
-                <element signature="e#15833#15960#1" />
-                <element signature="e#16547#16850#0" />
-                <element signature="e#16724#16829#0" />
-                <element signature="e#16875#16942#0" />
-                <element signature="e#16969#17034#0" />
-                <element signature="e#17058#17314#0" />
-                <element signature="e#17186#17296#0" />
-                <element signature="e#17203#17252#0" />
-                <element signature="e#17360#17420#0" />
-                <element signature="e#17527#17634#0" />
-                <element signature="e#17684#17939#0" />
-                <element signature="e#17713#17810#0" />
-                <element signature="e#18048#20833#0" />
-                <element signature="e#18048#18608#1" />
-                <element signature="e#18788#19442#0" />
-                <element signature="e#19660#19777#0" />
-                <element signature="e#20378#20813#0" />
-                <element signature="e#20468#20691#0" />
-                <element signature="e#21003#21913#0" />
-                <element signature="e#21161#21789#0" />
-                <element signature="e#21957#22358#0" />
-                <element signature="e#22444#23637#0" />
-                <element signature="e#22444#22547#1" />
-                <element signature="e#22621#23446#0" />
-                <element signature="e#23731#25365#0" />
-                <element signature="e#23860#24438#0" />
-                <element signature="e#23937#24438#0" />
-                <element signature="e#23982#24438#0" />
-                <element signature="e#24490#24706#0" />
-                <element signature="e#24725#25341#0" />
-                <element signature="e#24846#25012#0" />
-                <element signature="e#25039#25341#0" />
-                <element signature="e#25077#25341#0" />
-                <element signature="e#25432#26143#0" />
-                <element signature="e#25481#25942#0" />
-                <element signature="e#25533#25942#0" />
-                <element signature="e#25961#26120#0" />
-                <element signature="e#26174#26290#0" />
-                <element signature="e#26373#27260#0" />
-                <element signature="e#26467#26677#0" />
-                <element signature="e#26715#26977#0" />
-                <element signature="e#27027#27237#0" />
-                <element signature="e#27321#28054#0" />
-                <element signature="e#27321#27619#1" />
-                <element signature="e#28102#28636#0" />
-                <element signature="e#28102#28337#1" />
-                <element signature="e#28698#29405#0" />
-                <element signature="e#28698#29169#1" />
-                <element signature="e#29428#29800#0" />
-                <element signature="e#29428#29730#1" />
-                <element signature="e#29841#30024#1" />
-                <element signature="e#30169#30577#0" />
-                <element signature="e#30169#30307#1" />
-                <element signature="e#30622#30894#0" />
-                <element signature="e#30622#30744#1" />
-                <element signature="e#30930#31126#0" />
-                <element signature="e#31164#31731#0" />
-                <element signature="e#31164#31268#1" />
-                <element signature="e#31451#31664#0" />
-                <element signature="e#31769#32221#0" />
-                <element signature="e#31769#32094#1" />
-                <element signature="e#32259#32703#0" />
-                <element signature="e#32259#32576#1" />
-                <element signature="e#32772#33794#0" />
-                <element signature="e#32997#33166#0" />
-                <element signature="e#33631#33775#0" />
-                <element signature="e#35337#35589#0" />
-                <element signature="e#35646#37802#0" />
-                <element signature="e#35646#37086#1" />
-                <element signature="e#37146#37712#0" />
-                <element signature="e#37185#37711#0" />
-                <element signature="e#37195#37586#0" />
-                <element signature="e#37294#37400#0" />
-                <element signature="e#37851#39241#0" />
-                <element signature="e#37851#38722#1" />
-                <element signature="e#46518#46838#0" />
-                <element signature="e#46877#47502#0" />
-                <element signature="e#46877#47466#1" />
-                <element signature="e#47542#47769#0" />
-                <element signature="e#47542#47554#1" />
-                <element signature="e#47673#47706#0" />
-                <element signature="e#48022#48672#0" />
-                <element signature="e#48174#48483#0" />
-                <element signature="e#48502#48672#0" />
-                <element signature="e#48710#49802#0" />
-                <element signature="e#48850#49136#0" />
-                <element signature="e#49041#49084#0" />
-                <element signature="e#49165#49361#0" />
-                <element signature="e#49387#49802#0" />
-                <element signature="e#49502#49618#0" />
-                <element signature="e#49990#53171#0" />
-                <element signature="e#49990#50593#1" />
-                <element signature="e#50637#51732#0" />
-                <element signature="e#50678#51731#0" />
-                <element signature="e#50695#51692#0" />
-                <element signature="e#51778#52221#0" />
-                <element signature="e#51819#52220#0" />
-                <element signature="e#52268#52715#0" />
-                <element signature="e#52310#52714#0" />
-                <element signature="e#53204#53384#0" />
-                <element signature="e#53247#53360#0" />
-                <element signature="e#53418#53500#0" />
-                <element signature="e#53533#53589#0" />
-                <element signature="e#53617#54022#0" />
-                <element signature="e#53617#53985#1" />
-                <element signature="e#54018#54022#0" />
-                <element signature="e#54109#54431#0" />
-                <element signature="e#54527#56427#0" />
-                <element signature="e#54722#55098#0" />
-                <element signature="e#54876#55098#0" />
-                <element signature="e#54996#55040#0" />
-                <element signature="e#55130#56406#0" />
-                <element signature="e#55193#55439#0" />
-                <element signature="e#55466#56406#0" />
-                <element signature="e#55504#56406#0" />
-                <element signature="e#55551#55836#0" />
-                <element signature="e#56151#56406#0" />
-                <element signature="e#56557#57202#0" />
-                <element signature="e#56975#57137#0" />
-                <element signature="e#57300#58132#0" />
-                <element signature="e#57377#57618#0" />
-                <element signature="e#57647#57757#0" />
-                <element signature="e#58180#58617#0" />
-                <element signature="e#58669#58797#0" />
-                <element signature="e#58826#58915#0" />
-                <element signature="e#58946#59551#0" />
-                <element signature="e#59116#59525#0" />
-                <element signature="e#59209#59261#0" />
-                <element signature="e#59346#59461#0" />
-                <element signature="e#59595#59599#0" />
-                <element signature="e#59635#59639#0" />
-                <element signature="e#59683#60725#0" />
-                <element signature="e#59683#59958#1" />
-                <element signature="e#60002#60705#0" />
-                <element signature="e#60197#60283#0" />
-                <element signature="e#60328#60597#0" />
-                <element signature="e#60411#60597#0" />
-                <element signature="e#60626#60665#0" />
-                <element signature="e#60792#61465#0" />
-                <element signature="e#60792#61141#1" />
-                <element signature="e#61528#63714#0" />
-                <element signature="e#61528#61848#1" />
-                <element signature="e#62003#62189#0" />
-                <element signature="e#62230#62390#0" />
-                <element signature="e#62471#62781#0" />
-                <element signature="e#62604#62779#0" />
-                <element signature="e#62918#63284#0" />
-                <element signature="e#63321#63687#0" />
-                <element signature="e#63753#64378#0" />
-                <element signature="e#63920#64162#0" />
-                <element signature="e#64232#64378#0" />
-                <element signature="e#64414#74679#0" />
-                <element signature="e#64834#67888#0" />
-                <element signature="e#66188#67251#0" />
-                <element signature="e#66245#66490#0" />
-                <element signature="e#66525#67061#0" />
-                <element signature="e#66665#67061#0" />
-                <element signature="e#67302#67543#0" />
-                <element signature="e#67949#68576#0" />
-                <element signature="e#68652#68947#0" />
-                <element signature="e#68753#68947#0" />
-                <element signature="e#68840#68947#0" />
-                <element signature="e#69011#69626#0" />
-                <element signature="e#69715#70423#0" />
-                <element signature="e#69866#70310#0" />
-                <element signature="e#69909#70310#0" />
-                <element signature="e#70182#70310#0" />
-                <element signature="e#70486#70716#0" />
-                <element signature="e#70565#70716#0" />
-                <element signature="e#70800#71007#0" />
-                <element signature="e#70868#71007#0" />
-                <element signature="e#70894#71007#0" />
-                <element signature="e#71086#71401#0" />
-                <element signature="e#71210#71401#0" />
-                <element signature="e#71451#73094#0" />
-                <element signature="e#71696#71810#0" />
-                <element signature="e#71854#72278#0" />
-                <element signature="e#72310#73058#0" />
-                <element signature="e#72429#72958#0" />
-                <element signature="e#73139#73285#0" />
-                <element signature="e#73331#73705#0" />
-                <element signature="e#73480#73705#0" />
-                <element signature="e#73759#74077#0" />
-                <element signature="e#74129#74679#0" />
-                <element signature="e#74324#74638#0" />
-                <element signature="e#74718#83386#0" />
-                <element signature="e#75055#77957#0" />
-                <element signature="e#75491#76644#0" />
-                <element signature="e#75545#75868#0" />
-                <element signature="e#75606#75868#0" />
-                <element signature="e#75903#76644#0" />
-                <element signature="e#76018#76352#0" />
-                <element signature="e#76395#76644#0" />
-                <element signature="e#78028#78232#0" />
-                <element signature="e#78276#78377#0" />
-                <element signature="e#78432#78483#0" />
-                <element signature="e#78535#78631#0" />
-                <element signature="e#78743#80091#0" />
-                <element signature="e#79124#79700#0" />
-                <element signature="e#79197#79253#0" />
-                <element signature="e#79305#79625#0" />
-                <element signature="e#79660#79700#0" />
-                <element signature="e#79747#80054#0" />
-                <element signature="e#79888#80054#0" />
-                <element signature="e#80176#81008#0" />
-                <element signature="e#80304#81008#0" />
-                <element signature="e#80347#80971#0" />
-                <element signature="e#80713#80918#0" />
-                <element signature="e#81072#81651#0" />
-                <element signature="e#81341#81429#0" />
-                <element signature="e#81719#81819#0" />
-                <element signature="e#81864#82010#0" />
-                <element signature="e#82053#82466#0" />
-                <element signature="e#82225#82466#0" />
-                <element signature="e#82517#82729#0" />
-                <element signature="e#82763#83112#0" />
-                <element signature="e#82792#83005#0" />
-                <element signature="e#82841#82957#0" />
-                <element signature="e#83165#83386#0" />
-                <element signature="e#83220#83386#0" />
-                <element signature="e#83488#83961#0" />
-                <element signature="e#84056#85232#0" />
-                <element signature="e#84326#85232#0" />
-                <element signature="e#84716#84961#0" />
-                <element signature="e#85095#85232#0" />
-                <element signature="e#85349#85815#0" />
-                <element signature="e#85415#85674#0" />
-                <element signature="e#85857#85929#0" />
-                <element signature="e#85983#86147#0" />
-                <element signature="e#86179#86235#0" />
-                <element signature="e#86277#87763#0" />
-                <element signature="e#86373#86694#0" />
-                <element signature="e#86728#87763#0" />
-                <element signature="e#86893#87321#0" />
-                <element signature="e#86986#87321#0" />
-                <element signature="e#87236#87321#0" />
-                <element signature="e#87348#87763#0" />
-              </folding>
+            <state relative-caret-position="138">
+              <caret line="26" column="54" selection-start-line="26" selection-start-column="54" selection-end-line="26" selection-end-column="54" />
             </state>
           </provider>
         </entry>
@@ -544,6 +130,7 @@
         <option value="$PROJECT_DIR$/tools/tests/test_sectionplot_templates.py" />
         <option value="$PROJECT_DIR$/tools/tests/test_sectionplot_spatialite.py" />
         <option value="$PROJECT_DIR$/tools/tests/test_sectionplot_postgis.py" />
+        <option value="$PROJECT_DIR$/CHANGELOG_HISTORY" />
       </list>
     </option>
   </component>
@@ -564,22 +151,6 @@
             <path>
               <item name="qgis-midvatten-plugin" type="b2602c69:ProjectViewProjectNode" />
               <item name="qgis-midvatten-plugin" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="qgis-midvatten-plugin" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qgis-midvatten-plugin" type="462c0819:PsiDirectoryNode" />
-              <item name="definitions" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="qgis-midvatten-plugin" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qgis-midvatten-plugin" type="462c0819:PsiDirectoryNode" />
-              <item name="tools" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="qgis-midvatten-plugin" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qgis-midvatten-plugin" type="462c0819:PsiDirectoryNode" />
-              <item name="tools" type="462c0819:PsiDirectoryNode" />
-              <item name="tests" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -877,10 +448,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-3" y="0" width="1647" height="945" extended-state="6" />
+    <frame x="-3" y="0" width="1926" height="1172" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18888889" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18871903" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -890,9 +461,9 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49657354" weight="0.33860466" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49551925" visible="true" weight="0.710728" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50764364" side_tool="true" visible="true" weight="0.33333334" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5044808" side_tool="true" visible="true" weight="0.710728" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="bottom" id="Messages" order="11" sideWeight="0.49920928" weight="0.3293023" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -938,39 +509,7 @@
     <MESSAGE value="Sectionplot: Fixes #278" />
     <option name="LAST_COMMIT_MESSAGE" value="Sectionplot: Fixes #278" />
   </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tools/tests/test_import_interlab4_postgis.py</url>
-          <line>22</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/tools/tests/test_create_spatialite_db.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="600">
-          <caret line="51" column="16" selection-start-line="51" selection-start-column="16" selection-end-line="51" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/import_diveroffice.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2565">
-          <caret line="186" selection-start-line="186" selection-end-line="186" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/import_general_csv_gui.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3570">
-          <caret line="259" column="84" selection-start-line="259" selection-start-column="84" selection-end-line="259" selection-end-column="84" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/import_fieldlogger.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="391">
@@ -982,13 +521,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5025">
           <caret line="348" selection-start-line="348" selection-end-line="349" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python3/dist-packages/qgis/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8835">
-          <caret line="605" column="33" selection-start-line="605" selection-start-column="33" selection-end-line="605" selection-end-column="33" />
         </state>
       </provider>
     </entry>
@@ -1056,59 +588,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/midvatten.pro">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/gui_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="168" column="4" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="58" />
-          <folding>
-            <element signature="e#24#1142#1" />
-            <element signature="e#1487#2157#0" />
-            <element signature="e#1487#1667#1" />
-            <element signature="e#1717#2157#0" />
-            <element signature="e#2188#2358#0" />
-            <element signature="e#2216#2358#0" />
-            <element signature="e#2390#2560#0" />
-            <element signature="e#2418#2560#0" />
-            <element signature="e#2595#2765#0" />
-            <element signature="e#2623#2765#0" />
-            <element signature="e#2838#3726#0" />
-            <element signature="e#2838#2850#1" />
-            <element signature="e#2919#3019#0" />
-            <element signature="e#3067#3558#0" />
-            <element signature="e#3253#3381#0" />
-            <element signature="e#3285#3381#0" />
-            <element signature="e#3311#3381#0" />
-            <element signature="e#3596#3726#0" />
-            <element signature="e#3749#3979#0" />
-            <element signature="e#4018#6324#0" />
-            <element signature="e#4076#5256#0" />
-            <element signature="e#4839#4940#0" />
-            <element signature="e#5305#5876#0" />
-            <element signature="e#5575#5652#0" />
-            <element signature="e#5685#5756#0" />
-            <element signature="e#5787#5856#0" />
-            <element signature="e#5925#5980#0" />
-            <element signature="e#6044#6105#0" />
-            <element signature="e#6152#6205#0" />
-            <element signature="e#6265#6324#0" />
-            <element signature="e#6539#6659#0" />
-            <element signature="e#6706#9753#0" />
-            <element signature="e#6750#8245#0" />
-            <element signature="e#8013#8202#0" />
-            <element signature="e#8325#8857#0" />
-            <element signature="e#8560#8786#0" />
-            <element signature="e#8925#9146#0" />
-            <element signature="e#9089#9146#0" />
-            <element signature="e#9196#9237#0" />
-            <element signature="e#9303#9340#0" />
-            <element signature="e#9391#9433#0" />
-            <element signature="e#9501#9539#0" />
-            <element signature="e#9593#9638#0" />
-            <element signature="e#9712#9753#0" />
-          </folding>
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/definitions/mpl_styles/midv_custplot_default.mplstyle">
       <provider selected="true" editor-type-id="text-editor">
@@ -1211,83 +690,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1110">
           <caret line="79" column="6" selection-start-line="79" selection-start-column="6" selection-end-line="79" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/import_data_to_db.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="421">
-          <caret line="190" column="71" selection-start-line="190" selection-start-column="71" selection-end-line="190" selection-end-column="71" />
-          <folding>
-            <element signature="e#1147#1185#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/import_interlab4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1245">
-          <caret line="254" column="36" selection-start-line="254" selection-start-column="36" selection-end-line="254" selection-end-column="36" />
-          <folding>
-            <element signature="e#24#1188#1" />
-            <element signature="e#1937#2500#0" />
-            <element signature="e#2561#6124#0" />
-            <element signature="e#3961#5186#0" />
-            <element signature="e#6287#8191#0" />
-            <element signature="e#6711#6833#0" />
-            <element signature="e#7086#7132#0" />
-            <element signature="e#7170#7319#0" />
-            <element signature="e#7580#7757#0" />
-            <element signature="e#7643#7757#0" />
-            <element signature="e#8233#8424#1" />
-            <element signature="e#8677#8848#0" />
-            <element signature="e#9831#10134#0" />
-            <element signature="e#10223#10436#0" />
-            <element signature="e#10507#10689#0" />
-            <element signature="e#10761#11031#0" />
-            <element signature="e#11098#11268#0" />
-            <element signature="e#11695#11872#0" />
-            <element signature="e#11968#12201#0" />
-            <element signature="e#13309#13469#0" />
-            <element signature="e#13769#15946#0" />
-            <element signature="e#13769#13941#1" />
-            <element signature="e#14172#14696#0" />
-            <element signature="e#14193#14638#0" />
-            <element signature="e#14271#14638#0" />
-            <element signature="e#14312#14638#0" />
-            <element signature="e#14373#14549#0" />
-            <element signature="e#14955#15118#0" />
-            <element signature="e#15227#15874#0" />
-            <element signature="e#15260#15874#0" />
-            <element signature="e#15311#15441#0" />
-            <element signature="e#15807#15874#0" />
-            <element signature="e#15992#22944#0" />
-            <element signature="e#15992#16567#1" />
-            <element signature="e#17037#22637#0" />
-            <element signature="e#17394#17646#0" />
-            <element signature="e#17681#18264#0" />
-            <element signature="e#17944#18264#0" />
-            <element signature="e#18364#18855#0" />
-            <element signature="e#19334#22637#0" />
-            <element signature="e#19684#20725#0" />
-            <element signature="e#19913#20639#0" />
-            <element signature="e#20039#20540#0" />
-            <element signature="e#20454#20538#0" />
-            <element signature="e#20926#21017#0" />
-            <element signature="e#21198#21639#0" />
-            <element signature="e#21976#22602#0" />
-            <element signature="e#22991#23086#0" />
-            <element signature="e#22991#23032#1" />
-            <element signature="e#23133#23877#0" />
-            <element signature="e#23165#23214#0" />
-            <element signature="e#23914#24731#0" />
-            <element signature="e#23914#24059#1" />
-            <element signature="e#24206#24731#0" />
-            <element signature="e#24322#24670#0" />
-            <element signature="e#24323#24588#0" />
-            <element signature="e#24784#25649#0" />
-            <element signature="e#24802#25602#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1598,25 +1000,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/metadata.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="23" column="178" selection-start-line="23" selection-start-column="178" selection-end-line="23" selection-end-column="178" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools/sectionplot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7230">
-          <caret line="518" column="29" selection-start-line="518" selection-start-column="29" selection-end-line="518" selection-end-column="29" />
-          <folding>
-            <element signature="n#!!doc" />
-            <element signature="e#47#519#1" />
-            <element signature="e#1945#2328#1" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/tests/test_sectionplot_spatialite.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -1670,16 +1053,6 @@
             <element signature="e#12923#14087#0" />
             <element signature="e#14156#14304#0" />
             <element signature="e#14205#14304#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/midvatten.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12345">
-          <caret line="837" column="33" selection-start-line="837" selection-start-column="28" selection-end-line="837" selection-end-column="33" />
-          <folding>
-            <element signature="e#1125#1163#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2022,13 +1395,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tools/db_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="487">
-          <caret line="430" selection-start-line="430" selection-end-line="430" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/tests/utils_for_tests.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="223">
@@ -2054,6 +1420,90 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="487">
           <caret line="60" column="93" selection-start-line="60" selection-start-column="93" selection-end-line="60" selection-end-column="93" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/import_data_to_db.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="615">
+          <caret line="41" column="27" selection-start-line="41" selection-start-column="27" selection-end-line="41" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/import_interlab4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9330">
+          <caret line="642" selection-start-line="642" selection-end-line="642" />
+          <folding>
+            <element signature="e#24#1188#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2018.3/system/python_stubs/-1247971763/qgis/_core/Qgis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="13" column="6" selection-start-line="13" selection-start-column="6" selection-end-line="13" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/midvatten.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1185">
+          <caret line="79" column="38" selection-start-line="79" selection-start-column="38" selection-end-line="79" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gui_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1740">
+          <caret line="116" column="55" selection-start-line="116" selection-start-column="55" selection-end-line="116" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/db_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="34" column="15" selection-start-line="34" selection-start-column="15" selection-end-line="34" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/share/qgis/python/plugins/db_manager/db_plugins/spatialite/connector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="31" selection-start-line="32" selection-start-column="23" selection-end-line="32" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3/dist-packages/qgis/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8640">
+          <caret line="592" selection-start-line="592" selection-end-line="592" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/sectionplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="11265">
+          <caret line="761" column="16" selection-start-line="761" selection-start-column="16" selection-end-line="761" selection-end-column="16" />
+          <folding>
+            <element signature="n#!!doc" />
+            <element signature="e#47#519#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CHANGELOG_HISTORY">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="138">
+          <caret line="26" column="54" selection-start-line="26" selection-start-column="54" selection-end-line="26" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/metadata.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="34" column="88" lean-forward="true" selection-start-line="34" selection-start-column="88" selection-end-line="34" selection-end-column="88" />
         </state>
       </provider>
     </entry>

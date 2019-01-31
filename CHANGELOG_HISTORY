@@ -7,6 +7,33 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+2019-01-31 changes until 1.6
+        Version 1.5.5:
+        - Fieldlogger export: Adjustments to new locations file format.
+        Version 1.5.4:
+        - Fixed translation plugin.
+        - Interlab4 import: Feature to dump csv-file.
+        - general_import: Feature to dump csv-file.
+        - finddateformat: Support for more formats.
+        Version 1.5.3:
+        - Customplot: Fixed default values for customplot templates. Added style_-lists for linestyles, colors and markers.
+        - Csv import: Fixes imports of wkt-columns.
+        - Csv import: Fixes #282 missing exception handler.
+        Version 1.5.2:
+        - Version for qgis 2.18.
+        - Qgis2threejs: Fix for when geoshorts are upper case.
+        - Added -wal to db lock check.
+        - Fixes #276 where importing to PostgreSQL tables with numbers in the name caused an error.
+        - Import function for HOBO temperature loggers.
+        Version 1.5.1:
+        - Custom plot: Bug fix for when XY plot contained NaN-values..
+        - New water quality report.
+        - Fix for database import to be able to import to tables without primary key.
+        - Sectionplot: Barwidths can be set as % of plot window.
+        - Customplot: Added template support.
+        - New feature: Compact water quality report. Used for creating water quality reports for use as report attachments...
+        Version 1.5:
+        - Final release
 2018-05-07 changes until 1.5
         Version 1.5.15b:
         - Calculate w-levels: Fix so that the dialog only closes when a calculation has been made.
