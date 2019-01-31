@@ -111,7 +111,7 @@ obsid;min date;max date;calculated number of measurements:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="184"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="182"/>
         <source>This will calibrate all values inside the chosen period
 using the mean difference between head_cm and w_levels measurements.
 
@@ -120,7 +120,7 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="186"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="184"/>
         <source>This will calibrate all values inside the chosen period
 using the mean difference between level_masl and w_levels measurements.
 
@@ -129,114 +129,114 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="298"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="296"/>
         <source>No calibrated level_masl values to normalize against.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="301"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="299"/>
         <source>No head values to normalize against.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="326"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="324"/>
         <source>Last pos. for logger in %s was %s masl at %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="323"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="321"/>
         <source>There is no earlier known position for the logger in %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="370"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="368"/>
         <source>Select the observation point with logger data to be calibrated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="511"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="515"/>
         <source>Select a date to use as &quot;from&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="516"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="520"/>
         <source>Select a date to use as &quot;to&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="556"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="565"/>
         <source>Getting last calibration failed for obsid %s, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="577"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="586"/>
         <source>Select a logger node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="585"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="594"/>
         <source>Select a y position to move to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="589"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="598"/>
         <source>Something wrong, click &quot;Current&quot; and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="617"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="626"/>
         <source>No connection between level_masl dates and logger date could be made!
 Try again or choose a new logger line node!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="630"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="639"/>
         <source>Logger node %s selected, click &quot;new&quot; and select new level.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="640"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="649"/>
         <source>Offset is calculated, now click &quot;add&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="682"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="691"/>
         <source>There was no match found between measurements and logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="686"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="695"/>
         <source>There was no matched measurements or logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="687"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="696"/>
         <source>Calculated water level from logger: utils.calc_mean_diff(coupled_vals) didn&apos;t return a useable value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="780"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="789"/>
         <source>Must write time resolution also, ex. %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="799"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="808"/>
         <source>Error!
  The obsid selection has been changed but the plot has not been updated. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="803"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="812"/>
         <source>Error!
  No obsid was selected. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="821"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="830"/>
         <source>Do you want to delete the period %s to %s for obsid %s from table %s?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -325,22 +325,22 @@ Features in layers from sql queries can be invalid and then excluded from the re
 <context>
     <name>CustomPlot</name>
     <message>
-        <location filename="../tools/customplot.py" line="900"/>
+        <location filename="../tools/customplot.py" line="898"/>
         <source>Choose a file name, extension sets format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="265"/>
+        <location filename="../tools/customplot.py" line="263"/>
         <source>Plot not updated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="353"/>
+        <location filename="../tools/customplot.py" line="351"/>
         <source>No plottable data for %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="389"/>
+        <location filename="../tools/customplot.py" line="387"/>
         <source>Plotting both xy and time plot at the same time doesn&apos;t work! Check the x-y axix settings in all tabs!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2625,22 +2625,22 @@ or press &quot;Save settings&quot; to undo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="354"/>
+        <location filename="../tools/export_fieldlogger.py" line="353"/>
         <source>Choose a file name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="363"/>
+        <location filename="../tools/export_fieldlogger.py" line="362"/>
         <source>Writing of file failed!: %s </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="365"/>
+        <location filename="../tools/export_fieldlogger.py" line="364"/>
         <source>Error writing %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="499"/>
+        <location filename="../tools/export_fieldlogger.py" line="498"/>
         <source>(mandatory)
 Either supply a chosen name directly or use parameter
 and unit boxes to create a name.
@@ -2648,7 +2648,7 @@ ex: parameter.unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="506"/>
+        <location filename="../tools/export_fieldlogger.py" line="505"/>
         <source>(mandatory)
 Decides the keyboard layout in the Fieldlogger app.
 numberDecimal|numberSigned: Decimals with allowed &quot;-&quot; sign
@@ -2939,22 +2939,92 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>Interlab4Import</name>
     <message>
-        <location filename="../tools/import_interlab4.py" line="47"/>
+        <location filename="../tools/import_interlab4.py" line="48"/>
         <source>Import interlab4 data to w_qual_lab table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="72"/>
+        <location filename="../tools/import_interlab4.py" line="75"/>
         <source>Start import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="76"/>
+        <location filename="../tools/import_interlab4.py" line="79"/>
         <source>Instructions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="77"/>
+        <location filename="../tools/import_interlab4.py" line="93"/>
+        <source>Close dialog after import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="166"/>
+        <source>Warning: The file information %s could not be read. Skipping file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="233"/>
+        <source>WARNING: Parsing error. The parameter is missing on row %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="237"/>
+        <source>WARNING: Parsing error. Data for %s read before it&apos;s metadata.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="279"/>
+        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tos&#xc3;&#xa4;kerhet %s was used.&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="296"/>
+        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="299"/>
+        <source>Kalium was found more than once. The high resolution one could not be found. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="337"/>
+        <source>Give charset used in the file %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="391"/>
+        <source>Interlab4 import: There was no sample date found (column &quot;provtagningsdatum&quot;) for lablittera %s. Importing without it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="399"/>
+        <source>Interlab4 import: There was no sample time found (column &quot;provtagningstid&quot;) for lablittera %s. Importing without it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="431"/>
+        <source>Import interlab4 warning, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="431"/>
+        <source>Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="472"/>
+        <source>reading_num could not be set for parameter %s for reports %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="339"/>
+        <source>Charset not given, stopping.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="80"/>
         <source>Selected rows (lablitteras in the bottom table will be imported when pushing &quot;Start import&quot; button.
 The table can be sorted by clicking the column headers.
 
@@ -2965,77 +3035,25 @@ Howto:
 3. Click &quot;Update selection&quot;.
 All rows where values in the chosen column match entries in the pasted list will be selected.
 
-Hover over a column header to see which database column it will go to.</source>
+Hover over a column header to see which database column it will go to.
+
+(&quot;Save data table to csv&quot; is a feature to save the data table into a csv file for examination in another application.)
+(&quot;Save metadata table to file&quot; is a feature to save the metadata table into a csv file, at system temporary path, for examination in another application.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="88"/>
-        <source>Close dialog after import</source>
+        <location filename="../tools/import_interlab4.py" line="97"/>
+        <source>Save datatable to csv</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="152"/>
-        <source>Warning: The file information %s could not be read. Skipping file</source>
+        <location filename="../tools/import_interlab4.py" line="98"/>
+        <source>save the data table into a csv file, at system temporary path, for examination in another application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="219"/>
-        <source>WARNING: Parsing error. The parameter is missing on row %s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="223"/>
-        <source>WARNING: Parsing error. Data for %s read before it&apos;s metadata.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="265"/>
-        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tos&#xc3;&#xa4;kerhet %s was used.&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="282"/>
-        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="285"/>
-        <source>Kalium was found more than once. The high resolution one could not be found. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="323"/>
-        <source>Give charset used in the file %s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="377"/>
-        <source>Interlab4 import: There was no sample date found (column &quot;provtagningsdatum&quot;) for lablittera %s. Importing without it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="385"/>
-        <source>Interlab4 import: There was no sample time found (column &quot;provtagningstid&quot;) for lablittera %s. Importing without it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="417"/>
-        <source>Import interlab4 warning, see log message panel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="417"/>
-        <source>Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="458"/>
-        <source>reading_num could not be set for parameter %s for reports %s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_interlab4.py" line="325"/>
-        <source>Charset not given, stopping.</source>
+        <location filename="../tools/import_interlab4.py" line="561"/>
+        <source>save the metadata table into a csv file for examination in another application</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3878,17 +3896,17 @@ wells file</source>
 <context>
     <name>MetadataFilter</name>
     <message>
-        <location filename="../tools/import_interlab4.py" line="597"/>
+        <location filename="../tools/import_interlab4.py" line="638"/>
         <source>%s will be put into database column &quot;%s&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="637"/>
+        <location filename="../tools/import_interlab4.py" line="678"/>
         <source>Select lablitteras to import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_interlab4.py" line="639"/>
+        <location filename="../tools/import_interlab4.py" line="680"/>
         <source>(%s rows selected)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4714,7 +4732,7 @@ error msg:
 <context>
     <name>PandasCalculations</name>
     <message>
-        <location filename="../tools/customplot.py" line="928"/>
+        <location filename="../tools/customplot.py" line="926"/>
         <source>Steplength for resampling, ex:
 &quot;10S&quot; = 10 seconds
 &quot;20T&quot; = 20 minutes
@@ -4726,7 +4744,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="941"/>
+        <location filename="../tools/customplot.py" line="939"/>
         <source>The hour to start each timestep when rule &quot;evenly subdivide 1 day&quot; (for example Rule = 24h)
 Ex: 7 (= 07:00). Default is 0 (00:00)
 See pandas pandas.DataFrame.resample documentation for more info:
@@ -4735,14 +4753,14 @@ For example, for &quot;5min&quot; frequency, base could range from 0 through 4. 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="951"/>
+        <location filename="../tools/customplot.py" line="949"/>
         <source>How to make the resample, ex. &quot;mean&quot; (default), &quot;first&quot;, &quot;last&quot;, &quot;sum&quot;.
 See pandas pandas.DataFrame.resample documentation for more info
 (though &quot;how&quot; is not explained a lot)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="962"/>
+        <location filename="../tools/customplot.py" line="960"/>
         <source>The number of timesteps in each moving average (rolling mean) mean
 The result is stored at the center timestep of each mean.
 See Pandas pandas.rolling_mean documentation for more info.
@@ -4750,17 +4768,17 @@ No rolling mean if field is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="1025"/>
+        <location filename="../tools/customplot.py" line="1023"/>
         <source>Resample base must be an integer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="1039"/>
+        <location filename="../tools/customplot.py" line="1037"/>
         <source>Rolling mean window must be an integer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="969"/>
+        <location filename="../tools/customplot.py" line="967"/>
         <source>1/True (default) to store the rolling mean at the center timestep.
 0/False to store the rolling mean at the last timestep.
 See Pandas pandas.rolling_mean documentation for more info.
@@ -4771,43 +4789,43 @@ center=True if field is empty.</source>
 <context>
     <name>ParameterBrowser</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="511"/>
+        <location filename="../tools/export_fieldlogger.py" line="510"/>
         <source>(optional)
 Hint given to the Fieldlogger user for the parameter. Ex: &quot;depth to water&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="513"/>
+        <location filename="../tools/export_fieldlogger.py" line="512"/>
         <source>Copy input fields to the &quot;Input Fields&quot; boxes using ctrl+c, ctrl+v.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="530"/>
+        <location filename="../tools/export_fieldlogger.py" line="529"/>
         <source>Error, sql failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="530"/>
+        <location filename="../tools/export_fieldlogger.py" line="529"/>
         <source>Cannot get data from sql %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="559"/>
+        <location filename="../tools/export_fieldlogger.py" line="558"/>
         <source>Error, input name not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="562"/>
+        <location filename="../tools/export_fieldlogger.py" line="561"/>
         <source>Error, input type not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="565"/>
+        <location filename="../tools/export_fieldlogger.py" line="564"/>
         <source>Error, input name already existing. No duplicates allowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="569"/>
+        <location filename="../tools/export_fieldlogger.py" line="568"/>
         <source>Warning, hint not given and will be set to a space (&quot; &quot;) as it must exist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4883,12 +4901,12 @@ Hint given to the Fieldlogger user for the parameter. Ex: &quot;depth to water&q
 <context>
     <name>ParameterGroup</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="378"/>
+        <location filename="../tools/export_fieldlogger.py" line="377"/>
         <source>Paste obs_points selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="380"/>
+        <location filename="../tools/export_fieldlogger.py" line="379"/>
         <source>(optional)
 The Fieldlogger location in the Fieldlogger map will be &quot;obsid.LOCATION SUFFIX&quot;.
 
@@ -4897,7 +4915,7 @@ ex: Location suffix 1234 --&gt; obsid.1234</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="385"/>
+        <location filename="../tools/export_fieldlogger.py" line="384"/>
         <source>(optional)
 Fieldlogger sub-location will be obsid.Location suffix.Sub-location suffix
 
@@ -4907,7 +4925,7 @@ ex: level, quality, sample, comment, flow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="391"/>
+        <location filename="../tools/export_fieldlogger.py" line="390"/>
         <source>Copy and paste input fields from &quot;Create Input Fields&quot; to this box
 or from/to other input field boxes.
 The input fields in Fieldlogger will appear in the same order as in
@@ -4918,7 +4936,7 @@ field already exists in a previous group it will end up on top!!!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="399"/>
+        <location filename="../tools/export_fieldlogger.py" line="398"/>
         <source>Add obsids to Locations box by selecting obsids from the table &quot;obs_points&quot;
 using it&apos;s attribute table or select from map.
 Then click the button &quot;Paste obs_points selection&quot;
@@ -5233,22 +5251,22 @@ p, li { white-space: pre-wrap; }
         <translation>Avstånd längs profillinje</translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="801"/>
+        <location filename="../tools/sectionplot.py" line="799"/>
         <source>Destination SRID isn&apos;t valid for table %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="775"/>
+        <location filename="../tools/sectionplot.py" line="773"/>
         <source>Must select only one feature in qgis layer: %s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="779"/>
+        <location filename="../tools/sectionplot.py" line="777"/>
         <source>Layer %s is missing geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="792"/>
+        <location filename="../tools/sectionplot.py" line="790"/>
         <source>Layer %s is missing geometry type MULTILINESTRING, had %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6006,7 +6024,7 @@ on format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not b
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="128"/>
+        <location filename="../tools/import_data_to_db.py" line="132"/>
         <source>Please note!
 Foreign keys will be imported silently into &quot;%s&quot; if needed. 
 
@@ -6014,22 +6032,22 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="130"/>
+        <location filename="../tools/import_data_to_db.py" line="134"/>
         <source>Info!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="344"/>
+        <location filename="../tools/import_data_to_db.py" line="348"/>
         <source>In total %s rows were imported to foreign key table %s while importing to %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="140"/>
+        <location filename="../tools/import_data_to_db.py" line="144"/>
         <source>In total &quot;%s&quot; rows were deleted due to foreign keys restrictions and &quot;%s&quot; rows remain.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="148"/>
+        <location filename="../tools/import_data_to_db.py" line="152"/>
         <source>Please note!
 There are %s rows in your data that can not be imported!
 Do you really want to import the rest?
@@ -6039,18 +6057,18 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="150"/>
+        <location filename="../tools/import_data_to_db.py" line="154"/>
         <source>Warning!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="166"/>
+        <location filename="../tools/import_data_to_db.py" line="170"/>
         <source>INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="177"/>
+        <location filename="../tools/import_data_to_db.py" line="181"/>
         <source>Sql
 %s  failed.
 Msg:
@@ -6058,38 +6076,38 @@ Msg:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="185"/>
+        <location filename="../tools/import_data_to_db.py" line="189"/>
         <source>%s rows imported and %s excluded for table %s. See log message panel for details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="290"/>
+        <location filename="../tools/import_data_to_db.py" line="294"/>
         <source>ValueError: %s. Obsid &quot;%s&quot;, stratid: &quot;%s&quot;, depthbot: &quot;%s&quot;, depthtop: &quot;%s&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="300"/>
+        <location filename="../tools/import_data_to_db.py" line="304"/>
         <source>The obsid %s will not be imported due to gaps in stratid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="305"/>
+        <location filename="../tools/import_data_to_db.py" line="309"/>
         <source>The obsid %s will not be imported due to gaps in depthtop/depthbot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="349"/>
+        <location filename="../tools/import_data_to_db.py" line="353"/>
         <source>It is a strong recommendation that you do vacuum the database now, do you want to do so?
 (If unsure - then answer &quot;yes&quot;.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="349"/>
+        <location filename="../tools/import_data_to_db.py" line="353"/>
         <source>Vacuum the database?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="369"/>
+        <location filename="../tools/import_data_to_db.py" line="373"/>
         <source>Import error, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6099,42 +6117,42 @@ Msg:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="143"/>
+        <location filename="../tools/import_data_to_db.py" line="147"/>
         <source>Nothing imported, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="206"/>
+        <location filename="../tools/import_data_to_db.py" line="210"/>
         <source>Closing database failed!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="233"/>
+        <location filename="../tools/import_data_to_db.py" line="237"/>
         <source>Import warning, duplicates skipped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="233"/>
+        <location filename="../tools/import_data_to_db.py" line="237"/>
         <source>%s nr of duplicate rows in file was skipped while importing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="322"/>
+        <location filename="../tools/import_data_to_db.py" line="326"/>
         <source>Import of foreign keys failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="322"/>
+        <location filename="../tools/import_data_to_db.py" line="326"/>
         <source>There were keys missing for importing to fk_table %s, so no import was done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="177"/>
+        <location filename="../tools/import_data_to_db.py" line="181"/>
         <source>Import failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="174"/>
+        <location filename="../tools/import_data_to_db.py" line="178"/>
         <source>Sql
 %s  failed.</source>
         <translation type="unfinished"></translation>
@@ -6182,7 +6200,7 @@ Msg:
 <context>
     <name>parse_timezone_to_timedelta</name>
     <message>
-        <location filename="../tools/date_utils.py" line="229"/>
+        <location filename="../tools/date_utils.py" line="230"/>
         <source>Timezone string %s could not be parsed!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6190,27 +6208,27 @@ Msg:
 <context>
     <name>plotsqlitewindow</name>
     <message>
-        <location filename="../tools/customplot.py" line="374"/>
+        <location filename="../tools/customplot.py" line="372"/>
         <source>Plotting date_time failed, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="375"/>
+        <location filename="../tools/customplot.py" line="373"/>
         <source>Customplot, transforming to recarray with date_time as x-axis failed, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="440"/>
+        <location filename="../tools/customplot.py" line="438"/>
         <source>Pandas calculate failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="449"/>
+        <location filename="../tools/customplot.py" line="447"/>
         <source>Used style_color_list: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="457"/>
+        <location filename="../tools/customplot.py" line="455"/>
         <source>style_color_list index error, index %s</source>
         <translation type="unfinished"></translation>
     </message>

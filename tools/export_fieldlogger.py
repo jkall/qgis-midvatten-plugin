@@ -329,7 +329,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                         sublocations_locations[sublocation] = location
 
         printlist = []
-        printlist.append(u"FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append(u"NAME;INPUTTYPE;HINT")
         #Add a space after the parameter rows just to be sure that there will always be a hint (it needs to be.
         printlist.extend([p_i_h + u' ' if not p_i_h.endswith(u' ') else p_i_h for p_i_h in parameters_inputtypes_hints.values()])
