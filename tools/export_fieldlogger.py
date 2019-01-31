@@ -336,7 +336,6 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
                         sublocations_locations[sublocation] = location
 
         printlist = []
-        printlist.append("FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append("NAME;INPUTTYPE;HINT")
         #Add a space after the parameter rows just to be sure that there will always be a hint (it needs to be.
         printlist.extend([p_i_h + ' ' if not p_i_h.endswith(' ') else p_i_h for p_i_h in list(parameters_inputtypes_hints.values())])
@@ -363,7 +362,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
             filename += '.csv'
         try:
             with open(filename, 'w') as f:
-                f.write('\n'.join(printlist).encode('utf-8'))
+                f.write('\n'.join(printlist))
         except IOError as e:
             utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', "Writing of file failed!: %s "))%str(e))
         except UnicodeDecodeError as e:

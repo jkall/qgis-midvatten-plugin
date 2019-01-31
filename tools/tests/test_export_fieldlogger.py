@@ -34,7 +34,7 @@ import midvatten_utils as utils
 from .utils_for_tests import create_test_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestExportFieldloggerNoDb(object):
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
@@ -250,7 +250,7 @@ class TestExportFieldloggerNoDb(object):
         
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = '[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
         assert reference_string == test_string
 
     @staticmethod
@@ -270,7 +270,7 @@ class TestExportFieldloggerNoDb(object):
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = '[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 1.proj;1.proj.group2;lat1;lon1;par1]'
+        reference_string = '[NAME;INPUTTYPE;HINT, par1;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 1.proj;1.proj.group2;lat1;lon1;par1]'
         assert reference_string == test_string
 
     @staticmethod
@@ -290,7 +290,7 @@ class TestExportFieldloggerNoDb(object):
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference = '[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
+        reference = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
         assert test_string == reference
 
     @staticmethod
@@ -311,7 +311,7 @@ class TestExportFieldloggerNoDb(object):
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.critical.assert_not_called()
-        reference_string = '[FileVersion 1;3, NAME;INPUTTYPE;HINT, p1.u1;it1:h1 , l.comment;test;make a comment , comment;test;make a general comment , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.ls;1.ls.with_comment;123;465;comment, 1.ls;1.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 2.ls;2.ls.with_comment;123;465;comment, 2.ls;2.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 3.ls;3.ls.with_comment;123;465;comment, 3.ls;3.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment]'
+        reference_string = '[NAME;INPUTTYPE;HINT, p1.u1;it1:h1 , l.comment;test;make a comment , comment;test;make a general comment , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.ls;1.ls.with_comment;123;465;comment, 1.ls;1.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 2.ls;2.ls.with_comment;123;465;comment, 2.ls;2.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 3.ls;3.ls.with_comment;123;465;comment, 3.ls;3.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment]'
         assert test_string == reference_string
 
     @staticmethod
@@ -331,7 +331,7 @@ class TestExportFieldloggerNoDb(object):
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = '[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2]'
+        reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2]'
         assert reference_string == test_string
 
     @staticmethod
@@ -353,7 +353,7 @@ class TestExportFieldloggerNoDb(object):
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = '[FileVersion 1;3, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 2.proj;2.proj.group3;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2, 4.proj;4.proj.group3;lat4;lon4;par3]'
+        reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 2.proj;2.proj.group3;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2, 4.proj;4.proj.group3;lat4;lon4;par3]'
         assert reference_string == test_string
 
     @staticmethod
@@ -375,7 +375,7 @@ class TestExportFieldloggerNoDb(object):
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = '[FileVersion 1;3, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1|par2, 1.proj;1.proj.group2;lat1;lon1;par3, 2.proj;2.proj.group1;lat2;lon2;par1|par2, 2.proj;2.proj.group2;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1|par2, 4.proj;4.proj.group2;lat4;lon4;par3]'
+        reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1|par2, 1.proj;1.proj.group2;lat1;lon1;par3, 2.proj;2.proj.group1;lat2;lon2;par1|par2, 2.proj;2.proj.group2;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1|par2, 4.proj;4.proj.group2;lat4;lon4;par3]'
         assert reference_string == test_string
 
     @mock.patch('export_fieldlogger.utils.pop_up_info')
@@ -415,6 +415,33 @@ class TestExportFieldloggerNoDb(object):
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = '[FileVersion 1;3, NAME;INPUTTYPE;HINT, par4;type1;hint1 , par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par4|par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par4|par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        reference_string = '[NAME;INPUTTYPE;HINT, par4;type1;hint1 , par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par4|par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par4|par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
         assert reference_string == test_string
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.get_save_file_name_no_extension')
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    def test_write_printlist_to_file(mock_MessagebarAndLog, mock_get_save_file_name_no_extension):
+        lines = (
+                    "NAME;INPUTTYPE;HINT",
+                    "Value;numberDecimal|numberSigned;in m to top of tube",
+                    "Comment;text;make comment...",
+                    "NAME;SUBNAME;LAT;LON;INPUTFIELD",
+                    "Location1;Location1_1;60.56309363068154;15.494655445218088;Value|Comment",
+                    "Location2;Location2_1;60.532112200075446;15.509033761918545;Value|Comment")
+
+
+
+        with utils.tempinput('', 'utf-8') as testfile:
+            mock_get_save_file_name_no_extension.return_value = testfile
+
+            export_fieldlogger.ExportToFieldLogger.write_printlist_to_file(lines)
+
+        with open(testfile, 'r') as f:
+            result_lines = [row.rstrip('\n') for row in f]
+
+        assert tuple(lines) == tuple(result_lines)
+
+
+
 

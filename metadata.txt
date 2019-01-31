@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.0b6
         - Interlab4: Fix so that the highest resolution parameter (the one with lowest value) is imported as the original parameter name. Duplicates are given a duplicate suffix.
+        - Fieldlogger export: Adjustments to new locations file format.
         Version 1.6.0b5
         - Customplot: Fixes #293. Added checkbox "Regular xaxis interval".
         - Customplot: Fixed tab widget resizing bugs. Restructured settings.
