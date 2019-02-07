@@ -141,6 +141,8 @@ class SurveyStore(object):
     def getData(self, featureIds, vectorlayer):  # THIS FUNCTION IS ONLY CALLED FROM ARPATPLUGIN/SHOWSURVEY
         """ get data from databases for array of features specified by their IDs  """
         surveys = self._getDataStep1(featureIds, vectorlayer)
+        if not surveys:
+            raise DataSanityError('feature ids {}'.format(', '.join([str(x) for x in featureIds])), 'Could not get data from layer!')
         try:
             DataLoadingStatus, surveys = self._getDataStep2(surveys)
         except:
@@ -149,7 +151,7 @@ class SurveyStore(object):
             surveys = self.sanityCheck(surveys)
             return surveys  
         else:
-            DataSanityError(Exception)
+            raise DataSanityError('Unknown obsid', 'Dataloading failed!')
         
     def _getDataStep1(self, featureIds, vlayer):
         """ STEP 1: get data from selected layer"""  # _CHANGE_ Completely revised to TSPLot method
