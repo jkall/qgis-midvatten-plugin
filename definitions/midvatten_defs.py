@@ -604,8 +604,14 @@ def get_last_used_quality_instruments():
     Returns quality instrumentids
     :return: A tuple with instrument ids from w_qual_field
     """
-    sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
-    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
+    sql = '''select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit,
+             instrument, staff order by parameter, date_time desc, unit asc, staff'''
+    connection_ok, result = db_utils.sql_load_fr_db(sql)
+
+    result_dict = {}
+    # create dict like {parameter: {staff: [row]}, staff list ordered by parameter, staff, data_time (unit).
+    [result_dict.setdefault(row[0], {}).setdefault(row[3], []).append(row) for row in result]
+
     return ru(result_dict, True)
 
 specific_table_info = {'obs_lines': 'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
@@ -887,3 +893,4 @@ def custplot_default_style():
 
 def piperplot_style():
     return os.path.join(os.path.dirname(__file__), 'mpl_styles', 'midv_piperplot.mplstyle')
+
