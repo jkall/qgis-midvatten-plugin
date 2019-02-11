@@ -418,6 +418,28 @@ class TestContinousColorCycle(object):
          call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!'),
          call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!')]
 
+@attr(status='only')
+class TestWarnAboutOldDatabaseSpatialite(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.latest_database_version')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_warn_about_old_database(self, mock_messagebar, mock_latest_version):
+        mock_latest_version.return_value = '999.999.999'
+        utils.warn_about_old_database()
+        print(str(mock_messagebar.mock_calls))
+        assert mock_messagebar.mock_calls == [call.info(bar_msg='The database version appears to be older than 999.999.999.\nAn upgrade is suggested!\n')]
+
+    @mock.patch('midvatten_utils.latest_database_version')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_warn_about_old_database_not_old(self, mock_messagebar, mock_latest_version):
+        mock_latest_version.return_value = '0.0.1'
+        utils.warn_about_old_database()
+        assert not mock_messagebar.mock_calls
+
+
+
+
 
 
 

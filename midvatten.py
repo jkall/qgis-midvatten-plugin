@@ -321,6 +321,8 @@ class midvatten(object):
         # settings > options > system > environment.
         QgsApplication.messageLog().messageReceived.connect(utils.write_qgs_log_to_file)
 
+        utils.warn_about_old_database()
+
     def unload(self):    
         try:
             self.menu.removeAction(self.actionloadthelayers)
@@ -439,18 +441,16 @@ class midvatten(object):
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
+            print(str(OBSID_P))
+            print(str(OBSID_L))
             utils.stop_waiting_cursor()
-            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+
+            selected_all = ru(QCoreApplication.translate("Midvatten", 'selected')) if any([OBSID_P, OBSID_L]) else ru(QCoreApplication.translate("Midvatten", 'all'))
+
+            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from %s obs_points and obs_lines.\n\nContinue?"""))%(selected_all), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             if sanity.result == 1:
                 utils.start_waiting_cursor()#show the user this may take a long time...
-                obsp_layer = utils.find_layer('obs_points')
-                try:
-                    CRS = obsp_layer.crs()
-                except AttributeError:
-                    utils.pop_up_info(ru(QCoreApplication.translate("Midvatten", "Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")))
-                    utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
-                    return None
-                EPSG_code = str(CRS.authid()[5:])
+                EPSG_code = db_utils.sql_load_fr_db('''SELECT srid FROM geometry_columns WHERE f_table_name = 'obs_points';''')[1][0][0]
 
                 #Let the user chose an EPSG-code for the exported database
                 utils.stop_waiting_cursor()
@@ -699,6 +699,7 @@ class midvatten(object):
                 utils.start_waiting_cursor()
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
                 utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+        utils.warn_about_old_database()
 
     @utils.general_exception_handler
     def new_db(self, *args):

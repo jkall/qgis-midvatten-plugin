@@ -25,6 +25,7 @@ import midvatten_utils as utils
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QComboBox, QDockWidget, QFileDialog
 from midvatten_utils import returnunicode as ru
+from midvatten_utils import warn_about_old_database
 
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
@@ -666,7 +667,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
             self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}})
             self.midvsettingsdialogdock.ms.save_settings('database')
             self.midvsettingsdialogdock.load_plot_settings()
-            #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
+            warn_about_old_database()
         else:  # debug
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SpatialiteSettings', "DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
 
@@ -706,3 +707,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
             self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'postgis': {'connection': self.connection}})
             self.midvsettingsdialogdock.ms.save_settings('database')
             self.midvsettingsdialogdock.load_plot_settings()
+            warn_about_old_database()
+
+
+

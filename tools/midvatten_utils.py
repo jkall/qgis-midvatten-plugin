@@ -42,6 +42,7 @@ import csv
 import datetime
 import difflib
 import io
+import re
 import locale
 import math
 import os
@@ -59,6 +60,7 @@ from functools import wraps
 from operator import itemgetter
 from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsProject, Qgis, QgsApplication
 from qgis.gui import QgsMessageBar, QtCore
+from definitions.db_defs import latest_database_version
 
 import numpy as np
 from qgis.PyQt.QtCore import QCoreApplication
@@ -825,7 +827,7 @@ def ask_for_charset(default_charset=None, msg=None):
 
 
 def ask_for_export_crs(default_crs=''):
-    return str(QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('ask_for_export_crs',"Set export crs"), QCoreApplication.translate('ask_for_export_crs', "Give the crs for the exported database.\n"),QtWidgets.QLineEdit.Normal,default_crs)[0])
+    return str(QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('ask_for_export_crs',"Set export crs"), QCoreApplication.translate('ask_for_export_crs', "Give the crs for the exported database.\n"),QtWidgets.QLineEdit.Normal,str(default_crs))[0])
 
 
 def lists_to_string(alist_of_lists, quote=False):
@@ -2037,4 +2039,37 @@ class ContinousColorCycle(object):
             next_combo = dict(next(self.style_cycle))
             next_combo.update({'color': np.random.rand(3, 1)})
             return next_combo
+
+
+def warn_about_old_database():
+    try:
+        dbconnection = db_utils.DbConnectionManager()
+    except UsageError:
+        #Probably empty project
+        return
+
+    rowid = db_utils.rowid_string(dbconnection)
+    rows = dbconnection.execute_and_fetchall('''SELECT description FROM about_db WHERE {} = 1'''.format(rowid))
+    try:
+        row = rows[0][0]
+    except:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', "No row returned from about_db when searching for version.")))
+        return
+    if row:
+        patterns = ['''Midvatten plugin Version ([0-9\.a-b]+)''',
+                    '''Midvatten plugin ([0-9\.a-b]+)''',
+                    ]
+        version = None
+        for pattern in patterns:
+            m = re.search(pattern, row)
+            if m:
+                version = m.groups()[0]
+                break
+        if version:
+            wikipage = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database'
+            if version <= latest_database_version():
+                MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s'''))%(latest_database_version(), wikipage))
+
+
+
 
