@@ -23,6 +23,7 @@ changelog=
         Version 1.6.0b8
         - Fieldlogger import: Bug fix where w_qual_lab parameter was not filled in automatically from stored settings.
         - Fieldlogger import: Instrument and unit are filled automatically based on last entry for current staff.
+        - Customplot: Added pandas.DataFrame.Rolling instead of rolling_mean for pandas version >=0.18.0. Changed center to checkbox instead of lineedit.
         Version 1.6.0b7
         - qgis3-branch moved to master branch. The old master branch for qgis2 is now the qgis2-branch.
         Version 1.6.0b6

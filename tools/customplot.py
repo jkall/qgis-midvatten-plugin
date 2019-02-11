@@ -892,20 +892,20 @@ class PandasCalculations(object):
         self.window_label = qgis.PyQt.QtWidgets.QLabel('Rolling mean window')
         self.window = qgis.PyQt.QtWidgets.QLineEdit('')
         self.center_label = qgis.PyQt.QtWidgets.QLabel('Rolling mean center')
-        self.center = qgis.PyQt.QtWidgets.QLineEdit('')
+        self.center = qgis.PyQt.QtWidgets.QCheckBox()
+        self.center.setChecked(True)
         for wid in [self.window_label, self.window]:
             wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
                            'The number of timesteps in each moving average (rolling mean) mean\n'
                            'The result is stored at the center timestep of each mean.\n'
-                           'See Pandas pandas.rolling_mean documentation for more info.\n'
+                           'See Pandas pandas.DataFrame.rolling documentation for more info.\n'
                            'No rolling mean if field is empty.')))
 
         for wid in [self.center_label, self.center]:
             wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
-                           '1/True (default) to store the rolling mean at the center timestep.\n'
-                           '0/False to store the rolling mean at the last timestep.\n'
-                           'See Pandas pandas.rolling_mean documentation for more info.\n'
-                           'center=True if field is empty.')))
+                           'Check (default) to store the rolling mean at the center timestep.\n'
+                           'Uncheck to store the rolling mean at the last timestep.\n'
+                           'See Pandas pandas.rolling_mean documentation for more info.')))
 
 
         for lineedit in [self.rule, self.base, self.how, self.window, self.center]:
@@ -973,11 +973,12 @@ class PandasCalculations(object):
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Rolling mean window must be an integer')))
             else:
-                if self.center.text() in ('0', 'False'):
-                    center=False
-                else:
-                    center=True
-                df = pd.rolling_mean(df, window=window, center=center)
+                try:
+                    # Pandas version >= '0.18.0'
+                    df = df.rolling(window, center=self.center.isChecked()).mean()
+                except AttributeError:
+                    df = pd.rolling_mean(df, window=window, center=self.center.isChecked())
+
         return df
 
 def horizontal_line():
