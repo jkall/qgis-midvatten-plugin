@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>703</width>
-         <height>701</height>
+         <width>694</width>
+         <height>711</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -416,7 +416,7 @@
                    <item>
                     <widget class="QCheckBox" name="regular_xaxis_interval">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, xaxis tickmarks will appear at regular intervals.&lt;br/&gt;If unchecked, xaxis tickmarks will be set to first day of month, first hour of day etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, xaxis tickmarks will appear at regular intervals.&lt;br/&gt;If unchecked, xaxis tickmarks will be set to first day of month, first hour of day etc.&lt;br/&gt;in addition to regular intervals.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Regular xaxis interval</string>
@@ -665,8 +665,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>299</width>
-         <height>817</height>
+         <width>307</width>
+         <height>811</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -2546,7 +2546,7 @@
      <x>0</x>
      <y>0</y>
      <width>1053</width>
-     <height>27</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

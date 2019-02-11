@@ -49,7 +49,7 @@ from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
-from gui_utils import DateTimeFilter
+from gui_utils import DateTimeFilter, set_combobox
 
 
 import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -265,11 +265,19 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         sublocations = [observation['sublocation'] for observation in observations]
         sublocation_filter.update_sublocations(sublocations)
         observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
-        input_fields.update_parameter_imports_queue(observations, stored_settings)
+        input_fields.update_parameter_imports_queue(observations, stored_settings, staff=self.get_staff())
+
+    def get_staff(self):
+        _staff = [x.staff for x in self.settings if isinstance(x, StaffQuestion)]
+        if _staff:
+            staff = _staff[0]
+        else:
+            staff = None
+        return staff
 
     @utils.general_exception_handler
     def update_input_fields_from_button(self):
-        self.input_fields.update_parameter_imports_queue(self.filter_by_settings_using_shared_loop(self.observations, self.settings), self.stored_settings)
+        self.input_fields.update_parameter_imports_queue(self.filter_by_settings_using_shared_loop(self.observations, self.settings), self.stored_settings, staff=self.get_staff())
 
     @staticmethod
     def prepare_w_levels_data(observations):
@@ -671,7 +679,7 @@ class InputFields(RowEntry):
                 self.update_queue_working = False
 
 
-    def update_parameter_imports(self, observations, stored_settings=None):
+    def update_parameter_imports(self, observations, stored_settings=None, staff=None):
 
         if stored_settings is None:
             stored_settings = []
@@ -702,7 +710,7 @@ class InputFields(RowEntry):
             return
 
         for parametername in parameter_names:
-            param_import_obj = ImportMethodChooser(parametername, parameter_names)
+            param_import_obj = ImportMethodChooser(parametername, parameter_names, staff=staff)
             param_import_obj.label.setFixedWidth(maximumwidth)
             if parametername not in self.parameter_imports:
                 self.parameter_imports[parametername] = param_import_obj
@@ -800,7 +808,10 @@ class InputFields(RowEntry):
 
             try:
                 settings = parameter_import_fields.get_settings()
-            except AttributeError:
+            except AttributeError as e:
+                utils.MessagebarAndLog.info(log_msg=ru(
+                    QCoreApplication.translate('InputFields', 'Getting attribute failed: %s, msg: %s')) % (str(
+                    type(parameter_import_fields)), str(e)))
                 settings = tuple()
 
             if settings:
@@ -822,9 +833,9 @@ class InputFields(RowEntry):
 
 
 class ImportMethodChooser(RowEntry):
-    def __init__(self, parameter_name, parameter_names):
+    def __init__(self, parameter_name, parameter_names, staff=None):
         super(ImportMethodChooser, self).__init__()
-
+        self.staff = staff
         self.parameter_widget = None
         self.parameter_name = parameter_name
         self.parameter_names = parameter_names
@@ -886,7 +897,7 @@ class ImportMethodChooser(RowEntry):
             self.layout.insertStretch(-1, 0)
 
         else:
-            self.parameter_import_fields = parameter_import_fields_class(self)
+            self.parameter_import_fields = parameter_import_fields_class(self, staff=self.staff)
             self.parameter_widget = self.parameter_import_fields.widget
             self.layout.addWidget(self.parameter_widget)
 
@@ -900,7 +911,7 @@ class ImportMethodChooser(RowEntry):
 class CommentsImportFields(RowEntry):
     """
     """
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, staff=None):
         """
         """
         super(CommentsImportFields, self).__init__()
@@ -927,12 +938,15 @@ class CommentsImportFields(RowEntry):
 
         return observations
 
+    def get_settings(self):
+        return tuple()
+
 
 class WLevelsImportFields(RowEntryGrid):
     """
     """
 
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, staff=None):
         """
         """
         super(WLevelsImportFields, self).__init__()
@@ -1013,7 +1027,7 @@ class WFlowImportFields(RowEntryGrid):
     """
 
 
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, staff=None):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
@@ -1097,7 +1111,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     """
 
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, staff=None):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
@@ -1105,22 +1119,29 @@ class WQualFieldImportFields(RowEntryGrid):
         """
         super(WQualFieldImportFields, self).__init__()
 
+        self.staff = staff
         self._import_method_chooser = import_method_chooser
         self.label_parameter = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('WQualFieldImportFields', 'Parameter: ')))
         self.__parameter = default_combobox()
-        self._parameters_units = defs.w_qual_field_parameter_units()
+
+        self._parameters_units = self.get_sorted_parameter_date_time_list(self.staff, 1)
         self.__parameter.addItems(list(self._parameters_units.keys()))
         self.label_unit = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('WQualFieldImportFields', 'Unit: ')))
         self.__unit = default_combobox()
+        unit_tooltip = ru(QCoreApplication.translate('WQualFieldImportFields', ('The unit list is sorted with the unit from the\n'
+                                                                                      'currently chosen staff first in descending date order, then\n'
+                                                                                      'the rest of the units in descending date order.')))
+        self.__unit.setToolTip(unit_tooltip)
+        self.label_unit.setToolTip(unit_tooltip)
+
         self.__instrument = default_combobox()
         self.label_instrument = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('WQualFieldImportFields', 'Instrument: ')))
-        self.parameter_instruments = {}
-        for parameter, unit_instrument_staff_date_time_list_of_lists in definitions.midvatten_defs.get_last_used_quality_instruments().items():
-            for unit, instrument, staff, date_time, in unit_instrument_staff_date_time_list_of_lists:
-                self.parameter_instruments.setdefault(parameter, set()).add(instrument)
-
-        for parameter, instrument_set in self.parameter_instruments.items():
-            self.parameter_instruments[parameter] = list(instrument_set)
+        instrument_tooltip = ru(QCoreApplication.translate('WQualFieldImportFields', ('The instrument list is sorted with the instruments from the\n'
+                                                                                      'currently chosen staff first in descending date order, then\n'
+                                                                                      'the rest of the instruments in descending date order.')))
+        self.__instrument.setToolTip(instrument_tooltip)
+        self.label_instrument.setToolTip(instrument_tooltip)
+        self.parameter_instruments = self.get_sorted_parameter_date_time_list(self.staff, 2)
 
         self.layout.addWidget(self.label_parameter, 0, 0)
         self.layout.addWidget(self.__parameter, 1, 0)
@@ -1131,10 +1152,28 @@ class WQualFieldImportFields(RowEntryGrid):
         self.layout.setColumnStretch(4, 1)
 
         self.__parameter.editTextChanged.connect(
-                     lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units))
+                     lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units, sort_list=False,
+                                            select_first_nonempty_row=True))
 
         self.__parameter.editTextChanged.connect(
-                     lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments))
+                     lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments, sort_list=False,
+                                            select_first_nonempty_row=True))
+
+    def get_sorted_parameter_date_time_list(self, staff, value_index):
+        # The instrument list is sorted with the instruments from the currently chosen staff first, then the rest of the instruments in descending date order.
+        all_res = {}
+        for parameter, staff_dicts in definitions.midvatten_defs.get_last_used_quality_instruments().items():
+            res = []
+            if staff is not None and staff in staff_dicts:
+                for _parameter_unit_instrument_staff_date_time in staff_dicts[staff]:
+                    if _parameter_unit_instrument_staff_date_time[value_index] not in res:
+                        res.append(_parameter_unit_instrument_staff_date_time[value_index])
+            for _staff, _parameter_unit_instrument_staff_date_times in staff_dicts.items():
+                for _parameter_unit_instrument_staff_date_time in _parameter_unit_instrument_staff_date_times:
+                    if _parameter_unit_instrument_staff_date_time[value_index] not in res:
+                        res.append(_parameter_unit_instrument_staff_date_time[value_index])
+            all_res[parameter] = res
+        return all_res
 
     @property
     def parameter(self):
@@ -1160,7 +1199,7 @@ class WQualFieldImportFields(RowEntryGrid):
     def instrument(self, value):
         self.__instrument.setEditText(ru(value))
 
-    def fill_list(self, combobox_var, parameter_var, parameter_list_dict):
+    def fill_list(self, combobox_var, parameter_var, parameter_list_dict, sort_list=True, select_first_nonempty_row=False):
         """
 
         :param combobox_var: a QComboBox object
@@ -1170,19 +1209,30 @@ class WQualFieldImportFields(RowEntryGrid):
         """
         vals = parameter_list_dict.get(parameter_var, None)
         if vals is None:
-            vals = list(sorted(set([val[0] if isinstance(val, (list, tuple)) else val for vals_list in list(parameter_list_dict.values()) for val in vals_list])))
+            vals = list(set([val[0] if isinstance(val, (list, tuple)) else val for vals_list in list(parameter_list_dict.values()) for val in vals_list]))
         else:
-            vals = sorted([val[0] if isinstance(val, (list, tuple)) else val for val in vals])
+            vals = [val[0] if isinstance(val, (list, tuple)) else val for val in vals]
+
+        if sort_list:
+            vals = sorted(vals)
 
         combobox_var.clear()
         combobox_var.addItem('')
         combobox_var.addItems(ru(vals, keep_containers=True))
+        if select_first_nonempty_row:
+            for value in vals:
+                if value:
+                    set_combobox(combobox_var, value, add_if_not_exists=False)
+                    break
+
+
 
     def get_settings(self):
-        return (('parameter', self.parameter),
-                           ('unit', self.unit),
-                           ('depth', self.depth),
-                           ('instrument', self.instrument))
+        """
+        Skipped instrument and unit ('unit', self.unit) ('instrument', self.instrument). It's filled from last used instrument for the staff instead.
+        :return:
+        """
+        return tuple(('parameter', self.parameter))
 
     def alter_data(self, observations):
         if not self.parameter:

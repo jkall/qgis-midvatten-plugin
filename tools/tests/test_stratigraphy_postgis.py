@@ -48,9 +48,16 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
+        print("1. feature_ids: " + str(feature_ids))
+        print("2. QgsVectorLayer.selectedFeatureIds: " + str(self.vlayer.selectedFeatureIds()))
+        print("3. QgsVectorLayer.getSelectedFeatures: " + str([x.id() for x in self.vlayer.getSelectedFeatures()]))
+        print("4. QgsVectorLayer.getFeature(): " + str([self.vlayer.getFeature(x).id() for x in feature_ids]))
+        print("5. QgsVectorLayer.getFeature() type: " + str([str(type(self.vlayer.getFeature(x))) for x in feature_ids]))
+        print("6. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
@@ -88,6 +95,40 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_survey == '''"SURVEY('1', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''
         print("test_strata: " + test_strata)
         assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_stratigraphy_with_other_obsid_numbers(self, mock_skippopup, mock_messagebar):
+        """
+
+        :param mock_skippopup:
+        :param mock_messagebar:
+        :return:
+        """
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('8', 5, ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('9', 10, ST_GeomFromText('POINT(6720727 016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('10', 20, ST_GeomFromText('POINT(6720728 016569)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('8', 1, 0, 1, 'sand', 'sand', '3', 'j')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('8', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
+        self.create_and_select_vlayer()
+
+        dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
+
+        dlg.showSurvey()
+        print(str(mock_skippopup.mock_calls))
+        test = utils.anything_to_string_representation(dlg.data)
+        test_survey = utils.anything_to_string_representation(repr(dlg.data['8']))
+        test_strata = utils.anything_to_string_representation(
+            utils.returnunicode(dlg.data['P1'].strata, keep_containers=True))
+
+        assert len(mock_skippopup.mock_calls) == 0
+        assert len(mock_messagebar.mock_calls) == 0
+        assert test == """{"P1": SURVEY('8', 5.000000, '<QgsPointXY: POINT(633466 711659)>')}"""
+        assert test_survey == '''"SURVEY('8', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''
+        print("Test strata " + test_strata)
+        assert test_strata == '''["strata(8, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(8, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
