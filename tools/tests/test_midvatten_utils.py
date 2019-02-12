@@ -161,22 +161,6 @@ class TestAskUser(object):
         assert question.result == 'cancel'
 
 @attr(status='on')
-class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_get_last_logger_dates(self):
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
-        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2015-01-01 00:00')''')
-        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2015-01-01 00:00:00')''')
-        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2014-01-01 00:00:00')''')
-        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb2', '2013-01-01 00:00:00')''')
-        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb2', '2016-01-01 00:00')''')
-
-        test_string = create_test_string(utils.get_last_logger_dates())
-        reference_string = '''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
-        assert test_string == reference_string
-
-@attr(status='on')
 class TestSqlToParametersUnitsTuple(object):
     @mock.patch('db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
@@ -185,20 +169,6 @@ class TestSqlToParametersUnitsTuple(object):
         test_string = create_test_string(utils.sql_to_parameters_units_tuple('sql'))
         reference_string = '''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
-
-@attr(status='on')
-class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_get_db_statistics(self, mock_messagebar):
-        """
-        Test that calculate_db_table_rows can be run without major error
-        :param mock_iface:
-        :return:
-        """
-        utils.calculate_db_table_rows()
-
-        assert len(str(mock_messagebar.mock_calls[0])) > 1500 and 'about_db' in str(mock_messagebar.mock_calls[0])
 
 @attr(status='on')
 class TestGetCurrentLocale(object):
@@ -417,26 +387,6 @@ class TestContinousColorCycle(object):
         assert mock_messagebar.mock_calls == [call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!'),
          call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!'),
          call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!')]
-
-@attr(status='only')
-class TestWarnAboutOldDatabaseSpatialite(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('midvatten_utils.latest_database_version')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_warn_about_old_database(self, mock_messagebar, mock_latest_version):
-        mock_latest_version.return_value = '999.999.999'
-        utils.warn_about_old_database()
-        print(str(mock_messagebar.mock_calls))
-        assert mock_messagebar.mock_calls == [call.info(bar_msg='The database version appears to be older than 999.999.999.\nAn upgrade is suggested!\n')]
-
-    @mock.patch('midvatten_utils.latest_database_version')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_warn_about_old_database_not_old(self, mock_messagebar, mock_latest_version):
-        mock_latest_version.return_value = '0.0.1'
-        utils.warn_about_old_database()
-        assert not mock_messagebar.mock_calls
-
 
 
 

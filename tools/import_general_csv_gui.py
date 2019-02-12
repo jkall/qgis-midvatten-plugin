@@ -176,10 +176,17 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if not only_selected:
             active_layer.selectAll()
 
-        features = active_layer.getSelectedFeatures()
+        features = list(active_layer.getSelectedFeatures())
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
-
         [file_data.append([ru(attr) if all([ru(attr).strip() != 'NULL' if attr is not None else '', attr is not None]) else '' for attr in feature]) for feature in features]
+
+        geometries = [feature.geometry().asWkt() if feature.geometry().asWkt() else None for feature in features]
+        if any(geometries):
+            geom_name = 'geometry'
+            while geom_name in file_data[0]:
+                geom_name += '_'
+            file_data[0].append(geom_name)
+            [file_data[idx+1].append(wkt) for idx, wkt in enumerate(geometries)]
 
         self.file_data = file_data
         self.table_chooser.file_header = file_data[0]
@@ -313,7 +320,6 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         :param table_columns_factors: a dict like {'reading': 10}
         :return: file_data where the columns have been multiplied by the factor.
         """
-        print(str(columns_factors))
         file_data = [[str(float(col) * columns_factors[file_data[0][colnr]]) if
                       (file_data[0][colnr] in columns_factors and utils.to_float_or_none(col) is not None)
                       else col for colnr, col in enumerate(row)]
@@ -539,7 +545,9 @@ class ColumnEntry(object):
 
     @file_column_name.setter
     def file_column_name(self, value):
-        if self.static_checkbox.isChecked():
+        if value is None:
+            self.combobox.setCurrentIndex(0)
+        elif self.static_checkbox.isChecked():
             self.combobox.setEditText(value)
         else:
             index = self.combobox.findText(ru(value))

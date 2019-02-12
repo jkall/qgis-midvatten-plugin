@@ -2048,8 +2048,7 @@ def warn_about_old_database():
         #Probably empty project
         return
 
-    rowid = db_utils.rowid_string(dbconnection)
-    rows = dbconnection.execute_and_fetchall('''SELECT description FROM about_db WHERE {} = 1'''.format(rowid))
+    rows = dbconnection.execute_and_fetchall('''SELECT description FROM about_db LIMIT 1''')
     try:
         row = rows[0][0]
     except:

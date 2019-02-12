@@ -321,8 +321,6 @@ class midvatten(object):
         # settings > options > system > environment.
         QgsApplication.messageLog().messageReceived.connect(utils.write_qgs_log_to_file)
 
-        utils.warn_about_old_database()
-
     def unload(self):    
         try:
             self.menu.removeAction(self.actionloadthelayers)
@@ -699,7 +697,6 @@ class midvatten(object):
                 utils.start_waiting_cursor()
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
                 utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
-        utils.warn_about_old_database()
 
     @utils.general_exception_handler
     def new_db(self, *args):
@@ -889,6 +886,7 @@ class midvatten(object):
             self.midvsettingsdialog.LoadAndSelectLastSettings()
         except:
             pass
+        utils.warn_about_old_database()
 
     def reset_settings(self):
         self.ms.reset_settings()
