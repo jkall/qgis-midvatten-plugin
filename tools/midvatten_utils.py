@@ -2049,6 +2049,7 @@ def warn_about_old_database():
         return
 
     rows = dbconnection.execute_and_fetchall('''SELECT description FROM about_db LIMIT 1''')
+
     try:
         row = rows[0][0]
     except:

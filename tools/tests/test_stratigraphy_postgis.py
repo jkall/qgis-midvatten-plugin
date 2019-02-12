@@ -33,7 +33,7 @@ from stratigraphy import Stratigraphy
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -52,12 +52,13 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
-        print("1. feature_ids: " + str(feature_ids))
-        print("2. QgsVectorLayer.selectedFeatureIds: " + str(self.vlayer.selectedFeatureIds()))
-        print("3. QgsVectorLayer.getSelectedFeatures: " + str([x.id() for x in self.vlayer.getSelectedFeatures()]))
-        print("4. QgsVectorLayer.getFeature(): " + str([self.vlayer.getFeature(x).id() for x in feature_ids]))
-        print("5. QgsVectorLayer.getFeature() type: " + str([str(type(self.vlayer.getFeature(x))) for x in feature_ids]))
-        print("6. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
+        print("1. Valid vlayer '{}'".format(self.vlayer.isValid()))
+        print("2. feature_ids: " + str(feature_ids))
+        print("3. QgsVectorLayer.selectedFeatureIds: " + str(self.vlayer.selectedFeatureIds()))
+        print("4. QgsVectorLayer.getSelectedFeatures: " + str([x.id() for x in self.vlayer.getSelectedFeatures()]))
+        print("5. QgsVectorLayer.getFeature(): " + str([self.vlayer.getFeature(x).id() for x in feature_ids]))
+        print("6. QgsVectorLayer.getFeature() type: " + str([str(type(self.vlayer.getFeature(x))) for x in feature_ids]))
+        print("7. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
@@ -121,14 +122,14 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         test = utils.anything_to_string_representation(dlg.data)
         test_survey = utils.anything_to_string_representation(repr(dlg.data['8']))
         test_strata = utils.anything_to_string_representation(
-            utils.returnunicode(dlg.data['P1'].strata, keep_containers=True))
+            utils.returnunicode(dlg.data['8'].strata, keep_containers=True))
 
         assert len(mock_skippopup.mock_calls) == 0
         assert len(mock_messagebar.mock_calls) == 0
-        assert test == """{"P1": SURVEY('8', 5.000000, '<QgsPointXY: POINT(633466 711659)>')}"""
+        assert test == """{"8": SURVEY('8', 5.000000, '<QgsPointXY: POINT(633466 711659)>')}"""
         assert test_survey == '''"SURVEY('8', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''
         print("Test strata " + test_strata)
-        assert test_strata == '''["strata(8, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(8, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
+        assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)

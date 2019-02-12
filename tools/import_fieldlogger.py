@@ -1267,7 +1267,7 @@ class WQualFieldImportFields(RowEntryGrid):
 class WQualFieldDepthImportFields(RowEntry):
     """
     """
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, staff=None):
         """
         """
         super(WQualFieldDepthImportFields, self).__init__()
