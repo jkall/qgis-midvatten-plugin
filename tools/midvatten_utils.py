@@ -2048,7 +2048,14 @@ def warn_about_old_database():
         #Probably empty project
         return
 
-    rows = dbconnection.execute_and_fetchall('''SELECT description FROM about_db LIMIT 1''')
+    try:
+        dbconnection.cursor.execute('''SELECT description FROM about_db LIMIT 1''')
+        rows = dbconnection.cursor.fetchall()
+    except Exception as e:
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database',
+                                                                               "Database might not be a valid Midvatten database!")),
+                              log_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', 'msg: %s'))%str(e))
+        return
 
     try:
         row = rows[0][0]

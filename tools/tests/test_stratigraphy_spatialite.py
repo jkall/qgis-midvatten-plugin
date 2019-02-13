@@ -33,7 +33,7 @@ from stratigraphy import Stratigraphy
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
@@ -44,10 +44,9 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
-        uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
+        uri.setDataSource('', 'obs_points', 'geometry', '', 'rowid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
-
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
