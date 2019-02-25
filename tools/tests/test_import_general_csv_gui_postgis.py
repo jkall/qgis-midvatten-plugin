@@ -26,7 +26,6 @@ from builtins import str
 from builtins import range
 import qgis.PyQt
 import datetime
-#
 import timeit
 from collections import OrderedDict
 
@@ -37,6 +36,8 @@ from date_utils import datestring_to_date
 from import_general_csv_gui import GeneralCsvImportGui
 from mock import MagicMock
 from nose.plugins.attrib import attr
+
+from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
@@ -1213,3 +1214,107 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 12.5, None, None, None)])'''
                     print(str(test_string))
                     assert test_string == reference_string
+
+
+@attr(status='on')
+class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestPostgisDbSv):
+    """ Test to make sure wlvllogg_import goes all the way to the end without errors
+    """
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def create_and_select_vlayer(self):
+        self.qgs = QgsApplication([], True)
+        self.qgs.initQgis()
+
+        self.midvatten.ms.settingsdict['secplotdrillstop'] = "%berg%"
+
+        dbconnection = db_utils.DbConnectionManager()
+        uri = dbconnection.uri
+        uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
+        dbtype = db_utils.get_dbtype(dbconnection.dbtype)
+        self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+
+        features = self.vlayer.getFeatures()
+        feature_ids = [feature.id() for feature in features]
+        self.vlayer.selectByIds(feature_ids)
+        print("1. feature_ids: " + str(feature_ids))
+        print("2. QgsVectorLayer.selectedFeatureIds: " + str(self.vlayer.selectedFeatureIds()))
+        print("3. QgsVectorLayer.getSelectedFeatures: " + str([x.id() for x in self.vlayer.getSelectedFeatures()]))
+        print("4. QgsVectorLayer.getFeature(): " + str([self.vlayer.getFeature(x).id() for x in feature_ids]))
+        print("5. QgsVectorLayer.getFeature() type: " + str([str(type(self.vlayer.getFeature(x))) for x in feature_ids]))
+        print("6. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
+
+
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_import_obs_points_from_layer(self):
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        self.create_and_select_vlayer()
+
+        utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+        utils_askuser_answer_no_obj.result = 0
+        utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+        @mock.patch('import_data_to_db.utils.Askuser')
+        @mock.patch('qgis.utils.iface', autospec=True)
+        @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+        def _test(self, mock_skippopup, mock_iface, mock_askuser):
+
+            def side_effect(*args, **kwargs):
+                mock_result = mock.MagicMock()
+                if 'msg' in kwargs:
+                    if kwargs['msg'].startswith('Does the file contain a header?'):
+                        mock_result.result = 1
+                        return mock_result
+                if len(args) > 1:
+                    if args[1].startswith('Do you want to confirm'):
+                        mock_result.result = 0
+                        return mock_result
+                        #mock_askuser.return_value.result.return_value = 0
+                    elif args[1].startswith('Do you want to import all'):
+                        mock_result.result = 0
+                        return mock_result
+                    elif args[1].startswith('Please note!\nForeign keys'):
+                        mock_result.result = 1
+                        return mock_result
+                    elif args[1].startswith('Please note!\nThere are'):
+                        mock_result.result = 1
+                        return mock_result
+                    elif args[1].startswith('It is a strong recommendation'):
+                        mock_result.result = 0
+                        return mock_result
+            mock_askuser.side_effect = side_effect
+
+            mock_iface.activeLayer.return_value = self.vlayer
+
+            ms = MagicMock()
+            ms.settingsdict = OrderedDict()
+            importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+            importer.load_gui()
+
+            importer.import_all_features()
+            importer.table_chooser.import_method = 'obs_points'
+
+            for column in importer.table_chooser.columns:
+                if column.db_column == 'obsid':
+                    column.static_checkbox.setChecked(True)
+                    column.file_column_name = '2'
+                elif column.db_column in ('east', 'north'):
+                    column.file_column_name = None
+
+            importer.start_import()
+
+        _test(self)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db('''SELECT obsid, ST_AsText(geometry) FROM obs_points'''))
+        reference_string = r'''(True, [(1, POINT(633466 711659)), (2, POINT(633466 711659))])'''
+        print(str(test_string))
+        print(str(reference_string))
+        assert test_string == reference_string
+
+    def tearDown(self):
+        QgsProject.instance().addMapLayer(self.vlayer)
+        QgsProject.instance().removeMapLayer(self.vlayer.id())
+        super(self.__class__, self).tearDown()

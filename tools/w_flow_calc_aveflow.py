@@ -53,13 +53,18 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         self.pushButton_Cancel.clicked.connect(lambda x: self.close())
 
     def calcall(self):
-        obsar = db_utils.sql_load_fr_db('select distinct obsid from w_flow where flowtype="Accvol"')[1]
-        self.observations = [str(obs[0]) for obs in obsar] #we cannot send unicode as string to sql because it would include the u'
+        ok, obsar = db_utils.sql_load_fr_db('''SELECT DISTINCT obsid FROM w_flow WHERE flowtype = 'Accvol' ''')
+        #if not ok:
+        #    utils.MessagebarAndLog.critical(bar_msg=)
+        if not obsar:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Calcave', "No observations with Accvol found, nothing calculated!")))
+            return
+        self.observations = [obs[0] for obs in obsar]
         self.calculateaveflow()
 
     def calcselected(self):
         obsar = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
-        self.observations = [obs.encode('utf-8') for obs in obsar] #turn into a list of python byte strings
+        self.observations = [obs for obs in obsar] #turn into a list of python byte strings
         self.calculateaveflow()
 
     def calculateaveflow(self):
@@ -67,7 +72,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         date_from = self.FromDateTime.dateTime().toPyDateTime()
         date_to = self.ToDateTime.dateTime().toPyDateTime()
         #Identify distinct set of obsid and instrumentid with Accvol-data and within the user-defined date_time-interval:
-        sql= """select distinct obsid, instrumentid from(select * from w_flow where flowtype = "Accvol" and date_time >="%s" and date_time <="%s" and obsid IN %s)"""%(date_from,date_to,(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
+        sql= """SELECT DISTINCT obsid, instrumentid FROM (SELECT * FROM w_flow WHERE flowtype = 'Accvol' AND date_time >= '%s' AND date_time <= '%s' AND obsid IN (%s))"""%(date_from,date_to, utils.sql_unicode_list(self.observations))
         #utils.pop_up_info(sql)#debug
         uniqueset = db_utils.sql_load_fr_db(sql)[1]  # The unique set of obsid and instrumentid is kept in uniqueset
         negativeflow = False
