@@ -1964,9 +1964,6 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if not tablename in existing_tables:
             continue
 
-        if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
-            tablename = 'view_{}'.format(tablename)
-
         layer = create_layer(tablename, geometrycolumn=geometrycolumn)
 
         valid = layer.isValid()
@@ -1979,8 +1976,6 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if not valid:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
         else:
-            if tablename in ['view_obs_points', 'view_obs_lines']:
-                layer.setName(orig_tablename)
             resultlist.append(layer)
 
 
