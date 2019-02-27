@@ -56,8 +56,6 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.PyQt
-from pandas.plotting._converter import PandasAutoDateLocator
-
 
 try:
     import pandas as pd
