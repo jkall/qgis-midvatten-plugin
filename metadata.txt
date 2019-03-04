@@ -21,8 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.0:
-        - Removed view_obs_points and view_obs_lines.
-        - Bug fix in customplot.
+        - Removed view_obs_points and view_obs_lines..
         Version 1.6.0b8
         - Import csv gui: Importing geometries from vectorlayers supported. If a feature has a geometry, a "geometry" column will be added to loaded file data.
         - Fieldlogger import: Bug fix where w_qual_lab parameter was not filled in automatically from stored settings.
