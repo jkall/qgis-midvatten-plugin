@@ -20,9 +20,9 @@
 """
 from __future__ import print_function
 from __future__ import absolute_import
+
 from future import standard_library
 
-import midvatten_utils
 from qgis._core import QgsVectorLayer
 
 standard_library.install_aliases()
@@ -1964,6 +1964,9 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if not tablename in existing_tables:
             continue
 
+        if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
+            tablename = 'view_{}'.format(tablename)
+
         layer = create_layer(tablename, geometrycolumn=geometrycolumn)
 
         valid = layer.isValid()
@@ -1976,6 +1979,8 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if not valid:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
         else:
+            if tablename in ['view_obs_points', 'view_obs_lines']:
+                layer.setName(orig_tablename)
             resultlist.append(layer)
 
 
@@ -2072,6 +2077,47 @@ def warn_about_old_database():
             if version <= latest_database_version():
                 MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s'''))%(latest_database_version(), wikipage))
 
+    #wikipage_view_obs_points = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#add-view_obs_points-as-workaround-for-qgis-bug-20633'
+    if dbconnection.dbtype == 'spatialite' and not all([db_utils.verify_table_exists('view_obs_points', dbconnection=dbconnection),
+                                                        db_utils.verify_table_exists('view_obs_lines', dbconnection=dbconnection)]):
+        #answer = Askuser(question="YesNo", msg = "Database is missing view_obs_points or view_obs_lines. It's recommended to add them. Do you want to add them?, dialogtitle=QCoreApplication.translate('askuser', 'User input needed"), parent=None)
+        #if answer:
+        #    add_view_obs_points_obs_lines()
+
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.''')), duration=60)
 
 
+def execute_sqlfile(sqlfilename, dbconnection, merge_newlines=False):
+    with open(sqlfilename, 'r') as f:
+        lines = [returnunicode(line).rstrip('\r').rstrip('\n') for rownr, line in enumerate(f) if rownr > 0]
+    lines = [line for line in lines if all([line.strip(), not line.strip().startswith("#")])]
 
+    if merge_newlines:
+        lines = ['{};'.format(line) for line in ''.join(lines).split(';') if line.strip()]
+
+    for line in lines:
+        if line:
+            try:
+                dbconnection.execute(line)
+            except Exception as e:
+                MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=returnunicode(QCoreApplication.translate('NewDb', 'sql failed:\n%s\nerror msg:\n%s\n'))%(returnunicode(line), str(e)))
+
+
+def add_view_obs_points_obs_lines():
+    dbconnection = db_utils.DbConnectionManager()
+    if dbconnection.dbtype != 'spatialite':
+        MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten", 'Views not added for PostGIS databases (not needed)!'))
+        return
+
+    connection_ok = dbconnection.connect2db()
+    if connection_ok:
+        dbconnection.execute('''DROP VIEW IF EXISTS view_obs_points;''')
+        dbconnection.execute('''DROP VIEW IF EXISTS view_obs_lines;''')
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name IN ('view_obs_points', 'view_obs_lines');''')
+        execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
+        dbconnection.commit_and_closedb()
+        MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten",
+                                                                           'Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7".'))
+
+def get_full_filename(filename):
+    return os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename)

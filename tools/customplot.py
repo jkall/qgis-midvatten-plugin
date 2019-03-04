@@ -45,11 +45,7 @@ except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg
 import datetime
-import types
 import matplotlib.ticker as tick
-import matplotlib.dates as mdates
-from cycler import cycler
-import copy
 
 from qgis.PyQt.QtWidgets import QApplication
 import midvatten_utils as utils

@@ -286,6 +286,7 @@ class DbConnectionManager(object):
             printlist.extend(rows)
             utils.write_printlist_to_file(filename, printlist)
 
+
 def connect_with_spatialite_connect(dbpath):
     conn = spatialite_connect(dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
     return conn
@@ -856,6 +857,7 @@ def delete_srids(execute_able_object, keep_epsg_code):
         utils.MessagebarAndLog.info(
             log_msg=ru(QCoreApplication.translate('delete_srids', 'Removing srids failed using: %s')) % str(
                 delete_srid_sql))
+
 
 def get_spatialite_db_path_from_dbsettings_string(db_settings):
     if isinstance(db_settings, str):
