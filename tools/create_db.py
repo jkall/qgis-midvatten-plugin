@@ -33,7 +33,8 @@ from qgis.PyQt.QtCore import QCoreApplication
 import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
-from qgis.utils import spatialite_connect
+from midvatten_utils import execute_sqlfile
+from midvatten_utils import get_full_filename
 
 
 class NewDb(object):
@@ -77,7 +78,6 @@ class NewDb(object):
         conn.close()
 
         self.db_settings = ru(utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}}))
-
 
         #dbconnection = db_utils.DbConnectionManager(self.db_settings)
         try:
@@ -132,7 +132,9 @@ class NewDb(object):
 
         self.insert_datadomains(set_locale, dbconnection)
 
-        self.execute_sqlfile(self.get_full_filename("insert_obs_points_triggers.sql"), dbconnection)
+        execute_sqlfile(get_full_filename("insert_obs_points_triggers.sql"), dbconnection)
+
+        execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
 
         self.add_metadata_to_about_db(dbconnection)
 
@@ -236,9 +238,9 @@ class NewDb(object):
 
         self.insert_datadomains(set_locale, dbconnection)
 
-        self.execute_sqlfile(self.get_full_filename('insert_obs_points_triggers_postgis.sql'), dbconnection)
+        execute_sqlfile(get_full_filename('insert_obs_points_triggers_postgis.sql'), dbconnection)
 
-        self.execute_sqlfile(self.get_full_filename('insert_functions_postgis.sql'), dbconnection)
+        execute_sqlfile(get_full_filename('insert_functions_postgis.sql'), dbconnection)
 
         self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 
@@ -294,10 +296,7 @@ class NewDb(object):
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"
-        self.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filenamestring), dbconnection)
-
-    def get_full_filename(self, filename):
-        return os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename)
+        execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filenamestring), dbconnection)
 
     def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None):
         tables = sorted(db_utils.get_tables(dbconnection=dbconnection, skip_views=True))
@@ -364,21 +363,6 @@ class NewDb(object):
                     except:
                         pass
                     raise
-
-    def execute_sqlfile(self, sqlfilename, dbconnection, merge_newlines=False):
-        with open(sqlfilename, 'r') as f:
-            lines = [ru(line).rstrip('\r').rstrip('\n') for rownr, line in enumerate(f) if rownr > 0]
-        lines = [line for line in lines if all([line.strip(), not line.strip().startswith("#")])]
-
-        if merge_newlines:
-            lines = ['{};'.format(line) for line in ''.join(lines).split(';') if line.strip()]
-
-        for line in lines:
-            if line:
-                try:
-                    dbconnection.execute(line)
-                except Exception as e:
-                    utils.MessagebarAndLog.critical(bar_msg=utils.sql_failed_msg(), log_msg=ru(QCoreApplication.translate('NewDb', 'sql failed:\n%s\nerror msg:\n%s\n'))%(ru(line), str(e)))
 
 
 class AddLayerStyles(object):

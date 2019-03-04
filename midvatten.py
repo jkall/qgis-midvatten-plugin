@@ -212,6 +212,10 @@ class midvatten(object):
         self.action_list_of_obsids_from_selected_features.setWhatsThis(self.list_of_values_from_selected_features.__doc__)
         self.action_list_of_obsids_from_selected_features.triggered.connect(lambda x: self.list_of_values_from_selected_features())
 
+        self.action_add_view_obs_points_lines = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), QCoreApplication.translate("Midvatten","Add view_obs_points as workaround for qgis bug #20633"), self.iface.mainWindow())
+        self.action_add_view_obs_points_lines.setWhatsThis(QCoreApplication.translate("Midvatten","Add editable views view_obs_points and view_obs_lines to the database. These views replace obs_points and obs_lines in QGIS layer list."))
+        self.action_add_view_obs_points_lines.triggered.connect(lambda x: self.add_view_obs_points_lines())
+
 
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -293,6 +297,7 @@ class midvatten(object):
         self.menu.db_manage_menu.addAction(self.actionNewPostgisDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
+        self.menu.db_manage_menu.addAction(self.action_add_view_obs_points_lines)
 
         self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
@@ -988,3 +993,7 @@ class midvatten(object):
         """
 
         ValuesFromSelectedFeaturesGui(self.iface.mainWindow())
+
+    @utils.general_exception_handler
+    def add_view_obs_points_lines(self):
+        utils.add_view_obs_points_obs_lines()

@@ -75,7 +75,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
         mock_latest_version.return_value = '999.999.999'
         utils.warn_about_old_database()
         print(str(mock_messagebar.mock_calls))
-        assert mock_messagebar.mock_calls == [call.info(bar_msg='The database version appears to be older than 999.999.999. An upgrade is suggested! See https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database')]
+        assert call.info(bar_msg='The database version appears to be older than 999.999.999. An upgrade is suggested! See https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database') in mock_messagebar.mock_calls
 
     @mock.patch('midvatten_utils.latest_database_version')
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -85,5 +85,34 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
         mock_latest_version.return_value = '0.0.1'
         utils.warn_about_old_database()
         assert not mock_messagebar.mock_calls
+
+    @mock.patch('midvatten_utils.latest_database_version')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_warn_about_view_obs_points_missing_assert_no_msg(self, mock_messagebar, mock_latest_version):
+        mock_latest_version.return_value = '0.0.1'
+        utils.warn_about_old_database()
+        assert not mock_messagebar.mock_calls
+
+    @mock.patch('midvatten_utils.latest_database_version')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_warn_about_view_obs_lines_missing_assert_no_msg(self, mock_messagebar, mock_latest_version):
+        mock_latest_version.return_value = '0.0.1'
+        utils.warn_about_old_database()
+        assert not mock_messagebar.mock_calls
+
+@attr(status='on')
+class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSv):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_add_view_obs_points_obs_lines(self, mock_messagebar):
+        utils.add_view_obs_points_obs_lines()
+        print(str(mock_messagebar.mock_calls))
+        assert mock_messagebar.mock_calls == [call.info(bar_msg='Views not added for PostGIS databases (not needed)!')]
+
 
 
