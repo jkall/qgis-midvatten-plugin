@@ -1,4 +1,4 @@
-﻿#! /usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
@@ -38,7 +38,7 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from midvatten_utils import PlotTemplates
 
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes, QgsRenderContext
 from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu
 import matplotlib_replacements
@@ -46,7 +46,7 @@ import matplotlib_replacements
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from qgis.PyQt import uic
-Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget_ui.ui'))[0]
+Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget2_ui.ui'))[0]
 
 import definitions.midvatten_defs as defs
 from sampledem import qchain, sampling
@@ -74,7 +74,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.iface = iface1
         #self.location = PyQt4.QtCore.Qt.Qt.BottomDockWidgetArea#should be loaded from settings instead
         #self.location = int(self.ms.settingsdict['secplotlocation'])
-        self.dockLocationChanged.connect(self.set_location)#not really implemented yet
+        if not self.isWindow():
+
+            self.dockLocationChanged.connect(self.set_location)#not really implemented yet
 
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
@@ -82,6 +84,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.initUI()
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
         self.template_plot_label.setOpenExternalLinks(True)
+
+    def add_titlebar(self):
+        if self.isWindow():
+            self.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint)
+            self.show()
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
@@ -118,38 +125,59 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.geology_txt = []
         self.geoshort_txt = []
         self.capacity_txt = []
+        self.hydro_explanation_txt = []
         self.development_txt = []
         self.comment_txt = []
         self.sectionlinelayer = SectionLineLayer
         
-        #upload vector line layer as temporary table in sqlite db
-        self.line_crs = self.sectionlinelayer.crs()
-        #print(str(self.dbconnection.cursor().execute('select * from a.sqlite_master').fetchall()))
-        ok = self.upload_qgis_vector_layer(self.sectionlinelayer, self.line_crs.postgisSrid(), True, False)#loads qgis polyline layer into sqlite table
-        if not ok:
-            return None
 
-        #print(str(self.dbconnection.cursor().execute('select * from %s'%self.temptable_name).fetchall()))
-        # get sorted obsid and distance along section from sqlite db
-        nF = len(OBSIDtuplein)#number of Features
-        LengthAlongTable = self.get_length_along(OBSIDtuplein)#get_length_along returns a numpy view, values are returned by LengthAlongTable.obs_id or LengthAlongTable.length
-        self.selected_obsids = LengthAlongTable.obs_id
-        self.LengthAlong = LengthAlongTable.length
 
-        # hidden feature, printout to python console
-        utils.MessagebarAndLog.info(log_msg=ru(
-            QCoreApplication.translate('SectionPlot',
-                                       'Hidden features, obsids and length along section:\n%s\%s'))%
-                                            (';'.join(self.selected_obsids),
-                                             ';'.join([str(x) for x in self.LengthAlong])))
+        if self.sectionlinelayer.selectedFeatureCount() == 1 and self.sectionlinelayer.name() != 'obs_points' \
+            and self.sectionlinelayer.name() != 'obs_p_w_strat':
+            # Test that layer and feature have been selected
+            # upload vector line layer as temporary table in sqlite db
+            # upload vector line layer as temporary table in sqlite db
+            self.line_crs = self.sectionlinelayer.crs()
+            # print(str(self.dbconnection.cursor().execute('select * from a.sqlite_master').fetchall()))
+            ok = self.upload_qgis_vector_layer(self.sectionlinelayer, self.line_crs.postgisSrid(), True,
+                                               False)  # loads qgis polyline layer into sqlite table
+            if not ok:
+                return None
 
-        self.fill_dem_list()
+            # print(str(self.dbconnection.cursor().execute('select * from %s'%self.temptable_name).fetchall()))
+            # get sorted obsid and distance along section from sqlite db
+            nF = len(OBSIDtuplein)#number of Features
+            LengthAlongTable = self.get_length_along(OBSIDtuplein)
+            # get_length_along returns a numpy view, values are returned by
+            # LengthAlongTable.obs_id or LengthAlongTable.length
+            self.selected_obsids = LengthAlongTable.obs_id
+            self.LengthAlong = LengthAlongTable.length
 
-        
+            # hidden feature, printout to python console
+            utils.MessagebarAndLog.info(log_msg=ru(
+                QCoreApplication.translate('SectionPlot',
+                                           'Hidden features, obsids and length along section:\n%s\%s'))%
+                                                (';'.join(self.selected_obsids),
+                                                 ';'.join([str(x) for x in self.LengthAlong])))
+
+            self.fill_dem_list()
+            self.sectionlinelayerflag = 1
+        else:
+            self.selected_obsids = OBSIDtuplein
+            if len(self.selected_obsids) > 1:
+                self.LengthAlong = range(0, 10*len(self.selected_obsids), 10)
+            else:
+                self.LengthAlong = [0, 10]
+            self.sectionlinelayerflag = 0
+
         utils.stop_waiting_cursor() #now this long process is done and the cursor is back as normal
         
-        #get PlotData
+        # get PlotData
         self.get_plot_data()
+        self.get_plot_data_3()
+
+        if self.sectionlinelayerflag == 0:
+            self.dedicatedSecPlot.setHidden(True)
 
         #draw plot
         self.draw_plot()
@@ -191,8 +219,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
             self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
             self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
-            self.ms.settingsdict['stratigraphyplotted'] = self.Stratigraphy_checkBox.checkState()
+            self.ms.settingsdict['stratigraphyplotted'] = self.Stratigraphy_radioButton.isChecked()
+            self.ms.settingsdict['secplothydrologyplotted'] = self.Hydrology_radioButton.isChecked()
             self.ms.settingsdict['secplotlabelsplotted'] = self.Labels_checkBox.checkState()
+            self.ms.settingsdict['secplotlegendplotted'] = self.Legend_checkBox.checkState()
             self.get_dem_selection()
             self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
             #fix Floating Bar Width in percents of xmax - xmin
@@ -207,8 +237,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if self.ms.settingsdict['stratigraphyplotted'] ==2:
                 #PLOT ALL MAIN GEOLOGY TYPES AS SINGLE FLOATING BAR SERIES
                 self.plot_geology()
-                #WRITE TEXT BY ALL GEOLOGY TYPES, ADJACENT TO FLOATING BAR SERIES
+                # WRITE TEXT BY ALL GEOLOGY TYPES, ADJACENT TO FLOATING BAR SERIES
                 if len(self.ms.settingsdict['secplottext'])>0:
+                    self.write_annotation()
+            if self.ms.settingsdict['secplothydrologyplotted'] == True:
+                # Plot all main hydrology types as single floating bar serieite ts
+                self.plot_hydrology()
+                # Write text by all hydrology types adjacent to floating bar series
+                if len(self.ms.settingsdict['secplottext']) > 0:
                     self.write_annotation()
             if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0: #PLOT Water Levels
                 self.plot_water_level()
@@ -289,16 +325,23 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             
         return header,data
 
-    def fill_check_boxes(self):#sets checkboxes to last selection
-        if self.ms.settingsdict['stratigraphyplotted']==2:
-            self.Stratigraphy_checkBox.setChecked(True)
+    def fill_check_boxes(self):  # sets checkboxes to last selection
+        if self.ms.settingsdict['stratigraphyplotted'] == 2:
+            self.Stratigraphy_radioButton.setChecked(True)
         else:
-            self.Stratigraphy_checkBox.setChecked(False)        
-        if self.ms.settingsdict['secplotlabelsplotted']==2:
+            self.Stratigraphy_radioButton.setChecked(False)
+        if self.ms.settingsdict['secplothydrologyplotted'] == 2:
+            self.Hydrology_radioButton.setChecked(True)
+        else:
+            self.Hydrology_radioButton.setChecked(False)
+        if self.ms.settingsdict['secplotlabelsplotted'] == 2:
             self.Labels_checkBox.setChecked(True)
         else:
             self.Labels_checkBox.setChecked(False)
-
+        if self.ms.settingsdict['secplotlegendplotted'] == 2:
+            self.Legend_checkBox.setChecked(True)
+        else:
+            self.Legend_checkBox.setChecked(False)
         if self.ms.settingsdict['secplotwidthofplot'] == 2:
             self.width_of_plot.setChecked(True)
         else:
@@ -341,7 +384,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.wlvltableComboBox.addItem('')         
         for tabell in tabeller:
             self.wlvltableComboBox.addItem(tabell)
-        textitems=['','geology','geoshort','capacity','development','comment']
+        textitems=['','geology','geoshort','capacity', 'hydroexplanation','development','comment']
         for item in textitems:
             self.textcolComboBox.addItem(item)
         self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop'])
@@ -381,9 +424,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.barwidthdoubleSpinBox.setValue(2)
         self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop']) 
 
-    def fill_dem_list(self): # This method populates the QListWidget 'inData' with all possible DEMs
+    def fill_dem_list(self):   # This method populates the QListWidget 'inData' with all possible DEMs
         self.inData.clear()
-        self.rastItems = {} #dictionary - layer name : layer
+        self.rastItems = {}  # dictionary - layer name : layer
         mc = self.iface.mapCanvas()
         msg=''
         for i in range(mc.layerCount()):#find the raster layers
@@ -401,30 +444,42 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.get_dem_selection()
 
     def finish_plot(self):
-        leg = self.secax.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
-        leg.set_zorder(999)
-        leg.draggable(state=True)
-        frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-        frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])    # set the frame face color to white
-        frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
-        for t in leg.get_texts():
-            t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
+        if self.ms.settingsdict['secplotlegendplotted'] == 2:  # Include legend in plot
+            leg = self.secax.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+            leg.draggable(state=True)
+            leg.set_zorder(999)
+            frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+            frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])
+            # set the frame face color to white
+            frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
+            for t in leg.get_texts():
+                t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
 
-        self.secax.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
+        if self.sectionlinelayerflag == 0: # Test produces simple stratigraphy plot if flag = 0
+            self.secax.set_xticks(self.LengthAlong)  # Places ticks where plots are
+            for label in self.secax.set_xticklabels(self.selected_obsids):  # Sets tick labels as obsids
+                label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
+            Axes_set_xlabel = dict(
+                [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if
+                 k != 'xlabel'])
+            xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel_stratplot', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel_stratplot']['xlabel'])
 
+        else:  # Test produces section plot if flag = 1
+            self.secax.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
+            self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+            for label in self.secax.xaxis.get_ticklabels():
+                label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
+            Axes_set_xlabel = dict(
+                [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if
+                 k != 'xlabel'])
+            xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel']['xlabel'])
+        self.secax.set_xlabel(xlabel, **Axes_set_xlabel)  # Allows international characters ('åäö') as xlabel
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
 
         Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).items() if k != 'ylabel'])
         ylabel = self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).get('ylabel', defs.secplot_default_template()['Axes_set_ylabel']['ylabel'])
         self.secax.set_ylabel(ylabel, **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
 
-        Axes_set_xlabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).items() if k != 'xlabel'])
-        xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel']['xlabel'])
-        self.secax.set_xlabel(xlabel, **Axes_set_xlabel)  #Allows international characters ('åäö') as xlabel
-
-        for label in self.secax.xaxis.get_ticklabels():
-            label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
         for label in self.secax.yaxis.get_ticklabels():
             label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
 
@@ -445,7 +500,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         and it will not be plotted by plt.show() - but the plot exists in self.canvas
         Please note, this do not work completely as expected under windows. 
         """
-
 
         plt.close(self.secfig)#this closes reference to self.secfig
 
@@ -476,35 +530,37 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.plotx = {}
         self.plotbottom = {}
         self.plotbarlength = {}
-        l=0 #counter fro unique obs, stratid and typ
-        self.x_txt = []#used by self.WriteAnnotation
-        self.z_txt = []#used by self.WriteAnnotation
-        self.x_id = []#used by self.write_obsid
-        self.z_id=[]#used by self.write_obsid
-        self.barlengths=[]#used by self.write_obsid, not to be mixed with "BarLength" used locally in this function
-        self.bottoms=[]#used by self.write_obsid, not to be mixed with "Bottom" used locally in this function
+        l = 0  # counter fro unique obs, stratid and typ
+        self.x_txt = []  # used by self.WriteAnnotation
+        self.z_txt = []  # used by self.WriteAnnotation
+        self.x_id = []  # used by self.write_obsid
+        self.z_id = []  # used by self.write_obsid
+        self.barlengths = []  # used by self.write_obsid, not to be mixed with "BarLength" used locally in this function
+        self.bottoms = []  # used by self.write_obsid, not to be mixed with "Bottom" used locally in this function
         self.PlotTypes = defs.PlotTypesDict()
-        #print(self.PlotTypes)#debug
+        # print(self.PlotTypes)  # debug
         self.ExistingPlotTypes = []
         self.Hatches = defs.PlotHatchDict()
         self.Colors = defs.PlotColorDict()
-        #print(self.Colors)#debug
+        self.hydroColors = defs.hydrocolors()
+        # print(self.Colors)  # debug
 
-        #self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
-        ##fix Floating Bar Width in percents of xmax - xmin
-        #xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
-        #self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
+        # self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
+        # fix Floating Bar Width in percents of xmax - xmin
+        # xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
+        # self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
         
-        for Typ in self.PlotTypes:#Adding a plot for each "geoshort" that is identified
-            i=0 #counter for unique obs and stratid
-            k=0 #counter for unique Typ
-            q=0 #counter for unique obsid (only used in first Typ-loop)
+        for Typ in self.PlotTypes:  # Adding a plot for each "geoshort" that is identified
+            i = 0  # counter for unique obs and stratid
+            k = 0  # counter for unique Typ
+            q = 0  # counter for unique obsid (only used in first Typ-loop)
             x = []
-            z_gs=[]
-            BarLength=[]#stratigraphy bar length
-            Bottom = []#stratigraphy bottom
+            z_gs = []
+            BarLength = []  # stratigraphy bar length
+            Bottom = []  # stratigraphy bottom
+            Capacity = '0'
             for obs in self.selected_obsids:
-                if k<=len(self.selected_obsids):#in first Typ-loop, get some basic obs_points data - to be used for plotting obsid, empty bars etc
+                if k <= len(self.selected_obsids):  # in first Typ-loop, get obs_points data - used for plotting obsid
                     self.x_id.append(float(self.LengthAlong[q]))
                     sql = "SELECT h_toc, h_gs, length FROM obs_points WHERE obsid = '%s'"%obs
                     recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
@@ -528,6 +584,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 if _recs:
                     recs = _recs
                     j=0#counter for unique stratid
+                    Capacity = '0'
                     for rec in recs:#loop cleanup
                         BarLength.append(rec[0])#loop cleanup
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
@@ -535,8 +592,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
                         sql02 = "select h_toc from obs_points where obsid = '%s'"%obs
                         sql02_result = db_utils.sql_load_fr_db(sql02, self.dbconnection)[1][0][0]
-                        #print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
-                        #print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
+                        # print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
+                        # print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
                         
                         if utils.isfloat(str(sql01_result)) and sql01_result >-999:
                             z_gs.append(float(str(sql01_result)))
@@ -554,11 +611,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         self.capacity_txt.append(utils.null_2_empty_string(ru(recs[j][4])))
                         self.development_txt.append(utils.null_2_empty_string(ru(recs[j][5])))
                         self.comment_txt.append(utils.null_2_empty_string(ru(recs[j][6])))
-                        #print obs + " " + Typ + " " + self.geology_txt[l] + " " + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " " + self.development_txt[l] + " " + self.comment_txt[l]#debug
+                        # print obs + " " + Typ + " " + self.geology_txt[l] + " "
+                        # + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " "
+                        # + self.development_txt[l] + " " + self.comment_txt[l]  # debug
+                        self.hydro_explanation_txt = []
+                        for capacity_txt in self.capacity_txt:
+                            if capacity_txt is None or capacity_txt == '':
+                                self.hydro_explanation_txt.append('')
+                            else:
+                                self.hydro_explanation_txt.append(self.hydroColors.get(capacity_txt, [' '])[0])
                         
-                        i +=1
-                        j +=1
-                        l +=1
+                        i += 1
+                        j += 1
+                        l += 1
                     del recs
                 k +=1
             if len(x)>0:
@@ -567,11 +632,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.plotbottom[Typ] = Bottom
                 self.plotbarlength[Typ] = BarLength
 
-        #Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any 
+        # Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any
         My_format = [('obsline_x', float), ('obsline_y1', float), ('obsline_y2', float)]
         obsline_x=[]
-        obsline_y1=[]#bedrock
-        obsline_y2=[]#ground surface
+        obsline_y1=[]  # bedrock
+        obsline_y2=[]  # ground surface
         x='length'
         self.y1_column='bedrock'
         self.y2_column='ground'
@@ -585,14 +650,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
         utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
-    def get_plot_data_2(self):#collecting data depending on a number of selections in left side panel
-        self.obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
-        self.x_id_wwl=[]
-        self.z_id_wwl=[]
-        self.obs_p_w_drill_stops=[]
-        self.drill_stops=[]
-        self.x_ds=[]
-        self.z_ds=[]
+    def get_plot_data_2(self):  # collecting data depending on a number of selections in left side panel
+        self.obsid_wlid = []  # if no stratigr plot, obsid will be plotted close to water level instead of toc or gs
+        self.x_id_wwl = []
+        self.z_id_wwl = []
+        self.obs_p_w_drill_stops = []
+        self.drill_stops = []
+        self.x_ds = []
+        self.z_ds = []
 
         if self.ms.settingsdict['secplotdrillstop']!='':
             query = """select obsid from obs_points where lower(drillstop) like '%s'"""%ru(self.ms.settingsdict['secplotdrillstop'])
@@ -640,16 +705,174 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if obs in self.obs_p_w_drill_stops:
                 self.x_ds.append(float(self.LengthAlong[q]))
                 self.z_ds.append(float(self.bottoms[q]))
-            q +=1
+            q += 1
 
-    def get_selected_dems_params( self, dialog ):   
+    def get_plot_data_3(self):  # called when class is instantiated collecting data for profile line layer & obs_points
+        utils.start_waiting_cursor()
+
+        self.plotx_h = {}
+        self.plotbottom_h = {}
+        self.plotbarlength_h = {}
+        l = 0  # counter fro unique obs, stratid and typ
+        self.ExistingHydroTypes = []
+        self.hydroColors = defs.hydrocolors()
+
+        for Capacity in self.hydroColors.keys():  # Adding a plot for each "capacity" that is identified
+            i = 0  # counter for unique obs and stratid
+            k = 0  # counter for unique Typ
+            q = 0  # counter for unique obsid (only used in first Typ-loop)
+
+            x = []
+            z_gs = []
+            BarLength = []  # stratigraphy bar length
+            Bottom = []  # stratigraphy bottom
+
+            for obs in self.selected_obsids:
+                if k <= len(self.selected_obsids):  # in first Typ-loop, get obs_points data - used for plotting obsid
+                    q += 1
+
+                #   del recs
+                if Capacity is None or Capacity == '':
+                    sql = u"""SELECT depthbot - depthtop, stratid, capacity FROM stratigraphy WHERE obsid = '%s' AND capacity is NULL ORDER BY stratid""" % obs
+                else:
+                    sql = u"""SELECT depthbot - depthtop, stratid, capacity FROM stratigraphy WHERE obsid = '%s' AND capacity = '%s' ORDER BY stratid""" % (obs, Capacity)
+
+                _recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
+                if _recs:
+                    recs = _recs
+                    j = 0  # counter for unique stratid
+
+                    for rec in recs:  # loop cleanup
+                        BarLength.append(rec[0])  # loop cleanup
+                        x.append(float(self.LengthAlong[k]))  # - self.barwidth/2)
+                        sql01 = u"select h_gs from obs_points where obsid = '%s'" % obs
+                        sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
+                        sql02 = u"select h_toc from obs_points where obsid = '%s'" % obs
+                        sql02_result = db_utils.sql_load_fr_db(sql02, self.dbconnection)[1][0][0]
+
+                        # print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
+
+                        # print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
+
+                        if utils.isfloat(str(sql01_result)) and sql01_result > -999:
+                            z_gs.append(float(str(sql01_result)))
+                        elif utils.isfloat(str(sql02_result)) and sql02_result > -999:
+                            z_gs.append(float(str(sql02_result)))
+                        else:
+                            z_gs.append(0)
+
+                        if Capacity is None or Capacity == '':
+                            Bottom.append(z_gs[i] - float(str((
+
+                                                                  db_utils.sql_load_fr_db(
+
+                                                                      u"""SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND capacity is NULL""" % (
+
+                                                                          obs, str(recs[j][1])),
+
+                                                                      self.dbconnection)[1])[0][0])))
+
+                        else:
+
+                            Bottom.append(z_gs[i] - float(str((
+
+                                                              db_utils.sql_load_fr_db(
+
+                         u"""SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND capacity = '%s'""" % (
+
+                                                                  obs, str(recs[j][1]), Capacity),
+
+                                                                  self.dbconnection)[1])[0][0])))
+
+                        # lists for plotting annotation
+
+                        self.x_txt.append(x[i])  # + self.barwidth/2)#x-coord for text
+
+                        self.z_txt.append(Bottom[i] + recs[j][0] / 2)  # Z-value for text
+
+                        self.capacity_txt.append(utils.null_2_empty_string(ru(recs[j][2])))
+
+                        self.hydro_explanation_txt = []
+
+                        for capacity_txt in self.capacity_txt:
+
+                            if capacity_txt is None or capacity_txt == '':
+
+                                self.hydro_explanation_txt.append('')
+
+                            else:
+
+                                self.hydro_explanation_txt.append(self.hydroColors.get(capacity_txt, [' '])[0])
+
+                        i += 1
+
+                        j += 1
+
+                        l += 1
+
+                    del recs
+
+                k += 1
+
+            if len(x) > 0:
+
+                self.ExistingHydroTypes.append(Capacity)
+
+                self.plotx_h[Capacity] = x
+
+                self.plotbottom_h[Capacity] = Bottom
+
+                self.plotbarlength_h[Capacity] = BarLength
+
+        # Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any
+
+        My_format = [('obsline_x', float), ('obsline_y1', float), ('obsline_y2', float)]
+
+        obsline_x = []
+
+        obsline_y1 = []  # bedrock
+
+        obsline_y2 = []  # ground surface
+
+        x = 'length'
+
+        self.y1_column = 'bedrock'
+
+        self.y2_column = 'ground'
+
+        table = 'seismic_data'
+
+        if self.sectionlinelayer.name() == 'obs_lines':
+
+            obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
+
+            sql = r"""select %s as x, %s as y1, %s as y2 from %s where obsid='%s'""" % (
+
+            x, self.y1_column, self.y2_column, table, obsline_id)
+
+            conn_OK, recs = db_utils.sql_load_fr_db(sql, self.dbconnection)
+
+            table = np.array(recs, dtype=My_format)  # NDARRAY
+
+            self.obs_lines_plot_data = table.view(
+
+                np.recarray)
+            # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
+
+        # print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id)
+
+        # + str(self.barlengths) + str(self.bottoms))#debug
+
+        utils.stop_waiting_cursor()
+
+    def get_selected_dems_params(self, dialog):
         selected_dems = []
         selected_dem_colors = [] 
         for dem_qgis_ndx in range( dialog.listDEMs_treeWidget.topLevelItemCount () ):
             curr_DEM_item = dialog.listDEMs_treeWidget.topLevelItem ( dem_qgis_ndx ) 
-            if curr_DEM_item.checkState ( 0 ) == 2:
+            if curr_DEM_item.checkState(0) == 2:
                 selected_dems.append( dialog.singleband_raster_layers_in_project[ dem_qgis_ndx ] )
-                selected_dem_colors.append( dialog.listDEMs_treeWidget.itemWidget( curr_DEM_item, 1 ).currentText() )  
+                selected_dem_colors.append(dialog.listDEMs_treeWidget.itemWidget( curr_DEM_item, 1 ).currentText() )
         return selected_dems, selected_dem_colors
 
     def initUI(self): 
@@ -658,7 +881,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.redraw.clicked.connect(lambda x: self.finish_plot())
         self.chart_settings.clicked.connect(partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.set_groupbox_children_visibility(self.chart_settings)
-        
+        self.topLevelChanged.connect(lambda x: self.add_titlebar())
         # Create a plot window with one single subplot
         self.secfig = plt.figure()
         self.secax = self.secfig.add_subplot( 111 )
@@ -809,6 +1032,38 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.p.append(self.secax.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
+    def plot_hydrology(self):
+        for capacity_txt in self.ExistingHydroTypes:  # Adding a plot for each "capacity" that is identified
+            # Try to get one setting per capacity.
+            _settings = copy.deepcopy(self.secplot_templates.loaded_template['geology_Axes_bar'])
+            try:
+                settings = _settings[capacity_txt]
+            except KeyError:
+                try:
+                    settings = _settings['DEFAULT']
+                except KeyError:
+                    settings = _settings
+
+            for _capacity_txt in self.ExistingHydroTypes:
+                try:
+                    del settings[_capacity_txt]
+                except KeyError:
+                    pass
+
+            try:
+                del settings['DEFAULT']
+            except KeyError:
+                pass
+
+            settings['width'] = settings.get('width', self.barwidth)
+            settings['color'] = settings.get('color_qt', self.hydroColors[capacity_txt][1])
+
+            plotx_hleftbarcorner = [i - self.barwidth/2 for i in self.plotx_h[capacity_txt]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
+
+            self.p.append(self.secax.bar(plotx_hleftbarcorner, self.plotbarlength_h[capacity_txt], bottom=self.plotbottom_h[capacity_txt], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
+
+            self.Labels.append(capacity_txt)
+
     def plot_obs_lines_data(self):
         plotlable = self.get_plot_label_name(self.y1_column, self.Labels)
         self.Labels.append(self.y1_column)
@@ -930,15 +1185,18 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             annotate_txt = self.geoshort_txt
         elif self.ms.settingsdict['secplottext'] == 'capacity':
             annotate_txt = self.capacity_txt
+        elif self.ms.settingsdict['secplottext'] == 'hydroexplanation':
+            annotate_txt = self.hydro_explanation_txt
         elif self.ms.settingsdict['secplottext'] == 'development':
             annotate_txt = self.development_txt
         else:
             annotate_txt = self.comment_txt
-        for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
+        for m, n, o in zip(self.x_txt, self.z_txt, annotate_txt):  # change last arg to the one to be written in plot
             self.annotationtext = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['layer_Axes_annotate'])#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
-    def write_obsid(self, plot_labels=2):#annotation, and also empty bars to show drillings without stratigraphy data
-        if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr plot, then obsid written close to toc or gs
+    def write_obsid(self, plot_labels=2):  # annotation, and also empty bars to show drillings without stratigraphy data
+        if self.ms.settingsdict['stratigraphyplotted'] == True:
+            # if stratigr plot, then obsid written close to toc or gs
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.x_id]#x-coord for bars at each obs
 
             indexes_barlength_not_0 = [idx for idx, length in enumerate(self.barlengths) if length]
