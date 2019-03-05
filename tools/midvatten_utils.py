@@ -2117,7 +2117,7 @@ def add_view_obs_points_obs_lines():
         execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
         dbconnection.commit_and_closedb()
         MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten",
-                                                                           'Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7".'))
+                                                                           'Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").'))
 
 def get_full_filename(filename):
     return os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename)
