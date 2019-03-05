@@ -41,6 +41,7 @@ from midvatten_utils import PlotTemplates
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes, QgsRenderContext
 from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu
+import matplotlib_replacements
 
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
@@ -168,11 +169,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             pass
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
             self.dbconnection = db_utils.DbConnectionManager()
-
-        # Only set to stored xlim if the plot has been drawn before
-        #if self.secax.get_xlim()[0] and self.secax.get_xlim()[1] != 1:
-        #    self.secplot_templates.loaded_template["Axes_set_xlim"] = self.secax.get_xlim()
-        #    self.secplot_templates.loaded_template["Axes_set_ylim"] = self.secax.get_ylim()
 
         width = self.secplot_templates.loaded_template.get('plot_width', None)
         height = self.secplot_templates.loaded_template.get('plot_height', None)
@@ -668,6 +664,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.canvas = FigureCanvas( self.secfig )
         
         self.mpltoolbar = NavigationToolbar( self.canvas, self.plotareawidget )
+        try:
+            matplotlib_replacements.replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_xylimits(self.mpltoolbar)
+        except Exception as e:
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', 'Could not alter NavigationToolbar2, msg: %s'))%str(e))
+
         self.mplplotlayout.addWidget( self.canvas )
         self.mplplotlayout.addWidget( self.mpltoolbar )
 
