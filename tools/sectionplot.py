@@ -228,6 +228,26 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if self.ms.settingsdict['stratigraphyplotted'] ==2 or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0):
                 self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
 
+            """
+            if there is no stratigraphy data and no borehole lenght for first or last observations,
+            then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
+            hence this special treatment to check if xlim are less than expected from lengthalong
+            """
+            # self.secax.autoscale(enable=True, axis='both', tight=None)
+            xmin_xmax = self.secplot_templates.loaded_template['Axes_set_xlim']
+            if xmin_xmax is None:
+                _xmin, _xmax = self.secax.get_xlim()
+                xmin = min(float(min(self.LengthAlong)) - self.barwidth, _xmin)
+                xmax = max(float(max(self.LengthAlong)) + self.barwidth, _xmax)
+            else:
+                xmin, xmax = xmin_xmax
+            self.secax.set_xlim(xmin, xmax)
+
+            ymin_ymax = self.secplot_templates.loaded_template['Axes_set_ylim']
+            if ymin_ymax is not None:
+                ymin, ymax = ymin_ymax
+                self.secax.set_ylim(ymin, ymax)
+
             #labels, grid, legend etc.
             self.finish_plot()
             self.save_settings()
@@ -407,25 +427,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
         for label in self.secax.yaxis.get_ticklabels():
             label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
-        """
-        if there is no stratigraphy data and no borehole lenght for first or last observations,
-        then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
-        hence this special treatment to check if xlim are less than expected from lengthalong
-        """
-        #self.secax.autoscale(enable=True, axis='both', tight=None)
-        xmin_xmax = self.secplot_templates.loaded_template['Axes_set_xlim']
-        if xmin_xmax is None:
-            _xmin, _xmax = self.secax.get_xlim()
-            xmin = min(float(min(self.LengthAlong))-self.barwidth,_xmin)
-            xmax = max(float(max(self.LengthAlong))+self.barwidth, _xmax)
-        else:
-            xmin, xmax = xmin_xmax
-        self.secax.set_xlim(xmin, xmax)
-
-        ymin_ymax = self.secplot_templates.loaded_template['Axes_set_ylim']
-        if ymin_ymax is not None:
-            ymin, ymax = ymin_ymax
-            self.secax.set_ylim(ymin, ymax)
 
         if self.secplot_templates.loaded_template['Figure_subplots_adjust']:
             self.secfig.subplots_adjust(**self.secplot_templates.loaded_template['Figure_subplots_adjust'])
