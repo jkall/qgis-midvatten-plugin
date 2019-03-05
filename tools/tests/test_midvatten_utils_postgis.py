@@ -75,7 +75,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
         mock_latest_version.return_value = '999.999.999'
         utils.warn_about_old_database()
         print(str(mock_messagebar.mock_calls))
-        assert call.info(bar_msg='The database version appears to be older than 999.999.999. An upgrade is suggested! See https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database') in mock_messagebar.mock_calls
+        assert call.info(bar_msg='The database version appears to be older than 999.999.999. An upgrade is suggested! See https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database', duration=120) in mock_messagebar.mock_calls
 
     @mock.patch('midvatten_utils.latest_database_version')
     @mock.patch('midvatten_utils.MessagebarAndLog')
