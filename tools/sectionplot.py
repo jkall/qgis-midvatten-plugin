@@ -170,9 +170,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.dbconnection = db_utils.DbConnectionManager()
 
         # Only set to stored xlim if the plot has been drawn before
-        if self.secax.get_xlim()[0] and self.secax.get_xlim()[1] != 1:
-            self.secplot_templates.loaded_template["Axes_set_xlim"] = self.secax.get_xlim()
-            self.secplot_templates.loaded_template["Axes_set_ylim"] = self.secax.get_ylim()
+        #if self.secax.get_xlim()[0] and self.secax.get_xlim()[1] != 1:
+        #    self.secplot_templates.loaded_template["Axes_set_xlim"] = self.secax.get_xlim()
+        #    self.secplot_templates.loaded_template["Axes_set_ylim"] = self.secax.get_ylim()
 
         width = self.secplot_templates.loaded_template.get('plot_width', None)
         height = self.secplot_templates.loaded_template.get('plot_height', None)
@@ -299,7 +299,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.drillstoplineEdit.clear()
 
         #Fill comboxes, lineedits etc
-        tabeller = [x for x in db_utils.get_tables(dbconnection=self.dbconnection, skip_views=True)
+        tabeller = [x for x in db_utils.get_tables(dbconnection=self.dbconnection, skip_views=False)
                            if not x.startswith('zz_') and x not in
                                                         ['comments',
                                                          'obs_points',
