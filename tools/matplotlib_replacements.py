@@ -24,6 +24,9 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib import pyplot as plt
 from matplotlib import rcsetup
 from cycler import cycler
+from midvatten_utils import returnunicode as ru
+from qgis.PyQt.QtCore import QCoreApplication, Qt
+import types
 
 
 def replace_matplotlib_style_core_update_nested_dict():
@@ -89,3 +92,25 @@ def perform_all_replacements():
     add_to_rc_defaultParams()
     replace_matplotlib_style_core_update_nested_dict()
     replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions()
+
+
+def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_xylimits(mpltoolbar):
+    def set_message(self, s):
+        ax = self.canvas.figure.get_axes()[0]
+        xlim = (round(ax.get_xlim()[0], 3), round(ax.get_xlim()[1], 3))
+        ylim = (round(ax.get_ylim()[0], 3), round(ax.get_ylim()[1], 3))
+        msg = ru(QCoreApplication.translate(
+            'replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_xylimits',
+            'xlim %s ylim %s')) % (str(xlim), str(ylim))
+
+        if not s:
+            s = msg
+        else:
+            s = ', '.join([s, msg])
+
+        self.message.emit(s)
+        if self.coordinates:
+            self.locLabel.setText(s)
+
+    mpltoolbar.set_message = types.MethodType(set_message, mpltoolbar)
+    mpltoolbar.locLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
