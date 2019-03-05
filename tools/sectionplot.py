@@ -460,7 +460,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             for label in self.secax.set_xticklabels(self.selected_obsids):  # Sets tick labels as obsids
                 label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
             Axes_set_xlabel = dict(
-                [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if
+                [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).items() if
                  k != 'xlabel'])
             xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel_stratplot', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel_stratplot']['xlabel'])
 
@@ -470,7 +470,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             for label in self.secax.xaxis.get_ticklabels():
                 label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
             Axes_set_xlabel = dict(
-                [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if
+                [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).items() if
                  k != 'xlabel'])
             xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel']['xlabel'])
         self.secax.set_xlabel(xlabel, **Axes_set_xlabel)  # Allows international characters ('åäö') as xlabel
