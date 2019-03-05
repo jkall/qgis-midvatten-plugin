@@ -114,7 +114,7 @@ class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         utils.add_view_obs_points_obs_lines()
         print(str(mock_messagebar.mock_calls))
-        assert call.info(bar_msg='Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7".') in mock_messagebar.mock_calls
+        assert call.info(bar_msg='Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").') in mock_messagebar.mock_calls
 
         assert all([db_utils.verify_table_exists('view_obs_points'), db_utils.verify_table_exists('view_obs_lines')])
         views_geometry_columns = db_utils.sql_load_fr_db('''SELECT view_name FROM views_geometry_columns WHERE view_name IN ('view_obs_points', 'view_obs_lines') ORDER BY view_name;''')[1]
@@ -135,7 +135,7 @@ class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         utils.add_view_obs_points_obs_lines()
         print(str(mock_messagebar.mock_calls))
-        assert call.info(bar_msg='Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7".') in mock_messagebar.mock_calls
+        assert call.info(bar_msg='Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").') in mock_messagebar.mock_calls
         assert all([db_utils.verify_table_exists('view_obs_points'), db_utils.verify_table_exists('view_obs_lines')])
         views_geometry_columns = db_utils.sql_load_fr_db('''SELECT view_name FROM views_geometry_columns WHERE view_name IN ('view_obs_points', 'view_obs_lines') ORDER BY view_name;''')[1]
         print(str(views_geometry_columns))
