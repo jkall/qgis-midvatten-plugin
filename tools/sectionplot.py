@@ -44,6 +44,7 @@ from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes,
 from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu, QApplication
 import matplotlib_replacements
 from operator import itemgetter
+from gui_utils import set_combobox
 
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
@@ -91,10 +92,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.pushButton.clicked.connect(lambda x: self.draw_plot())
         self.redraw.clicked.connect(lambda x: self.finish_plot())
         self.topLevelChanged.connect(lambda x: self.add_titlebar())
-        self.include_views_checkBox.connect(lambda x: self.fill_wlvltable(self.include_views_checkBox.isChecked()))
+        self.include_views_checkBox.clicked.connect(lambda x: self.fill_wlvltable(self.include_views_checkBox.isChecked()))
         self.init_figure()
         self.tabWidget.currentChanged.connect(lambda: self.tabwidget_resize(self.tabWidget))
-        self.tabwidget_resize(self.plot_tabwidget)
+        self.tabwidget_resize(self.tabWidget)
 
     def init_figure(self):
         try:
@@ -110,11 +111,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if hasattr(self, 'canvas'):
             self.layoutplot.removeWidget(self.canvas)
             self.canvas.close()
-        if hasattr(self, 'custplotfigure'):
-            fignum = self.custplotfigure.number
+        if hasattr(self, 'figure'):
+            fignum = self.figure.number
             plt.close(fignum)
         self.figure = plt.figure()
-        self.axes = self.custplotfigure.add_subplot(111)
+        self.axes = self.figure.add_subplot(111)
         self.canvas = FigureCanvas(self.figure)
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
 
@@ -158,7 +159,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint)
             self.show()
 
-    def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
+    def do_it(self, msettings, selected_obspoints, sectionlinelayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
         #show the user this may take a long time...
         utils.start_waiting_cursor()
@@ -171,14 +172,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                                                template_folder, 'secplot_templates', 'secplot_loaded_template',
                                                defs.secplot_default_template(), self.ms)
 
-        rcparams = self.secplot_templates.loaded_template.get('rcParams', {})
-        for k, v in rcparams.items():
-            try:
-                mpl.rcParams[k] = v
-            except KeyError:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', "rcParams key %s didn't exist"))%ru(k))
-
-
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)
@@ -186,8 +179,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.dbconnection = db_utils.DbConnectionManager()
         self.temptable_name = 'temporary_section_line'
 
-        self.fill_combo_boxes()
         self.fill_check_boxes()
+        self.fill_combo_boxes()
         self.show()
         #class variables
         self.geology_txt = []
@@ -196,11 +189,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.hydro_explanation_txt = []
         self.development_txt = []
         self.comment_txt = []
-        self.sectionlinelayer = SectionLineLayer
+        self.sectionlinelayer = sectionlinelayer
         
-
-
-        if self.sectionlinelayer.selectedFeatureCount() == 1 and self.sectionlinelayer.name() != 'obs_points' and self.sectionlinelayer.name() != 'obs_p_w_strat':
+        if self.sectionlinelayer and self.sectionlinelayer.selectedFeatureCount() == 1:
             # Test that layer and feature have been selected
             # upload vector line layer as temporary table in sqlite db
             # upload vector line layer as temporary table in sqlite db
@@ -213,24 +204,23 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             # print(str(self.dbconnection.cursor().execute('select * from %s'%self.temptable_name).fetchall()))
             # get sorted obsid and distance along section from sqlite db
-            nF = len(OBSIDtuplein)#number of Features
-            LengthAlongTable = self.get_length_along(OBSIDtuplein)
+            nF = len(selected_obspoints)#number of Features
+            LengthAlongTable = self.get_length_along(selected_obspoints)
             # get_length_along returns a numpy view, values are returned by
             # LengthAlongTable.obs_id or LengthAlongTable.length
             self.selected_obsids = LengthAlongTable.obs_id
-            self.LengthAlong = LengthAlongTable.length
+            self.length_along = LengthAlongTable.length
 
             # hidden feature, printout to python console
             utils.MessagebarAndLog.info(log_msg=ru(
                 QCoreApplication.translate('SectionPlot',
                                            'Hidden features, obsids and length along section:\n%s\%s'))%
                                                 (';'.join(self.selected_obsids),
-                                                 ';'.join([str(x) for x in self.LengthAlong])))
+                                                 ';'.join([str(x) for x in self.length_along])))
 
             self.fill_dem_list()
-            self.sectionlinelayerflag = 1
         else:
-            self.selected_obsids = OBSIDtuplein
+            self.selected_obsids = selected_obspoints
 
             res = self.dbconnection.execute_and_fetchall('''SELECT obsid, east, north FROM obs_points WHERE obsid IN ({})'''.format(utils.sql_unicode_list(self.selected_obsids)))
             xs = [float(row[1]) for row in res]
@@ -244,12 +234,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 pass
             self.selected_obsids = [row[0] for row in sorted(res, key=itemgetter(k))]
 
-
-            if len(self.selected_obsids) > 1:
-                self.LengthAlong = range(0, 10*len(self.selected_obsids), 10)
-            else:
-                self.LengthAlong = [0, 10]
-            self.sectionlinelayerflag = 0
+            self.length_along = range(0, 10 * len(self.selected_obsids), 10)
+            #if len(self.selected_obsids) > 1:
+            #    self.LengthAlong = range(0, 10*len(self.selected_obsids), 10)
+            #else:
+            #    self.LengthAlong = [0, 10]
+            self.fill_dem_list()
 
         utils.stop_waiting_cursor() #now this long process is done and the cursor is back as normal
         
@@ -257,8 +247,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.get_plot_data()
         self.get_plot_data_3()
 
-        if self.sectionlinelayerflag == 0:
-            self.dedicatedSecPlot.setHidden(True)
+        #flag = Qt.ItemIsSelectable if self.sectionlinelayer else Qt.NoItemFlags
+        #[self.inData.item(idx).setFlags(flag) for idx in range(self.inData.count())]
+
 
         #draw plot
         self.draw_plot()
@@ -287,7 +278,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.annotationtext.remove()
             except:
                 pass
-            self.axes.clear()
             #load user settings from the ui
             self.ms.settingsdict['secplotwlvltab'] = str(self.wlvltableComboBox.currentText())
             temporarystring = ru(self.datetimetextEdit.toPlainText()) #this needs some cleanup
@@ -305,7 +295,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.get_dem_selection()
             self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
             #fix Floating Bar Width in percents of xmax - xmin
-            xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
+            xmax, xmin = float(max(self.length_along)), float(min(self.length_along))
             self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
 
             self.get_plot_data_2()
@@ -331,7 +321,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.plot_drill_stop()
 
             #if the line layer obs_lines is selected, then try to plot seismic data if there are any
-            if self.sectionlinelayer.name()=='obs_lines':
+            if self.sectionlinelayer and self.sectionlinelayer.name()=='obs_lines':
                 if len(self.obs_lines_plot_data)>0:
                     self.plot_obs_lines_data()
 
@@ -352,8 +342,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             xmin_xmax = self.secplot_templates.loaded_template['Axes_set_xlim']
             if xmin_xmax is None:
                 _xmin, _xmax = self.axes.get_xlim()
-                xmin = min(float(min(self.LengthAlong)) - self.barwidth, _xmin)
-                xmax = max(float(max(self.LengthAlong)) + self.barwidth, _xmax)
+                xmin = min(float(min(self.length_along)) - self.barwidth, _xmin)
+                xmax = max(float(max(self.length_along)) + self.barwidth, _xmax)
             else:
                 xmin, xmax = xmin_xmax
             self.axes.set_xlim(xmin, xmax)
@@ -405,6 +395,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         return header,data
 
     def fill_check_boxes(self):  # sets checkboxes to last selection
+        if self.ms.settingsdict['secplotincludeviews']:
+            self.include_views_checkBox.setChecked(True)
         if self.ms.settingsdict['stratigraphyplotted']:
             self.Stratigraphy_radioButton.setChecked(True)
         else:
@@ -453,25 +445,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         DATES - SETTINGS AND PLOT ETC
         """
         if len(str(self.ms.settingsdict['secplotwlvltab'])):#If there is a last selected wlvsl
-            notfound=0 
-            i=0
-            while notfound==0:    # Loop until the last selected tstable is found
-                self.wlvltableComboBox.setCurrentIndex(i)
-                if str(self.wlvltableComboBox.currentText()) == str(self.ms.settingsdict['secplotwlvltab']):#The index count stops when last selected table is found #MacOSX fix1
-                    notfound=1
-                elif i> len(self.wlvltableComboBox):
-                    notfound=1
-                i = i + 1
+            set_combobox(self.wlvltableComboBox, str(self.ms.settingsdict['secplotwlvltab']), add_if_not_exists=False)
+
         if len(str(self.ms.settingsdict['secplottext'])):#If there is a last selected field for annotation in graph
-            notfound=0 
-            i=0
-            while notfound==0:    # Loop until the last selected tstable is found
-                self.textcolComboBox.setCurrentIndex(i)
-                if str(self.textcolComboBox.currentText()) == str(self.ms.settingsdict['secplottext']):#The index count stops when last selected table is found #MacOSX fix1
-                    notfound=1
-                elif i> len(self.textcolComboBox):
-                    notfound=1
-                i = i + 1
+            set_combobox(self.textcolComboBox, str(self.ms.settingsdict['secplottext']), add_if_not_exists=False)
+
         if self.ms.settingsdict['secplotbw'] !=0:
             self.barwidthdoubleSpinBox.setValue(self.ms.settingsdict['secplotbw'])            
         else:
@@ -480,6 +458,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     def fill_dem_list(self):   # This method populates the QListWidget 'inData' with all possible DEMs
         self.inData.clear()
+        if not self.sectionlinelayer:
+            return
         self.rastItems = {}  # dictionary - layer name : layer
         mc = self.iface.mapCanvas()
         msg=''
@@ -498,6 +478,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.get_dem_selection()
 
     def fill_wlvltable(self, include_views):
+        self.ms.settingsdict['secplotincludeviews'] = include_views
+        current_text = self.wlvltableComboBox.currentText()
         self.wlvltableComboBox.clear()
         skip_views = True if not include_views else False
         tabeller = [x for x in db_utils.get_tables(dbconnection=self.dbconnection, skip_views=skip_views)
@@ -522,6 +504,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.wlvltableComboBox.addItem('')
         for tabell in tabeller:
             self.wlvltableComboBox.addItem(tabell)
+        set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
+
     def finish_plot(self):
         if self.ms.settingsdict['secplotlegendplotted'] == 2:  # Include legend in plot
             leg = self.axes.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
@@ -534,8 +518,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             for t in leg.get_texts():
                 t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
 
-        if self.sectionlinelayerflag == 0: # Test produces simple stratigraphy plot if flag = 0
-            self.axes.set_xticks(self.LengthAlong)  # Places ticks where plots are
+        self.axes.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
+        if not self.sectionlinelayer: # Test produces simple stratigraphy plot
+            self.axes.set_xticks(self.length_along)  # Places ticks where plots are
             for label in self.axes.set_xticklabels(self.selected_obsids):  # Sets tick labels as obsids
                 label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
             Axes_set_xlabel = dict(
@@ -543,8 +528,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                  k != 'xlabel'])
             xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel_stratplot', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel_stratplot']['xlabel'])
 
-        else:  # Test produces section plot if flag = 1
-            self.axes.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
+        else:
             self.axes.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
             for label in self.axes.xaxis.get_ticklabels():
                 label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
@@ -573,7 +557,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.update_plot_size()
         self.canvas.draw()
-        self.plot_tabwidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(0)
 
         """
         The plot is shown in the canvas. 
@@ -643,7 +627,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             Capacity = '0'
             for obs in self.selected_obsids:
                 if k <= len(self.selected_obsids):  # in first Typ-loop, get obs_points data - used for plotting obsid
-                    self.x_id.append(float(self.LengthAlong[q]))
+                    self.x_id.append(float(self.length_along[q]))
                     sql = "SELECT h_toc, h_gs, length FROM obs_points WHERE obsid = '%s'"%obs
                     recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
                     if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
@@ -669,7 +653,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     Capacity = '0'
                     for rec in recs:#loop cleanup
                         BarLength.append(rec[0])#loop cleanup
-                        x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
+                        x.append(float(self.length_along[k]))# - self.barwidth/2)
                         sql01 = "select h_gs from obs_points where obsid = '%s'"%obs
                         sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
                         sql02 = "select h_toc from obs_points where obsid = '%s'"%obs
@@ -723,7 +707,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.y1_column='bedrock'
         self.y2_column='ground'
         table='seismic_data'
-        if self.sectionlinelayer.name()=='obs_lines':
+        if self.sectionlinelayer and self.sectionlinelayer.name()=='obs_lines':
             obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
             sql = r"""select %s as x, %s as y1, %s as y2 from %s where obsid='%s'"""%(x, self.y1_column,self.y2_column,table,obsline_id)
             conn_OK, recs = db_utils.sql_load_fr_db(sql, self.dbconnection)
@@ -782,10 +766,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             self.z_id_wwl.append(labellevel)
             self.obsid_wlid.append(obs)
-            self.x_id_wwl.append(float(self.LengthAlong[q]))
+            self.x_id_wwl.append(float(self.length_along[q]))
                     
             if obs in self.obs_p_w_drill_stops:
-                self.x_ds.append(float(self.LengthAlong[q]))
+                self.x_ds.append(float(self.length_along[q]))
                 self.z_ds.append(float(self.bottoms[q]))
             q += 1
 
@@ -826,7 +810,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                     for rec in recs:  # loop cleanup
                         BarLength.append(rec[0])  # loop cleanup
-                        x.append(float(self.LengthAlong[k]))  # - self.barwidth/2)
+                        x.append(float(self.length_along[k]))  # - self.barwidth/2)
                         sql01 = u"select h_gs from obs_points where obsid = '%s'" % obs
                         sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
                         sql02 = u"select h_toc from obs_points where obsid = '%s'" % obs
@@ -924,7 +908,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         table = 'seismic_data'
 
-        if self.sectionlinelayer.name() == 'obs_lines':
+        if self.sectionlinelayer and self.sectionlinelayer.name() == 'obs_lines':
 
             obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
 
@@ -1166,7 +1150,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     continue
 
                 WL.append(val)
-                x_wl.append(float(self.LengthAlong[k]))
+                x_wl.append(float(self.length_along[k]))
 
             plotlable = self.get_plot_label_name(datum, self.Labels)
 
@@ -1192,6 +1176,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
         self.ms.save_settings('secplotwidthofplot')
+        self.ms.save_settings('secplotincludeviews')
 
         #Don't save plot min/max for next plot. If a specific is to be used, it should be set in a saved template file.
         loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)
@@ -1281,31 +1266,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id_wwl,self.z_id_wwl,self.obsid_wlid):#change last arg to the one to be written in plot
                     text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
-
-    def change_plot_size(self, width, height):
-        try:
-            width = int(width)
-        except:
-            #self.layoutplot.setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Extended)
-            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
-            self.widget.setMinimumWidth(0)
-            self.widget.setMaximumWidth(16777215)
-            #self.widgetPlot.adjustSize()
-        else:
-            #self.widgetPlot.setMinimum
-            #self.widgetPlot.setFixedWidth(width)
-            self.widget.setMinimumWidth(width)
-            self.widget.setMaximumWidth(width)
-
-        try:
-            height = int(height)
-        except:
-            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
-            self.widget.setMinimumHeight(0)
-            self.widget.setMaximumHeight(16777215)
-        else:
-            self.widget.setMinimumHeight(height)
-            self.widget.setMaximumHeight(height)
 
     def update_barwidths_from_plot(self):
         used_xmin, used_xmax = self.axes.get_xlim()

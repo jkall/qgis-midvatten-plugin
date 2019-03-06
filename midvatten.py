@@ -797,46 +797,48 @@ class midvatten(object):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode."))
             raise utils.UsageError()
 
-        SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
-        nrofselected = SectionLineLayer.selectedFeatureCount()
-        if not isinstance(SectionLineLayer, QgsVectorLayer):
+        selected_layer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
+        nrofselected = selected_layer.selectedFeatureCount()
+        if not isinstance(selected_layer, QgsVectorLayer):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
-                                            log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(SectionLineLayer)))
+                                            log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(selected_layer)))
             raise utils.UsageError()
-        for feat in SectionLineLayer.getFeatures():
+        for feat in selected_layer.getFeatures():
             geom = feat.geometry()
             if geom.wkbType() == QgsWkbTypes.LineString or geom.wkbType() == QgsWkbTypes.MultiLineString:
                 if nrofselected != 1:
-                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten",                                                                 'You must select only one line feature that defines the section'))
+                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select only one line feature that defines the section'))
                     raise utils.UsageError()
                 else:
                     obs_points_layer = utils.find_layer('obs_points')
-                    selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
+                    selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
                     break
             else:
-                utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", 'Reverting to simple stratigraphy plot. For section plot, you must activate the vector line layer and select exactly one feature that defines the section'))
+                selected_layer = None
+                #utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", 'Reverting to simple stratigraphy plot. For section plot, you must activate the vector line layer and select exactly one feature that defines the section'))
                 # Then verify that at least two feature is selected in obs_points layer,
-                # and get a list (OBSID) of selected obs_points
-                selectedobspoints = utils.getselectedobjectnames()  # Finding obsid from currently selected layer
-                if not selectedobspoints:
+                # and get a list (selected_obspoints) of selected obs_points
+                selected_obspoints = utils.getselectedobjectnames()  # Finding obsid from currently selected layer
+                if not selected_obspoints:
                     obs_points_layer = utils.find_layer('obs_points')
-                    selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
+                    selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
                 break
-        
-        #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
-        if len(selectedobspoints)>1:
-            # We cannot send unicode as string to sql because it would include the '
-            # Made into tuple because module sectionplot depends on obsid being a tuple
-            OBSID = ru(selectedobspoints, keep_containers=True)
-        else:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer')))
-            raise utils.UsageError()
+
+        selected_obspoints = ru(selected_obspoints, keep_containers=True)
+        #Then verify that at least two feature is selected in obs_points layer, and get a list (selected_obspoints) of selected obs_points
+        #if len(selected_obspoints)>1:
+        #    # We cannot send unicode as string to sql because it would include the '
+        #    # Made into tuple because module sectionplot depends on obsid being a tuple
+        #    selected_obspoints = ru(selected_obspoints, keep_containers=True)
+        #else:
+        #    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer')))
+        #    raise utils.UsageError()
 
         try:
-            self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
+            self.myplot.do_it(self.ms,selected_obspoints,selected_layer)
         except:
             self.myplot = SectionPlot(self.iface.mainWindow(), self.iface)
-            self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
+            self.myplot.do_it(self.ms,selected_obspoints,selected_layer)
 
     @utils.general_exception_handler
     def plot_xy(self):

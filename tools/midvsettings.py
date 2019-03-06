@@ -69,6 +69,8 @@ class midvsettings(object):
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
 
     def save_settings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
+        if key in ('secplotincludeviews', 'secplotwlvltab'):
+            print("save k {}".format(str(key)))
         if not self.readingSettings:
             if key =='': #if no argument, then save all settings according to dictionary
                 for (key, value) in list(self.settingsdict.items()):
@@ -82,6 +84,9 @@ class midvsettings(object):
             else:#otherwise only save specific setting as per given key
                 try:
                     QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key])
+                    if key in ('secplotincludeviews', 'secplotwlvltab'):
+                        print("save k {} v {}".format(str(key), str(self.settingsdict[key])))
+
                     #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
                 except TypeError:
                     try:

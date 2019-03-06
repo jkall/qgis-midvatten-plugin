@@ -2,17 +2,17 @@
     "Axes_set_xlabel": {
         "fontsize": 8},
     "Axes_set_xlabel_stratplot": {
-    "xlabel": "obsid",
-    "fontsize": 10},
+            "xlabel": "obsid",
+            "fontsize": 10},
     "Axes_set_xlim": None,
     "Axes_set_ylabel": {
         "fontsize": 8},
     "Axes_set_ylim": None,
     "Figure_subplots_adjust": {
-        "bottom": 0.107,
+        "bottom": 0.15,
         "left": 0.09,
         "right": 0.95,
-        "top": 0.9643},
+        "top": 0.95},
     "dems_Axes_plot": {
         "DEFAULT": {
                 "linestyle": "-",
@@ -93,23 +93,14 @@
         "fill": False,
         "linewidth": 0.5,
         "zorder": 5},
-    "plot_height": 350,
-    "plot_width": 469,
-    "rcParams": {"savefig.dpi": 450},
+    "rcParams": {"savefig.dpi": 450,
+                 "figure.figsize": [6.4, 3.4]},
     "ticklabels_Text_set_fontsize": {
         "fontsize": 6},
     "wlevels_Axes_plot": {
-        "2017": {
-                "label": "2017",
-                "linestyle": "-",
-                "linewidth": 1,
-                "marker": "v",
-                "markersize": 6,
-                "zorder": 8},
         "DEFAULT": {
                 "linestyle": "-",
                 "linewidth": 1,
                 "marker": "v",
                 "markersize": 6,
                 "zorder": 8}}}
-

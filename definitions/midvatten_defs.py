@@ -65,6 +65,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplot_loaded_template': '',
             'secplot_templates': '',
             'secplotwidthofplot': 1,
+            'secplotincludeviews': False,
             'settingslocation':1,
             'compactwqualreport':'',
             'custplot_tabwidget':0,
@@ -783,8 +784,8 @@ def secplot_default_template():
         loaded_template['obsid_Axes_bar'] = {'edgecolor': 'black',
                                                   'fill': False,
                                                   'linewidth': 0.5}
-        loaded_template['plot_height'] = None
-        loaded_template['plot_width'] = None
+        loaded_template["rcParams"] = {"savefig.dpi": 450,
+                                       "figure.figsize": [6.4, 4.8]}
         loaded_template[
             'Figure_subplots_adjust'] = {}  # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
         loaded_template['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,
