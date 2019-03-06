@@ -205,11 +205,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             # print(str(self.dbconnection.cursor().execute('select * from %s'%self.temptable_name).fetchall()))
             # get sorted obsid and distance along section from sqlite db
             nF = len(selected_obspoints)#number of Features
-            LengthAlongTable = self.get_length_along(selected_obspoints)
+            length_along_table = self.get_length_along(selected_obspoints)
             # get_length_along returns a numpy view, values are returned by
-            # LengthAlongTable.obs_id or LengthAlongTable.length
-            self.selected_obsids = LengthAlongTable.obs_id
-            self.length_along = LengthAlongTable.length
+            # length_along_table.obs_id or length_along_table.length
+            self.selected_obsids = length_along_table.obs_id
+            self.length_along = length_along_table.length
 
             # hidden feature, printout to python console
             utils.MessagebarAndLog.info(log_msg=ru(
@@ -351,7 +351,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             ymin_ymax = self.secplot_templates.loaded_template['Axes_set_ylim']
             if ymin_ymax is not None:
                 ymin, ymax = ymin_ymax
-                self.axes.set_ylim(ymin, ymax)
+            else:
+                yticks = self.axes.get_yticks()
+                # shift half a step up and down
+                ymin = (3 * yticks[0] - yticks[1]) / 2.
+                ymax = (3 * yticks[-1] - yticks[-2]) / 2.
+            self.axes.set_ylim(ymin, ymax)
 
             #labels, grid, legend etc.
             self.finish_plot()
@@ -556,6 +561,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.ms.settingsdict['secplotwidthofplot'] = 1
 
         self.update_plot_size()
+        if mpl.rcParams['figure.autolayout']:
+            self.figure.tight_layout()
+
         self.canvas.draw()
         self.tabWidget.setCurrentIndex(0)
 
@@ -680,6 +688,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         # print obs + " " + Typ + " " + self.geology_txt[l] + " "
                         # + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " "
                         # + self.development_txt[l] + " " + self.comment_txt[l]  # debug
+
                         self.hydro_explanation_txt = []
                         for capacity_txt in self.capacity_txt:
                             if capacity_txt is None or capacity_txt == '':
@@ -716,7 +725,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
         utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
-    def get_plot_data_2(self):  # collecting data depending on a number of selections in left side panel
+    def get_plot_data_2(self):
         self.obsid_wlid = []  # if no stratigr plot, obsid will be plotted close to water level instead of toc or gs
         self.x_id_wwl = []
         self.z_id_wwl = []
@@ -783,7 +792,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ExistingHydroTypes = []
         self.hydroColors = defs.hydrocolors()
 
-        for Capacity in self.hydroColors.keys():  # Adding a plot for each "capacity" that is identified
+        for capacity in self.hydroColors.keys():  # Adding a plot for each "capacity" that is identified
             i = 0  # counter for unique obs and stratid
             k = 0  # counter for unique Typ
             q = 0  # counter for unique obsid (only used in first Typ-loop)
@@ -798,10 +807,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     q += 1
 
                 #   del recs
-                if Capacity is None or Capacity == '':
+                if capacity is None or capacity == '':
                     sql = u"""SELECT depthbot - depthtop, stratid, capacity FROM stratigraphy WHERE obsid = '%s' AND capacity is NULL ORDER BY stratid""" % obs
                 else:
-                    sql = u"""SELECT depthbot - depthtop, stratid, capacity FROM stratigraphy WHERE obsid = '%s' AND capacity = '%s' ORDER BY stratid""" % (obs, Capacity)
+                    sql = u"""SELECT depthbot - depthtop, stratid, capacity FROM stratigraphy WHERE obsid = '%s' AND capacity = '%s' ORDER BY stratid""" % (obs, capacity)
 
                 _recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
                 if _recs:
@@ -827,12 +836,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         else:
                             z_gs.append(0)
 
-                        if Capacity is None or Capacity == '':
+                        if capacity is None or capacity == '':
                             Bottom.append(z_gs[i] - float(str((
 
                                                                   db_utils.sql_load_fr_db(
 
-                                                                      u"""SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND capacity is NULL""" % (
+                                                                      """SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND capacity is NULL""" % (
 
                                                                           obs, str(recs[j][1])),
 
@@ -844,9 +853,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                                                               db_utils.sql_load_fr_db(
 
-                         u"""SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND capacity = '%s'""" % (
+                         """SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND capacity = '%s'""" % (
 
-                                                                  obs, str(recs[j][1]), Capacity),
+                                                                  obs, str(recs[j][1]), capacity),
 
                                                                   self.dbconnection)[1])[0][0])))
 
@@ -882,13 +891,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             if len(x) > 0:
 
-                self.ExistingHydroTypes.append(Capacity)
+                self.ExistingHydroTypes.append(capacity)
 
-                self.plotx_h[Capacity] = x
+                self.plotx_h[capacity] = x
 
-                self.plotbottom_h[Capacity] = Bottom
+                self.plotbottom_h[capacity] = Bottom
 
-                self.plotbarlength_h[Capacity] = BarLength
+                self.plotbarlength_h[capacity] = BarLength
 
         # Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any
 
@@ -945,15 +954,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         try:
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
                 for layername in self.ms.settingsdict['secplotselectedDEMs']:
-
                     #TODO: This should be a setting in the gui for each dem layer instead of hardcoded
-                    distance = self.barwidth / 2
+                    distance = self.barwidth / 2.0
+                    if not distance:
+                        distance = max([feat for feat in self.sectionlinelayer.getSelectedFeatures()][0].geometry().length()/ 5000, 1)
+                    print("distance " + str(distance))
 
                     temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
-
                     plotlable = self.get_plot_label_name(layername, self.Labels)
-
                     settings = self.secplot_templates.loaded_template['dems_Axes_plot'].get(plotlable,
                                                                                      self.secplot_templates.loaded_template['dems_Axes_plot']['DEFAULT'])
                     self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable] = copy.deepcopy(settings)
@@ -1028,7 +1037,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     plotted_polylabels.add(label)
                 y_vals = list(y1)
 
-
     def plot_drill_stop(self):
         settings = copy.deepcopy(self.secplot_templates.loaded_template['drillstop_Axes_plot'])
         label = settings.get('label', None)
@@ -1073,7 +1081,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             settings['hatch'] = settings.get('hatch', self.Hatches[Typ])
 
             plotxleftbarcorner = [float(i) - float(settings['width'])/2.0 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
-            #print("barwidth {} self.plotx[Typ] {}".format(str(self.barwidth), self.plotx))
             self.p.append(self.axes.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
@@ -1104,12 +1111,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             settings['color'] = settings.get('color_qt', self.hydroColors[capacity_txt][1])
 
             plotx_hleftbarcorner = [float(i) - float(settings['width']) / 2.0 for i in self.plotx_h[capacity_txt]] #subtract half bar width from x position (x position is stored as bar center in self.plotx)
-
             try:
-                self.p.append(self.axes.bar(plotx_hleftbarcorner, self.plotbarlength_h[capacity_txt], bottom=self.plotbottom_h[capacity_txt], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
+                self.p.append(self.axes.bar(plotx_hleftbarcorner, self.plotbarlength_h[capacity_txt], bottom=self.plotbottom_h[capacity_txt], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             except Exception as e:
-                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Sectionplot', 'Capacity %s could not be plotted. See message log')),
+                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Sectionplot', 'Capacity %s color %s could not be plotted. Default to white!. See message log'))%(str(capacity_txt), settings['color']),
                                             log_msg=str(e))
+                settings['color'] = 'white'
+                self.p.append(self.axes.bar(plotx_hleftbarcorner, self.plotbarlength_h[capacity_txt], bottom=self.plotbottom_h[capacity_txt], align='edge', **settings))  # matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
 
             self.Labels.append(capacity_txt)
 
@@ -1245,7 +1253,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.annotationtext = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['layer_Axes_annotate'])#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def write_obsid(self, plot_labels=2):  # annotation, and also empty bars to show drillings without stratigraphy data
-        if self.ms.settingsdict['stratigraphyplotted']:
+        if self.ms.settingsdict['stratigraphyplotted'] or self.ms.settingsdict['secplothydrologyplotted']:
             # if stratigr plot, then obsid written close to toc or gs
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.x_id]#x-coord for bars at each obs
 
