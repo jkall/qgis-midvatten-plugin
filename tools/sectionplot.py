@@ -39,8 +39,9 @@ from midvatten_utils import returnunicode as ru
 from midvatten_utils import PlotTemplates
 
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt import QtWidgets
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes, QgsRenderContext
-from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu
+from qgis.PyQt.QtWidgets import QComboBox, QListWidgetItem, QHBoxLayout, QMenu, QApplication
 import matplotlib_replacements
 
 
@@ -170,9 +171,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
             self.dbconnection = db_utils.DbConnectionManager()
 
-        width = self.secplot_templates.loaded_template.get('plot_width', None)
-        height = self.secplot_templates.loaded_template.get('plot_height', None)
-        self.change_plot_size(width, height)
+        #width = self.secplot_templates.loaded_template.get('plot_width', None)
+        #height = self.secplot_templates.loaded_template.get('plot_height', None)
+        #self.change_plot_size(width, height)
 
         try:
             utils.start_waiting_cursor()#show the user this may take a long time...
@@ -660,6 +661,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot
+        mpl.rcParams['figure.figsize'] = [15.5, 11.3]
+        mpl.rcParams['figure.dpi'] = 100
         self.secfig = plt.figure()
         self.secax = self.secfig.add_subplot( 111 )
         self.canvas = FigureCanvas( self.secfig )
@@ -672,6 +675,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.mplplotlayout.addWidget( self.canvas )
         self.mplplotlayout.addWidget( self.mpltoolbar )
+
+        self.tabwidget_resize(self.plotareawidget)
+        self.change_plot_size()
+
+    def tabwidget_resize(self, widget):
+        widget.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        widget.adjustSize()
 
     def plot_dems(self):
         try:
@@ -964,30 +974,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
-    def change_plot_size(self, width, height):
-        try:
-            width = int(width)
-        except:
-            #self.layoutplot.setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Extended)
-            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
-            self.widget.setMinimumWidth(0)
-            self.widget.setMaximumWidth(16777215)
-            #self.widgetPlot.adjustSize()
-        else:
-            #self.widgetPlot.setMinimum
-            #self.widgetPlot.setFixedWidth(width)
-            self.widget.setMinimumWidth(width)
-            self.widget.setMaximumWidth(width)
-
-        try:
-            height = int(height)
-        except:
-            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
-            self.widget.setMinimumHeight(0)
-            self.widget.setMaximumHeight(16777215)
-        else:
-            self.widget.setMinimumHeight(height)
-            self.widget.setMaximumHeight(height)
+    def change_plot_size(self):
+        width_inches, height_inches = mpl.rcParams['figure.figsize']
+        screen_dpi = QApplication.screens()[0].logicalDotsPerInch()
+        width_pixels = width_inches * screen_dpi
+        height_pixels = height_inches * screen_dpi
+        self.canvas.setFixedSize(width_pixels, height_pixels)
+        print("figsize: " + str(mpl.rcParams['figure.figsize']))
+        #self.plotareawidget.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
+        #self.plotareawidget.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*3)
 
     def update_barwidths_from_plot(self):
         used_xmin, used_xmax = self.secax.get_xlim()
