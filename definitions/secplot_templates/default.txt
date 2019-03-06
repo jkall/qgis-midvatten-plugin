@@ -1,6 +1,9 @@
 {
     "Axes_set_xlabel": {
         "fontsize": 10},
+    "Axes_set_xlabel_stratplot": {
+            "xlabel": "obsid",
+            "fontsize": 10},
     "Axes_set_xlim": None,
     "Axes_set_ylabel": {
         "fontsize": 10},
