@@ -737,6 +737,14 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             self.axes.legend_ = None
 
+        self.update_plot_size()
+
+        self.canvas.draw()
+
+        self.plot_tabwidget.setCurrentIndex(0)
+        #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
+
+    def update_plot_size(self):
         if self.dynamic_plot_size.isChecked():
             self.widgetPlot.setMinimumWidth(10)
             self.widgetPlot.setMaximumWidth(16777215)
@@ -751,11 +759,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.canvas.setFixedSize(width_pixels, height_pixels)
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
             self.widgetPlot.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*3)
-
-        self.canvas.draw()
-
-        self.plot_tabwidget.setCurrentIndex(0)
-        #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
     def storesettings(self):
         self.ms.settingsdict['custplot_table1'] = str(self.table_ComboBox_1.currentText())
