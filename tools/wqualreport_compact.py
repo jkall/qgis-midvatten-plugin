@@ -347,15 +347,15 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                     pass
             f.write(rpt)
 
+        f.write("\n</table><p></p><p></p>")
+
         #All in one table:
         if empty_row_between_tables:
-            f.write("""<tr><td>empty_row_between_tables</td></tr>""")
-
-        f.write("\n</table><p></p><p></p>")
+            f.write("""<p>empty_row_between_tables</p>""")
 
         #Separate tables:
         if page_break_between_tables:
-            f.write("""<p style="page-break-before: always">""")
+            f.write("""<p style="page-break-before: always"></p>""")
 
 
 def sql_list(alist):
