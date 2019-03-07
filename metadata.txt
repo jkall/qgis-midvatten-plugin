@@ -25,6 +25,7 @@ changelog=
         - Added function to add view_obs_points and view_obs_lines.
         - Introduced messagebar info if view_obs_points/lines is missing.
         - Sectionplot: Printing x and y limits in bottom right corner.
+        - Compact water quality report: Bug fixes.
         Version 1.6.0b8
         - Import csv gui: Importing geometries from vectorlayers supported. If a feature has a geometry, a "geometry" column will be added to loaded file data.
         - Fieldlogger import: Bug fix where w_qual_lab parameter was not filled in automatically from stored settings.
