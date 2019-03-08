@@ -366,7 +366,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         return nop, i
 
     def createsingleplotobject(self,recs,i,My_format,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
-
         #Transform data to a numpy.recarray
         try:
             table = np.array(recs, dtype=My_format)  #NDARRAY
@@ -377,9 +376,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         except Exception as e:
             utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', 'Plotting date_time failed, msg: %s'))%str(e))
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
-            #recs = [x for x in recs if all(x)]
-
-            table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
+            My_format = [('numx', float), ('values', float)]
+            table = np.array(recs, dtype=My_format)  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
 
@@ -395,8 +393,26 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
             pos = np.where(np.abs(np.diff(numtime)) >= self.spnmaxtstep.value())[0] + 1
-            numtime = np.insert(numtime, pos, np.nan)
-            table2 = np.insert(table2, pos, np.nan)
+            pos = pos.tolist()
+            if pos:
+                numtime = np.insert(numtime, pos, np.nan)
+                try:
+                    table2 = np.insert(table2, pos, np.nan)
+                except (ValueError, TypeError):
+                    for_concat = []
+                    nan = np.array([(np.nan, np.nan)], dtype=My_format)
+                    for idx, p in enumerate(pos):
+                        if idx == 0:
+                            for_concat.append(table[0:p])
+                            for_concat.append(nan.copy())
+                            continue
+                        for_concat.append(table[pos[idx-1]:p])
+                        for_concat.append(nan.copy())
+                    else:
+                        for_concat.append(table[pos[-1]:])
+                    table = np.concatenate(for_concat)
+                    table = table.astype(My_format)
+                    table2 = table.view(np.recarray)
 
         if FlagTimeXY == "time" and plottype == "frequency":
             if len(table2) < 2:
