@@ -30,7 +30,7 @@ changelog=
         Sectionplot: Plotsize now set in template in inches in "rcParams": {"figure.figsize": [6.4, 4.8]} and by checking radiobutton Plotsize: "Fixed".
         Sectionplot: Sectionplot can now be used with one obsid. No longer limited to more than one.
         Sectionplot: Sectionplot can now be used with only a selected line layer (for plotting DEMS and seismic).
-        Sectionplot: Bug fixes.
+        Sectionplot: Bug fixes..
         Version 1.6.0:
         - First public release.
         - Added function to add view_obs_points and view_obs_lines.
