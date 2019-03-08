@@ -248,7 +248,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                                                     (';'.join(self.selected_obsids),
                                                      ';'.join([str(x) for x in self.length_along])))
             else:
-                self.selected_obsids = None
+                self.selected_obsids = []
 
             self.fill_dem_list()
         else:

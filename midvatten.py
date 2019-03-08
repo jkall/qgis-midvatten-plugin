@@ -831,7 +831,7 @@ class midvatten(object):
         if len(selected_obspoints) > 0:
             selected_obspoints = ru(selected_obspoints, keep_containers=True)
         else:
-            selected_obspoints = None
+            selected_obspoints = []
         #Then verify that at least two feature is selected in obs_points layer, and get a list (selected_obspoints) of selected obs_points
         #if len(selected_obspoints)>1:
         #    # We cannot send unicode as string to sql because it would include the '
