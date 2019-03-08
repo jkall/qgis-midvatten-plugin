@@ -798,6 +798,10 @@ class midvatten(object):
             raise utils.UsageError()
 
         selected_layer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
+        if not selected_layer:
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one layer and one feature!'), duration=10)
+            raise utils.UsageError()
+
         nrofselected = selected_layer.selectedFeatureCount()
         if not isinstance(selected_layer, QgsVectorLayer):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
