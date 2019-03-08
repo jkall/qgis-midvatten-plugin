@@ -21,13 +21,16 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.1b:
-        Sectionplot: New ui for sectionplot.
+        Sectionplot: New ui for sectionplot. Settings in separate tab but can be floatable to separate window.
         Sectionplot: Plot and settings now separated in two tabs.
         Sectionplot: If no section line is selected, Sectionplot now plots like the Stratigraphyplot. (Thanks to Simon O'Connor!)
         Sectionplot: Capacity colors can now be used in the same way as Stratigraphyplot. (Thanks to Simon O'Connor!)
         Sectionplot: Hydroexplanation (capacity explanation) can now be used as text for layers. (Thanks to Simon O'Connor!)
         Sectionplot: Sectionplot can now be maximized. (Thanks to Simon O'Connor!)
         Sectionplot: Plotsize now set in template in inches in "rcParams": {"figure.figsize": [6.4, 4.8]} and by checking radiobutton Plotsize: "Fixed".
+        Sectionplot: Sectionplot can now be used with one obsid. No longer limited to more than one.
+        Sectionplot: Sectionplot can now be used with only a selected line layer (for plotting DEMS and seismic).
+        Sectionplot: Bug fixes.
         Version 1.6.0:
         - First public release.
         - Added function to add view_obs_points and view_obs_lines.
