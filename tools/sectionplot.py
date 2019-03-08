@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+﻿#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
@@ -966,7 +966,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     distance = self.barwidth / 2.0
                     if not distance:
                         distance = max([feat for feat in self.sectionlinelayer.getSelectedFeatures()][0].geometry().length()/ 5000, 1)
-                    print("distance " + str(distance))
 
                     temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
