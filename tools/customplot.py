@@ -394,9 +394,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
-            pos = np.where(np.abs(np.diff(numtime)) >= self.spnmaxtstep.value())[0]
-            numtime[pos] = np.nan
-            table2.values[pos] = np.nan
+            pos = np.where(np.abs(np.diff(numtime)) >= self.spnmaxtstep.value())[0] + 1
+            numtime = np.insert(numtime, pos, np.nan)
+            table2 = np.insert(table2, pos, np.nan)
 
         if FlagTimeXY == "time" and plottype == "frequency":
             if len(table2) < 2:
