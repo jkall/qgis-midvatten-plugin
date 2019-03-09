@@ -212,7 +212,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             self.myplot.draw_plot()
         _test(self.midvatten, self.vlayer)
 
-        test_string = utils_for_tests.create_test_string(self.myplot.LengthAlong)
+        test_string = utils_for_tests.create_test_string(self.myplot.length_along)
         assert any([test_string == "[ 0.          0.62469505  1.87408514]",
                     test_string == "[0.         0.62469505 1.87408514]"])
 
@@ -245,7 +245,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             return myplot
         myplot = _test(self.midvatten, self.vlayer)
 
-        test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
+        test_string = utils_for_tests.create_test_string(myplot.length_along)
         assert any([test_string == "[ 1.  3.  5.]", test_string == "[1. 3. 5.]"])
         assert mock.call.info(log_msg='Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
         assert not mock_messagebar.warning.called
