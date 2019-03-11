@@ -31,6 +31,7 @@ from operator import itemgetter
 from qgis.PyQt import QtCore
 from collections import OrderedDict
 from qgis.core import QgsApplication
+from qgis.PyQt.QtWidgets import QWidget, QDialog
 
 import db_utils
 import midvatten_utils as utils
@@ -124,11 +125,28 @@ class ContextualStringIO(io.StringIO):
         return False # Indicate that we haven't handled the exception, if received
 
 
-class MidvattenTestSpatialiteNotCreated(object):
+class MidvattenTestBase(object):
+    def __init__(self):
+        self.stop_show()
+
+    def stop_show(self):
+        """ Replace QWidget.show to stop the tests from producing a lot of dialogs.
+
+        :return:
+        """
+        def show(self):
+            #Do nothing
+            pass
+        QWidget.show = show
+        QDialog.exec_ = show
+
+
+class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
     mock_instance_settings_database = mock.MagicMock()
     mock_instance_settings_database.return_value.readEntry.return_value = ("{'spatialite': {'dbpath': '/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
 
     def __init__(self):
+        super(MidvattenTestSpatialiteNotCreated, self).__init__()
         self.TEMP_DB_SETTINGS = {'spatialite': {'dbpath': '/tmp/tmp_midvatten_temp_db.sqlite'}}
         self.TEMP_DBPATH = '/tmp/tmp_midvatten_temp_db.sqlite'
 
@@ -193,7 +211,7 @@ class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
         self.importinstance = midv_data_importer()
 
 
-class MidvattenTestPostgisNotCreated(object):
+class MidvattenTestPostgisNotCreated(MidvattenTestBase):
     ALL_POSTGIS_SETTINGS = {'nosetests': {'estimatedMetadata': 'false', 'username': 'henrik3', 'publicOnly': 'false', 'service': '', 'database': 'nosetests', 'dontResolveType': 'false', 'saveUsername': 'true', 'sslmode': '1', 'host': '127.0.0.1', 'authcfg': '', 'geometryColumnsOnly': 'false', 'allowGeometrylessTables': 'false', 'password': '0000', 'savePassword': 'false', 'port': '5432'}}
     TEMP_DB_SETTINGS = {'postgis': {'connection': 'nosetests/127.0.0.1:5432/nosetests'}}
     SETTINGS_DATABASE = (utils.anything_to_string_representation(TEMP_DB_SETTINGS), True)
@@ -205,6 +223,7 @@ class MidvattenTestPostgisNotCreated(object):
     mock_instance_settings_database.return_value.readEntry.return_value = SETTINGS_DATABASE
 
     def __init__(self):
+        super(MidvattenTestPostgisNotCreated, self).__init__()
         self.TEMP_DB_SETTINGS = MidvattenTestPostgisNotCreated.TEMP_DB_SETTINGS
         self.SETTINGS_DATABASE = MidvattenTestPostgisNotCreated.SETTINGS_DATABASE
         pass

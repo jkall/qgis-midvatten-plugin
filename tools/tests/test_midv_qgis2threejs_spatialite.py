@@ -19,30 +19,31 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-#
+from __future__ import print_function
 
-from collections import OrderedDict
-from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
+from builtins import str
 
 import db_utils
 import midvatten_utils as utils
 import mock
-from import_levelogger import LeveloggerImport
+import utils_for_tests
 from mock import MagicMock
 from nose.plugins.attrib import attr
-
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue
+from qgis.core import QgsApplication
 
 
+#
 
-@attr(status='on')
+
+@attr(status='off')
 class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    """ Test to make sure levelogger goes all the way to the end without errors
+    """ This test has conflicts with sectionplot, so its off!
     """
+
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self):
+        super(TestPrepareQgis2Threejs, self).setUp()
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def init_qgis(self):
@@ -86,14 +87,23 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         view_contents = []
         for l in layers:
-            view_contents.append(db_utils.sql_load_fr_db('''SELECT rowid, obsid, z_coord, height, ST_AsText(geometry) FROM {};'''.format(l))[1])
+            if l != 'strat_obs_p_for_qgsi2threejs':
+                view_contents.append(db_utils.sql_load_fr_db('''SELECT rowid, obsid, z_coord, height, ST_AsText(geometry) FROM {};'''.format(l))[1])
+        view_contents.append(
+            db_utils.sql_load_fr_db('''SELECT rowid, obsid, ST_AsText(geometry) FROM {};'''.format('strat_obs_p_for_qgsi2threejs'))[1])
         test = utils.anything_to_string_representation(view_contents)
-        ref = '''[[(1, "1", 1.0, -1.0, "POINT(1 1)", )], [(2, "1", 0.0, -1.0, "POINT(1 1)", )], [], [], [], [], [], [], [], [], [], [], [], [], []]'''
+        print(str(test))
+        ref = '''[[(1, "1", 1.0, -1.0, "POINT(1 1)", )], [(2, "1", 0.0, -1.0, "POINT(1 1)", )], [], [], [], [], [], [], [], [], [], [], [], [], [(1, "1", "POINT(1 1)", )]]'''
         assert test == ref
 
+        assert not mock_messagebar.mock_calls
+        #print(str(mock_messagebar.mock_calls))
+        #print(str(canvas.mock_calls))
+        #assert False
+
     def tearDown(self):
-        QgsProject.instance().addMapLayer(self.vlayer)
-        QgsProject.instance().removeMapLayer(self.vlayer.id())
+        #QgsProject.instance().addMapLayer(self.vlayer)
+        #QgsProject.instance().removeMapLayer(self.vlayer.id())
         super(self.__class__, self).tearDown()
 
 

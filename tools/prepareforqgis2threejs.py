@@ -142,14 +142,12 @@ class PrepareForQgis2Threejs(object):
         self.dbconnection.execute(r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);""")
 
         for key in self.strat_layers_dict:
-            f = open(SQLFile, 'r')
-            linecounter = 1
-            for line in f:
-                if linecounter > 1:    # first line is encoding info....
-                    sqliteline = line.replace('CHANGETOVIEWNAME',key).replace('CHANGETOPLOTTYPESDICTVALUE',self.strat_layers_dict[key])
-                    #print(sqliteline)#debug
-                    self.dbconnection.execute(sqliteline)
-                linecounter += 1
+            with open(SQLFile, 'r') as f:
+                for linecounter, line in enumerate(f):
+                    if linecounter > 0:    # first line is encoding info....
+                        sqliteline = line.replace('CHANGETOVIEWNAME',key).replace('CHANGETOPLOTTYPESDICTVALUE',self.strat_layers_dict[key])
+                        #print(sqliteline)#debug
+                        self.dbconnection.execute(sqliteline)
 
     def drop_db_views(self):
         # TODO: Update to support PostGIS
