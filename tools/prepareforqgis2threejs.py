@@ -57,8 +57,9 @@ class PrepareForQgis2Threejs(object):
         self.remove_views()
         self.drop_db_views()
         self.create_db_views()
-        self.dbconnection.commit_and_closedb()
+        self.dbconnection.commit()
         self.add_layers()
+        self.dbconnection.closedb()
 
     def add_layers(self):#not tested and not ready, must fix basic styles (preferrably colors based on some definition dicitonary
         MyGroup = self.root.insertGroup(0, "stratigraphy_layers_for_qgis2threejs")#verify this is inserted at top
@@ -101,10 +102,6 @@ class PrepareForQgis2Threejs(object):
 
             colors.append(color)
 
-        # create a new single symbol renderer
-        symbol = QgsSymbol.defaultSymbol(layer_list[-1].geometryType())
-        renderer = QgsSingleSymbolRenderer(symbol)
-
         for idx, layer in enumerate(layer_list):#now loop over all the layers, add them to canvas and set colors
             if not layer.isValid():
                 try:
@@ -128,8 +125,7 @@ class PrepareForQgis2Threejs(object):
 
                 color = colors[idx]
                 if color:
-                    current_symbols = layer.rendererV2().symbols()
-                    current_symbol = current_symbols[0]
+                    current_symbol = layer.renderer().symbol()
                     current_symbol.setColor(QColor.fromRgb(color[0], color[1], color[2]))
 
                 QgsProject.instance().addMapLayers([layer],False)

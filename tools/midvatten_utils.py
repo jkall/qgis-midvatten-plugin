@@ -435,7 +435,7 @@ def return_lower_ascii_string(textstring):
             return ''
         else:
             return char
-    filtered_string=list(filter(onlyascii, textstring))
+    filtered_string= ''.join(list(filter(onlyascii, textstring)))
     filtered_string = filtered_string.lower()
     return filtered_string
 
