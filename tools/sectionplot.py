@@ -158,7 +158,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         parent.adjustSize()
 
-
     def update_plot_size(self):
         if self.dynamic_plot_size.isChecked():
             self.widgetPlot.setMinimumWidth(10)
@@ -574,7 +573,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     def finish_plot(self):
         if self.ms.settingsdict['secplotlegendplotted'] == 2:  # Include legend in plot
-            leg = self.axes.legend(self.p, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+            skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+            leg = self.axes.legend(skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
             leg.draggable(state=True)
             leg.set_zorder(999)
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
@@ -989,7 +989,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         alpha_min = 0
                         number_of_plots = 20
                         graded_depth_m = 2
-                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata, polylayer_name, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m)
+                        skip_labels = []
+                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata, polylayer_name, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m, skip_labels=skip_labels)
                     QgsProject.instance().removeMapLayer(temp_memorylayer.id())
         except:
             raise
@@ -999,7 +1000,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             except:
                 pass
 
-    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, poly_layer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2):
+    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, poly_layer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
         poly_layer = utils.find_layer(poly_layer_name)
         points_srid = temp_memorylayer.crs().authid()
         poly_layer_srid = poly_layer.crs().authid()
@@ -1028,6 +1029,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         plotted_polylabels = set()
         for label, x_vals, y_vals in plot_spec:
+            if skip_labels and label in skip_labels:
+                continue
 
             plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, label), self.labels)
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
@@ -1192,7 +1195,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ms.save_settings('secplotlabelsplotted')
         self.ms.save_settings('secplotwidthofplot')
         self.ms.save_settings('secplotincludeviews')
-        print(str(self.ms.settingsdict['secplotselectedDEMs']))
 
         #Don't save plot min/max for next plot. If a specific is to be used, it should be set in a saved template file.
         loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)
@@ -1274,7 +1276,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             obsid_Axes_bar = copy.deepcopy(self.secplot_templates.loaded_template['obsid_Axes_bar'])
             obsid_Axes_bar['width'] = obsid_Axes_bar.get('width', self.barwidth)
             obsid_Axes_bar['bottom'] = obsid_Axes_bar.get('bottom', bottoms)
-            self.p.append(self.axes.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
+            #plot empty bars
+            p = self.axes.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar)
+            p.skip_legend = True
+            self.p.append(p)
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
