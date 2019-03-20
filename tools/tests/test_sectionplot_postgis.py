@@ -95,6 +95,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "['P1' 'P2' 'P3']"
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
+        assert len(self.myplot.p) == len(self.myplot.Labels)
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -250,6 +251,78 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert mock.call.info(log_msg='Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_plot_section_p_label_lengths(self, mock_messagebar):
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
+
+        self.create_and_select_vlayer()
+
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            self.midvatten.plot_section()
+            self.myplot = self.midvatten.myplot
+            self.myplot.Stratigraphy_checkBox.setChecked(True)
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
+            self.myplot.datetimetextEdit.append('2015')
+            self.myplot.draw_plot()
+        _test(self)
+
+        print(str(mock_messagebar.mock_calls))
+        print(str(self.myplot.p))
+        print(str(self.myplot.Labels))
+        assert len(self.myplot.skipped_bars) == len(self.myplot.Labels)
+        assert len(self.myplot.skipped_bars) == 2
+        #assert False
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_plot_section_p_label_lengths_with_geology(self, mock_messagebar):
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 1, 0, 1, 'sand')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 2, 1, 2, 'gravel')''')
+
+        self.create_and_select_vlayer()
+
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            self.midvatten.plot_section()
+            self.myplot = self.midvatten.myplot
+            self.myplot.Stratigraphy_checkBox.setChecked(True)
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
+            self.myplot.datetimetextEdit.append('2015')
+            self.myplot.draw_plot()
+
+        _test(self)
+
+        print(str(mock_messagebar.mock_calls))
+        print(str(self.myplot.p))
+        print(str(self.myplot.Labels))
+        assert len(self.myplot.skipped_bars) == len(self.myplot.Labels)
+        assert len(self.myplot.skipped_bars) == 4
 
     def tearDown(self):
         QgsProject.instance().addMapLayer(self.vlayer)

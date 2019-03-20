@@ -401,9 +401,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.get_dem_selection()
 
     def finish_plot(self):
-        leg = self.secax.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+        self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+        leg = self.secax.legend(self.skipped_bars, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
         leg.set_zorder(999)
-        leg.draggable(state=True)
+        leg.set_draggable(state=True)
         frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
         frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])    # set the frame face color to white
         frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
@@ -950,7 +951,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             obsid_Axes_bar = copy.deepcopy(self.secplot_templates.loaded_template['obsid_Axes_bar'])
             obsid_Axes_bar['width'] = obsid_Axes_bar.get('width', self.barwidth)
             obsid_Axes_bar['bottom'] = obsid_Axes_bar.get('bottom', bottoms)
-            self.p.append(self.secax.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
+            #plot empty bars
+            p = self.secax.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar)
+            p.skip_legend = True
+            self.p.append(p)
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
