@@ -389,7 +389,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             hence this special treatment to check if xlim are less than expected from lengthalong
             """
             # self.secax.autoscale(enable=True, axis='both', tight=None)
-            
+
             xmin_xmax = self.secplot_templates.loaded_template['Axes_set_xlim']
             if xmin_xmax is not None:
                 xmin, xmax = xmin_xmax
@@ -573,9 +573,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     def finish_plot(self):
         if self.ms.settingsdict['secplotlegendplotted'] == 2:  # Include legend in plot
-            skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
-            leg = self.axes.legend(skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
-            leg.draggable(state=True)
+            # skipped_bars is self-variable just to make it easily available for tests.
+            self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+            leg = self.axes.legend(self.skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+            leg.set_draggable(state=True)
             leg.set_zorder(999)
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])
