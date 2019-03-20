@@ -37,7 +37,7 @@ import db_utils
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer
-from midvatten import midvatten
+from midvatten import Midvatten
 
 from mocks_for_tests import DummyInterface2
 from tools.tests.mocks_for_tests import DummyInterface
@@ -156,7 +156,7 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
         #self.iface = mock.MagicMock()
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
+        self.midvatten = Midvatten(self.iface)
         self.ms = mock.MagicMock()
         self.ms.settingsdict = OrderedDict()
         try:
@@ -234,7 +234,7 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
         #self.iface = mock.MagicMock()
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
+        self.midvatten = Midvatten(self.iface)
         self.ms = mock.MagicMock()
         self.ms.settingsdict = OrderedDict()
 

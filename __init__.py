@@ -31,5 +31,5 @@
 from __future__ import absolute_import
 
 def classFactory(iface):
-    from .midvatten import midvatten
-    return midvatten(iface)
+    from .midvatten import Midvatten
+    return Midvatten(iface)

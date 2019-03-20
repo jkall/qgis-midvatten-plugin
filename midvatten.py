@@ -66,7 +66,7 @@ import matplotlib_replacements
 #import profilefromdem
 
 
-class midvatten(object):
+class Midvatten(object):
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
         matplotlib_replacements.perform_all_replacements()
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
