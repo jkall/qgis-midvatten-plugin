@@ -80,7 +80,8 @@ def add_to_rc_defaultParams():
     :return:
     """
     params_to_add = {'axes.midv_line_cycle': [cycler('linestyle', ['-', '--', '-.', ':']), rcsetup.validate_cycler],
-                     'axes.midv_marker_cycle': [cycler('marker', ['o', '+', 's', 'x']), rcsetup.validate_cycler]}
+                     'axes.midv_marker_cycle': [cycler('marker', ['o', '+', 's', 'x']), rcsetup.validate_cycler],
+                     'legend.midv_ncol': [1, rcsetup.validate_int]}
 
     rcsetup.defaultParams.update(params_to_add)
     mpl.RcParams.validate = dict((key, converter) for key, (default, converter) in

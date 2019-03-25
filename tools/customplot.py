@@ -737,19 +737,20 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         #The legend
         if self.Legend_checkBox.isChecked():
+            ncol = mpl.rcParams['legend.midv_ncol']
             if self.axes.legend_ is None:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend(self.p, self.plabels)
+                    leg = self.axes.legend(self.p, self.plabels, ncol=ncol)
                 else:
-                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncol=ncol)
             else:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend()
+                    leg = self.axes.legend(ncol=ncol)
                 else:
-                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncol=ncol)
 
             leg.set_zorder(999)
-            leg.draggable(state=True)
+            leg.set_draggable(state=True)
         else:
             self.axes.legend_ = None
 
