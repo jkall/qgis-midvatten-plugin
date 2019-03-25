@@ -33,6 +33,7 @@ changelog=
         - Sectionplot: Bug fixes..
         Version 1.6.1:
         - Sectionplot: Fixes bug where bars where put in legend and one symbol was skipped.
+        - Customplot: Added 'legend.midv_ncol' to matplotlib rcparams.
         Version 1.6.0:
         - First public release.
         - Added function to add view_obs_points and view_obs_lines.
