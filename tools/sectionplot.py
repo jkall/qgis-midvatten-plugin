@@ -334,8 +334,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
             self.ms.settingsdict['stratigraphyplotted'] = self.Stratigraphy_radioButton.isChecked()
             self.ms.settingsdict['secplothydrologyplotted'] = self.Hydrology_radioButton.isChecked()
-            self.ms.settingsdict['secplotlabelsplotted'] = self.Labels_checkBox.checkState()
-            self.ms.settingsdict['secplotlegendplotted'] = self.Legend_checkBox.checkState()
+            self.ms.settingsdict['secplotlabelsplotted'] = self.Labels_checkBox.isChecked()
+            self.ms.settingsdict['secplotlegendplotted'] = self.Legend_checkBox.isChecked()
             self.get_dem_selection()
             self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
             #fix Floating Bar Width in percents of xmax - xmin
@@ -369,7 +369,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                 # write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
                 if self.ms.settingsdict['stratigraphyplotted'] or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates']) > 0):
-                    self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])  # if argument is 2, then labels will be plotted, otherwise only empty bars
+                    self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])
 
             else:
                 self.barwidth = 0.0
@@ -467,15 +467,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.Hydrology_radioButton.setChecked(True)
         else:
             self.Hydrology_radioButton.setChecked(False)
-        if self.ms.settingsdict['secplotlabelsplotted'] == 2:
+        if self.ms.settingsdict['secplotlabelsplotted']:
             self.Labels_checkBox.setChecked(True)
         else:
             self.Labels_checkBox.setChecked(False)
-        if self.ms.settingsdict['secplotlegendplotted'] == 2:
+        if self.ms.settingsdict['secplotlegendplotted']:
             self.Legend_checkBox.setChecked(True)
         else:
             self.Legend_checkBox.setChecked(False)
-        if self.ms.settingsdict['secplotwidthofplot'] == 2:
+        if self.ms.settingsdict['secplotwidthofplot']:
             self.width_of_plot.setChecked(True)
         else:
             self.width_of_profile.setChecked(True)
@@ -572,7 +572,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
 
     def finish_plot(self):
-        if self.ms.settingsdict['secplotlegendplotted'] == 2:  # Include legend in plot
+        if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
             self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
             leg = self.axes.legend(self.skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
@@ -617,10 +617,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.figure.subplots_adjust(**self.secplot_templates.loaded_template['Figure_subplots_adjust'])
 
         if self.width_of_plot.isChecked():
-            self.ms.settingsdict['secplotwidthofplot'] = 2
+            self.ms.settingsdict['secplotwidthofplot'] = True
             self.update_barwidths_from_plot()
         else:
-            self.ms.settingsdict['secplotwidthofplot'] = 1
+            self.ms.settingsdict['secplotwidthofplot'] = False
 
         self.update_plot_size()
         #if mpl.rcParams['figure.autolayout']:
@@ -1263,7 +1263,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         for m, n, o in zip(self.x_txt, self.z_txt, annotate_txt):  # change last arg to the one to be written in plot
             self.annotationtext = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['layer_Axes_annotate'])#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
-    def write_obsid(self, plot_labels=2):  # annotation, and also empty bars to show drillings without stratigraphy data
+    def write_obsid(self, plot_labels=True):  # annotation, and also empty bars to show drillings without stratigraphy data
         if self.ms.settingsdict['stratigraphyplotted'] or self.ms.settingsdict['secplothydrologyplotted']:
             # if stratigr plot, then obsid written close to toc or gs
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.x_id]#x-coord for bars at each obs
@@ -1281,11 +1281,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             p = self.axes.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar)
             p.skip_legend = True
             self.p.append(p)
-            if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
+            if plot_labels:#only plot the obsid as annotation if plot_labels if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
         else: #obsid written close to average water level (average of all water levels between given min and max date)
-            if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
+            if plot_labels:#only plot the obsid as annotation if plot_labels checkbox is activated
                 for m,n,o in zip(self.x_id_wwl,self.z_id_wwl,self.obsid_wlid):#change last arg to the one to be written in plot
                     text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 

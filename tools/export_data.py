@@ -354,8 +354,8 @@ class ExportData(object):
             return None
 
         #Check which columns that doesn't exist from in old and new database and write a log msg about it.
-        old_columns_missing_in_new = [col for col in old_column_names if col not in new_column_names]
-        new_columns_missing_in_old = [col for col in new_column_names if col not in old_column_names]
+        old_columns_missing_in_new = [col for col in old_column_names if col not in new_column_names and col.capitalize() not in new_column_names]
+        new_columns_missing_in_old = [col for col in new_column_names if col not in old_column_names and col.capitalize() not in old_column_names]
 
         """
         #TODO: Temporary msg:

@@ -56,7 +56,7 @@ FORMS = \
 ./ui/obs_lines.ui \
 ./ui/obs_points_en.ui \
 ./ui/obs_points.ui \
-./ui/secplotdockwidget_ui.ui \
+./ui/secplotdockwidget.ui \
 ./ui/selected_features.ui \
 ./ui/simpleplotdialog.ui \
 ./ui/stratigraphy_en.ui \
