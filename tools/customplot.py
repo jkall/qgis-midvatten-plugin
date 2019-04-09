@@ -1040,7 +1040,13 @@ class PandasCalculations(object):
                     center=False
                 else:
                     center=True
-                df = pd.rolling_mean(df, window=window, center=center)
+
+                try:
+                    # Pandas version >= '0.18.0'
+                    df = df.rolling(window, center=center).mean()
+                except AttributeError:
+                    df = pd.rolling_mean(df, window=window, center=center)
+
         return df
 
 
