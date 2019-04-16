@@ -174,6 +174,11 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         file_to_import_to_db =  [parsed_files_with_obsid[0][0][0]]
         file_to_import_to_db.extend([row for parsed_file in parsed_files_with_obsid for row in parsed_file[0][1:]])
 
+        # Add comment to import:
+        #file_to_import_to_db[0].append('comment')
+        #comment = ''
+        #[row.append(comment) for row in file_to_import_to_db[1:]]
+
         if not import_all_data:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
         if len(file_to_import_to_db) < 2:
