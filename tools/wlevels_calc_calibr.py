@@ -268,7 +268,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         obsid = self.selected_obsid
         if not obsid:
             try:
-                print('error onsid ' + str(obsid))
+                print('error obsid ' + str(obsid))
             except:
                 pass
             #utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "ERROR: no obsid is chosen")))
@@ -453,7 +453,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        if self.meas_ts.size:
+        if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts.size):
             self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15, color='#1f77b4ff')
         
         # Load Loggerlevels (full time series) for the obsid
@@ -465,10 +465,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             original_head_style = '--'
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
+        if self.level_masl_ts.size and self.contains_more_than_nan(self.level_masl_ts):
+            self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
 
         #Plot the original head_cm
-        if self.plot_logger_head.isChecked():
+        if self.plot_logger_head.isChecked() and self.head_ts_for_plot.size and self.contains_more_than_nan(self.head_ts_for_plot):
             self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' original logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5, color='#c1c1c1ff')
 
         """ Finish plot """
@@ -515,6 +516,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def timestring_list_to_time_list(self, timestring_list):
         """Get help from function datestr2num to get date and time into float"""
         return datestr2num(timestring_list)
+
+    @fn_timer
+    def contains_more_than_nan(self, a_recarray):
+        not_nan = self.list_of_list_to_recarray(list(filter(lambda v: v == v, a_recarray)))
+        if not_nan.size:
+            return True
+        else:
+            return False
         
     @fn_timer
     def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5, zorder=None, markersize=None, color=None):
