@@ -1232,7 +1232,7 @@ class WQualFieldImportFields(RowEntryGrid):
         Skipped instrument and unit ('unit', self.unit) ('instrument', self.instrument). It's filled from last used instrument for the staff instead.
         :return:
         """
-        return tuple(('parameter', self.parameter))
+        return (('parameter', self.parameter), )
 
     def alter_data(self, observations):
         if not self.parameter:
