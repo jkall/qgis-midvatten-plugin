@@ -371,6 +371,7 @@ class ImportTableChooser(VRowEntry):
 
         for widget in [self.label, self.__import_method]:
             chooser.layout.addWidget(widget)
+        chooser.layout.insertStretch(-1, 5)
 
         self.layout.addWidget(chooser.widget)
 
@@ -381,8 +382,6 @@ class ImportTableChooser(VRowEntry):
         self.specific_info_widget.layout.addWidget(get_line())
 
         self.layout.addWidget(self.specific_info_widget.widget)
-
-        self.layout.insertStretch(-1, 4)
 
     def get_translation_dict(self):
         translation_dict = {}
@@ -429,8 +428,6 @@ class ImportTableChooser(VRowEntry):
         if file_header is None:
             return None
 
-        #Remove stretch
-        self.layout.takeAt(-1)
 
         try:
             self.layout.removeWidget(self.grid.widget)
@@ -441,7 +438,6 @@ class ImportTableChooser(VRowEntry):
         self.columns = []
 
         if not import_method_name:
-            self.layout.insertStretch(-1, 4)
             return None
 
         self.grid = RowEntryGrid()
@@ -451,6 +447,7 @@ class ImportTableChooser(VRowEntry):
         self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'File column'))), 0, 1)
         self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Static value'))), 0, 2)
         self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Factor'))), 0, 3)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Ignore not null warning'))), 0, 4)
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
             column = ColumnEntry(tables_columns_info, file_header, self.numeric_datatypes)
@@ -459,7 +456,7 @@ class ImportTableChooser(VRowEntry):
                 self.grid.layout.addWidget(wid, rownr, colnr)
             self.columns.append(column)
 
-        self.layout.insertStretch(-1, 4)
+        self.grid.layout.setColumnStretch(5, 5)
 
     def reload(self):
         import_method = self.import_method
@@ -520,6 +517,12 @@ class ColumnEntry(object):
         if self.column_type not in numeric_datatypes:
             self._factor.setVisible(False)
 
+        self._ignore_not_null_checkbox = qgis.PyQt.QtWidgets.QCheckBox()
+        self._ignore_not_null_checkbox.setToolTip(ru(QCoreApplication.translate('ColumnEntry', 'Ignores not null warning and try to import anyway. Check when importing to Postgres SERIAL PRIMARY KEY columns.')))
+        self._ignore_not_null_checkbox.setChecked(False)
+        self.column_widgets.append(self._ignore_not_null_checkbox)
+        self._all_widgets.append(self._ignore_not_null_checkbox)
+
         self.static_checkbox.clicked.connect(lambda x: self.static_checkbox_checked())
 
         #This line prefills the columns if the header names matches the database column names
@@ -535,7 +538,7 @@ class ColumnEntry(object):
         if self.static_checkbox.isChecked():
             selected = StaticValue(ru(self.combobox.currentText()))
 
-        if self.notnull and not selected:
+        if self.notnull and not selected and not self._ignore_not_null_checkbox.isChecked():
             raise utils.UsageError(ru(QCoreApplication.translate('ColumnEntry', 'Import error, the column %s must have a value'))%self.db_column)
 
         if selected and not self.static_checkbox.isChecked() and selected not in self.file_header:

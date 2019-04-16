@@ -162,89 +162,89 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="534"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="547"/>
         <source>Select a date to use as &quot;from&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="539"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="552"/>
         <source>Select a date to use as &quot;to&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="579"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="592"/>
         <source>Getting last calibration failed for obsid %s, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="600"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="613"/>
         <source>Select a logger node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="608"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="621"/>
         <source>Select a y position to move to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="612"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="625"/>
         <source>Something wrong, click &quot;Current&quot; and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="640"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="653"/>
         <source>No connection between level_masl dates and logger date could be made!
 Try again or choose a new logger line node!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="653"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="666"/>
         <source>Logger node %s selected, click &quot;new&quot; and select new level.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="663"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="676"/>
         <source>Offset is calculated, now click &quot;add&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="704"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="717"/>
         <source>There was no match found between measurements and logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="708"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="721"/>
         <source>There was no matched measurements or logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="709"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="722"/>
         <source>Calculated water level from logger: utils.calc_mean_diff(coupled_vals) didn&apos;t return a useable value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="802"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="815"/>
         <source>Must write time resolution also, ex. %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="821"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="834"/>
         <source>Error!
  The obsid selection has been changed but the plot has not been updated. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="825"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="838"/>
         <source>Error!
  No obsid was selected. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="843"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="856"/>
         <source>Do you want to delete the period %s to %s for obsid %s from table %s?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -259,17 +259,17 @@ Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="472"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="473"/>
         <source> original logger head</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="478"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="479"/>
         <source>Level (masl)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="479"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="480"/>
         <source>Plot for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -279,7 +279,7 @@ Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="468"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="469"/>
         <source> adjusted logger</source>
         <translation type="unfinished"></translation>
     </message>
@@ -287,34 +287,39 @@ Updating plot.</source>
 <context>
     <name>ColumnEntry</name>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="495"/>
+        <location filename="../tools/import_general_csv_gui.py" line="492"/>
         <source>Obsid from qgis selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="496"/>
+        <location filename="../tools/import_general_csv_gui.py" line="493"/>
         <source>Select 1 obsid from obs_points or obs_lines attribute table or map.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="511"/>
+        <location filename="../tools/import_general_csv_gui.py" line="508"/>
         <source>The supplied string will be written to the current column name for all
 imported rows instead of being read from file column.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="541"/>
+        <location filename="../tools/import_general_csv_gui.py" line="544"/>
         <source>Import error, the column %s must have a value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="544"/>
+        <location filename="../tools/import_general_csv_gui.py" line="547"/>
         <source>Import error, the chosen file column for the column %s did not exist in the file header.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="517"/>
+        <location filename="../tools/import_general_csv_gui.py" line="514"/>
         <source>Multiply each imported value in the column with a factor.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="523"/>
+        <source>Ignores not null warning and try to import anyway. Check when importing to Postgres SERIAL PRIMARY KEY columns.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1981,29 +1986,29 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="180"/>
+        <location filename="../tools/import_diveroffice.py" line="185"/>
         <source>No new data existed in the files. Nothing imported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="266"/>
+        <location filename="../tools/import_diveroffice.py" line="271"/>
         <source>Diveroffice import warning. See log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="246"/>
+        <location filename="../tools/import_diveroffice.py" line="251"/>
         <source>Warning, the file %s 
 did not have Date/time as a header and will be skipped.
 Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="260"/>
+        <location filename="../tools/import_diveroffice.py" line="265"/>
         <source>Delimiter could not be found for file %s or it contained only one column, skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="266"/>
+        <location filename="../tools/import_diveroffice.py" line="271"/>
         <source>Warning, the file %s 
 did not have Water head[cm] as a header.
 Make sure its barocompensated!
@@ -2011,25 +2016,25 @@ Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="283"/>
+        <location filename="../tools/import_diveroffice.py" line="288"/>
         <source>Failure: The number of data columns in file %s was not equal to the header.
 Is the decimal separator the same as the delimiter?
 Do you want to stop the import? (else it will continue with the next file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="313"/>
+        <location filename="../tools/import_diveroffice.py" line="318"/>
         <source>parse_diveroffice_file error: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="319"/>
+        <location filename="../tools/import_diveroffice.py" line="324"/>
         <source>Error messages while parsing file &quot;%s&quot;:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="322"/>
+        <location filename="../tools/import_diveroffice.py" line="327"/>
         <source>Failure, parsing failed for file %s
 No valid data found!
 Do you want to stop the import? (else it will continue with the next file)</source>
@@ -2951,7 +2956,7 @@ from active layer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="423"/>
+        <location filename="../tools/import_general_csv_gui.py" line="422"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3013,29 +3018,34 @@ from active layer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="423"/>
+        <location filename="../tools/import_general_csv_gui.py" line="422"/>
         <source>Layer %s is currently in editing mode.
 Please exit this mode before proceeding with this operation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="451"/>
+        <location filename="../tools/import_general_csv_gui.py" line="447"/>
         <source>Column name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="452"/>
+        <location filename="../tools/import_general_csv_gui.py" line="448"/>
         <source>File column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="453"/>
+        <location filename="../tools/import_general_csv_gui.py" line="449"/>
         <source>Static value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="454"/>
+        <location filename="../tools/import_general_csv_gui.py" line="450"/>
         <source>Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="451"/>
+        <source>Ignore not null warning</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6707,9 +6717,6 @@ Meanwhile, do you want to go on with this import, creating a temporary table &ap
         <source>Select a qgis layer that has a field obsid!</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>settingsdict</name>
 </context>
 <context>
     <name>sql_alter_db</name>
