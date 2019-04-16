@@ -453,7 +453,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts.size):
+        if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts):
             self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15, color='#1f77b4ff')
         
         # Load Loggerlevels (full time series) for the obsid
@@ -519,7 +519,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def contains_more_than_nan(self, a_recarray):
-        not_nan = self.list_of_list_to_recarray(list(filter(lambda v: v == v, a_recarray)))
+        try:
+            not_nan = self.list_of_list_to_recarray(list(filter(lambda v: v == v, a_recarray)))
+        except TypeError:
+            print("Error in contains_more_than_nan, recarray: " + str(a_recarray))
+            raise
         if not_nan.size:
             return True
         else:
