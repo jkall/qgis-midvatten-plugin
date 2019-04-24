@@ -29,6 +29,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 import os
+from functools import partial
 from qgis.PyQt import uic
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num, num2date
@@ -174,10 +175,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.pushButtonAdd.clicked.connect(lambda x: self.add_to_level_masl())
         self.pushButtonFrom.clicked.connect(lambda x: self.set_from_date_from_x())
         self.pushButtonTo.clicked.connect(lambda x: self.set_to_date_from_x())
-        self.L1_button.clicked.connect(lambda x: self.set_L1_date_from_x())
-        self.L2_button.clicked.connect(lambda x: self.set_L2_date_from_x())
-        self.M1_button.clicked.connect(lambda x: self.set_M1_date_from_x())
-        self.M2_button.clicked.connect(lambda x: self.set_M2_date_from_x())
+        self.L1_button.clicked.connect(lambda x: self.set_adjust_data('L1_date', 'L1_level'))
+        self.L2_button.clicked.connect(lambda x: self.set_adjust_data('L2_date', 'L2_level'))
+        self.M1_button.clicked.connect(lambda x: self.set_adjust_data('M1_date', 'M1_level'))
+        self.M2_button.clicked.connect(lambda x: self.set_adjust_data('M2_date', 'M2_level'))
         self.pushButton_from_extent.clicked.connect(lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
         self.pushButton_to_extent.clicked.connect(lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
         self.pushButtonupdateplot.clicked.connect(lambda x: self.update_plot())
@@ -865,24 +866,21 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, datetimeedit, from_node)))
 
     @fn_timer
-    def set_L1_date_from_x(self):
-        """ Used to set the self.L1_date by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.L1_date, from_node=True)
+    def set_adjust_data(self, date_holder, level_holder):
+        print("Here")
+        self.reset_cid()
+        self.deactivate_pan_zoom()
+        self.canvas.setFocusPolicy(Qt.ClickFocus)
+        self.canvas.setFocus()
+        self.cid.append(self.canvas.mpl_connect('button_press_event', lambda event: self.set_adjust_data_on_click(event, date_holder, level_holder)))
 
     @fn_timer
-    def set_L2_date_from_x(self):
-        """ Used to set the self.L2_date by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.L2_date, from_node=True)
-
-    @fn_timer
-    def set_M1_date_from_x(self):
-        """ Used to set the self.M1_date by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.M1_date, from_node=True)
-
-    @fn_timer
-    def set_M2_date_from_x(self):
-        """ Used to set the self.M2_date by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.M2_date, from_node=True)
+    def set_adjust_data_on_click(self, event, date_var, level_var):
+        print("Here2")
+        getattr(self, level_var).setText(str(float(event.ydata)))
+        getattr(self, date_var).setDateTime(num2date(float(event.xdata)))
+        self.reset_cid()
+        print("Here3")
 
     @fn_timer
     def adjust_trend_func(self):
@@ -894,49 +892,22 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         data = {'obsid': obsid,
                 'adjust_start_date': long_dateformat(self.FromDateTime.dateTime().toPyDateTime()),
                 'adjust_end_date': long_dateformat(self.ToDateTime.dateTime().toPyDateTime()),
-                'L1_date': long_dateformat(self.L1_date.dateTime().toPyDateTime()),
-                'L2_date': long_dateformat(self.L2_date.dateTime().toPyDateTime()),
-                'M1_date': long_dateformat(self.M1_date.dateTime().toPyDateTime()),
-                'M2_date': long_dateformat(self.M2_date.dateTime().toPyDateTime()),
+                'L1_date': db_utils.cast_date_time_as_epoch(date_time=long_dateformat(self.L1_date.dateTime().toPyDateTime())),
+                'L2_date': db_utils.cast_date_time_as_epoch(date_time=long_dateformat(self.L2_date.dateTime().toPyDateTime())),
+                'M1_date': db_utils.cast_date_time_as_epoch(date_time=long_dateformat(self.M1_date.dateTime().toPyDateTime())),
+                'M2_date': db_utils.cast_date_time_as_epoch(date_time=long_dateformat(self.M2_date.dateTime().toPyDateTime())),
+                'L1_level': str(float(self.L1_level.text())),
+                'L2_level': str(float(self.L2_level.text())),
+                'M1_level': str(float(self.M1_level.text())),
+                'M2_level': str(float(self.M2_level.text())),
                 'date_as_numeric': db_utils.cast_date_time_as_epoch()}
 
         sql = """
                 UPDATE w_levels_logger SET level_masl = level_masl -
                 (
-                  (
-                    (
-                      (
-                        (SELECT level_masl FROM w_levels_logger WHERE date_time = substr('{L2_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                        -
-                        (SELECT level_masl FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                      )
-                      /
-                      (
-                        (SELECT {date_as_numeric} FROM w_levels_logger WHERE date_time = substr('{L2_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                        -
-                        (SELECT {date_as_numeric} FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                      )
-                    )
-                    -
-                    (
-                      (
-                        (SELECT level_masl FROM w_levels WHERE date_time = substr('{M2_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                        -
-                        (SELECT level_masl FROM w_levels WHERE date_time = substr('{M1_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                      )
-                      /
-                      (
-                        (SELECT {date_as_numeric} FROM w_levels WHERE date_time = substr('{M2_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                        -
-                    (SELECT {date_as_numeric}  FROM w_levels WHERE date_time = substr('{M1_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                      )
-                    )
-                  )
-                  *
-                  (
-                    {date_as_numeric} -
-                    (SELECT {date_as_numeric} FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
-                  )
+                 ((({L1_level} - {L2_level}) / ({L1_date} - {L2_date}))
+                 - (({M1_level} - {M2_level}) / ({M1_date} - {M2_date})))
+                  * ({date_as_numeric} - {L1_date})
                 )
                 WHERE obsid = '{obsid}' AND date_time > '{adjust_start_date}' AND date_time < '{adjust_end_date}'
             """.format(**data)
