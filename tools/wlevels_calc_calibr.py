@@ -60,7 +60,7 @@ class Calclvl(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         qgis.PyQt.QtWidgets.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
-        self.setWindowTitle(ru(QCoreApplication.translate('Calcl.clicked.connect(self.vl', "Calculate levels"))) # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate('Calclvl', "Calculate levels"))) # Set the title for the dialog
         self.pushButton_All.clicked.connect(lambda x: self.calcall())
         self.pushButton_Selected.clicked.connect(lambda x: self.calcselected())
         self.pushButton_Cancel.clicked.connect(lambda x: self.close())
@@ -174,10 +174,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.pushButtonAdd.clicked.connect(lambda x: self.add_to_level_masl())
         self.pushButtonFrom.clicked.connect(lambda x: self.set_from_date_from_x())
         self.pushButtonTo.clicked.connect(lambda x: self.set_to_date_from_x())
-        self.L1_button.clicked.connect(self.set_L1_date_from_x)
-        self.L2_button.clicked.connect(self.set_L2_date_from_x)
-        self.M1_button.clicked.connect(self.set_M1_date_from_x)
-        self.M2_button.clicked.connect(self.set_M2_date_from_x)
+        self.L1_button.clicked.connect(lambda x: self.set_L1_date_from_x())
+        self.L2_button.clicked.connect(lambda x: self.set_L2_date_from_x())
+        self.M1_button.clicked.connect(lambda x: self.set_M1_date_from_x())
+        self.M2_button.clicked.connect(lambda x: self.set_M2_date_from_x())
         self.pushButton_from_extent.clicked.connect(lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
         self.pushButton_to_extent.clicked.connect(lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
         self.pushButtonupdateplot.clicked.connect(lambda x: self.update_plot())

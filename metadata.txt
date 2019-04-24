@@ -21,6 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.1b1:
+        - Loggercalibration: Fixes bug with adjust trend buttons.
         - Sectionplot: Fixes bug where bars where put in legend and one symbol was skipped.
         - Customplot: Added 'legend.midv_ncol' to matplotlib rcparams.
         - Fieldlogger import: Fixes python error bug when trying to load stored settings.
