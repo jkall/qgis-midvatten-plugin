@@ -663,13 +663,18 @@ def get_dbtype(dbtype):
         return dbtype
 
 
-def cast_date_time_as_epoch(dbconnection=None):
+def cast_date_time_as_epoch(dbconnection=None, date_time=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
-    if dbconnection.dbtype == 'spatialite':
-        return """CAST(strftime('%s', date_time) AS NUMERIC)"""
+
+    if date_time is None:
+        date_time = 'date_time'
     else:
-        return """extract(epoch from date_time::timestamp)"""
+        date_time = "'{}'".format(date_time)
+    if dbconnection.dbtype == 'spatialite':
+        return """CAST(strftime('%s', {}) AS NUMERIC)""".format(date_time)
+    else:
+        return """extract(epoch from {}::timestamp)""".format(date_time)
 
 
 def backup_db(dbconnection=None):

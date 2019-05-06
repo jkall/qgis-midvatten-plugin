@@ -779,7 +779,12 @@ class InputFields(RowEntry):
             if settings is None or not settings:
                 continue
 
-            import_method_chooser.import_method = [v if v else None for k, v in settings if k == 'import_method'][0]
+            try:
+                import_method_chooser.import_method = [v if v else None for k, v in settings if k == 'import_method'][0]
+            except ValueError:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('InputFields', 'Could not parse setting "%s". The stored settings probably use an old format. This will be corrected automatically.'))%str(settings))
+                import_method_chooser.import_method = None
+                continue
 
             if import_method_chooser.parameter_import_fields is None:
                 import_method_chooser.choose_method(import_method_chooser.import_method_classes)
