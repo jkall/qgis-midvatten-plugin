@@ -222,6 +222,10 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.L2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
         calibrlogger.M1_date.setDateTime(date_utils.datestring_to_date('2017-02-01 00:00'))
         calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
+        calibrlogger.L1_level.setText('100')
+        calibrlogger.L2_level.setText('200')
+        calibrlogger.M1_level.setText('200')
+        calibrlogger.M2_level.setText('100')
 
         calibrlogger.adjust_trend_func()
         res = db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger')
