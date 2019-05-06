@@ -24,7 +24,7 @@ changelog=
         - Loggercalibration: Fixes bug with adjust trend buttons.
         - Loggercalibration: Adjusted "adjust trend" so that it selects x and y values from canvas instead of from database.
                              This makes it possible to adjust trend without measurements.
-        - Fieldlogger import: Fixes python error bug when trying to load stored settings (second try).
+        - Fieldlogger import: Fixes python error bug when trying to load stored settings (second try)..
         Version 1.6.1b1:
         - Sectionplot: Fixes bug where bars where put in legend and one symbol was skipped.
         - Customplot: Added 'legend.midv_ncol' to matplotlib rcparams.
