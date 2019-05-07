@@ -576,7 +576,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             # skipped_bars is self-variable just to make it easily available for tests.
             self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
             leg = self.axes.legend(self.skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
-            leg.set_draggable(state=True)
+
+            try:
+                leg.set_draggable(state=True)
+            except AttributeError:
+                # For older version of matplotlib
+                leg.draggable(state=True)
+
             leg.set_zorder(999)
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])

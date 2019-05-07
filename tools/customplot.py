@@ -750,7 +750,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncol=ncol)
 
             leg.set_zorder(999)
-            leg.set_draggable(state=True)
+            try:
+                leg.set_draggable(state=True)
+            except AttributeError:
+                # For older version of matplotlib
+                leg.draggable(state=True)
         else:
             self.axes.legend_ = None
 
