@@ -90,6 +90,10 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
             return [], filename, location
 
         rows = [row.split(';') for row in rows_unsplit]
+        lens = set([len(row) for row in rows[data_header_idx:]])
+        if len(lens) != 1 or list(lens)[0] == 1:
+            # Assume that the delimiter was not ';'
+            rows = [row.split(',') for row in rows_unsplit]
 
         col1 = [row[0] for row in rows]
 

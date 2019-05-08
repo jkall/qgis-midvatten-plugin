@@ -120,7 +120,13 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         utils.start_waiting_cursor()  #show the user this may take a long time...
         parsed_files = []
         for selected_file in files:
-            res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+            try:
+                res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+            except:
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                      '''Error on file %s.''')) % selected_file)
+                raise
+
             if res == 'cancel':
                 self.status = True
                 utils.stop_waiting_cursor()
