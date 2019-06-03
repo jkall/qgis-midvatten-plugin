@@ -2037,7 +2037,8 @@ class ContinousColorCycle(object):
             #Use next again to not get the same as last time.
             next(self.style_cycle)
             next_combo = dict(next(self.style_cycle))
-            next_combo.update({'color': np.random.rand(3, 1)})
+            r = np.random.rand(3, 1).ravel()
+            next_combo.update({'color': r})
             return next_combo
 
 
