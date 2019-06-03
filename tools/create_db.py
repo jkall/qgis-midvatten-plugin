@@ -299,7 +299,8 @@ class NewDb(object):
         execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filenamestring), dbconnection)
 
     def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None):
-        tables = sorted(db_utils.get_tables(dbconnection=dbconnection, skip_views=True))
+        tables = sorted([x.split('.')[1] if len(x.split('.')) == 2 else x for x in
+                         db_utils.get_tables(dbconnection=dbconnection, skip_views=True)])
 
         #Matches comment inside /* */
         #create_table_sql CREATE TABLE meteo /*meteorological observations*/(

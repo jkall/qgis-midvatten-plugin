@@ -207,9 +207,10 @@ class DbConnectionManager(object):
         if schemas is None:
             return ''
         else:
-            if len(schemas) > 1:
-                utils.MessagebarAndLog.info(bar_msg='Found more than one schema. Using the first.')
-            return schemas[0][1]
+            return [schema[1] for schema in schemas]
+            #if len(schemas) > 1:
+            #    utils.MessagebarAndLog.info(bar_msg='Found more than one schema. Using the first.')
+            #return schemas[0][1]
 
     def closedb(self):
         self.conn.close()
@@ -234,8 +235,8 @@ class DbConnectionManager(object):
 
     def create_temporary_table_for_import(self, temptable_name, fieldnames_types, geometry_colname_type_srid=None):
 
-        if not temptable_name.startswith('temp_'):
-            temptable_name = 'temp_%s'%temptable_name
+        if not temptable_name.endswith('_temp'):
+            temptable_name = '%s_temp'%temptable_name
         existing_names = list(tables_columns(dbconnection=self).keys())
         while temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
             reponse = qgis.PyQt.QtWidgets.QMessageBox.question(None, ru(QCoreApplication.translate('DbConnectionManager', "Warning - Table name confusion!")),ru(QCoreApplication.translate('midv_data_importer', '''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtWidgets.QMessageBox.Yes | qgis.PyQt.QtWidgets.QMessageBox.No)
@@ -267,6 +268,7 @@ class DbConnectionManager(object):
                 sql = """CREATE table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
         else:
+            schema, temptable_name = get_schema_tablename(temptable_name)
             self.execute("""CREATE TEMPORARY table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types)))
             if geometry_colname_type_srid is not None:
                 geom_column = geometry_colname_type_srid[0]
@@ -422,7 +424,7 @@ def get_tables(dbconnection=None, skip_views=False):
             tabletype = "AND table_type='BASE TABLE'"
         else:
             tabletype = ''
-        tables_sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='%s' %s AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), tabletype, postgis_internal_tables())
+        tables_sql = "SELECT CASE WHEN table_schema != '' AND table_schema IS NOT NULL THEN table_schema || '.' || table_name ELSE table_name END FROM information_schema.tables WHERE table_schema IN (%s) %s AND table_name NOT IN %s ORDER BY table_name"%(utils.sql_unicode_list(dbconnection.schemas()), tabletype, postgis_internal_tables())
     tables = dbconnection.execute_and_fetchall(tables_sql)
     tablenames = [col[0] for col in tables]
     return tablenames
@@ -443,7 +445,8 @@ def get_table_info(tablename, dbconnection=None):
             return None
 
     else:
-        columns_sql = "SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
+        schema, name = get_schema_tablename(tablename)
+        columns_sql = "SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(schema, name)
         columns = [list(x) for x in dbconnection.execute_and_fetchall(columns_sql)]
         primary_keys = [x[0] for x in dbconnection.execute_and_fetchall("SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) WHERE i.indrelid = '%s'::regclass AND i.indisprimary;"%tablename)]
         for column in columns:
@@ -451,6 +454,13 @@ def get_table_info(tablename, dbconnection=None):
                 column[5] = 1
         columns = [tuple(column) for column in columns]
     return columns
+
+def get_schema_tablename(tablename):
+    schema_name = tablename.split('.')
+    if len(schema_name) == 2:
+        return schema_name
+    else:
+        return 'public', tablename
 
 
 def get_foreign_keys(table, dbconnection=None):
@@ -604,10 +614,12 @@ def get_geometry_types(dbconnection, tablename):
     if dbconnection.dbtype == 'spatialite':
         sql = """SELECT f_geometry_column, geometry_type FROM geometry_columns WHERE f_table_name = '%s'""" % tablename
     else:
+        schema, table = get_schema_tablename(tablename)
+
         sql = """SELECT f_geometry_column, type
                 FROM geometry_columns
                 WHERE f_table_schema = '%s'
-                AND f_table_name = '%s';"""%(dbconnection.schemas(), tablename)
+                AND f_table_name = '%s';"""%(schema, table)
     result = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
     return result
 
