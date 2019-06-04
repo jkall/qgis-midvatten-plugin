@@ -289,7 +289,7 @@ class TestGeneralExceptionHandler(object):
         assert len(one_arg_args_kwargs('a')[1]) == 0
         assert len(one_arg_args_kwargs('a')[2]) == 0
 
-@attr(status='on')
+@attr(status='only')
 class TestContinousColorCycle(object):
     def setUp(self):
         perform_all_replacements()
