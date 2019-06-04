@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>835</width>
-         <height>789</height>
+         <width>843</width>
+         <height>1049</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -128,19 +128,6 @@
                                </property>
                                <property name="text">
                                 <string>Replot</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item>
-                              <widget class="QPushButton" name="redraw">
-                               <property name="maximumSize">
-                                <size>
-                                 <width>250</width>
-                                 <height>16777215</height>
-                                </size>
-                               </property>
-                               <property name="text">
-                                <string>Redraw</string>
                                </property>
                               </widget>
                              </item>
@@ -431,7 +418,7 @@ p, li { white-space: pre-wrap; }
                               <string>Plot settings</string>
                              </property>
                              <property name="collapsed">
-                              <bool>true</bool>
+                              <bool>false</bool>
                              </property>
                              <layout class="QVBoxLayout" name="verticalLayout_2">
                               <item>

@@ -31,6 +31,8 @@ changelog=
         - Sectionplot: Sectionplot can now be used with one obsid. No longer limited to more than one.
         - Sectionplot: Sectionplot can now be used with only a selected line layer (for plotting DEMS and seismic).
         - Sectionplot: Bug fixes..
+        - Sectionplot: Settings tab can now be redocked by closing the window.
+        - Sectionplot: Removed redraw button. Legend updates automatically when clicking NavigationToolbar Apply button.
         - Logger calibration: Bug fix for when level masl only contain NULL-values.
         - Csv import: Added checkbox to ignore not null restrictions. Useful for Postgres importes with serial primary key columns.
         Version 1.6.1b2:

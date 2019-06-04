@@ -40,10 +40,11 @@ from midvatten_utils import PlotTemplates
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
-from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
 import matplotlib_replacements
 from operator import itemgetter
 from gui_utils import set_combobox
+import types
 
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
@@ -89,17 +90,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def initUI(self):
         # connect signal
         self.pushButton.clicked.connect(lambda x: self.draw_plot())
-        self.redraw.clicked.connect(lambda x: self.finish_plot())
         self.topLevelChanged.connect(lambda x: self.add_titlebar(self))
         self.settingsdockWidget.topLevelChanged.connect(lambda x: self.float_settings())
         self.include_views_checkBox.clicked.connect(lambda x: self.fill_wlvltable(self.include_views_checkBox.isChecked()))
         self.init_figure()
         self.tabWidget.currentChanged.connect(lambda: self.tabwidget_resize(self.tabWidget))
         self.tabwidget_resize(self.tabWidget)
-        self.wlvl_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget, self.wlvl_groupbox))
-        self.dem_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget, self.dem_groupbox))
-        self.bar_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget, self.bar_groupbox))
-        self.plots_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget, self.plots_groupbox))
+        self.wlvl_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget))
+        self.dem_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget))
+        self.bar_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget))
+        self.plots_groupbox.collapsedStateChanged.connect(lambda: self.resize_widget(self.settingsdockWidget))
+        self.tabWidget.setTabBarAutoHide(True)
+        self.settingsdockWidget.closeEvent = types.MethodType(self.dock_settings, self.settingsdockWidget)
+        self.resize_widget(self.settingsdockWidget)
 
     def init_figure(self):
         try:
@@ -124,6 +127,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.canvas.mpl_connect('button_release_event', lambda event: self.update_barwidths_from_plot())
         self.canvas.mpl_connect('resize_event', lambda event: self.update_barwidths_from_plot())
+        self.canvas.mpl_connect('draw_event', lambda event: self.update_legend())
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
 
@@ -146,7 +150,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         tab.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         tab.adjustSize()
 
-    def resize_widget(self, parent, widget):
+    def resize_widget(self, parent):
         """
 
         :param parent:
@@ -180,14 +184,38 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             widget.show()
 
     def float_settings(self):
-        if self.settingsdockWidget.isWindow():
-            self.add_titlebar(self.settingsdockWidget)
-            self.settingsdockWidget.setWindowTitle(QCoreApplication.translate('SectionPlot', 'Sectionplot settings'))
+        dockwidget = getattr(self, 'settingsdockWidget')
+        if dockwidget.isWindow():
+            self.add_titlebar(dockwidget)
+            dockwidget.setWindowTitle(QCoreApplication.translate('SectionPlot', 'Sectionplot settings'))
 
             if self.tabWidget.count() > 1:
                 self.tabWidget.removeTab(1)
+        dockwidget.setFeatures(QDockWidget.DockWidgetClosable)
 
-            #self.settingsdockWidget.setParent(self.parent)
+    def dock_settings(self, *args):
+        self.tabWidget.addTab(self.settings_tab, 'Settings')
+        self.old_settingsdockWidget = self.settingsdockWidget
+        self.settingsdockWidget = QDockWidget()
+        self.settingsdockWidget.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
+        self.settingsdockWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.settingsdockWidget.topLevelChanged.connect(lambda x: self.float_settings())
+        self.settingsdockWidget.closeEvent = types.MethodType(self.dock_settings, self.settingsdockWidget)
+
+        self.settingsdockWidget.setWidget(self.dockWidgetContents_2)
+
+        # Remove the old widget widgetitem from the old settingsdockWidget
+        self.verticalLayout_4.takeAt(0)
+        self.old_settingsdockWidget.destroy()
+
+        spacing = self.verticalLayout_4.takeAt(0)
+
+        self.verticalLayout_4.addWidget(self.settingsdockWidget)
+        self.verticalLayout_4.insertSpacerItem(-1, spacing)
+
+        self.resize_widget(self.settingsdockWidget)
+        self.tabwidget_resize(self.tabWidget)
+        self.tabWidget.adjustSize()
 
     def do_it(self, msettings, selected_obspoints, sectionlinelayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
@@ -572,24 +600,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
 
     def finish_plot(self):
-        if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
-            # skipped_bars is self-variable just to make it easily available for tests.
-            self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
-            leg = self.axes.legend(self.skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
-
-            try:
-                leg.set_draggable(state=True)
-            except AttributeError:
-                # For older version of matplotlib
-                leg.draggable(state=True)
-
-            leg.set_zorder(999)
-            frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-            frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])
-            # set the frame face color to white
-            frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
-            for t in leg.get_texts():
-                t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
+        self.update_legend()
 
         self.axes.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
         if not self.sectionlinelayer: # Test produces simple stratigraphy plot
@@ -644,6 +655,26 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         """
 
         plt.close(self.figure)#this closes reference to self.secfig
+
+    def update_legend(self):
+        if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
+            # skipped_bars is self-variable just to make it easily available for tests.
+            self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+            leg = self.axes.legend(self.skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+
+            try:
+                leg.set_draggable(state=True)
+            except AttributeError:
+                # For older version of matplotlib
+                leg.draggable(state=True)
+
+            leg.set_zorder(999)
+            frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+            frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])
+            # set the frame face color to white
+            frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
+            for t in leg.get_texts():
+                t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
 
     def get_dem_selection(self):
         self.rasterselection = []
