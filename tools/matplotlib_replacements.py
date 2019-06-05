@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 from matplotlib import rcsetup
 from cycler import cycler
 from midvatten_utils import returnunicode as ru
-from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSignal
 import types
 
 
@@ -58,6 +58,10 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions():
 
     :return:
     """
+
+    #NavigationToolbar2QT.edit_parameters_used = pyqtSignal([int])
+
+
     def apply_func(old_func):
         def use_style_context(self, *args, **kwargs):
             if hasattr(self, 'midv_use_style'):
@@ -67,6 +71,9 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions():
                     old_f(*args, **kwargs)
             else:
                 getattr(self, old_func)(*args, **kwargs)
+            #if old_func == 'edit_parameters':
+            #    self.edit_parameters_used.emit(1)
+
         return use_style_context
     for old_func in ['edit_parameters', 'configure_subplots', 'save_figure']:
         new_name = '_midv_old_{}'.format(old_func)

@@ -1626,6 +1626,9 @@ class PlotTemplates(object):
             selected = self.template_list.selectedItems()
             if selected:
                 filename = selected[0].filename
+                template = self.parse_template(filename)
+                if template:
+                    self.templates[filename] = template
                 self.loaded_template = self.templates[filename]['template']
 
     @general_exception_handler

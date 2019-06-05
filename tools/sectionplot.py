@@ -38,7 +38,7 @@ from midvatten_utils import returnunicode as ru
 from midvatten_utils import PlotTemplates
 
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSlot, QObject
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
 import matplotlib_replacements
@@ -127,7 +127,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.canvas.mpl_connect('button_release_event', lambda event: self.update_barwidths_from_plot())
         self.canvas.mpl_connect('resize_event', lambda event: self.update_barwidths_from_plot())
-        self.canvas.mpl_connect('draw_event', lambda event: self.update_legend())
+        #self.canvas.mpl_connect('draw_event', lambda event: self.update_legend(reuse_legend_position=True))
+        print("NavigationToolbar")
+        for items in sorted(NavigationToolbar.__dict__.items()):
+
+            print(str(items))
+        #print("NavigationToolbar: " + str(NavigationToolbar.__dict__))
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
 
@@ -137,6 +142,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         except Exception as e:
             utils.MessagebarAndLog.info(log_msg=ru(
                 QCoreApplication.translate('SectionPlot', 'Could not alter NavigationToolbar, msg: %s')) % str(e))
+
+        #TODO: Ongoing work
+        #self.slotobj = Slotobj(self.update_legend)
+        #self.mpltoolbar.edit_parameters_used.connect(self.slotobj.slotpasser)
 
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
@@ -600,6 +609,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
 
     def finish_plot(self):
+        print("Todo: finish_plot")
         self.update_legend()
 
         self.axes.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
@@ -656,18 +666,43 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         plt.close(self.figure)#this closes reference to self.secfig
 
+    #def edit_parameters_used(self):
+    #    self.update_legend()
+
     def update_legend(self):
         if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
             self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
-            leg = self.axes.legend(self.skipped_bars, self.labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+            legend_kwargs = dict(self.secplot_templates.loaded_template['legend_Axes_legend'])
+
+            """
+            if reuse_legend_position:
+                #print(str(self.axes.get_children()))
+                #legends = [c for c in self.axes.get_children() if isinstance(c, mpl.legend.Legend)]
+                #print(str(self.axes.get_legend()))
+                prev_legend = self.axes.get_legend()
+                #print(str())
+                print("Legend: " + str(prev_legend))
+                if prev_legend:
+                    #try:
+                    prev_loc =  prev_legend._get_loc()
+                    print("prev_loc" + str(prev_loc))
+                    #except:
+                    #    pass
+                    #else:
+                    legend_kwargs['loc'] = prev_loc
+            """
+
+            leg = self.axes.legend(self.skipped_bars, self.labels, **legend_kwargs)
 
             try:
                 leg.set_draggable(state=True)
             except AttributeError:
                 # For older version of matplotlib
                 leg.draggable(state=True)
-
+            #print("Is draggable" + str(leg.draggable()))
+            #print("leg helper" + str(l))
+            print("get_draggable: " + str(leg.get_draggable()))
             leg.set_zorder(999)
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])
@@ -1233,6 +1268,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ms.save_settings('secplotlabelsplotted')
         self.ms.save_settings('secplotwidthofplot')
         self.ms.save_settings('secplotincludeviews')
+        self.ms.save_settings('secplotlegendplotted')
 
         #Don't save plot min/max for next plot. If a specific is to be used, it should be set in a saved template file.
         loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)
@@ -1394,3 +1430,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 sampled_values.append((label, color))
 
         return sampled_values
+
+#TODO: Delete me if not use.
+"""
+class Slotobj(QObject):
+    def __init__(self, passfunc):
+        self.passfunc = passfunc
+
+    @pyqtSlot(int)
+    def slotpasser(self, val):
+        self.passfunc()
+"""
