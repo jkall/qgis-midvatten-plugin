@@ -101,7 +101,11 @@ class TimeSeriesPlot(object):
                 ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
                 ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
                 leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
-                leg.draggable(state=True)
+                try:
+                    leg.set_draggable(state=True)
+                except AttributeError:
+                    # For older version of matplotlib
+                    leg.draggable(state=True)
                 frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_facecolor('0.80')    # set the frame face color to light gray
                 frame.set_fill(False)    # set the frame face color transparent
