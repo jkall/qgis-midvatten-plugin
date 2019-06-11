@@ -35,6 +35,7 @@ changelog=
         - Sectionplot: Removed redraw button. Legend updates automatically when clicking NavigationToolbar Apply button.
         - Logger calibration: Bug fix for when level masl only contain NULL-values.
         - Csv import: Added checkbox to ignore not null restrictions. Useful for Postgres importes with serial primary key columns.
+        - Water quality report: Fixed error when parameter had "'" in the name.
         Version 1.6.1b2:
         - Loggercalibration: Fixes bug with adjust trend buttons.
         - Loggercalibration: Adjusted "adjust trend" so that it selects x and y values from canvas instead of from database.

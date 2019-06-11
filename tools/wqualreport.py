@@ -208,7 +208,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                     else:
                         sql += " AND substr(date_time,1,{})  = '{}' ".format(str(len(self.settingsdict['wqual_date_time_format'])), date_time)
 
-                sql += r""" AND parameter = '{}' """.format(p)
+                sql += r""" AND parameter = '{}' """.format(p.replace("'", "''"))
 
                 if self.settingsdict['wqual_unitcolumn'] and u:
                     sql += r""" AND {unitcol} = '{unit}' """.format(**{'unitcol': self.settingsdict['wqual_unitcolumn'],
