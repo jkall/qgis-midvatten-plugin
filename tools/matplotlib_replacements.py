@@ -20,12 +20,17 @@
 """
 import six
 import matplotlib as mpl
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+
+try:#assume matplotlib >=1.5.1
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+except:
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
+
 from matplotlib import pyplot as plt
 from matplotlib import rcsetup
 from cycler import cycler
 from midvatten_utils import returnunicode as ru
-from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSignal
+from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSignal, QObject
 import types
 
 
@@ -77,8 +82,8 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions():
         return use_style_context
     for old_func in ['edit_parameters', 'configure_subplots', 'save_figure']:
         new_name = '_midv_old_{}'.format(old_func)
-        setattr(NavigationToolbar2QT, new_name, getattr(NavigationToolbar2QT, old_func))
-        setattr(NavigationToolbar2QT, old_func, apply_func(new_name))
+        setattr(NavigationToolbar, new_name, getattr(NavigationToolbar, old_func))
+        setattr(NavigationToolbar, old_func, apply_func(new_name))
 
 def add_to_rc_defaultParams():
     """
@@ -122,3 +127,15 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_
 
     mpltoolbar.set_message = types.MethodType(set_message, mpltoolbar)
     mpltoolbar.locLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+
+class NavigationToolbarWithSignal(NavigationToolbar, QObject):
+    edit_parameters_used = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        NavigationToolbar.__init__(self, *args, **kwargs)
+
+    def edit_parameters(self, *args, **kwargs):
+        super(NavigationToolbarWithSignal, self).edit_parameters(*args, **kwargs)
+        self.edit_parameters_used.emit()
+

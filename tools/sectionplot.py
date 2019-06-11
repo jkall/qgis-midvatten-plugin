@@ -28,10 +28,13 @@ from matplotlib import container, patches
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from qgis.core import QgsProject
 
-try:#assume matplotlib >=1.5.1
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-except:
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
+#try:#assume matplotlib >=1.5.1
+#    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+#except:
+#    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
+
+from matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
+
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
@@ -127,12 +130,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.canvas.mpl_connect('button_release_event', lambda event: self.update_barwidths_from_plot())
         self.canvas.mpl_connect('resize_event', lambda event: self.update_barwidths_from_plot())
-        #self.canvas.mpl_connect('draw_event', lambda event: self.update_legend(reuse_legend_position=True))
-        print("NavigationToolbar")
-        for items in sorted(NavigationToolbar.__dict__.items()):
-
-            print(str(items))
-        #print("NavigationToolbar: " + str(NavigationToolbar.__dict__))
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
 
@@ -143,9 +140,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             utils.MessagebarAndLog.info(log_msg=ru(
                 QCoreApplication.translate('SectionPlot', 'Could not alter NavigationToolbar, msg: %s')) % str(e))
 
-        #TODO: Ongoing work
-        #self.slotobj = Slotobj(self.update_legend)
-        #self.mpltoolbar.edit_parameters_used.connect(self.slotobj.slotpasser)
+        try:
+            self.mpltoolbar.edit_parameters_used.connect(self.update_legend)
+        except Exception as e:
+            utils.MessagebarAndLog.info(log_msg=ru(
+                QCoreApplication.translate('SectionPlot', 'Could not connect to edit_parameters_used signal, msg: %s')) % str(e))
 
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
@@ -609,7 +608,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
 
     def finish_plot(self):
-        print("Todo: finish_plot")
         self.update_legend()
 
         self.axes.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
@@ -675,24 +673,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
             legend_kwargs = dict(self.secplot_templates.loaded_template['legend_Axes_legend'])
 
-            """
-            if reuse_legend_position:
-                #print(str(self.axes.get_children()))
-                #legends = [c for c in self.axes.get_children() if isinstance(c, mpl.legend.Legend)]
-                #print(str(self.axes.get_legend()))
-                prev_legend = self.axes.get_legend()
-                #print(str())
-                print("Legend: " + str(prev_legend))
-                if prev_legend:
-                    #try:
-                    prev_loc =  prev_legend._get_loc()
-                    print("prev_loc" + str(prev_loc))
-                    #except:
-                    #    pass
-                    #else:
-                    legend_kwargs['loc'] = prev_loc
-            """
-
             leg = self.axes.legend(self.skipped_bars, self.labels, **legend_kwargs)
 
             try:
@@ -700,9 +680,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             except AttributeError:
                 # For older version of matplotlib
                 leg.draggable(state=True)
-            #print("Is draggable" + str(leg.draggable()))
-            #print("leg helper" + str(l))
-            print("get_draggable: " + str(leg.get_draggable()))
             leg.set_zorder(999)
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])
