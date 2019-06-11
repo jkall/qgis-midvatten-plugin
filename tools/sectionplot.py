@@ -664,9 +664,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         plt.close(self.figure)#this closes reference to self.secfig
 
-    #def edit_parameters_used(self):
-    #    self.update_legend()
-
     def update_legend(self):
         if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
@@ -1407,14 +1404,3 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 sampled_values.append((label, color))
 
         return sampled_values
-
-#TODO: Delete me if not use.
-"""
-class Slotobj(QObject):
-    def __init__(self, passfunc):
-        self.passfunc = passfunc
-
-    @pyqtSlot(int)
-    def slotpasser(self, val):
-        self.passfunc()
-"""
