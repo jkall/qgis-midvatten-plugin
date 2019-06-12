@@ -234,19 +234,25 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         calibrlogger.L2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
         calibrlogger.M1_date.setDateTime(date_utils.datestring_to_date('2017-02-01 00:00'))
         calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
+        calibrlogger.L1_level.setText('100')
+        calibrlogger.L2_level.setText('200')
+        calibrlogger.M1_level.setText('200')
+        calibrlogger.M2_level.setText('100')
 
         calibrlogger.adjust_trend_func()
-
-        res = db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger')
-
+        res = db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger')
         l = list(res[1][1])
         l[5] = '%.11e'%Decimal(l[5])
         res[1][1] = tuple(l)
         test = utils_for_tests.create_test_string(res)
-
         print(mock_messagebar.mock_calls)
-        print(test)
+
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 100.0, None), (rb1, 2017-02-10 00:00, None, None, None, -2.84217094304e-14, None)])'
+        print("Ref")
+
+        print(ref)
+        print("Test")
+        print(test)
         assert test == ref
 
     @mock.patch('midvatten_utils.MessagebarAndLog')

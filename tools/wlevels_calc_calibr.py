@@ -269,7 +269,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         obsid = self.selected_obsid
         if not obsid:
             try:
-                print('error onsid ' + str(obsid))
+                print('error obsid ' + str(obsid))
             except:
                 pass
             #utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "ERROR: no obsid is chosen")))
@@ -454,7 +454,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        if self.meas_ts.size:
+        if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts):
             self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15, color='#1f77b4ff')
         
         # Load Loggerlevels (full time series) for the obsid
@@ -466,10 +466,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             original_head_style = '--'
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
+        if self.level_masl_ts.size and self.contains_more_than_nan(self.level_masl_ts):
+            self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
 
         #Plot the original head_cm
-        if self.plot_logger_head.isChecked():
+        if self.plot_logger_head.isChecked() and self.head_ts_for_plot.size and self.contains_more_than_nan(self.head_ts_for_plot):
             self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' original logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5, color='#c1c1c1ff')
 
         """ Finish plot """
@@ -516,7 +517,19 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def timestring_list_to_time_list(self, timestring_list):
         """Get help from function datestr2num to get date and time into float"""
         return datestr2num(timestring_list)
-        
+
+    @fn_timer
+    def contains_more_than_nan(self, a_recarray):
+        try:
+            not_nan = self.list_of_list_to_recarray(list(filter(lambda v: v == v, a_recarray)))
+        except TypeError:
+            print("Error in contains_more_than_nan, recarray: " + str(a_recarray))
+            raise
+        if not_nan.size:
+            return True
+        else:
+            return False
+
     @fn_timer
     def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5, zorder=None, markersize=None, color=None):
         kwargs = {'label': lable, 'picker':picker}
@@ -867,7 +880,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def set_adjust_data(self, date_holder, level_holder):
-        print("Here")
         self.reset_cid()
         self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
@@ -876,11 +888,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def set_adjust_data_on_click(self, event, date_var, level_var):
-        print("Here2")
         getattr(self, level_var).setText(str(float(event.ydata)))
         getattr(self, date_var).setDateTime(num2date(float(event.xdata)))
         self.reset_cid()
-        print("Here3")
 
     @fn_timer
     def adjust_trend_func(self):
@@ -901,6 +911,17 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 'M1_level': str(float(self.M1_level.text())),
                 'M2_level': str(float(self.M2_level.text())),
                 'date_as_numeric': db_utils.cast_date_time_as_epoch()}
+
+        sql = """SELECT level_masl FROM w_levels_logger WHERE level_masl IS NOT NULL AND obsid = '{obsid}'
+                                                              AND date_time > '{adjust_start_date}'
+                                                              AND date_time < '{adjust_end_date}'""".format(**{
+            'obsid': data['obsid'], 'adjust_start_date': data['adjust_start_date'],
+                                                         'adjust_end_date': data['adjust_end_date']})
+        res = db_utils.sql_load_fr_db(sql)[1]
+        if not res:
+            utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger',
+                                                            """Warning!\n No data found within the chosen period. No trend adjustment done!\nTry changing "from" and "to".""")))
+            return
 
         sql = """
                 UPDATE w_levels_logger SET level_masl = level_masl -

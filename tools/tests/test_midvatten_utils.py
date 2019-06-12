@@ -32,6 +32,7 @@ import mock
 import nose
 from mock import call
 from nose.plugins.attrib import attr
+import numpy as np
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
@@ -289,7 +290,7 @@ class TestGeneralExceptionHandler(object):
         assert len(one_arg_args_kwargs('a')[1]) == 0
         assert len(one_arg_args_kwargs('a')[2]) == 0
 
-@attr(status='only')
+@attr(status='on')
 class TestContinousColorCycle(object):
     def setUp(self):
         perform_all_replacements()
@@ -352,11 +353,11 @@ class TestContinousColorCycle(object):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.np.random.rand')
     def test_continous_color_cycle_ran_out(self, mock_np_random_rand, mock_messagebar):
-        # TODO: Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler
+        """Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler"""
         color_cycler = (cycler('color', ['r', 'g']))
         line_cycler = (cycler('linestyle', ['-', '--']))
 
-        mock_np_random_rand.side_effect = ['123', '456', '789']
+        mock_np_random_rand.side_effect = np.array(['123', '456', '789'])
 
         color_cycle_len = len(color_cycler)
         color_cycle = color_cycler()
