@@ -679,7 +679,10 @@ def find_nearest_using_pythagoras(xy_point, xy_array):
 
         >>> find_nearest_using_pythagoras((1, 2), ((4, 5), (3, 5), (-1, 1)))
         (-1, 1)
+        >>> find_nearest_using_pythagoras((1, None), (1, 2), ((4, 5), (3, 5), (-1, 1)))
+        (-1, 1)
     """
+    xy_array = xy_array[~np.isnan(xy_array).any(axis=1)]
     distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in range(len(xy_array))]
     min_index = distances.index(min(distances))
     return xy_array[min_index]

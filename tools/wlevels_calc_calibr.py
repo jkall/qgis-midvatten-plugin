@@ -529,7 +529,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             return True
         else:
             return False
-        
+
     @fn_timer
     def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5, zorder=None, markersize=None, color=None):
         kwargs = {'label': lable, 'picker':picker}
@@ -911,6 +911,17 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 'M1_level': str(float(self.M1_level.text())),
                 'M2_level': str(float(self.M2_level.text())),
                 'date_as_numeric': db_utils.cast_date_time_as_epoch()}
+
+        sql = """SELECT level_masl FROM w_levels_logger WHERE level_masl IS NOT NULL AND obsid = '{obsid}'
+                                                              AND date_time > '{adjust_start_date}'
+                                                              AND date_time < '{adjust_end_date}'""".format(**{
+            'obsid': data['obsid'], 'adjust_start_date': data['adjust_start_date'],
+                                                         'adjust_end_date': data['adjust_end_date']})
+        res = db_utils.sql_load_fr_db(sql)[1]
+        if not res:
+            utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger',
+                                                            """Warning!\n No data found within the chosen period. No trend adjustment done!\nTry changing "from" and "to".""")))
+            return
 
         sql = """
                 UPDATE w_levels_logger SET level_masl = level_masl -
