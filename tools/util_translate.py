@@ -28,6 +28,7 @@ For create file 'qm'
 import os
 from qgis.PyQt.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication
 from qgis.core import QgsApplication, Qgis
+import glob
 
 def getTranslate(namePlugin, nameDir=None):
     if nameDir is None:
@@ -41,12 +42,29 @@ def getTranslate(namePlugin, nameDir=None):
     systemPath = QgsApplication.prefixPath()
     systemPluginPath = os.path.join(systemPath, pluginPath)
 
-    overrideLocale = QSettings().value('locale/overrideFlag', False, type=bool)
-    localeFullName = QLocale.system().name() if not overrideLocale else QSettings().value('locale/userLocale', '')
-
-    qmPathFile = os.path.join('i18n', '{0}_{1}.qm'.format(namePlugin, localeFullName))
     pp = userPluginPath if QFileInfo(userPluginPath).exists() else systemPluginPath
-    translationFile = os.path.join(pp, qmPathFile)
+
+    overrideLocale = QSettings().value('locale/overrideFlag', False, type=bool)
+    if overrideLocale:
+        qmPathFilepattern = os.path.join('i18n', '{0}_{1}_*.qm'.format(namePlugin, QSettings().value('locale/userLocale', '')))
+
+        qmfiles = glob.glob(os.path.join(pp, qmPathFilepattern))
+        if qmfiles:
+            translationFile = sorted(qmfiles)[0]
+            QgsApplication.messageLog().logMessage(
+                ("QGIS location overried is activated. Using the first found translationfile for pattern {}.".format(qmPathFilepattern)),
+                'Midvatten',
+                level=Qgis.Info)
+        else:
+            QgsApplication.messageLog().logMessage(
+                ("QGIS location overried is activated. No translation file found using pattern {}, no translation file installed!".format(qmPathFilepattern)),
+                'Midvatten',
+                level=Qgis.Info)
+            return
+    else:
+        localeFullName = QLocale.system().name()
+        qmPathFile = os.path.join('i18n', '{0}_{1}.qm'.format(namePlugin, localeFullName))
+        translationFile = os.path.join(pp, qmPathFile)
 
     if QFileInfo(translationFile).exists():
         translator = QTranslator()

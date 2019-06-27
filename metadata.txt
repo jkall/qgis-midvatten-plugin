@@ -21,6 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.1b3:
+        - Bug fix for translation support when the overridden locale was not the same as system locale.
         - Water quality report: Fixed error when parameter had "'" in the name.
         - Loggercalibration: Added error message.
         - Loggercalibration: Fix for when logger ts contained nan-values.
