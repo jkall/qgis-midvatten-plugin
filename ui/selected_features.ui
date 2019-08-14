@@ -60,7 +60,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QPushButton" name="pushbutton_cancel">
@@ -77,6 +77,16 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="filter_layer_checkbox">
+        <property name="toolTip">
+         <string>The selected layer is filtered automatically.</string>
+        </property>
+        <property name="text">
+         <string>Apply filter on selected layer</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
