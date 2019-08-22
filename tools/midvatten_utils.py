@@ -193,7 +193,8 @@ class Askuser(QtWidgets.QDialog):
 
 
 class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle='Warning', msg='', existing_list=None, default_value='', parent=None, button_names=['Ignore', 'Cancel', 'Ok'], combobox_label='Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=''):
+    window_position = qgis.PyQt.QtCore.QPoint(500, 150)
+    def __init__(self, dialogtitle='Warning', msg='', existing_list=None, default_value='', parent=None, button_names=['Ignore', 'Cancel', 'Ok'], combobox_label='Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column='', ignore_checkbox=False):
         QtWidgets.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -206,7 +207,11 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
             for existing in existing_list:
                 self.comboBox.addItem(existing)
 
-        for button_name in button_names:
+        if ignore_checkbox:
+            self.ignore_checkbox = qgis.PyQt.QtWidgets.QCheckBox(QCoreApplication.translate('NotFoundQuestion', 'Ignore database missmatch'), self)
+            self.ignore_checkbox.setToolTip(QCoreApplication.translate('NotFoundQuestion', 'Ignore database missmatch and try to import anyway'))
+            self.ignore_layout.addWidget(self.ignore_checkbox)
+        for idx, button_name in enumerate(button_names):
             button = QtWidgets.QPushButton(button_name)
             button.setObjectName(button_name.lower())
             self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
@@ -224,9 +229,9 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
 
         _label = QtWidgets.QLabel(msg)
         if 140 < _label.height() <= 300:
-            self.setGeometry(500, 150, self.width(), 415)
+            self.setGeometry(NotFoundQuestion.window_position.x(), NotFoundQuestion.window_position.y(), self.width(), 415)
         elif _label.height() > 300:
-            self.setGeometry(500, 150, self.width(), 600)
+            self.setGeometry(NotFoundQuestion.window_position.x(), NotFoundQuestion.window_position.y(), self.width(), 600)
 
         self.exec_()
 
@@ -256,6 +261,7 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
     def closeEvent(self, event):
         if self.answer is None:
             self.set_answer_and_value('cancel')
+        NotFoundQuestion.window_position = self.geometry().topLeft()
         super(NotFoundQuestion, self).closeEvent(event)
 
         #self.close()
@@ -963,7 +969,6 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
     filtered_data = []
     data_to_ask_for = []
     add_column = False
-
     try:
         index = file_data[0].index(header_value)
     except ValueError:
@@ -1021,37 +1026,43 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
                     found = True
                     break
         if found:
+
             continue
 
-        #Put the found similar values on top, but include all values in the database as well
+        submitted_value = None
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
+        while submitted_value not in existing_values:
+            #Put the found similar values on top, but include all values in the database as well
+            msg = returnunicode(QCoreApplication.translate('filter_nonexisting_values_and_ask', '(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, '\n'.join([': '.join((file_data[0][_colnr], word if word is not None else '')) for _colnr, word in enumerate(row)]))
+            question = NotFoundQuestion(dialogtitle=QCoreApplication.translate('filter_nonexisting_values_and_ask', 'User input needed'),
+                                        msg=msg,
+                                        existing_list=similar_values,
+                                        default_value=similar_values[0],
+                                        button_names=['Cancel', 'Ok', 'Skip'],
+                                        reuse_header_list=sorted(headers_colnr.keys()),
+                                        reuse_column=reuse_column,
+                                        ignore_checkbox=True)
+            answer = question.answer
 
-        msg = returnunicode(QCoreApplication.translate('filter_nonexisting_values_and_ask', '(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, '\n'.join([': '.join((file_data[0][_colnr], word if word is not None else '')) for _colnr, word in enumerate(row)]))
-        question = NotFoundQuestion(dialogtitle=QCoreApplication.translate('filter_nonexisting_values_and_ask', 'WARNING'),
-                                    msg=msg,
-                                    existing_list=similar_values,
-                                    default_value=similar_values[0],
-                                    button_names=['Cancel', 'Ok', 'Skip'],
-                                    reuse_header_list=sorted(headers_colnr.keys()),
-                                    reuse_column=reuse_column
-                                    )
-        answer = question.answer
-        submitted_value = returnunicode(question.value)
-        reuse_column = returnunicode(question.reuse_column)
-        if answer == 'cancel':
-            raise UserInterruptError()
-        elif answer == 'ok':
-            current_value = submitted_value
-        elif answer == 'skip':
-            current_value = None
+            submitted_value = returnunicode(question.value)
+            reuse_column = returnunicode(question.reuse_column)
 
-        if reuse_column:
-            already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
+            if answer == 'cancel':
+                raise UserInterruptError()
 
-        if current_value is not None:
-            row[index] = current_value
-            filtered_data.append(row)
+            if answer == 'skip':
+                submitted_value = None
+
+            if reuse_column:
+                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = submitted_value
+
+            if submitted_value is not None:
+                row[index] = submitted_value
+                filtered_data.append(row)
+
+            if answer == 'skip' or question.ignore_checkbox.isChecked():
+                break
 
     return filtered_data
 

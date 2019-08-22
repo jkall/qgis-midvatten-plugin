@@ -47,6 +47,10 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.answer = 'ok'
             mock_notfound.return_value.value = 10
             mock_notfound.return_value.reuse_column = 'obsid'
+            mock_checkbox = mock.Mock()
+            mock_checkbox.return_value.isChecked.return_value = True
+            mock_notfound.return_value.ignore_checkbox = mock_checkbox #isChecked.return_value = True
+            
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
@@ -59,6 +63,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.answer = 'cancel'
             mock_notfound.return_value.value = 10
             mock_notfound.return_value.reuse_column = 'obsid'
+            
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
             nose.tools.assert_raises(utils.UserInterruptError, utils.filter_nonexisting_values_and_ask, file_data, 'obsid', existing_obsids)
@@ -69,6 +74,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.answer = 'skip'
             mock_notfound.return_value.value = 10
             mock_notfound.return_value.reuse_column = 'obsid'
+            
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
@@ -81,6 +87,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.answer = 'skip'
             mock_notfound.return_value.value = 10
             mock_notfound.return_value.reuse_column = 'obsid'
+            
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], [None, 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
@@ -94,6 +101,10 @@ class TestFilterNonexistingObsidsAndAsk(object):
         mock_notfound.return_value.answer = 'ok'
         mock_notfound.return_value.value = 10
         mock_notfound.return_value.reuse_column = 'obsid'
+        mock_checkbox = mock.Mock()
+        mock_checkbox.return_value.isChecked.return_value = True
+        mock_notfound.return_value.ignore_checkbox = mock_checkbox  # isChecked.return_value = True
+        
         file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
         existing_obsids = ['2', '3', '10', '1_g', '1 a']
         filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'header_that_should_not_exist', existing_obsids)
@@ -114,13 +125,18 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.answer = 'ok'
             mock_notfound.return_value.value = 10
             mock_notfound.return_value.reuse_column = 'obsid'
+            mock_checkbox = mock.Mock()
+            mock_checkbox.return_value.isChecked.return_value = True
+            mock_notfound.return_value.ignore_checkbox = mock_checkbox #isChecked.return_value = True
+            
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h'], ['1', 'i']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
             reference_list = [['obsid', 'ae'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['10', 'b'], ['10', 'h'], ['10', 'i']]
             assert filtered_file_data == reference_list
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
-            assert len(mock_notfound.mock_calls) == 2
+            print(str(mock_notfound.mock_calls))
+            assert len(mock_notfound.mock_calls) == 4
 
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -128,6 +144,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.answer = 'skip'
             mock_notfound.return_value.value = 10
             mock_notfound.return_value.reuse_column = 'obsid'
+            
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h'], ['1', 'i']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)

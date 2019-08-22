@@ -212,6 +212,9 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                         mock_encoding.return_value = ['utf-8', True]
 
                         mock_notfound.return_value.answer = 'ok'
+                        mock_checkbox = mock.Mock()
+                        mock_checkbox.return_value.isChecked.return_value = True
+                        mock_notfound.return_value.ignore_checkbox = mock_checkbox
                         mock_notfound.return_value.value = 'rb2'
                         mock_notfound.return_value.reuse_column = 'obsid'
 
@@ -286,6 +289,9 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                         mock_encoding.return_value = ['utf-8', True]
 
                         mock_notfound.return_value.answer = 'ok'
+                        mock_checkbox = mock.Mock()
+                        mock_checkbox.return_value.isChecked.return_value = True
+                        mock_notfound.return_value.ignore_checkbox = mock_checkbox
                         mock_notfound.return_value.value = 'obsid1'
                         mock_notfound.return_value.reuse_column = 'obsid'
 

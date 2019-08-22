@@ -24,6 +24,8 @@ changelog=
         - Pull from master.
         - List of values from selected features: Added filter checkbox.
         - Added more supported date formats.
+        - Fieldlogger import: Fixed bug where h_toc was empty string.
+        - NotFoundQuestion: Added ignore checkbox.
         Version 1.6.2b1:
         - Sectionplot: New ui for sectionplot. Settings in separate tab but can be floatable to separate window.
         - Sectionplot: Plot and settings now separated in two tabs.

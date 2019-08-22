@@ -1018,8 +1018,13 @@ class WLevelsImportFields(RowEntryGrid):
                             self.h_toc_dict = dict([(obsid_h_toc[0], obsid_h_toc[1]) for obsid_h_toc in db_utils.sql_load_fr_db('SELECT obsid, h_toc FROM obs_points WHERE h_toc IS NOT NULL')[1]])
                         h_toc = self.h_toc_dict.get(observation['obsid'], None)
                         if h_toc is not None:
-                            observation['level_masl'] = str(float(h_toc) - float(observation['meas']))
-                            observation['h_toc'] = str(float(h_toc))
+                            try:
+                                h_toc = float(h_toc)
+                            except ValueError:
+                                pass
+                            else:
+                                observation['level_masl'] = str(h_toc - float(observation['meas']))
+                                observation['h_toc'] = str(h_toc)
         return observations
 
     def get_settings(self):

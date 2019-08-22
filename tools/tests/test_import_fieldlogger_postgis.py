@@ -924,6 +924,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db('select * from %s'%k)) for k in ('w_levels', 'w_qual_field', 'w_flow', 'zz_staff', 'comments')]))
             print(test_string)
             reference_string = '{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1615, 2016-03-29 15:34:13, ergv2, teststaff)]), w_flow: (True, []), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, 0.0, -555.0, ergv), (Rb1615, 2016-03-31 15:34:13, 111.0, None, None, ergv1)]), w_qual_field: (True, []), zz_staff: (True, [(teststaff, None)])}'
+            print(reference_string)
             assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
