@@ -7,7 +7,7 @@ description=A toolset that makes QGIS an interface for editing/viewing hydrogeol
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
 version=Version 1.6.2b2
 author=Josef Källgården, Henrik Spångmyr
-email=groundwatergis@gmail.com
+email=midvattenplugin@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
 
 ;optional metadata entries
