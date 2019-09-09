@@ -204,6 +204,11 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         rpt += "<html><body>"
         f.write(rpt)
 
+        if 'report_parameterorder' in db_utils.get_tables(skip_views=False):
+            report_categories = db_utils.get_sql_result_as_dict('''SELECT category, sortorder, parameter, unit FROM report_parameterorder ORDER BY category ASC, sortorder ASC;''')
+        else:
+            report_categories = {'Default': None}
+
         if from_active_layer:
             utils.pop_up_info(ru(QCoreApplication.translate('CompactWqualReport', 'Check that exported number of rows are identical to expected number of rows!\nFeatures in layers from sql queries can be invalid and then excluded from the report!')), 'Warning!')
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
@@ -215,19 +220,20 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             data = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
 
-        report_data, num_data = self.data_to_printlist(data)
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
+        for category, parameter_order in report_categories:
+            report_data, num_data = self.data_to_printlist(data, parameter_order=parameter_order)
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
 
-        for startcol in range(1, len(report_data[0]), num_data_cols):
-            printlist = [[row[0]] for row in report_data]
-            for rownr, row in enumerate(report_data):
-                printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
+            for startcol in range(1, len(report_data[0]), num_data_cols):
+                printlist = [[row[0]] for row in report_data]
+                for rownr, row in enumerate(report_data):
+                    printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
 
-            filtered = [row for row in printlist if any(row[1:])]
+                filtered = [row for row in printlist if any(row[1:])]
 
-            self.htmlcols = len(filtered[0])
-            self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
-                        page_break_between_tables=page_break_between_tables)
+                self.htmlcols = len(filtered[0])
+                self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
+                            page_break_between_tables=page_break_between_tables)
 
         # write some finishing html and close the file
         f.write("\n</body></html>")
@@ -287,16 +293,20 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             data.setdefault(obsid, {}).setdefault(date_time, {}).setdefault(report, {})[par_unit] = reading_txt
         return data
 
-    def data_to_printlist(self, data):
+    def data_to_printlist(self, data, parameter_order=None):
         num_data = 0
 
-        distinct_parameters = set([p for obsid, date_times in data.items()
+        distinct_parameters = sorted(set([p for obsid, date_times in data.items()
                                    for date_time, reports in date_times.items()
                                         for reports, parameters in reports.items()
-                                            for p in list(parameters.keys())])
+                                            for p in list(parameters.keys())]),
+                                     key=lambda s: s.lower())
+
+        if parameter_order:
+            distinct_parameters = [', '.join([x for x in [parameter, unit] if x]) for sortorder, parameter, unit in parameter_order if ', '.join([x for x in [parameter, unit] if x]) in distinct_parameters]
 
         outlist = [['obsid'], ['date_time'], ['report']]
-        outlist.extend([[p] for p in sorted(distinct_parameters, key=lambda s: s.lower())])
+        outlist.extend([[p] for p in distinct_parameters])
 
         for obsid, date_times in sorted(iter(data.items()), key=lambda s: s[0].lower()):
             for date_time, reports in sorted(date_times.items()):
