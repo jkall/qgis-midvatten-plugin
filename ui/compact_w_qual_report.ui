@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>454</width>
-    <height>350</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="10" column="1">
        <widget class="QComboBox" name="sql_table">
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
@@ -88,7 +88,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="10" column="0">
        <widget class="QRadioButton" name="from_sql_table">
         <property name="text">
          <string>Data from selected obsids in sql table</string>
@@ -98,14 +98,14 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
+      <item row="7" column="0" colspan="2">
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QRadioButton" name="from_active_layer">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Check that exported number of rows are identical to expected number of rows!&lt;br/&gt;Features in layers from sql queries can be invalid and then excluded from the report!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -118,10 +118,10 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QLabel" name="label_4">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Check that exported number of rows are identical to expected number of rows!&lt;br/&gt;Features in layers from sql queries can be invalid and then excluded from the report!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>README! (tooltip)</string>
@@ -135,10 +135,23 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Table data:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QCheckBox" name="sort_alphabetically">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, parameters will always be printed in alphabetical order.&lt;/p&gt;&lt;p&gt;If unchecked, parameters will be printed in the order give from the sql or vector layer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Sort parameters alphabetically</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -166,7 +179,7 @@
      <x>0</x>
      <y>0</y>
      <width>454</width>
-     <height>27</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

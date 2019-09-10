@@ -69,7 +69,8 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                          'page_break_between_tables',
                          'from_active_layer',
                          'from_sql_table',
-                         'sql_table']
+                         'sql_table',
+                         'sort_alphabetically']
 
         self.stored_settings_key = 'compactwqualreport'
 
@@ -77,6 +78,10 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.update_from_stored_settings(self.stored_settings)
 
         self.pushButton_ok.clicked.connect(lambda x: self.wqualreport())
+
+        self.from_active_layer.setToolTip(ru(QCoreApplication.translate('CompactWqualReport', 'Do not use an sqlite database view or a qgis sql query as the active layer! This can result in invalid features and mismatching data!\nIf the active layer is a layer like that, export the layer to a different format or convert into a proper sqlite table instead.')))
+        self.label_4.setToolTip(self.from_active_layer.toolTip())
+        self.from_active_layer.clicked.connect(lambda x: self.active_layer_warning())
 
         #self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
@@ -91,6 +96,9 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 
         self.show()
 
+    def active_layer_warning(self):
+        utils.pop_up_info(self.from_active_layer.toolTip(), 'Warning!')
+
     @utils.general_exception_handler
     def wqualreport(self):
 
@@ -99,13 +107,16 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         empty_row_between_tables = self.empty_row_between_tables.isChecked()
         page_break_between_tables = self.page_break_between_tables.isChecked()
         from_active_layer = self.from_active_layer.isChecked()
+        if from_active_layer:
+            self.active_layer_warning()
         from_sql_table = self.from_sql_table.isChecked()
         sql_table = self.sql_table.currentText()
+        sort_alphabetically = self.sort_alphabetically.isChecked()
 
         self.save_stored_settings(self.save_attrnames)
 
         wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, from_active_layer, sql_table)
+                            page_break_between_tables, from_active_layer, sql_table, sort_alphabetically)
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
@@ -186,7 +197,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, from_active_layer, sql_table):
+                            page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically):
         #show the user this may take a long time...
         utils.start_waiting_cursor()
 
@@ -204,36 +215,29 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         rpt += "<html><body>"
         f.write(rpt)
 
-        if 'report_parameterorder' in db_utils.get_tables(skip_views=False):
-            report_categories = db_utils.get_sql_result_as_dict('''SELECT category, sortorder, parameter, unit FROM report_parameterorder ORDER BY category ASC, sortorder ASC;''')
-        else:
-            report_categories = {'Default': None}
-
         if from_active_layer:
-            utils.pop_up_info(ru(QCoreApplication.translate('CompactWqualReport', 'Check that exported number of rows are identical to expected number of rows!\nFeatures in layers from sql queries can be invalid and then excluded from the report!')), 'Warning!')
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
             if w_qual_lab_layer is None:
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
             if not w_qual_lab_layer.selectedFeatureCount():
                 w_qual_lab_layer.selectAll()
-            data = self.get_data_from_qgislayer(w_qual_lab_layer)
+            data, par_unit_order = self.get_data_from_qgislayer(w_qual_lab_layer)
         else:
-            data = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
+            data, par_unit_order = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
 
-        for category, parameter_order in report_categories:
-            report_data, num_data = self.data_to_printlist(data, parameter_order=parameter_order)
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
+        report_data, num_data = self.data_to_printlist(data, par_unit_order, sort_parameters_alphabetically)
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
 
-            for startcol in range(1, len(report_data[0]), num_data_cols):
-                printlist = [[row[0]] for row in report_data]
-                for rownr, row in enumerate(report_data):
-                    printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
+        for startcol in range(1, len(report_data[0]), num_data_cols):
+            printlist = [[row[0]] for row in report_data]
+            for rownr, row in enumerate(report_data):
+                printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
 
-                filtered = [row for row in printlist if any(row[1:])]
+            filtered = [row for row in printlist if any(row[1:])]
 
-                self.htmlcols = len(filtered[0])
-                self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
-                            page_break_between_tables=page_break_between_tables)
+            self.htmlcols = len(filtered[0])
+            self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
+                        page_break_between_tables=page_break_between_tables)
 
         # write some finishing html and close the file
         f.write("\n</body></html>")
@@ -260,10 +264,14 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         rows = db_utils.sql_load_fr_db(sql)[1]
 
         data = {}
+        par_unit_order = []
         for row in rows:
-            data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[', '.join([x for x in [row[3], row[4]] if x])] = row[5]
+            par_unit = ', '.join([x for x in [row[3], row[4]] if x])
+            data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[par_unit] = row[5]
+            if par_unit not in par_unit_order:
+                par_unit_order.append(par_unit)
 
-        return data
+        return data, par_unit_order
 
     def get_data_from_qgislayer(self, w_qual_lab_layer):
         """
@@ -271,7 +279,10 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                  CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
                  reading_txt 
         """
+
         fields = w_qual_lab_layer.fields()
+        nr_of_selected = w_qual_lab_layer.selectedFeatureCount()
+
         fieldnames = [field.name() for field in fields]
         columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', 'reading_txt']
         for column in columns:
@@ -281,7 +292,14 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         indexes = {column: fields.indexFromName(column) for column in columns}
 
         data = {}
-        for feature in w_qual_lab_layer.getSelectedFeatures():
+        par_unit_order = []
+        invalid_features = 0
+        num_features = 0
+        for feature in w_qual_lab_layer.selectedFeatures():
+            if not feature.isValid():
+                invalid_features += 1
+                continue
+
             attrs = feature.attributes()
             obsid = attrs[indexes['obsid']]
             date_time = attrs[indexes['date_time']]
@@ -290,20 +308,27 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             unit = attrs[indexes['unit']]
             reading_txt = attrs[indexes['reading_txt']]
             par_unit = ', '.join([x for x in [parameter, unit] if x])
+            if par_unit not in par_unit_order:
+                par_unit_order.append(par_unit)
             data.setdefault(obsid, {}).setdefault(date_time, {}).setdefault(report, {})[par_unit] = reading_txt
-        return data
+            num_features += 1
 
-    def data_to_printlist(self, data, parameter_order=None):
+        if invalid_features:
+            msgfunc = utils.MessagebarAndLog.warning
+        else:
+            msgfunc = utils.MessagebarAndLog.info
+
+        msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(nr_of_selected), str(num_features), str(invalid_features)))
+
+        return data, par_unit_order
+
+    def data_to_printlist(self, data, par_unit_order, sort_parameters_alphabetically=True):
         num_data = 0
 
-        distinct_parameters = sorted(set([p for obsid, date_times in data.items()
-                                   for date_time, reports in date_times.items()
-                                        for reports, parameters in reports.items()
-                                            for p in list(parameters.keys())]),
-                                     key=lambda s: s.lower())
-
-        if parameter_order:
-            distinct_parameters = [', '.join([x for x in [parameter, unit] if x]) for sortorder, parameter, unit in parameter_order if ', '.join([x for x in [parameter, unit] if x]) in distinct_parameters]
+        if sort_parameters_alphabetically:
+            distinct_parameters = sorted(par_unit_order, key=lambda s: s[0].lower())
+        else:
+            distinct_parameters = par_unit_order
 
         outlist = [['obsid'], ['date_time'], ['report']]
         outlist.extend([[p] for p in distinct_parameters])
