@@ -216,6 +216,8 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
 
                         mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
+
+                        mock_notfound.return_value.answer = 'ok'
                         mock_checkbox = mock.Mock()
                         mock_checkbox.return_value.isChecked.return_value = True
                         mock_notfound.return_value.ignore_checkbox = mock_checkbox

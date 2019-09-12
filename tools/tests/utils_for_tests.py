@@ -32,6 +32,7 @@ from qgis.PyQt import QtCore
 from collections import OrderedDict
 from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QWidget, QDialog
+import matplotlib.pyplot as plt
 
 import db_utils
 import midvatten_utils as utils
@@ -140,6 +141,9 @@ class MidvattenTestBase(object):
         QWidget.show = show
         QDialog.exec_ = show
 
+    def tearDown(self):
+        plt.close('all')
+
 
 class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
     mock_instance_settings_database = mock.MagicMock()
@@ -170,6 +174,7 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
             os.remove(self.TEMP_DBPATH)
         except OSError:
             pass
+        super().tearDown()
 
 
 class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
@@ -257,6 +262,8 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
         except Exception as e:
             print("Failure resetting db: " + str(e))
             print("MidvattenTestPostgisNotCreated tearDownproblem: " + str(mock_messagebar.mock_calls))
+
+        super().tearDown()
 
 
 class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
