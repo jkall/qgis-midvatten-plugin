@@ -2150,7 +2150,7 @@ class PickAnnotator(object):
         if mpltoolbar is None:
             mpltoolbar = fig.canvas.manager.toolbar
         canvas.mpl_connect('pick_event', lambda event: self.identify_plot(mpltoolbar, event))
-        canvas.mpl_connect('figure_leave_event', self.remove_annotation)
+        canvas.mpl_connect('figure_enter_event', self.remove_annotation)
         MessagebarAndLog.info( log_msg=QCoreApplication.translate("PickAnnotator", 'PickAnnotator initialized.'))
 
     def identify_plot(self, mpltoolbar, event):
@@ -2159,12 +2159,23 @@ class PickAnnotator(object):
                 return
             artist = event.artist
             ax = artist.axes
-            new_text = artist.get_label()
             mouseevent = event.mouseevent
+
+            try:
+                xtext = datetime.datetime.strftime(num2date(mouseevent.xdata), '%Y-%m-%d %H:%M:%S')
+            except:
+                xtext = mouseevent.xdata
+
+            try:
+                ytext = round(mouseevent.ydata, 3)
+            except:
+                ytext = mouseevent.ydata
+            new_text = ', '.join(['"{}"'.format(artist.get_label()), str(xtext), str(ytext)])
+
             pos = (mouseevent.xdata, mouseevent.ydata)
             if not isinstance(self.annotation, mpl.text.Annotation):
-                self.annotation = ax.annotate(s=new_text, xy=pos, xycoords='data', bbox=dict(boxstyle='round',
-                                                                                             fc="w", ec="k", alpha=0.5))
+                self.annotation = ax.annotate(s=new_text, xy=pos, fontsize=8, xycoords='data', bbox=dict(boxstyle='round',
+                                              fc="w", ec="k", alpha=0.5))
             else:
                 self.annotation.set_text(new_text)
                 self.annotation.set_x(pos[0])
