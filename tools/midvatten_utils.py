@@ -2139,3 +2139,51 @@ def add_view_obs_points_obs_lines():
 
 def get_full_filename(filename):
     return os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename)
+
+
+class PickAnnotator(object):
+    def __init__(self, fig, canvas=None, mpltoolbar=None):
+        self.fig = fig
+        self.annotation = None
+        if canvas is None:
+            canvas = fig.canvas
+        if mpltoolbar is None:
+            mpltoolbar = fig.canvas.manager.toolbar
+        canvas.mpl_connect('pick_event', lambda event: self.identify_plot(mpltoolbar, event))
+        canvas.mpl_connect('figure_leave_event', self.remove_annotation)
+        MessagebarAndLog.info( log_msg=QCoreApplication.translate("PickAnnotator", 'PickAnnotator initialized.'))
+
+    def identify_plot(self, mpltoolbar, event):
+        try:
+            if mpltoolbar._active:
+                return
+            artist = event.artist
+            ax = artist.axes
+            new_text = artist.get_label()
+            mouseevent = event.mouseevent
+            pos = (mouseevent.xdata, mouseevent.ydata)
+            if not isinstance(self.annotation, mpl.text.Annotation):
+                self.annotation = ax.annotate(s=new_text, xy=pos, xycoords='data', bbox=dict(boxstyle='round',
+                                                                                             fc="w", ec="k", alpha=0.5))
+            else:
+                self.annotation.set_text(new_text)
+                self.annotation.set_x(pos[0])
+                self.annotation.set_y(pos[1])
+
+            self.fig.canvas.draw()
+            self.fig.canvas.flush_events()
+        except Exception as e:
+            MessagebarAndLog.info(
+                log_msg=QCoreApplication.translate("PickAnnotator", 'Adding annotation failed, msg: %s.') % str(e))
+
+    def remove_annotation(self, event):
+        if isinstance(self.annotation, mpl.text.Annotation):
+            try:
+                self.annotation.remove()
+                self.annotation = None
+                self.fig.canvas.draw()
+                self.fig.canvas.flush_events()
+            except Exception as e:
+                MessagebarAndLog.info(
+                    log_msg=QCoreApplication.translate("PickAnnotator", 'Removing annotation failed, msg: %s.') % str(
+                        e))

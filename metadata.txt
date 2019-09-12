@@ -21,6 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.2b2:
+        - Customplot: New feature: line-label as annotation when clicking on plots.
         - Pull from master.
         - List of values from selected features: Added filter checkbox.
         - Added more supported date formats.

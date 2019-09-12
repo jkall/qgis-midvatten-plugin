@@ -196,12 +196,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             plt.close(fignum)
 
         self.custplotfigure = plt.figure()
-
         self.axes = self.custplotfigure.add_subplot(111)
-
         self.canvas = FigureCanvas(self.custplotfigure)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
+        utils.PickAnnotator(self.custplotfigure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
@@ -455,25 +454,25 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             raise Exception('Programming error. Must be time or XY!')
 
         if plottype == "step-pre":
-            self.p[i], = plotfunc(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i], **next(self.line_cycler))# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, drawstyle='steps-pre', marker='None', label=self.plabels[i], **next(self.line_cycler))# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
         elif plottype == "step-post":
-            self.p[i], = plotfunc(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, drawstyle='steps-post', marker='None', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "line and cross":
-            self.p[i], = plotfunc(numtime, table2.values, '', marker='x', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='x', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "marker":
-            self.p[i], = plotfunc(numtime, table2.values, '', linestyle='None', label=self.plabels[i], **next(self.marker_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, linestyle='None', label=self.plabels[i], **next(self.marker_cycler))
         elif plottype == "line":
-            self.p[i], = plotfunc(numtime, table2.values, '', marker='None', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='None', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "frequency" and FlagTimeXY == "time":
             try:
-                self.p[i], = plotfunc(numtime, table2.values, '', marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
+                self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
                 self.plabels[i]='frequency '+str(self.plabels[i])
             except:
-                self.p[i], = plotfunc(np.array([]),np.array([]), '', marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
+                self.p[i], = plotfunc(np.array([]),np.array([]), '', picker=2, marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
                 self.plabels[i]='frequency '+str(self.plabels[i])
         else:
             # line and marker
-            self.p[i], = plotfunc(numtime, table2.values, '', label=self.plabels[i], **next(self.line_and_marker_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, label=self.plabels[i], **next(self.line_and_marker_cycler))
 
 
     def LastSelections(self):#set same selections as last plot
