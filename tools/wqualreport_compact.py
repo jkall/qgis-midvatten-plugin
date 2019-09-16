@@ -24,6 +24,7 @@ from builtins import range
 from builtins import object
 import codecs
 import os
+from operator import itemgetter
 import time  # for debugging
 from functools import partial
 
@@ -197,7 +198,8 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically):
+                            page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically,
+                            sort_by_obsid=True):
         #show the user this may take a long time...
         utils.start_waiting_cursor()
 
@@ -225,7 +227,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             data, par_unit_order = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
 
-        report_data, num_data = self.data_to_printlist(data, par_unit_order, sort_parameters_alphabetically)
+        report_data, num_data = self.data_to_printlist(data, par_unit_order, sort_parameters_alphabetically, sort_by_obsid)
         utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
 
         for startcol in range(1, len(report_data[0]), num_data_cols):
@@ -322,7 +324,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         return data, par_unit_order
 
-    def data_to_printlist(self, data, par_unit_order, sort_parameters_alphabetically=True):
+    def data_to_printlist(self, data, par_unit_order, sort_parameters_alphabetically=True, sort_by_obsid=True):
         num_data = 0
 
         if sort_parameters_alphabetically:
@@ -333,20 +335,28 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         outlist = [['obsid'], ['date_time'], ['report']]
         outlist.extend([[p] for p in distinct_parameters])
 
-        for obsid, date_times in sorted(iter(data.items()), key=lambda s: s[0].lower()):
-            for date_time, reports in sorted(date_times.items()):
-                for report, parameters in sorted(reports.items()):
-                    outlist[0].append(obsid)
-                    outlist[1].append(date_time)
-                    outlist[2].append(report)
+        data_as_list = [(obsid, date_time, report, parameters)
+                            for obsid, date_times in data.items()
+                                for date_time, reports in date_times.items()
+                                    for report, parameters in sorted(reports.items())]
 
-                    for parameterlist in outlist[3:]:
-                        if parameterlist[0] in parameters:
-                            reading_txt = parameters[parameterlist[0]]
-                            num_data += 1
-                        else:
-                            reading_txt = ''
-                        parameterlist.append(reading_txt)
+        if sort_by_obsid:
+            sort_key = lambda s: (s[0].lower(), s[1], s[2])
+        else:
+            sort_key = lambda s: (s[1], s[0], s[2])
+
+        for obsid, date_time, report, parameters in sorted(data_as_list, key=sort_key):
+            outlist[0].append(obsid)
+            outlist[1].append(date_time)
+            outlist[2].append(report)
+
+            for parameterlist in outlist[3:]:
+                if parameterlist[0] in parameters:
+                    reading_txt = parameters[parameterlist[0]]
+                    num_data += 1
+                else:
+                    reading_txt = ''
+                parameterlist.append(reading_txt)
 
         return outlist, num_data
 
