@@ -201,7 +201,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.tabWidget.removeTab(1)
         dockwidget.setFeatures(QDockWidget.DockWidgetClosable)
 
-    def dock_settings(self, *args):
+    def dock_settings(self, _self, event):
         self.tabWidget.addTab(self.settings_tab, 'Settings')
         self.old_settingsdockWidget = self.settingsdockWidget
         self.settingsdockWidget = QDockWidget()
@@ -209,12 +209,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.settingsdockWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.settingsdockWidget.topLevelChanged.connect(lambda x: self.float_settings())
         self.settingsdockWidget.closeEvent = types.MethodType(self.dock_settings, self.settingsdockWidget)
-
         self.settingsdockWidget.setWidget(self.dockWidgetContents_2)
 
         # Remove the old widget widgetitem from the old settingsdockWidget
         self.verticalLayout_4.takeAt(0)
-        self.old_settingsdockWidget.destroy()
 
         spacing = self.verticalLayout_4.takeAt(0)
 
@@ -224,6 +222,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.resize_widget(self.settingsdockWidget)
         self.tabwidget_resize(self.tabWidget)
         self.tabWidget.adjustSize()
+        event.accept()
 
     def do_it(self, msettings, selected_obspoints, sectionlinelayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
