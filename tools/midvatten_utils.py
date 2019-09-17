@@ -2174,8 +2174,13 @@ class PickAnnotator(object):
 
             pos = (mouseevent.xdata, mouseevent.ydata)
             if not isinstance(self.annotation, mpl.text.Annotation):
-                self.annotation = ax.annotate(s=new_text, xy=pos, fontsize=8, xycoords='data', bbox=dict(boxstyle='round',
-                                              fc="w", ec="k", alpha=0.5))
+                try:
+                    self.annotation = ax.annotate(text=new_text, xy=pos, fontsize=8, xycoords='data',
+                                                  bbox=dict(boxstyle='round',
+                                                            fc="w", ec="k", alpha=0.5))
+                except:
+                    self.annotation = ax.annotate(new_text, xy=pos, fontsize=8, xycoords='data',
+                                                  bbox=dict(boxstyle='round', fc="w", ec="k", alpha=0.5))
             else:
                 self.annotation.set_text(new_text)
                 self.annotation.set_x(pos[0])
@@ -2186,6 +2191,7 @@ class PickAnnotator(object):
         except Exception as e:
             MessagebarAndLog.info(
                 log_msg=QCoreApplication.translate("PickAnnotator", 'Adding annotation failed, msg: %s.') % str(e))
+            raise
 
     def remove_annotation(self, event):
         if isinstance(self.annotation, mpl.text.Annotation):
