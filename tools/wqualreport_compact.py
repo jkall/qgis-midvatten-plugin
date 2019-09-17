@@ -71,7 +71,8 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                          'from_active_layer',
                          'from_sql_table',
                          'sql_table',
-                         'sort_alphabetically']
+                         'sort_alphabetically',
+                         'sort_by_obsid']
 
         self.stored_settings_key = 'compactwqualreport'
 
@@ -113,11 +114,12 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         from_sql_table = self.from_sql_table.isChecked()
         sql_table = self.sql_table.currentText()
         sort_alphabetically = self.sort_alphabetically.isChecked()
+        sort_by_obsid = self.sort_by_obsid.isChecked()
 
         self.save_stored_settings(self.save_attrnames)
 
         wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, from_active_layer, sql_table, sort_alphabetically)
+                            page_break_between_tables, from_active_layer, sql_table, sort_alphabetically, sort_by_obsid)
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
@@ -198,8 +200,8 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically,
-                            sort_by_obsid=True):
+                 page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically,
+                 sort_by_obsid):
         #show the user this may take a long time...
         utils.start_waiting_cursor()
 

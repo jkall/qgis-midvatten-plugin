@@ -27,7 +27,7 @@ changelog=
         - Added more supported date formats.
         - Fieldlogger import: Fixed bug where h_toc was empty string.
         - NotFoundQuestion: Added ignore checkbox.
-        - Compact water quality report: Bug fixes. Added option to not sort alphabetically.
+        - Compact water quality report: Bug fixes. Added options for column sorting and row sorting.
         Version 1.6.2b1:
         - Sectionplot: New ui for sectionplot. Settings in separate tab but can be floatable to separate window.
         - Sectionplot: Plot and settings now separated in two tabs.
