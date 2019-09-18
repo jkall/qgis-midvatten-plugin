@@ -63,6 +63,7 @@ from export_data import ExportData
 import db_utils
 from qgis.core import QgsWkbTypes, QgsVectorLayer
 import matplotlib_replacements
+from strat_symbology import strat_symbology
 #import profilefromdem
 
 
@@ -179,6 +180,10 @@ class Midvatten(object):
         self.actionloaddatadomains = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
         self.actionloaddatadomains.triggered.connect(lambda x: self.load_data_domains())
+        
+        self.actionloadstratsymbology = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten","Load stratigraphy symbology to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load stratiraphy symbology from database"))
+        self.actionloadstratsymbology.triggered.connect(lambda x: self.load_strat_symbology())
 
         self.actionVacuumDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "vacuum.png")), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
         self.actionVacuumDB.setWhatsThis(QCoreApplication.translate("Midvatten","Perform database vacuuming"))
@@ -302,6 +307,7 @@ class Midvatten(object):
         self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionloaddatadomains)
+        self.menu.utils.addAction(self.actionloadstratsymbology)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         self.menu.utils.addAction(self.actionresetSettings)
         self.menu.utils.addAction(self.action_calculate_statistics_for_selected_obsids)
@@ -690,6 +696,17 @@ class Midvatten(object):
             err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
+        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+
+    @utils.general_exception_handler
+    def load_strat_symbology(self):
+        #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
+        #return
+        utils.start_waiting_cursor()
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
+        if err_flag == 0:
+            strat_symbology(qgis.utils.iface)
         utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     @utils.general_exception_handler
