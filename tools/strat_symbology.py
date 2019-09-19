@@ -31,7 +31,7 @@ from midvatten_utils import add_layers_to_list
 
 def strat_symbology(iface):
     """
-    TODO: Drillstop shold be a separatae layer like bergy.
+    TODO: berg and rock are hardcoded both in code and in view
     :param iface:
     :return:
     """
@@ -48,24 +48,25 @@ def strat_symbology(iface):
     stratigraphy_group = qgis.core.QgsLayerTreeGroup(name='Stratigraphy symbology', checked=True)
     midv.insertChildNode(0, stratigraphy_group)
     stratigraphy_group.setIsMutuallyExclusive(True)
-    for name, stylename in (('Bars', 'strat_bars'), ('Static bars', 'strat_static_bars')):
+    for name, stylename, wlvls_stylename, drillstop_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
+                                                                  ('Static bars', 'bars_strat_static', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock')):
         group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
-        stratigraphy_group.insertChildNodes(0, group)
+        stratigraphy_group.insertChildNode(0, group)
         layers = []
-        add_layers_to_list(layers, ['strat_bars', 'strat_bars', 'w_lvls_last_geom'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels'])
-        #layers[0].setItemVisibilityCheckedRecursive(False)
+        add_layers_to_list(layers, ['bars_strat', 'bars_strat', 'w_lvls_last_geom', 'bedrock'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels', 'Bedrock'])
+        print(str(layers))
+        symbology_using_cloning(plot_types, geo_colors, layers[0], stylename, 'geoshort')
+        symbology_using_cloning(plot_types, hydro_colors, layers[1], stylename, 'capacity')
 
-        symbology_using_cloning(plot_types, geo_colors, layers[0], stylename)
-        symbology_using_cloning(plot_types, hydro_colors, layers[1], stylename)
-
-        if 'h_tocags' in layers[1].fields().names():
-            apply_style(layers[1], 'w_lvls_last_geom_static_bars')
+        if 'h_tocags' in layers[2].fields().names():
+            apply_style(layers[2], wlvls_stylename)
             QgsProject.instance().addMapLayers(layers, False)
             group.addLayer(layers[2])
         else:
             QgsProject.instance().addMapLayers(layers[:2], False)
 
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
+        color_group.setIsMutuallyExclusive(True)
         group.insertChildNode(-1, color_group)
         color_group.addLayer(layers[0])
         color_group.addLayer(layers[1])
@@ -96,14 +97,18 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     apply_style(layer, stylename)
 
     renderer = layer.renderer()
-    root = renderer.rootRule()
+    try:
+        root = renderer.rootRule()
+    except:
+        print(str(stylename))
+        raise
     for_cloning = root.children()[1]
 
-    rock_key = 'berg' if utils.getcurrentlocale()[0] == 'sv_SE': else 'rock'
-    root.children()[2].setFilterExpression('''"{}" {}'''.format('geoshort', plot_types[rock_key][1]))
+    #rock_key = 'berg' if utils.getcurrentlocale()[0] == 'sv_SE' else 'rock'
+    #root.children()[0].setFilterExpression('''"{}" {}'''.format('geoshort', plot_types[rock_key][1]))
 
     for key, types in plot_types.items():
-        color = QColor(colors.get(key, 'white'))
+        color = QColor(colors.get(key, [None, 'white'])[1])
         rule = for_cloning.clone()
         rule.setIsElse(False)
         rule.setFilterExpression('''"{}" {}'''.format(column, types))
@@ -114,52 +119,16 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
         ssl.setStrokeColor(color)
         root.insertChild(1, rule)
 
-def symbology_from_scratch(plot_types, colors, geometry_expression):
-    renderer = qgis.core.QgsRuleBasedRenderer(create_symbol(geometry_expression, 'white'))
-    for strata, types in plot_types.items():
-        color = colors.get(strata, colors.get('Okänd', colors.get('Unknown', 'white')))
-        rule = qgis.core.QgsRuleBasedRenderer.Rule(create_symbol(geometry_expression, color))
-        rule.setFilterExpression('''"geoshort" {}'''.format(types))
-        rule.setLabel(strata)
-        renderer.rootRule().appendChild(rule)
-    else:
-        rule = qgis.core.QgsRuleBasedRenderer.Rule(create_symbol(geometry_expression, 'black'))
-        rule.setIsElse(True)
-        renderer.rootRule().appendChild(rule)
-    return renderer
-
-def create_symbol(geometry_expression, color):
-    raise NotImplementedError()
-    # https://qgis.org/api/classQgsSimpleFillSymbolLayer.html
-    #simple_fill_symbol = qgis.core.QgsFillSymbol([qgis.core.QgsSimpleFillSymbolLayer(QColor(color),
-    #                                                                                 strokeColor=QColor(color),
-    #                                                                                 strokeWidth=0.1)])
-    #qgis._core.QgsGeometryGeneratorSymbolLayer cannot be instantiated or sub-classed !!?!
-    # https://qgis.org/api/qgsmarkersymbollayer_8cpp_source.html rows around 720
-    """
-    symbol_layer = qgis.core.QgsGeometryGeneratorSymbolLayer.create({'geometryModifier': geometry_expression,
-                                                                     'SymbolType': 'Marker',
-                                                                     'color': color,
-                                                                     'line_color': color,
-                                                                     'line_width': '0.1'})
-    """
-    #symbol_layer = qgis.core.QgsGeometryGeneratorSymbolLayer.create({'geometryModifier': geometry_expression})
-
-    #symbol_layer.setGeometryExpression(geometry_expression)
-    symbol_layer.setSubSymbol(simple_fill_symbol)
-    symbol = qgis.core.QgsMarkerSymbol([symbol_layer])
-    return symbol
-
-
 def add_views_to_db(dbconnection):
-    strat_view_name = 'strat_bars'
-    dbconnection.execute('''DROP VIEW IF EXISTS {};'''.format(strat_view_name))
+    view_name = 'bars_strat'
+    dbconnection.execute('''DROP VIEW IF EXISTS {};'''.format(view_name))
     dbconnection.execute('''
 CREATE VIEW {} AS
-    SELECT stratigraphy.rowid, "obsid", "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);'''.format(strat_view_name))
+    SELECT stratigraphy.rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
+    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(strat_view_name))
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(strat_view_name))
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
+        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
 
     view_name = 'w_lvls_last_geom'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
@@ -168,29 +137,54 @@ CREATE VIEW {} AS
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
 
-    view_name = 'obs_p_bedrock'
+    view_name = 'bedrock'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     bergy = (
         '''
 CREATE VIEW {} AS
-    SELECT DISTINCT a.rowid AS rowid,
-    		a.obsid AS obsid,
-    		a.h_toc AS h_toc,
-    		a.h_gs AS h_gs,
-    		(CASE WHEN u.length IS NULL then a.length ELSE u.length END) as length,
-    		a.h_gs - (CASE WHEN u.length IS NULL then a.length ELSE u.length END) as bergy,
-    		a.drillstop as drillstop,
-    		(CASE WHEN u.length IS NULL then 'obs_points' ELSE 'stratigraphy' END) AS from_table,
-    		a.source AS source,
-    		a.type AS obstype,
-    		a.geometry AS geometry FROM obs_points AS a
-
-    LEFT JOIN (SELECT s.obsid AS obsid, s.depthtop AS length 
-               FROM stratigraphy AS s 
-               WHERE (LOWER(s.geoshort) LIKE '%berg%' OR LOWER(s.geology) LIKE '%berg%')
-               OR (LOWER(s.geoshort) LIKE '%rock%' OR LOWER(s.geology) LIKE '%rock%')
-               ) AS u on a.obsid == u.obsid'''.format(view_name))
+ SELECT DISTINCT a.obsid,
+    a.h_toc,
+    a.h_gs,
+    a.h_tocags,
+    a.length,
+    a.h_syst,
+        CASE
+            WHEN a.h_gs IS NOT NULL AND a.h_gs != 0 THEN a.h_gs
+            WHEN a.h_toc IS NOT NULL AND a.h_toc != 0 AND a.h_tocags IS NOT NULL THEN a.h_toc - a.h_tocags
+            WHEN a.h_toc IS NOT NULL AND a.h_toc != 0 THEN a.h_toc
+            ELSE NULL
+        END AS ground_surface,
+        CASE
+            WHEN COALESCE(u.soildepth, a.length) = 0.0 THEN NULL
+            ELSE COALESCE(u.soildepth, a.length)
+        END AS soildepthh,
+        CASE
+            WHEN a.h_gs IS NOT NULL AND a.h_gs != 0 THEN a.h_gs
+            WHEN a.h_toc IS NOT NULL AND a.h_toc != 0 AND a.h_tocags IS NOT NULL THEN a.h_toc - a.h_tocags
+            WHEN a.h_toc IS NOT NULL AND a.h_toc != 0 THEN a.h_toc
+            ELSE NULL
+        END -
+        CASE
+            WHEN COALESCE(u.soildepth, a.length) = 0.0 THEN NULL
+            ELSE COALESCE(u.soildepth, a.length)
+        END AS bedrock,
+        COALESCE(u.geo, a.drillstop) AS drillstop,
+        CASE
+            WHEN u.soildepth IS NULL THEN 'obs_points'
+            ELSE 'stratigraphy'
+        END AS bedrock_from_table,
+    a.geometry
+   FROM obs_points a
+     LEFT JOIN (SELECT s.obsid, MIN(s.depthtop) AS soildepth,
+                'Stratigraphy: '||MIN(s.geology)||' '||MIN(s.geoshort) AS geo
+                FROM stratigraphy s
+                WHERE LOWER(s.geoshort) LIKE '%berg%' OR LOWER(s.geology) LIKE '%rock%'
+                GROUP BY s.obsid
+                ) u ON a.obsid = u.obsid'''.format(view_name))
     dbconnection.execute(bergy)
+    if dbconnection.dbtype == 'spatialite':
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
+        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
 
     dbconnection.commit()
 
