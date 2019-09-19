@@ -1955,7 +1955,7 @@ class MatplotlibStyles(object):
                 item.setSelected(False)
 
 
-def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbconnection=None):
+def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbconnection=None, layername=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
         dbconnection = db_utils.DbConnectionManager()
 
@@ -1966,31 +1966,37 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     dbtype = db_utils.get_dbtype(dbtype)
 
     uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
-    layer = QgsVectorLayer(uri.uri(), tablename, dbtype)
+    _name = tablename if layername is None else layername
+    layer = QgsVectorLayer(uri.uri(), _name, dbtype)
     return layer
 
 
-def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None):
+def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None, layernames=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
         dbconnection = db_utils.DbConnectionManager()
     existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
 
-    for tablename in tablenames:  # first load all non-spatial layers
+    for idx, tablename in enumerate(tablenames):  # first load all non-spatial layers
         orig_tablename = tablename
 
         if not tablename in existing_tables:
             continue
 
+        try:
+            layername = layernames[idx]
+        except IndexError:
+            layername = None
+
         if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
             tablename = 'view_{}'.format(tablename)
 
-        layer = create_layer(tablename, geometrycolumn=geometrycolumn)
+        layer = create_layer(tablename, geometrycolumn=geometrycolumn, dbconnection=dbconnection, layername=layername)
 
         valid = layer.isValid()
         if not valid:
             #Try to add it as a view by adding key column
             layer = create_layer(tablename, geometrycolumn=geometrycolumn, sql=None, keycolumn='obsid',
-                                 dbconnection=dbconnection)
+                                 dbconnection=dbconnection, layername=layername)
             valid = layer.isValid()
 
         if not valid:

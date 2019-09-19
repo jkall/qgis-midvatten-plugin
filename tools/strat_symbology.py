@@ -38,40 +38,46 @@ def strat_symbology(iface):
     root = QgsProject.instance().layerTreeRoot()
     midv = root.findGroup('Midvatten_OBS_DB')
 
-    #groups = {'Stratigraphy symbology': ('Bars', 'Static bars')}
-    remove_group = midv.removeChildNode(midv.findGroup('Stratigraphy symbology'))
-    stratigraphy_group = qgis.core.QgsLayerTreeGroup(name='Stratigraphy symbology', checked=False)
-    stratigraphy_group.setIsMutuallyExclusive(True)
-    bars_group = qgis.core.QgsLayerTreeGroup(name='Bars', checked=True)
-    static_bars_group = qgis.core.QgsLayerTreeGroup(name='Bars', checked=True)
-    midv.insertChildNode(0, stratigraphy_group)
-    stratigraphy_group.insertChildNodes(0, [bars_group, static_bars_group])
-
     dbconnection = db_utils.DbConnectionManager()
     add_views_to_db(dbconnection)
-    bars_layers = []
-    add_layers_to_list(bars_layers, ['strat_symbology_view', 'w_lvls_last_geom'], geometrycolumn='geometry', dbconnection=dbconnection)
-    #bars_layers[0].setItemVisibilityCheckedRecursive(False)
-    QgsProject.instance().addMapLayers(bars_layers, False)
-    bars_group.insertLayer(0, bars_layers[0])
-    bars_group.insertLayer(0, bars_layers[1])
-    plot_types = defs.PlotTypesDict()
-    colors = defs.PlotColorDict()
 
-    symbology_using_cloning(plot_types, colors, bars_layers[0])
-    print(str(bars_layers[1].fields()))
-    if 'h_tocags' in bars_layers[1].fields().names():
-        apply_style(bars_layers[1], '_strat')
-    #bars_layers[0].setRenderer(renderer)
+    plot_types = defs.PlotTypesDict()
+    geo_colors = defs.geocolorsymbols()
+    hydro_colors = defs.hydrocolors()
+    midv.removeChildNode(midv.findGroup('Stratigraphy symbology'))
+    stratigraphy_group = qgis.core.QgsLayerTreeGroup(name='Stratigraphy symbology', checked=True)
+    midv.insertChildNode(0, stratigraphy_group)
+    stratigraphy_group.setIsMutuallyExclusive(True)
+    for name, stylename in (('Bars', 'strat_bars'), ('Static bars', 'strat_static_bars')):
+        group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
+        stratigraphy_group.insertChildNodes(0, group)
+        layers = []
+        add_layers_to_list(layers, ['strat_bars', 'strat_bars', 'w_lvls_last_geom'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels'])
+        #layers[0].setItemVisibilityCheckedRecursive(False)
+
+        symbology_using_cloning(plot_types, geo_colors, layers[0], stylename)
+        symbology_using_cloning(plot_types, hydro_colors, layers[1], stylename)
+
+        if 'h_tocags' in layers[1].fields().names():
+            apply_style(layers[1], 'w_lvls_last_geom_static_bars')
+            QgsProject.instance().addMapLayers(layers, False)
+            group.addLayer(layers[2])
+        else:
+            QgsProject.instance().addMapLayers(layers[:2], False)
+
+        color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
+        group.insertChildNode(-1, color_group)
+        color_group.addLayer(layers[0])
+        color_group.addLayer(layers[1])
+
+        #layers[0].setRenderer(renderer)
     iface.mapCanvas().refresh()
 
 
-def apply_style(layer, suffix):
+def apply_style(layer, stylename):
     # now try to load the style file
-    stylefile_sv = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions",
-                                layer.name() + "{}_sv.qml".format(suffix))
-    stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions",
-                             layer.name() + "{}.qml".format(suffix))
+    stylefile_sv = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions","{}_sv.qml".format(stylename))
+    stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "{}.qml".format(stylename))
     if utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile(stylefile_sv):  # swedish forms are loaded only if locale settings indicate sweden
         try:
             layer.loadNamedStyle(stylefile_sv)
@@ -86,25 +92,22 @@ def apply_style(layer, suffix):
         except:
             pass
 
-def symbology_using_cloning(plot_types, colors, layer):
-    apply_style(layer, '_bars')
+def symbology_using_cloning(plot_types, colors, layer, stylename, column):
+    apply_style(layer, stylename)
 
     renderer = layer.renderer()
     root = renderer.rootRule()
     for_cloning = root.children()[1]
 
-    print(str(plot_types))
-    if utils.getcurrentlocale()[0] == 'sv_SE':
-        root.children()[2].setFilterExpression('''"geoshort" {}'''.format(plot_types['berg']))
-    else:
-        root.children()[2].setFilterExpression('''"geoshort" {}'''.format(plot_types['rock']))
+    rock_key = 'berg' if utils.getcurrentlocale()[0] == 'sv_SE': else 'rock'
+    root.children()[2].setFilterExpression('''"{}" {}'''.format('geoshort', plot_types[rock_key][1]))
 
-    for strata, types in plot_types.items():
-        color = QColor(colors.get(strata, colors.get('Okänd', colors.get('Unknown', 'white'))))
+    for key, types in plot_types.items():
+        color = QColor(colors.get(key, 'white'))
         rule = for_cloning.clone()
         rule.setIsElse(False)
-        rule.setFilterExpression('''"geoshort" {}'''.format(types))
-        rule.setLabel(strata)
+        rule.setFilterExpression('''"{}" {}'''.format(column, types))
+        rule.setLabel(key)
         sl = rule.symbol().symbolLayer(0)
         sl.setColor(color)
         ssl = sl.subSymbol().symbolLayer(0)
@@ -149,17 +152,18 @@ def create_symbol(geometry_expression, color):
 
 
 def add_views_to_db(dbconnection):
-    dbconnection.execute('''DROP VIEW IF EXISTS strat_symbology_view;''')
+    strat_view_name = 'strat_bars'
+    dbconnection.execute('''DROP VIEW IF EXISTS {};'''.format(strat_view_name))
     dbconnection.execute('''
-CREATE VIEW strat_symbology_view AS
+CREATE VIEW {} AS
     SELECT stratigraphy.rowid, "obsid",
     (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
     (CASE WHEN (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) = "depthbot" THEN "drillstop" ELSE NULL END) AS "drillstop",
-    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);''')
+    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);'''.format(strat_view_name))
 
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = 'strat_symbology_view' ;''')
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT 'strat_symbology_view', 'geometry', 'rowid', 'obs_points', 'geometry', 1;''')
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(strat_view_name))
+        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(strat_view_name))
 
 
     """
