@@ -30,6 +30,11 @@ from definitions import midvatten_defs as defs
 from midvatten_utils import add_layers_to_list
 
 def strat_symbology(iface):
+    """
+    TODO: Drillstop shold be a separatae layer like bergy.
+    :param iface:
+    :return:
+    """
     root = QgsProject.instance().layerTreeRoot()
     midv = root.findGroup('Midvatten_OBS_DB')
 
@@ -52,17 +57,59 @@ def strat_symbology(iface):
     bars_group.insertLayer(0, bars_layers[1])
     plot_types = defs.PlotTypesDict()
     colors = defs.PlotColorDict()
-    #renderer = symbology_from_scratch(plot_types, colors)
 
-    geometry_expression = '''geom_from_wkt( format('POLYGON((%1 %2, %3 %4, %5 %6, %7 %8))', 
-                                X($geometry)-2, Y($geometry) - "depthtop", 
-                                X($geometry)+2, Y($geometry) - "depthtop", 
-                                X($geometry)+2, Y($geometry) - "depthbot",
-                                X($geometry)-2, Y($geometry) - "depthbot"))'''
-
-    symbology_using_cloning(plot_types, colors, bars_layers[0], geometry_expression)
+    symbology_using_cloning(plot_types, colors, bars_layers[0])
+    print(str(bars_layers[1].fields()))
+    if 'h_tocags' in bars_layers[1].fields().names():
+        apply_style(bars_layers[1], '_strat')
     #bars_layers[0].setRenderer(renderer)
     iface.mapCanvas().refresh()
+
+
+def apply_style(layer, suffix):
+    # now try to load the style file
+    stylefile_sv = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions",
+                                layer.name() + "{}_sv.qml".format(suffix))
+    stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions",
+                             layer.name() + "{}.qml".format(suffix))
+    if utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile(stylefile_sv):  # swedish forms are loaded only if locale settings indicate sweden
+        try:
+            layer.loadNamedStyle(stylefile_sv)
+        except:
+            try:
+                layer.loadNamedStyle(stylefile)
+            except:
+                pass
+    else:
+        try:
+            layer.loadNamedStyle(stylefile)
+        except:
+            pass
+
+def symbology_using_cloning(plot_types, colors, layer):
+    apply_style(layer, '_bars')
+
+    renderer = layer.renderer()
+    root = renderer.rootRule()
+    for_cloning = root.children()[1]
+
+    print(str(plot_types))
+    if utils.getcurrentlocale()[0] == 'sv_SE':
+        root.children()[2].setFilterExpression('''"geoshort" {}'''.format(plot_types['berg']))
+    else:
+        root.children()[2].setFilterExpression('''"geoshort" {}'''.format(plot_types['rock']))
+
+    for strata, types in plot_types.items():
+        color = QColor(colors.get(strata, colors.get('Okänd', colors.get('Unknown', 'white'))))
+        rule = for_cloning.clone()
+        rule.setIsElse(False)
+        rule.setFilterExpression('''"geoshort" {}'''.format(types))
+        rule.setLabel(strata)
+        sl = rule.symbol().symbolLayer(0)
+        sl.setColor(color)
+        ssl = sl.subSymbol().symbolLayer(0)
+        ssl.setStrokeColor(color)
+        root.insertChild(1, rule)
 
 def symbology_from_scratch(plot_types, colors, geometry_expression):
     renderer = qgis.core.QgsRuleBasedRenderer(create_symbol(geometry_expression, 'white'))
@@ -77,52 +124,6 @@ def symbology_from_scratch(plot_types, colors, geometry_expression):
         rule.setIsElse(True)
         renderer.rootRule().appendChild(rule)
     return renderer
-
-def symbology_using_cloning(plot_types, colors, layer, geometry_expression):
-
-    # now try to load the style file
-    stylefile_sv = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions",
-                                layer.name() + "_bars_sv.qml")
-    stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions",
-                             layer.name() + "_bars.qml")
-    if utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile(
-            stylefile_sv):  # swedish forms are loaded only if locale settings indicate sweden
-        try:
-            layer.loadNamedStyle(stylefile_sv)
-        except:
-            try:
-                layer.loadNamedStyle(stylefile)
-            except:
-                pass
-    else:
-        try:
-            layer.loadNamedStyle(stylefile)
-        except:
-            pass
-
-    renderer = layer.renderer()
-    root = renderer.rootRule()
-    for_cloning = root.children()[1]
-    for strata, types in plot_types.items():
-        color = QColor(colors.get(strata, colors.get('Okänd', colors.get('Unknown', 'white'))))
-        rule = for_cloning.clone()
-        rule.setIsElse(False)
-        rule.setFilterExpression('''"geoshort" {}'''.format(types))
-        rule.setLabel(strata)
-        print(str(rule.symbol().symbolLayerCount()))
-        sl = rule.symbol().symbolLayer(0)
-        sl.setColor(color)
-        print(str(sl.strokeColor()))
-
-        print(str(sl.strokeColor()))
-        ssl = sl.subSymbol().symbolLayer(0)
-        ssl.setStrokeColor(color)
-
-        #strokeColor
-        #setStrokeColor
-        #rule.setSymbol(create_symbol(geometry_expression, color))
-        #root.appendChild(rule)
-        root.insertChild(1, rule)
 
 def create_symbol(geometry_expression, color):
     raise NotImplementedError()
@@ -159,6 +160,14 @@ CREATE VIEW strat_symbology_view AS
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = 'strat_symbology_view' ;''')
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT 'strat_symbology_view', 'geometry', 'rowid', 'obs_points', 'geometry', 1;''')
+
+
+    """
+    drop view w_lvls_last_geom;
+CREATE VIEW w_lvls_last_geom AS SELECT b.rowid AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;
+delete from views_geometry_columns where view_name = 'w_lvls_last_geom';
+INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_lvls_last_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+    """
 
     bergy = (
     '''CREATE VIEW obs_p_bergy AS
