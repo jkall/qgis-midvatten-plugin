@@ -156,38 +156,41 @@ def add_views_to_db(dbconnection):
     dbconnection.execute('''DROP VIEW IF EXISTS {};'''.format(strat_view_name))
     dbconnection.execute('''
 CREATE VIEW {} AS
-    SELECT stratigraphy.rowid, "obsid",
-    (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
-    (CASE WHEN (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) = "depthbot" THEN "drillstop" ELSE NULL END) AS "drillstop",
-    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);'''.format(strat_view_name))
-
+    SELECT stratigraphy.rowid, "obsid", "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);'''.format(strat_view_name))
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(strat_view_name))
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(strat_view_name))
 
+    view_name = 'w_lvls_last_geom'
+    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    dbconnection.execute('''CREATE VIEW {} AS SELECT b.rowid AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;'''.format(view_name))
+    if dbconnection.dbtype == 'spatialite':
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
+        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
 
-    """
-    drop view w_lvls_last_geom;
-CREATE VIEW w_lvls_last_geom AS SELECT b.rowid AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;
-delete from views_geometry_columns where view_name = 'w_lvls_last_geom';
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_lvls_last_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-    """
-
+    view_name = 'obs_p_bedrock'
+    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     bergy = (
-    '''CREATE VIEW obs_p_bergy AS
-SELECT DISTINCT a.rowid AS rowid,
-		a.obsid AS obsid,
-		a.h_toc AS h_toc,
-		a.h_gs AS h_gs,
-		(CASE WHEN u.length IS NULL then a.length ELSE u.length END) as length,
-		a.h_gs - (CASE WHEN u.length IS NULL then a.length ELSE u.length END) as bergy,
-		a.drillstop as drillstop,
-		(CASE WHEN u.length IS NULL then 'obs_points' ELSE 'stratigraphy' END) AS from_table,
-		a.source AS source,
-		a.type AS obstype,
-		a.geometry AS geometry FROM obs_points AS a
+        '''
+CREATE VIEW {} AS
+    SELECT DISTINCT a.rowid AS rowid,
+    		a.obsid AS obsid,
+    		a.h_toc AS h_toc,
+    		a.h_gs AS h_gs,
+    		(CASE WHEN u.length IS NULL then a.length ELSE u.length END) as length,
+    		a.h_gs - (CASE WHEN u.length IS NULL then a.length ELSE u.length END) as bergy,
+    		a.drillstop as drillstop,
+    		(CASE WHEN u.length IS NULL then 'obs_points' ELSE 'stratigraphy' END) AS from_table,
+    		a.source AS source,
+    		a.type AS obstype,
+    		a.geometry AS geometry FROM obs_points AS a
 
-LEFT JOIN (SELECT s.obsid AS obsid, s.depthtop AS length FROM stratigraphy AS s WHERE s.geoshort LIKE '%berg%' OR s.geology LIKE '%berg%') AS u on a.obsid == u.obsid''')
+    LEFT JOIN (SELECT s.obsid AS obsid, s.depthtop AS length 
+               FROM stratigraphy AS s 
+               WHERE (LOWER(s.geoshort) LIKE '%berg%' OR LOWER(s.geology) LIKE '%berg%')
+               OR (LOWER(s.geoshort) LIKE '%rock%' OR LOWER(s.geology) LIKE '%rock%')
+               ) AS u on a.obsid == u.obsid'''.format(view_name))
+    dbconnection.execute(bergy)
 
     dbconnection.commit()
 
