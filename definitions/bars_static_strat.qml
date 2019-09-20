@@ -7,14 +7,14 @@
   </flags>
   <renderer-v2 enableorderby="1" forceraster="0" type="RuleRenderer" symbollevels="0">
     <rules key="{bfd218d5-2585-4c17-adf9-e31adb5db8c9}">
-      <rule symbol="0" label="frame" key="{b8ed5a9c-4eb0-4f47-af03-59b203b2b7aa}" filter=" &quot;maxdepthbot&quot;  =  &quot;depthbot&quot; "/>
-      <rule symbol="1" key="{f3fc8abf-7afd-42d5-9499-6ada769c0859}" filter="ELSE"/>
+      <rule symbol="0" label="frame" key="{c3dbe822-681b-4001-8689-efe1cccb461b}" filter=" &quot;maxdepthbot&quot;  =  &quot;depthbot&quot; "/>
+      <rule symbol="1" key="{49f89c60-14dd-4f60-9818-0f1ae27fffd0}" filter="ELSE"/>
     </rules>
     <symbols>
       <symbol alpha="1" type="marker" name="0" force_rhr="0" clip_to_extent="1">
         <layer class="GeometryGenerator" locked="0" enabled="1" pass="0">
           <prop k="SymbolType" v="Fill"/>
-          <prop k="geometryModifier" v="geom_from_wkt( format('POLYGON((%1 %2, %3 %4, %5 %6, %7 %8))', &#xa;X($geometry)-0.002*@map_scale, Y($geometry)+0.001*@map_scale, &#xa;X($geometry)+0.002*@map_scale, Y($geometry)+0.001*@map_scale, &#xa;X($geometry)+0.002*@map_scale, Y($geometry) - &quot;depthbot&quot;*0.001*@map_scale*0.5 - 0.001*@map_scale,&#xa;X($geometry)-0.002*@map_scale, Y($geometry) - &quot;depthbot&quot;*0.001*@map_scale*0.5 - 0.001*@map_scale))"/>
+          <prop k="geometryModifier" v="geom_from_wkt( format('POLYGON((%1 %2, %3 %4, %5 %6, %7 %8))', &#xa;X($geometry)-2, Y($geometry)+1, &#xa;X($geometry)+2, Y($geometry)+1, &#xa;X($geometry)+2, Y($geometry) - &quot;depthbot&quot; - 1,&#xa;X($geometry)-2, Y($geometry) - &quot;depthbot&quot; - 1))"/>
           <data_defined_properties>
             <Option type="Map">
               <Option value="" type="QString" name="name"/>
@@ -41,7 +41,7 @@
                   <prop k="blur_level" v="2.645"/>
                   <prop k="blur_unit" v="MM"/>
                   <prop k="blur_unit_scale" v="3x:0,0,0,0,0,0"/>
-                  <prop k="color" v="35,35,35,255"/>
+                  <prop k="color" v="0,0,0,255"/>
                   <prop k="draw_mode" v="2"/>
                   <prop k="enabled" v="1"/>
                   <prop k="offset_angle" v="135"/>
@@ -121,7 +121,7 @@
       <symbol alpha="1" type="marker" name="1" force_rhr="0" clip_to_extent="1">
         <layer class="GeometryGenerator" locked="0" enabled="1" pass="0">
           <prop k="SymbolType" v="Fill"/>
-          <prop k="geometryModifier" v="geom_from_wkt( format('POLYGON((%1 %2, %3 %4, %5 %6, %7 %8))', &#xa;X($geometry)-1*0.001*@map_scale, Y($geometry)+1*0.001*@map_scale, &#xa;X($geometry)+1*0.001*@map_scale, Y($geometry)+1*0.001*@map_scale, &#xa;X($geometry)+1*0.001*@map_scale, Y($geometry) - &quot;depthbot&quot;*@map_scale*0.001*0.5 - 1*0.001*@map_scale,&#xa;X($geometry)-1*0.001*@map_scale, Y($geometry) - &quot;depthbot&quot;*@map_scale*0.001*0.5 - 1*0.001*@map_scale))"/>
+          <prop k="geometryModifier" v="geom_from_wkt( format('POLYGON((%1 %2, %3 %4, %5 %6, %7 %8))', &#xa;X($geometry)-2, Y($geometry)+1, &#xa;X($geometry)+2, Y($geometry)+1, &#xa;X($geometry)+2, Y($geometry) - &quot;depthbot&quot; - 1,&#xa;X($geometry)-2, Y($geometry) - &quot;depthbot&quot; - 1))"/>
           <data_defined_properties>
             <Option type="Map">
               <Option value="" type="QString" name="name"/>
@@ -233,14 +233,14 @@
   </renderer-v2>
   <labeling type="simple">
     <settings>
-      <text-style textColor="0,0,0,255" fontSizeMapUnitScale="3x:0,0,0,0,0,0" fieldName="CASE WHEN  &quot;stratid&quot; = 1 THEN &quot;obsid&quot; ELSE '' END" isExpression="1" previewBkgrdColor="#ffffff" fontSizeUnit="Point" fontLetterSpacing="0" fontItalic="0" blendMode="0" fontWordSpacing="0" fontUnderline="0" useSubstitutions="0" multilineHeight="1" fontSize="8" textOpacity="1" fontWeight="50" fontCapitals="0" fontFamily="Noto Sans" namedStyle="Regular" fontStrikeout="0">
+      <text-style textColor="0,0,0,255" fontSizeMapUnitScale="3x:0,0,0,0,0,0" fieldName="CASE WHEN  &quot;stratid&quot; = 1 THEN &quot;obsid&quot; ELSE '' END" isExpression="1" previewBkgrdColor="#ffffff" fontSizeUnit="Point" fontLetterSpacing="0" fontItalic="1" blendMode="0" fontWordSpacing="0" fontUnderline="0" useSubstitutions="0" multilineHeight="1" fontSize="8" textOpacity="1" fontWeight="50" fontCapitals="0" fontFamily="Noto Sans" namedStyle="Italic" fontStrikeout="0">
         <text-buffer bufferSize="0.5" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferOpacity="1" bufferJoinStyle="128" bufferNoFill="1" bufferDraw="1" bufferColor="255,255,255,255" bufferBlendMode="0" bufferSizeUnits="MM"/>
         <background shapeBorderColor="128,128,128,255" shapeOpacity="1" shapeRadiiY="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeSVGFile="" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeSizeX="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeY="0" shapeRadiiX="0" shapeRadiiUnit="MM" shapeOffsetX="0" shapeFillColor="255,255,255,255" shapeSizeUnit="MM" shapeRotationType="0" shapeOffsetUnit="MM" shapeSizeType="0" shapeBorderWidthUnit="MM" shapeType="0" shapeDraw="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRotation="0"/>
         <shadow shadowOffsetUnit="MM" shadowRadiusAlphaOnly="0" shadowDraw="0" shadowUnder="0" shadowOffsetGlobal="1" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowScale="100" shadowOpacity="0.7" shadowOffsetDist="1" shadowOffsetAngle="135" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowColor="0,0,0,255"/>
         <substitutions/>
       </text-style>
       <text-format placeDirectionSymbol="0" addDirectionSymbol="0" plussign="0" useMaxLineLengthForAutoWrap="1" formatNumbers="0" multilineAlign="3" reverseDirectionSymbol="0" decimals="3" wrapChar="" leftDirectionSymbol="&lt;" rightDirectionSymbol=">" autoWrapLength="0"/>
-      <placement rotationAngle="0" centroidInside="0" offsetType="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" offsetUnits="MM" geometryGenerator="" geometryGeneratorEnabled="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" distUnits="MM" maxCurvedCharAngleIn="25" distMapUnitScale="3x:0,0,0,0,0,0" xOffset="1.5" dist="0" quadOffset="5" maxCurvedCharAngleOut="-25" geometryGeneratorType="PointGeometry" centroidWhole="0" placementFlags="10" placement="1" repeatDistance="0" priority="5" repeatDistanceUnits="MM" preserveRotation="1" yOffset="-2.8"/>
+      <placement rotationAngle="0" centroidInside="0" offsetType="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" offsetUnits="RenderMetersInMapUnits" geometryGenerator="geom_from_wkt( format('POINT(%1 %2)', &#xa;X($geometry), Y($geometry) - &quot;meas&quot; + &quot;h_tocags&quot;))" geometryGeneratorEnabled="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" distUnits="MM" maxCurvedCharAngleIn="25" distMapUnitScale="3x:0,0,0,0,0,0" xOffset="3" dist="0" quadOffset="2" maxCurvedCharAngleOut="-25" geometryGeneratorType="PointGeometry" centroidWhole="0" placementFlags="10" placement="1" repeatDistance="0" priority="5" repeatDistanceUnits="MM" preserveRotation="1" yOffset="0"/>
       <rendering fontLimitPixelSize="0" labelPerPart="0" scaleMax="0" zIndex="0" displayAll="1" maxNumLabels="2000" scaleMin="0" upsidedownLabels="0" minFeatureSize="0" scaleVisibility="0" fontMaxPixelSize="10000" mergeLines="0" drawLabels="1" limitNumLabels="0" obstacleFactor="1" obstacle="1" fontMinPixelSize="3" obstacleType="0"/>
       <dd_properties>
         <Option type="Map">

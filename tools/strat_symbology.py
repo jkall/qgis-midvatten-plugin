@@ -48,22 +48,24 @@ def strat_symbology(iface):
     stratigraphy_group = qgis.core.QgsLayerTreeGroup(name='Stratigraphy symbology', checked=True)
     midv.insertChildNode(0, stratigraphy_group)
     stratigraphy_group.setIsMutuallyExclusive(True)
-    for name, stylename, wlvls_stylename, drillstop_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
-                                                                  ('Static bars', 'bars_strat_static', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock')):
+    for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
+                                                                  ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock')):
         group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
         stratigraphy_group.insertChildNode(0, group)
         layers = []
         add_layers_to_list(layers, ['bars_strat', 'bars_strat', 'w_lvls_last_geom', 'bedrock'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels', 'Bedrock'])
-        print(str(layers))
         symbology_using_cloning(plot_types, geo_colors, layers[0], stylename, 'geoshort')
-        symbology_using_cloning(plot_types, hydro_colors, layers[1], stylename, 'capacity')
+        symbology_using_cloning({k: "= '{}'".format(k) for k in sorted(hydro_colors.keys())}, hydro_colors, layers[1], stylename, 'capacity')
+        QgsProject.instance().addMapLayers(layers[:2], False)
 
         if 'h_tocags' in layers[2].fields().names():
             apply_style(layers[2], wlvls_stylename)
-            QgsProject.instance().addMapLayers(layers, False)
+            QgsProject.instance().addMapLayer(layers[2], False)
             group.addLayer(layers[2])
-        else:
-            QgsProject.instance().addMapLayers(layers[:2], False)
+
+        apply_style(layers[3], bedrock_stylename)
+        QgsProject.instance().addMapLayer(layers[3], False)
+        group.addLayer(layers[3])
 
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
         color_group.setIsMutuallyExclusive(True)
@@ -157,7 +159,7 @@ CREATE VIEW {} AS
         CASE
             WHEN COALESCE(u.soildepth, a.length) = 0.0 THEN NULL
             ELSE COALESCE(u.soildepth, a.length)
-        END AS soildepthh,
+        END AS soildepth,
         CASE
             WHEN a.h_gs IS NOT NULL AND a.h_gs != 0 THEN a.h_gs
             WHEN a.h_toc IS NOT NULL AND a.h_toc != 0 AND a.h_tocags IS NOT NULL THEN a.h_toc - a.h_tocags
