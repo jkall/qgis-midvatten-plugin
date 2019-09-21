@@ -36,17 +36,16 @@ def strat_symbology(iface):
     :return:
     """
     root = QgsProject.instance().layerTreeRoot()
-    midv = root.findGroup('Midvatten_OBS_DB')
-
     dbconnection = db_utils.DbConnectionManager()
     add_views_to_db(dbconnection)
 
     plot_types = defs.PlotTypesDict()
     geo_colors = defs.geocolorsymbols()
     hydro_colors = defs.hydrocolors()
-    midv.removeChildNode(midv.findGroup('Stratigraphy symbology'))
-    stratigraphy_group = qgis.core.QgsLayerTreeGroup(name='Stratigraphy symbology', checked=True)
-    midv.insertChildNode(0, stratigraphy_group)
+    groupname = 'Midvatten strat symbology'
+    root.removeChildNode(root.findGroup(groupname))
+    stratigraphy_group = qgis.core.QgsLayerTreeGroup(name=groupname, checked=True)
+    root.insertChildNode(0, stratigraphy_group)
     stratigraphy_group.setIsMutuallyExclusive(True)
     for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
                                                                   ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock')):
@@ -144,7 +143,7 @@ CREATE VIEW {} AS
     bergy = (
         '''
 CREATE VIEW {} AS
- SELECT DISTINCT a.obsid,
+ SELECT a.rowid, a.obsid,
     a.h_toc,
     a.h_gs,
     a.h_tocags,
@@ -182,7 +181,8 @@ CREATE VIEW {} AS
                 FROM stratigraphy s
                 WHERE LOWER(s.geoshort) LIKE '%berg%' OR LOWER(s.geology) LIKE '%rock%'
                 GROUP BY s.obsid
-                ) u ON a.obsid = u.obsid'''.format(view_name))
+                ) u ON a.obsid = u.obsid
+    ORDER BY a.obsid'''.format(view_name))
     dbconnection.execute(bergy)
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))

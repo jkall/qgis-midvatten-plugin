@@ -700,8 +700,6 @@ class Midvatten(object):
 
     @utils.general_exception_handler
     def load_strat_symbology(self):
-        #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
-        #return
         utils.start_waiting_cursor()
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))

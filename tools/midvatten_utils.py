@@ -1982,10 +1982,7 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if not tablename in existing_tables:
             continue
 
-        try:
-            layername = layernames[idx]
-        except IndexError:
-            layername = None
+        layername = layernames[idx] if layernames is not None else None
 
         if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
             tablename = 'view_{}'.format(tablename)
