@@ -50,6 +50,7 @@ def strat_symbology(iface):
     for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
                                                                   ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock')):
         group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
+        group.setExpanded(False)
         stratigraphy_group.insertChildNode(0, group)
         layers = []
         add_layers_to_list(layers, ['bars_strat', 'bars_strat', 'w_lvls_last_geom', 'bedrock'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels', 'Bedrock'])
@@ -61,16 +62,20 @@ def strat_symbology(iface):
             apply_style(layers[2], wlvls_stylename)
             QgsProject.instance().addMapLayer(layers[2], False)
             group.addLayer(layers[2])
+            group.children()[-1].setExpanded(False)
 
         apply_style(layers[3], bedrock_stylename)
         QgsProject.instance().addMapLayer(layers[3], False)
         group.addLayer(layers[3])
+        group.children()[-1].setExpanded(False)
 
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
         color_group.setIsMutuallyExclusive(True)
         group.insertChildNode(-1, color_group)
         color_group.addLayer(layers[0])
         color_group.addLayer(layers[1])
+
+
 
         #layers[0].setRenderer(renderer)
     iface.mapCanvas().refresh()
