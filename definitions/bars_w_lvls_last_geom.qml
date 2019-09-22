@@ -1,25 +1,25 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="3.8.3-Zanzibar" simplifyDrawingTol="1" minScale="1e+8" simplifyDrawingHints="0" simplifyLocal="1" simplifyAlgorithm="0" hasScaleBasedVisibilityFlag="0" readOnly="0" simplifyMaxScale="1" maxScale="0" labelsEnabled="1" styleCategories="AllStyleCategories">
+<qgis version="3.8.3-Zanzibar" hasScaleBasedVisibilityFlag="0" simplifyDrawingHints="0" simplifyMaxScale="1" readOnly="0" simplifyDrawingTol="1" labelsEnabled="1" minScale="1e+8" styleCategories="AllStyleCategories" simplifyAlgorithm="0" maxScale="0" simplifyLocal="1">
   <flags>
     <Identifiable>1</Identifiable>
     <Removable>1</Removable>
     <Searchable>1</Searchable>
   </flags>
-  <renderer-v2 enableorderby="0" forceraster="0" type="singleSymbol" symbollevels="0">
+  <renderer-v2 type="singleSymbol" forceraster="0" enableorderby="0" symbollevels="0">
     <symbols>
-      <symbol alpha="1" type="marker" name="0" force_rhr="0" clip_to_extent="1">
-        <layer class="GeometryGenerator" locked="0" enabled="1" pass="0">
+      <symbol force_rhr="0" clip_to_extent="1" type="marker" name="0" alpha="1">
+        <layer class="GeometryGenerator" enabled="1" locked="0" pass="0">
           <prop k="SymbolType" v="Line"/>
-          <prop k="geometryModifier" v="geom_from_wkt( format('LINESTRING(%1 %2, %3 %4)', &#xa;X($geometry)-0.0015*@map_scale, Y($geometry) - (&quot;meas&quot; - &quot;h_tocags&quot;)*0.001*@map_scale*0.5, &#xa;X($geometry)+0.0015*@map_scale, Y($geometry) - (&quot;meas&quot; - &quot;h_tocags&quot;)*0.001*@map_scale*0.5))"/>
+          <prop k="geometryModifier" v="geom_from_wkt( format('LINESTRING(%1 %2, %3 %4)', &#xa;X($geometry)-2*0.001*@map_scale, Y($geometry) - &quot;meas&quot;*0.001*@map_scale + &quot;h_tocags&quot;*0.001*@map_scale, &#xa;X($geometry)+2*0.001*@map_scale, Y($geometry) - &quot;meas&quot;*0.001*@map_scale + &quot;h_tocags&quot;*0.001*@map_scale))"/>
           <data_defined_properties>
             <Option type="Map">
-              <Option value="" type="QString" name="name"/>
+              <Option type="QString" name="name" value=""/>
               <Option name="properties"/>
-              <Option value="collection" type="QString" name="type"/>
+              <Option type="QString" name="type" value="collection"/>
             </Option>
           </data_defined_properties>
-          <symbol alpha="1" type="line" name="@0@0" force_rhr="0" clip_to_extent="1">
-            <layer class="SimpleLine" locked="0" enabled="1" pass="0">
+          <symbol force_rhr="0" clip_to_extent="1" type="line" name="@0@0" alpha="1">
+            <layer class="SimpleLine" enabled="1" locked="0" pass="0">
               <prop k="capstyle" v="square"/>
               <prop k="customdash" v="5;2"/>
               <prop k="customdash_map_unit_scale" v="3x:0,0,0,0,0,0"/>
@@ -38,9 +38,9 @@
               <prop k="width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <data_defined_properties>
                 <Option type="Map">
-                  <Option value="" type="QString" name="name"/>
+                  <Option type="QString" name="name" value=""/>
                   <Option name="properties"/>
-                  <Option value="collection" type="QString" name="type"/>
+                  <Option type="QString" name="type" value="collection"/>
                 </Option>
               </data_defined_properties>
             </layer>
@@ -53,20 +53,20 @@
   </renderer-v2>
   <labeling type="simple">
     <settings>
-      <text-style textColor="0,0,0,255" fontSizeMapUnitScale="3x:0,0,0,0,0,0" fieldName="round(level_masl, 3)" isExpression="1" previewBkgrdColor="#ffffff" fontSizeUnit="Point" fontLetterSpacing="0" fontItalic="0" blendMode="0" fontWordSpacing="0" fontUnderline="0" useSubstitutions="0" multilineHeight="1" fontSize="8" textOpacity="1" fontWeight="50" fontCapitals="0" fontFamily="Noto Sans" namedStyle="Regular" fontStrikeout="0">
-        <text-buffer bufferSize="0.5" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferOpacity="1" bufferJoinStyle="128" bufferNoFill="1" bufferDraw="1" bufferColor="149,149,255,255" bufferBlendMode="0" bufferSizeUnits="MM"/>
-        <background shapeBorderColor="128,128,128,255" shapeOpacity="1" shapeRadiiY="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeSVGFile="" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeSizeX="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeY="0" shapeRadiiX="0" shapeRadiiUnit="MM" shapeOffsetX="0" shapeFillColor="255,255,255,255" shapeSizeUnit="MM" shapeRotationType="0" shapeOffsetUnit="MM" shapeSizeType="0" shapeBorderWidthUnit="MM" shapeType="0" shapeDraw="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRotation="0"/>
-        <shadow shadowOffsetUnit="MM" shadowRadiusAlphaOnly="0" shadowDraw="0" shadowUnder="0" shadowOffsetGlobal="1" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowScale="100" shadowOpacity="0.7" shadowOffsetDist="1" shadowOffsetAngle="135" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowColor="0,0,0,255"/>
+      <text-style fontSizeUnit="Point" fontStrikeout="0" isExpression="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" fontLetterSpacing="0" fieldName="round(level_masl, 3)" blendMode="0" fontItalic="0" fontCapitals="0" fontWordSpacing="0" namedStyle="Regular" fontWeight="50" fontSize="8" textColor="0,0,0,255" previewBkgrdColor="#ffffff" fontFamily="Noto Sans" fontUnderline="0" useSubstitutions="0" textOpacity="1" multilineHeight="1">
+        <text-buffer bufferColor="149,149,255,255" bufferJoinStyle="128" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="1" bufferSize="0.5" bufferSizeUnits="MM" bufferBlendMode="0" bufferDraw="1" bufferOpacity="1"/>
+        <background shapeSizeY="0" shapeOffsetY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeSizeX="0" shapeType="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeRotation="0" shapeRadiiY="0" shapeRadiiX="0" shapeOffsetX="0" shapeOpacity="1" shapeSVGFile="" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeSizeUnit="MM" shapeSizeType="0" shapeBorderWidthUnit="MM" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeRadiiUnit="MM" shapeBlendMode="0" shapeBorderWidth="0" shapeDraw="0" shapeFillColor="255,255,255,255" shapeBorderColor="128,128,128,255" shapeJoinStyle="64" shapeRotationType="0"/>
+        <shadow shadowRadiusAlphaOnly="0" shadowDraw="0" shadowOffsetDist="1" shadowBlendMode="6" shadowOffsetAngle="135" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowOffsetUnit="MM" shadowRadiusUnit="MM" shadowOpacity="0.7" shadowColor="0,0,0,255" shadowScale="100" shadowUnder="0" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowOffsetGlobal="1" shadowRadius="1.5"/>
         <substitutions/>
       </text-style>
-      <text-format placeDirectionSymbol="0" addDirectionSymbol="0" plussign="0" useMaxLineLengthForAutoWrap="1" formatNumbers="0" multilineAlign="3" reverseDirectionSymbol="0" decimals="3" wrapChar="" leftDirectionSymbol="&lt;" rightDirectionSymbol=">" autoWrapLength="0"/>
-      <placement rotationAngle="0" centroidInside="0" offsetType="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" offsetUnits="MM" geometryGenerator="geom_from_wkt( format('POINT(%1 %2)', &#xa;X($geometry), Y($geometry) - (&quot;meas&quot; - &quot;h_tocags&quot;)*0.001*@map_scale*0.5))" geometryGeneratorEnabled="1" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" distUnits="MM" maxCurvedCharAngleIn="25" distMapUnitScale="3x:0,0,0,0,0,0" xOffset="1.5" dist="0" quadOffset="5" maxCurvedCharAngleOut="-25" geometryGeneratorType="PointGeometry" centroidWhole="0" placementFlags="10" placement="1" repeatDistance="0" priority="5" repeatDistanceUnits="MM" preserveRotation="1" yOffset="-1.2"/>
-      <rendering fontLimitPixelSize="0" labelPerPart="0" scaleMax="0" zIndex="0" displayAll="1" maxNumLabels="2000" scaleMin="0" upsidedownLabels="0" minFeatureSize="0" scaleVisibility="0" fontMaxPixelSize="10000" mergeLines="0" drawLabels="1" limitNumLabels="0" obstacleFactor="1" obstacle="1" fontMinPixelSize="3" obstacleType="0"/>
+      <text-format formatNumbers="0" plussign="0" multilineAlign="3" autoWrapLength="0" placeDirectionSymbol="0" rightDirectionSymbol=">" addDirectionSymbol="0" leftDirectionSymbol="&lt;" wrapChar="" decimals="3" reverseDirectionSymbol="0" useMaxLineLengthForAutoWrap="1"/>
+      <placement repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" xOffset="2" maxCurvedCharAngleIn="25" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" geometryGenerator="geom_from_wkt( format('POINT(%1 %2)', &#xa;X($geometry), Y($geometry) - &quot;meas&quot;*0.001*@map_scale + &quot;h_tocags&quot;*0.001*@map_scale))" fitInPolygonOnly="0" distUnits="MM" placement="1" centroidInside="0" repeatDistanceUnits="MM" geometryGeneratorEnabled="1" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" centroidWhole="0" preserveRotation="1" dist="0" offsetType="0" priority="5" geometryGeneratorType="PointGeometry" offsetUnits="MM" rotationAngle="0" distMapUnitScale="3x:0,0,0,0,0,0" placementFlags="10" maxCurvedCharAngleOut="-25" yOffset="0" quadOffset="2"/>
+      <rendering fontMinPixelSize="3" scaleMin="0" scaleMax="0" drawLabels="1" zIndex="0" obstacleType="0" upsidedownLabels="0" scaleVisibility="0" obstacleFactor="1" maxNumLabels="2000" fontLimitPixelSize="0" labelPerPart="0" mergeLines="0" obstacle="1" fontMaxPixelSize="10000" displayAll="1" limitNumLabels="0" minFeatureSize="0"/>
       <dd_properties>
         <Option type="Map">
-          <Option value="" type="QString" name="name"/>
+          <Option type="QString" name="name" value=""/>
           <Option name="properties"/>
-          <Option value="collection" type="QString" name="type"/>
+          <Option type="QString" name="type" value="collection"/>
         </Option>
       </dd_properties>
     </settings>
@@ -76,7 +76,7 @@
       <value>rowid</value>
       <value>"rowid"</value>
     </property>
-    <property value="0" key="embeddedWidgets/count"/>
+    <property key="embeddedWidgets/count" value="0"/>
     <property key="variableNames"/>
     <property key="variableValues"/>
   </customproperties>
@@ -84,21 +84,21 @@
   <featureBlendMode>0</featureBlendMode>
   <layerOpacity>1</layerOpacity>
   <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-    <DiagramCategory opacity="1" minScaleDenominator="0" minimumSize="0" rotationOffset="270" penColor="#000000" diagramOrientation="Up" maxScaleDenominator="1e+8" backgroundAlpha="255" height="15" scaleBasedVisibility="0" lineSizeType="MM" scaleDependency="Area" lineSizeScale="3x:0,0,0,0,0,0" backgroundColor="#ffffff" labelPlacementMethod="XHeight" width="15" enabled="0" sizeScale="3x:0,0,0,0,0,0" penAlpha="255" sizeType="MM" penWidth="0" barWidth="5">
-      <fontProperties description="Noto Sans,9,-1,5,50,0,0,0,0,0" style=""/>
-      <attribute field="" label="" color="#000000"/>
+    <DiagramCategory scaleBasedVisibility="0" width="15" backgroundColor="#ffffff" lineSizeScale="3x:0,0,0,0,0,0" sizeScale="3x:0,0,0,0,0,0" sizeType="MM" labelPlacementMethod="XHeight" height="15" penWidth="0" opacity="1" penAlpha="255" backgroundAlpha="255" diagramOrientation="Up" minimumSize="0" minScaleDenominator="0" barWidth="5" penColor="#000000" scaleDependency="Area" enabled="0" maxScaleDenominator="1e+8" lineSizeType="MM" rotationOffset="270">
+      <fontProperties style="" description="Noto Sans,9,-1,5,50,0,0,0,0,0"/>
+      <attribute color="#000000" field="" label=""/>
     </DiagramCategory>
   </SingleCategoryDiagramRenderer>
-  <DiagramLayerSettings linePlacementFlags="18" showAll="1" dist="0" zIndex="0" placement="0" priority="0" obstacle="0">
+  <DiagramLayerSettings priority="0" zIndex="0" obstacle="0" showAll="1" dist="0" linePlacementFlags="18" placement="0">
     <properties>
       <Option type="Map">
-        <Option value="" type="QString" name="name"/>
+        <Option type="QString" name="name" value=""/>
         <Option name="properties"/>
-        <Option value="collection" type="QString" name="type"/>
+        <Option type="QString" name="type" value="collection"/>
       </Option>
     </properties>
   </DiagramLayerSettings>
-  <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+  <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
     <activeChecks/>
     <checkConfiguration/>
   </geometryOptions>
@@ -147,30 +147,30 @@
     </field>
   </fieldConfiguration>
   <aliases>
-    <alias index="0" field="rowid" name=""/>
-    <alias index="1" field="obsid" name=""/>
-    <alias index="2" field="date_time" name=""/>
-    <alias index="3" field="meas" name=""/>
-    <alias index="4" field="level_masl" name=""/>
-    <alias index="5" field="h_tocags" name=""/>
+    <alias name="" field="rowid" index="0"/>
+    <alias name="" field="obsid" index="1"/>
+    <alias name="" field="date_time" index="2"/>
+    <alias name="" field="meas" index="3"/>
+    <alias name="" field="level_masl" index="4"/>
+    <alias name="" field="h_tocags" index="5"/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
   <defaults>
-    <default expression="" field="rowid" applyOnUpdate="0"/>
-    <default expression="" field="obsid" applyOnUpdate="0"/>
-    <default expression="" field="date_time" applyOnUpdate="0"/>
-    <default expression="" field="meas" applyOnUpdate="0"/>
-    <default expression="" field="level_masl" applyOnUpdate="0"/>
-    <default expression="" field="h_tocags" applyOnUpdate="0"/>
+    <default expression="" applyOnUpdate="0" field="rowid"/>
+    <default expression="" applyOnUpdate="0" field="obsid"/>
+    <default expression="" applyOnUpdate="0" field="date_time"/>
+    <default expression="" applyOnUpdate="0" field="meas"/>
+    <default expression="" applyOnUpdate="0" field="level_masl"/>
+    <default expression="" applyOnUpdate="0" field="h_tocags"/>
   </defaults>
   <constraints>
-    <constraint unique_strength="0" notnull_strength="0" field="rowid" constraints="0" exp_strength="0"/>
-    <constraint unique_strength="0" notnull_strength="0" field="obsid" constraints="0" exp_strength="0"/>
-    <constraint unique_strength="0" notnull_strength="0" field="date_time" constraints="0" exp_strength="0"/>
-    <constraint unique_strength="0" notnull_strength="0" field="meas" constraints="0" exp_strength="0"/>
-    <constraint unique_strength="0" notnull_strength="0" field="level_masl" constraints="0" exp_strength="0"/>
-    <constraint unique_strength="0" notnull_strength="0" field="h_tocags" constraints="0" exp_strength="0"/>
+    <constraint constraints="0" exp_strength="0" field="rowid" notnull_strength="0" unique_strength="0"/>
+    <constraint constraints="0" exp_strength="0" field="obsid" notnull_strength="0" unique_strength="0"/>
+    <constraint constraints="0" exp_strength="0" field="date_time" notnull_strength="0" unique_strength="0"/>
+    <constraint constraints="0" exp_strength="0" field="meas" notnull_strength="0" unique_strength="0"/>
+    <constraint constraints="0" exp_strength="0" field="level_masl" notnull_strength="0" unique_strength="0"/>
+    <constraint constraints="0" exp_strength="0" field="h_tocags" notnull_strength="0" unique_strength="0"/>
   </constraints>
   <constraintExpressions>
     <constraint desc="" field="rowid" exp=""/>
@@ -182,9 +182,9 @@
   </constraintExpressions>
   <expressionfields/>
   <attributeactions>
-    <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
+    <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
   </attributeactions>
-  <attributetableconfig sortOrder="0" actionWidgetStyle="dropDown" sortExpression="">
+  <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
     <columns>
       <column width="-1" hidden="0" type="field" name="rowid"/>
       <column width="-1" hidden="0" type="field" name="obsid"/>
@@ -229,12 +229,12 @@ def my_form_open(dialog, layer, feature):
     <field editable="1" name="rowid"/>
   </editable>
   <labelOnTop>
-    <field labelOnTop="0" name="date_time"/>
-    <field labelOnTop="0" name="h_tocags"/>
-    <field labelOnTop="0" name="level_masl"/>
-    <field labelOnTop="0" name="meas"/>
-    <field labelOnTop="0" name="obsid"/>
-    <field labelOnTop="0" name="rowid"/>
+    <field name="date_time" labelOnTop="0"/>
+    <field name="h_tocags" labelOnTop="0"/>
+    <field name="level_masl" labelOnTop="0"/>
+    <field name="meas" labelOnTop="0"/>
+    <field name="obsid" labelOnTop="0"/>
+    <field name="rowid" labelOnTop="0"/>
   </labelOnTop>
   <widgets/>
   <previewExpression>rowid</previewExpression>
