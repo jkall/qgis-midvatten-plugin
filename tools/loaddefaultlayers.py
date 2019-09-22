@@ -35,12 +35,59 @@ class LoadLayers(object):
     def __init__(self, iface, settingsdict={},group_name='Midvatten_OBS_DB'):
         self.settingsdict = settingsdict
         self.group_name = group_name
-        self.default_layers =  defs.get_subset_of_tables_fr_db(category='default_layers') 
-        self.default_nonspatlayers = defs.get_subset_of_tables_fr_db(category='default_nonspatlayers')
         self.iface = iface
         self.root = QgsProject.instance().layerTreeRoot()
-        self.remove_layers()
-        self.add_layers()
+        self.midv20_test()
+
+    def midv20_test(self):
+        """
+        Works but with bugs:
+
+        Attribute table bugs:
+        * When object is added without east and north, it replaces another row in the table. The new
+        row surely exists (it can be seen in the filter function and by showing the number of features in the layer.
+        If I update east and north then the feature appears.
+
+        ! Now I know! The geometry column references location as specified using AddGeometryColumn, but now the location
+        is not created so the reference doesn't work!
+        Buggar:
+
+        *
+        :return:
+        """
+        root = QgsProject.instance().layerTreeRoot()
+        MyGroup = qgis.core.QgsLayerTreeGroup(name='Midv20', checked=True)
+        root.insertChildNode(0, MyGroup)
+
+        uri = QgsDataSourceUri()
+        uri.setDatabase('/home/henrik/temp/mid20_190917.sqlite')
+        uri.setDataSource('', 'view_object', 'geom', '', 'object')
+        view_object_layer = QgsVectorLayer(uri.uri(), 'view_object', 'spatialite')
+
+        QgsProject.instance().addMapLayers([view_object_layer], False)
+        MyGroup.insertLayer(0, view_object_layer)
+
+        uri = QgsDataSourceUri()
+        uri.setDatabase('/home/henrik/temp/mid20_190917.sqlite')
+        uri.setDataSource('', 'locations', 'geom', '', 'location')
+        location_layer = QgsVectorLayer(uri.uri(), 'locations', 'spatialite')
+
+        QgsProject.instance().addMapLayers([location_layer], False)
+        MyGroup.insertLayer(0, location_layer)
+
+        relation = qgis.core.QgsRelation()
+        relation.setReferencedLayer(location_layer.id())
+        relation.setReferencingLayer(view_object_layer.id())
+        referenced_field = 'location'
+        referencing_field = 'location'
+        relation.addFieldPair(referencing_field, referenced_field)
+        relation.generateId()
+        relation.setName('view_object - locations')
+
+        relation_manager = QgsProject.instance().relationManager()
+        relation_manager.addRelation(relation)
+
+        self.iface.mapCanvas().refresh()
 
     def add_layers(self):
         """
