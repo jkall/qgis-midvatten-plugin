@@ -48,7 +48,8 @@ def strat_symbology(iface):
     root.insertChildNode(0, stratigraphy_group)
     stratigraphy_group.setIsMutuallyExclusive(True)
     for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
-                                                                  ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock')):
+                                                                ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock'),
+                                                                ('Rings', 'rings_strat', None, 'rings_bedrock')):
         group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
         group.setExpanded(False)
         stratigraphy_group.insertChildNode(0, group)
@@ -58,16 +59,17 @@ def strat_symbology(iface):
         symbology_using_cloning({k: "= '{}'".format(k) for k in sorted(hydro_colors.keys())}, hydro_colors, layers[1], stylename, 'capacity')
         QgsProject.instance().addMapLayers(layers[:2], False)
 
-        if 'h_tocags' in layers[2].fields().names():
+        if wlvls_stylename is not None and 'h_tocags' in layers[2].fields().names():
             apply_style(layers[2], wlvls_stylename)
             QgsProject.instance().addMapLayer(layers[2], False)
             group.addLayer(layers[2])
             group.children()[-1].setExpanded(False)
 
-        apply_style(layers[3], bedrock_stylename)
-        QgsProject.instance().addMapLayer(layers[3], False)
-        group.addLayer(layers[3])
-        group.children()[-1].setExpanded(False)
+        if bedrock_stylename is not None:
+            apply_style(layers[3], bedrock_stylename)
+            QgsProject.instance().addMapLayer(layers[3], False)
+            group.addLayer(layers[3])
+            group.children()[-1].setExpanded(False)
 
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
         color_group.setIsMutuallyExclusive(True)
@@ -75,9 +77,6 @@ def strat_symbology(iface):
         color_group.addLayer(layers[0])
         color_group.addLayer(layers[1])
 
-
-
-        #layers[0].setRenderer(renderer)
     iface.mapCanvas().refresh()
 
 
@@ -99,6 +98,7 @@ def apply_style(layer, stylename):
         except:
             pass
 
+
 def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     apply_style(layer, stylename)
 
@@ -108,8 +108,7 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     except:
         print(str(stylename))
         raise
-    for_cloning = root.children()[1]
-
+    for_cloning = root.children()[-1]
     #rock_key = 'berg' if utils.getcurrentlocale()[0] == 'sv_SE' else 'rock'
     #root.children()[0].setFilterExpression('''"{}" {}'''.format('geoshort', plot_types[rock_key][1]))
 
@@ -121,9 +120,11 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
         rule.setLabel(key)
         sl = rule.symbol().symbolLayer(0)
         sl.setColor(color)
-        ssl = sl.subSymbol().symbolLayer(0)
-        ssl.setStrokeColor(color)
+        if sl.subSymbol() is not None:
+            ssl = sl.subSymbol().symbolLayer(0)
+            ssl.setStrokeColor(color)
         root.insertChild(1, rule)
+
 
 def add_views_to_db(dbconnection):
     view_name = 'bars_strat'

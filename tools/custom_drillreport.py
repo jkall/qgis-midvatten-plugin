@@ -236,6 +236,8 @@ class Drillreport(object):        # general observation point info for the selec
             utils.pop_up_info(ru(QCoreApplication.translate('Drillreport', "Must select one or more obsids!")))
             return None
 
+        obsids = sorted(set(obsids))
+
         obs_points_translations = {
             'obsid': ru(QCoreApplication.translate('Drillreport2', 'obsid')),
             'name': ru(QCoreApplication.translate('Drillreport2', 'name')),

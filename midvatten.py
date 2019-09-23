@@ -427,7 +427,7 @@ class Midvatten(object):
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
                 
-            utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+            utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def export_spatialite(self):
@@ -487,7 +487,7 @@ class Midvatten(object):
                     exportinstance = ExportData(OBSID_P, OBSID_L)
                     exportinstance.export_2_splite(new_dbpath, user_chosen_EPSG_code)
             
-                utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+                utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def export_fieldlogger(self):
@@ -696,16 +696,17 @@ class Midvatten(object):
             err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
-        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def load_strat_symbology(self):
         utils.start_waiting_cursor()
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
-        if err_flag == 0:
+        if err_flag:
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
+        else:
             strat_symbology(qgis.utils.iface)
-        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def loadthelayers(self):
@@ -716,7 +717,7 @@ class Midvatten(object):
                 #show the user this may take a long time...
                 utils.start_waiting_cursor()
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
-                utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+                utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def new_db(self, *args):
@@ -900,7 +901,7 @@ class Midvatten(object):
 
             utils.start_waiting_cursor()#show the user this may take a long time...
             PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
-            utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+            utils.stop_waiting_cursor()
 
     def project_created(self):
         self.reset_settings()
