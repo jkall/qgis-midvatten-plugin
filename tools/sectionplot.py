@@ -13,6 +13,7 @@
 from __future__ import absolute_import
 
 import copy
+import traceback
 import os
 from builtins import range
 from builtins import str
@@ -56,6 +57,15 @@ Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui
 
 import definitions.midvatten_defs as defs
 from sampledem import qchain, sampling
+from gui_utils import set_groupbox_children_visibility
+from matplotlib.widgets import Slider
+
+try:
+    import pandas as pd
+except:
+    pandas_on = False
+else:
+    pandas_on = True
 
 """
 Major parts of the code is re-used from the profiletool plugin:
@@ -106,6 +116,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.tabWidget.setTabBarAutoHide(True)
         self.settingsdockWidget.closeEvent = types.MethodType(self.dock_settings, self.settingsdockWidget)
         self.resize_widget(self.settingsdockWidget)
+        self._waterlevel_lineplot = None
+        self.resample_rule.setText('1D')
+        self.resample_rule.setToolTip(defs.pandas_rule_tooltip())
+        self.resample_base.setText('0')
+        self.resample_base.setToolTip(defs.pandas_base_tooltip())
+        self.resample_how.setText('mean')
+        self.resample_how.setToolTip(defs.pandas_how_tooltip())
+
+        self.specific_dates_groupbox.clicked.connect(lambda: self.w_levels_chosen(self.specific_dates_groupbox))
+        self.animation_groupbox.clicked.connect(lambda: self.w_levels_chosen(self.animation_groupbox))
+
 
     def init_figure(self):
         try:
@@ -148,6 +169,22 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
+
+    def w_levels_chosen(self, clicked_groupbox):
+        #TODO: Check that pandas and matplotlib is of a supported version
+        if clicked_groupbox is self.animation_groupbox and not pandas_on:
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('''SectionPlot''', 'This function requires python pandas which is not installed!')))
+            self.animation_groupbox.setChecked(False)
+            self.specific_dates_groupbox.setChecked(True)
+            set_groupbox_children_visibility(self.specific_dates_groupbox)
+            return
+
+        utils.pop_up_info('''TODO: Pandas and matplotlibversion and test pandas false''')
+
+        not_clicked = self.animation_groupbox if clicked_groupbox is not self.animation_groupbox else self.specific_dates_groupbox
+        set_groupbox_children_visibility(clicked_groupbox)
+        not_clicked.setChecked(False if clicked_groupbox.isChecked() else True)
+        set_groupbox_children_visibility(not_clicked)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()
@@ -396,8 +433,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     if len(self.ms.settingsdict['secplottext']) > 0:
                         self.write_annotation()
 
-                if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0: #PLOT Water Levels
-                    self.plot_water_level()
+                self.plot_water_level()
 
                 if self.ms.settingsdict['secplotdrillstop']!='':
                     self.plot_drill_stop()
@@ -457,7 +493,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.dbconnection = None
         except KeyError as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'Section plot optional settings error, press "Restore defaults"')),
-                                            log_msg=ru(QCoreApplication.translate('SectionPlot', 'Error msg: %s'))%e)
+                                            log_msg=ru(QCoreApplication.translate('SectionPlot', 'Error msg: %s'))%str(traceback.format_exc()))
             utils.stop_waiting_cursor()
             self.dbconnection.closedb()
             self.dbconnection = None
@@ -1191,20 +1227,86 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def plot_water_level(self):   # Adding a plot for each water level date identified
         if not self.ms.settingsdict['secplotwlvltab']:
             return
+        if self.specific_dates_groupbox.isChecked():
+            if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates']) > 0:  # PLOT Water Levels
+                self.plot_specific_water_level()
+        else:
+            self.plot_water_level_animation()
+
+    def plot_water_level_animation(self):
+        sql = '''SELECT date_time, level_masl, obsid FROM {} WHERE obsid IN ({})'''.format(self.ms.settingsdict['secplotwlvltab'], utils.sql_unicode_list(self.selected_obsids))
+        df = pd.read_sql(sql,
+                         self.dbconnection.conn, index_col='date_time', coerce_float=True, params=None, parse_dates=['date_time'],
+                         columns=None,
+                         chunksize=None)
+
+        if isinstance(df, pd.Series):
+            df = df.to_frame()
+
+
+        #TODO: Test pivot way instead. easier to get the index, and easier to use dropna(). Which shuld probably be a checkbox.
+
+        # Test if multiindex works, else try pivot
+        #df = df.pivot(index='date_time', columns='obsid', values='level_masl')¶
+        print("df:" + str(df))
+        df = groupby(df, indexcol='date_time', filters=['obsid'])
+
+        #resample_kwargs = #ast.literal_eval(plot_conf['resample_kwargs'])
+        resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'fill_method': None, 'closed': None, 'label': None,
+                           'convention': 'start', 'kind': None, 'loffset': None, 'limit': None, 'base': int(self.resample_base.text()), 'on': None,
+                           'level': None}
+
+        df = resample(df, 'level_masl', self.resample_rule.text(), resample_kwargs)
+        df = groupby(df, indexcol='date_time', filters=['obsid'])
+        self.df = df
+        print("df groups: " + str(df.groups.keys()))
+        datefloats = pd.to_timedelta(df.index).dt.total_seconds()
+
+        #The slider should update after user pan.
+        valuemin = min(datefloats)
+        valuemax = max(datefloats)
+        valinit = valuemin
+        valstep = 1000
+        sliderax = self.fig.add_axes([0.25, 0.1, 0.65, 0.03], facecolor='white')
+        self.date_slider = Slider(sliderax, 'Date', valuemin, valuemax, valinit=valinit, valstep=valstep)
+        self.date_slider.on_changed(self.update_animation)
+        print("dateslider: " + str(self.date_slider))
+        x_wl, WL, current_date = self.df_get_values()
+        self.waterlevel_lineplot(x_wl, WL, str(current_date))
+
+    def df_get_values(self):
+        current_date = pd.to_datetime(self.date_slider.val)
+        WL = []
+        x_wl = []
+        for k, obs in enumerate(self.selected_obsids):
+            val = self.df.loc[current_date, obs].values()[0]
+            WL.append(val)
+            x_wl.append(float(self.length_along[k]))
+        return x_wl, WL, current_date
+
+    def update_animation(self, datevalue):
+        x_wl, WL, _ = self.df_get_values()
+        #l.set_ydata(amp * np.sin(2 * np.pi * freq * t))
+        if self._waterlevel_lineplot is not None and self.df is not None:
+            self._waterlevel_lineplot.set_ydata(WL)
+            self.canvas.draw_idle()
+
+    def plot_specific_water_level(self):
 
         for _datum in self.ms.settingsdict['secplotdates']:
             datum_obsids = _datum.split(';')
             datum = datum_obsids[0]
-
             WL = []
-            x_wl=[]
+            x_wl = []
             for k, obs in enumerate(self.selected_obsids):
                 if len(datum_obsids) > 1:
                     if obs not in datum_obsids[1:]:
                         continue
-                #TODO: There should probably be a setting for using avg(level_masl)
-                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
-                #query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
+
+                # TODO: There should probably be a setting for using avg(level_masl)
+                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(
+                    self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                # query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
                 try:
                     val = res[0][0]
@@ -1215,6 +1317,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                 WL.append(val)
                 x_wl.append(float(self.length_along[k]))
+            self.waterlevel_lineplot(x_wl, WL, datum)
+
+    def waterlevel_lineplot(self, x_wl, WL, datum):
 
             plotlable = self.get_plot_label_name(datum, self.labels)
 
@@ -1226,7 +1331,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             settings['label'] = settings.get('label', plotlable)
             self.labels.append(settings['label'])
             lineplot, = self.axes.plot(x_wl, WL, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
-
+            self._waterlevel_lineplot = lineplot
             self.p.append(lineplot)
 
     def save_settings(self):# This is a quick-fix, should use the midvsettings class instead.
@@ -1403,3 +1508,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 sampled_values.append((label, color))
 
         return sampled_values
+
+
+def resample(df, valuecol, rule, resample_kwargs):
+    how = resample_kwargs.get('how', 'mean')
+    del resample_kwargs['how']
+
+    df = getattr(df[valuecol].resample(rule, **resample_kwargs), how)()
+    return df
+
+
+def groupby(df, indexcol, filters):
+    df = df.reset_index()
+    df = df.set_index(indexcol)
+    if filters is not None:
+        df = df.groupby(by=filters)
+    return df

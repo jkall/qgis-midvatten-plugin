@@ -255,3 +255,8 @@ class DistinctValuesBrowser(VRowEntry):
     def distinct_value(self, value):
         set_combobox(self._distinct_value, value)
 
+
+def set_groupbox_children_visibility(groupbox_widget):
+    children = groupbox_widget.findChildren(qgis.PyQt.QtWidgets.QWidget)
+    for child in children:
+        child.setVisible(groupbox_widget.isChecked())

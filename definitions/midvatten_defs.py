@@ -900,3 +900,28 @@ def custplot_default_style():
 def piperplot_style():
     return os.path.join(os.path.dirname(__file__), 'mpl_styles', 'midv_piperplot.mplstyle')
 
+
+def pandas_rule_tooltip():
+    return ru(QCoreApplication.translate('pandas_rule_tooltip',
+                           'Steplength for resampling, ex:\n'
+                           '"10S" = 10 seconds\n'
+                           '"20T" = 20 minutes\n'
+                           '"1h" = 1 hour\n'
+                           '"24h" = 24 hours\n'
+                           '(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)\n'
+                           'No resampling if field is empty\n'
+                           'See pandas pandas.DataFrame.resample documentation for more info.'))
+
+def pandas_base_tooltip():
+    return ru(QCoreApplication.translate('pandas_base_tooltip',
+                           'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
+                           'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
+                           'See pandas pandas.DataFrame.resample documentation for more info:\n'
+                           'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
+                           'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.'))
+
+def pandas_how_tooltip():
+    return ru(QCoreApplication.translate('pandas_how_tooltip',
+                           'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
+                           'See pandas pandas.DataFrame.resample documentation for more info\n'
+                           '(though "how" is not explained a lot)'))

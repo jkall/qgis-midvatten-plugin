@@ -52,6 +52,7 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.PyQt
+from gui_utils import set_groupbox_children_visibility
 
 try:
     import pandas as pd
@@ -100,11 +101,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.table_ComboBox_3.currentIndexChanged.connect( partial(self.Table3Changed))
         self.Filter1_ComboBox_3.currentIndexChanged.connect( partial(self.Filter1_3Changed))
         self.Filter2_ComboBox_3.currentIndexChanged.connect( partial(self.Filter2_3Changed))
-        self.plot_settings_1.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_1))
-        self.plot_settings_2.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_2))
-        self.plot_settings_3.clicked.connect( partial(self.set_groupbox_children_visibility, self.plot_settings_3))
-        self.chart_settings.clicked.connect( partial(self.set_groupbox_children_visibility, self.chart_settings))
-        self.styles_settings.clicked.connect(partial(self.set_groupbox_children_visibility, self.styles_settings))
+        self.plot_settings_1.clicked.connect( partial(set_groupbox_children_visibility, self.plot_settings_1))
+        self.plot_settings_2.clicked.connect( partial(set_groupbox_children_visibility, self.plot_settings_2))
+        self.plot_settings_3.clicked.connect( partial(set_groupbox_children_visibility, self.plot_settings_3))
+        self.chart_settings.clicked.connect( partial(set_groupbox_children_visibility, self.chart_settings))
+        self.styles_settings.clicked.connect(partial(set_groupbox_children_visibility, self.styles_settings))
         self.plot_tabwidget.currentChanged.connect(self.uncheck_settings)
         self.plot_tabwidget.currentChanged.connect(lambda : self.tabwidget_resize(self.plot_tabwidget))
         self.tabWidget.currentChanged.connect(lambda :self.tabwidget_resize(self.tabWidget))
@@ -122,9 +123,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.listfilter_2_2.editingFinished.connect( partial(self.filter_filterlist, self.Filter2_QListWidget_2, self.listfilter_2_2))
         self.listfilter_1_3.editingFinished.connect( partial(self.filter_filterlist, self.Filter1_QListWidget_3, self.listfilter_1_3))
         self.listfilter_2_3.editingFinished.connect( partial(self.filter_filterlist, self.Filter2_QListWidget_3, self.listfilter_2_3))
-        self.filtersettings1.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings1))
-        self.filtersettings2.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings2))
-        self.filtersettings3.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings3))
+        self.filtersettings1.clicked.connect( partial(set_groupbox_children_visibility, self.filtersettings1))
+        self.filtersettings2.clicked.connect( partial(set_groupbox_children_visibility, self.filtersettings2))
+        self.filtersettings3.clicked.connect( partial(set_groupbox_children_visibility, self.filtersettings3))
 
         self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawplot_with_styles())
         self.Redraw_pushButton.clicked.connect(lambda x: self.redraw())
@@ -164,7 +165,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                           self.filtersettings1, self.filtersettings2, self.filtersettings3,
                           self.chart_settings, self.styles_settings]:
             group_box.setChecked(False)
-            self.set_groupbox_children_visibility(group_box)
+            set_groupbox_children_visibility(group_box)
         self.uncheck_settings(0)
 
         self.title = None
@@ -829,11 +830,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.ms.save_settings(self.custplot_last_used_style_settingskey)
 
-    def set_groupbox_children_visibility(self, groupbox_widget):
-        children = groupbox_widget.findChildren(qgis.PyQt.QtWidgets.QWidget)
-        for child in children:
-            child.setVisible(groupbox_widget.isChecked())
-
     def select_in_filterlist_from_selection(self, filter_listwidget, filter_combobox):
         current_column = ru(filter_combobox.currentText())
         if not current_column:
@@ -850,8 +846,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.chart_settings.setChecked(True)
             self.styles_settings.setChecked(True)
 
-        self.set_groupbox_children_visibility(self.styles_settings)
-        self.set_groupbox_children_visibility(self.chart_settings)
+        set_groupbox_children_visibility(self.styles_settings)
+        set_groupbox_children_visibility(self.chart_settings)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()
@@ -877,33 +873,17 @@ class PandasCalculations(object):
         self.rule_label = qgis.PyQt.QtWidgets.QLabel('Resample rule')
         self.rule = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.rule_label, self.rule]:
-            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
-                           'Steplength for resampling, ex:\n'
-                           '"10S" = 10 seconds\n'
-                           '"20T" = 20 minutes\n'
-                           '"1h" = 1 hour\n'
-                           '"24h" = 24 hours\n'
-                           '(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)\n'
-                           'No resampling if field is empty\n'
-                           'See pandas pandas.DataFrame.resample documentation for more info.')))
+            wid.setToolTip(defs.pandas_rule_tooltip())
 
         self.base_label = qgis.PyQt.QtWidgets.QLabel('Resample base')
         self.base = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.base_label, self.base]:
-            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
-                           'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
-                           'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
-                           'See pandas pandas.DataFrame.resample documentation for more info:\n'
-                           'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
-                           'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.')))
+            wid.setToolTip(defs.pandas_base_tooltip())
 
         self.how_label = qgis.PyQt.QtWidgets.QLabel('Resample how')
         self.how = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.how_label, self.how]:
-            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
-                           'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
-                           'See pandas pandas.DataFrame.resample documentation for more info\n'
-                           '(though "how" is not explained a lot)')))
+            wid.setToolTip(defs.pandas_how_tooltip())
 
         #Moving average:
         self.window_label = qgis.PyQt.QtWidgets.QLabel('Rolling mean window')
