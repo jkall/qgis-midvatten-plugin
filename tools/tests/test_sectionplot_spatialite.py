@@ -347,6 +347,47 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
         assert len(self.myplot.skipped_bars) == 4
 
+    @attr(status='only')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_plot_section_with_w_levels_animation(self, mock_messagebar):
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-02 00:00:00', '15', '200', '185')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-03 00:00:00', '15', '200', '185')''')
+        self.create_and_select_vlayer()
+
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            self.midvatten.plot_section()
+            self.myplot = self.midvatten.myplot
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
+            self.myplot.animation_groupbox.setChecked(True)
+            self.myplot.w_levels_chosen(self.myplot.animation_groupbox)
+            #self.myplot.datetimetextEdit.append('2015')
+
+
+            self.myplot.draw_plot()
+            return self.myplot
+
+        myplot = _test(self)
+        print(str(mock_messagebar.mock_calls))
+        assert myplot.animation_groupbox.isChecked()
+        assert not myplot.specific_dates_groupbox.isChecked()
+        assert len(myplot.figure.axes) > 1
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
+        assert False
+
     def tearDown(self):
         try:
             QgsProject.instance().addMapLayer(self.vlayer)

@@ -59,6 +59,10 @@ import definitions.midvatten_defs as defs
 from sampledem import qchain, sampling
 from gui_utils import set_groupbox_children_visibility
 from matplotlib.widgets import Slider
+from matplotlib.gridspec import GridSpec
+import datetime
+import matplotlib.dates as mdates
+import pytz
 
 try:
     import pandas as pd
@@ -146,7 +150,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             fignum = self.figure.number
             plt.close(fignum)
         self.figure = plt.figure()
-        self.axes = self.figure.add_subplot(111)
+        if self.animation_groupbox.isChecked():
+            self.gridspec = GridSpec(nrows=3, ncols=1, height_ratios=[20, 5, 1], hspace=0.1)
+        else:
+            self.gridspec = GridSpec(nrows=1, ncols=1)
+
+        self.axes = self.figure.add_subplot(self.gridspec[0:1, 0:1])
         self.canvas = FigureCanvas(self.figure)
 
         self.canvas.mpl_connect('button_release_event', lambda event: self.update_barwidths_from_plot())
@@ -176,15 +185,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('''SectionPlot''', 'This function requires python pandas which is not installed!')))
             self.animation_groupbox.setChecked(False)
             self.specific_dates_groupbox.setChecked(True)
-            set_groupbox_children_visibility(self.specific_dates_groupbox)
+            #set_groupbox_children_visibility(self.specific_dates_groupbox)
             return
 
-        utils.pop_up_info('''TODO: Pandas and matplotlibversion and test pandas false''')
-
         not_clicked = self.animation_groupbox if clicked_groupbox is not self.animation_groupbox else self.specific_dates_groupbox
-        set_groupbox_children_visibility(clicked_groupbox)
+        #set_groupbox_children_visibility(clicked_groupbox)
         not_clicked.setChecked(False if clicked_groupbox.isChecked() else True)
-        set_groupbox_children_visibility(not_clicked)
+        #set_groupbox_children_visibility(not_clicked)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()
@@ -499,6 +506,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.dbconnection = None
 
         except:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'An error occured, see log message panel!')),
+                                            log_msg=ru(
+                                                QCoreApplication.translate('SectionPlot', 'Error msg:\n %s')) % str(
+                                                traceback.format_exc()))
+
             utils.stop_waiting_cursor()
             self.dbconnection.closedb()
             self.dbconnection = None
@@ -1243,53 +1255,126 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if isinstance(df, pd.Series):
             df = df.to_frame()
 
-
         #TODO: Test pivot way instead. easier to get the index, and easier to use dropna(). Which shuld probably be a checkbox.
-
+        df = df.reset_index()
         # Test if multiindex works, else try pivot
-        #df = df.pivot(index='date_time', columns='obsid', values='level_masl')¶
-        print("df:" + str(df))
-        df = groupby(df, indexcol='date_time', filters=['obsid'])
+        df = df.pivot(index='date_time', columns='obsid', values='level_masl')
 
         #resample_kwargs = #ast.literal_eval(plot_conf['resample_kwargs'])
         resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'fill_method': None, 'closed': None, 'label': None,
                            'convention': 'start', 'kind': None, 'loffset': None, 'limit': None, 'base': int(self.resample_base.text()), 'on': None,
                            'level': None}
 
-        df = resample(df, 'level_masl', self.resample_rule.text(), resample_kwargs)
-        df = groupby(df, indexcol='date_time', filters=['obsid'])
+        df = resample(df, None, self.resample_rule.text(), resample_kwargs)
         self.df = df
-        print("df groups: " + str(df.groups.keys()))
-        datefloats = pd.to_timedelta(df.index).dt.total_seconds()
-
+        #print(str(df.index))
+        #datefloats = df.index.astype(np.int64) // 10**9
+        #print(str(len(df)))
+        #print(str(datefloats))
         #The slider should update after user pan.
-        valuemin = min(datefloats)
-        valuemax = max(datefloats)
+        valuemin = 0
+        valuemax = len(df)-1
         valinit = valuemin
-        valstep = 1000
-        sliderax = self.fig.add_axes([0.25, 0.1, 0.65, 0.03], facecolor='white')
-        self.date_slider = Slider(sliderax, 'Date', valuemin, valuemax, valinit=valinit, valstep=valstep)
+        #valstep = 1
+        self.wlvl_axes = self.figure.add_subplot(self.gridspec[1:2, 0:1])
+        self.df.plot(ax=self.wlvl_axes)
+        self.wlvl_axes.set_ylabel('')
+
+        #sliderax = self.figure.add_axes([0.1, 0.1, 0.85, 0.03], facecolor='white')
+        self.sliderax = self.figure.add_subplot(self.gridspec[2:3, 0:1])
+        self.date_slider = Slider(self.sliderax, 'Date', valuemin, valuemax, valinit=valinit, valfmt='%1.0f')
+        #print(str(self.date_slider.poly.__dict__))
+        #raise Exception()
+        #print(str(self.df.index[valinit))
+        #print(str(self.df.iloc[[valinit]].index[0]))
+        #.astype(np.int64)[0]
+        #print(str(self.df.iloc[[valinit]].mean(axis=1)))
+        kwargs = dict(xy=(mdates.date2num(df_idx_as_datetime(self.df, valinit)), 0), xycoords='data')
+        #kwargs = dict(
+        #    xy=(1, 0),
+        #    xycoords='axes fraction')
+        _text = longdateformat(df_idx_as_datetime(self.df, valinit))
+
+        self.axvline = self.wlvl_axes.axvline(df_idx_as_datetime(self.df, valinit), color='black', linewidth=2, linestyle='--') # mdates.date2num(df_idx_as_datetime(self.df, valinit)))
+        #try:
+        #    self.slider_annotation = self.wlvl_axes.annotate(text=_text, **kwargs)
+        #except:
+        #    self.slider_annotation = self.wlvl_axes.annotate(_text, **kwargs)
         self.date_slider.on_changed(self.update_animation)
-        print("dateslider: " + str(self.date_slider))
-        x_wl, WL, current_date = self.df_get_values()
-        self.waterlevel_lineplot(x_wl, WL, str(current_date))
+        x_wl, WL, current_idx = self.df_get_values()
+        self.waterlevel_lineplot(x_wl, WL, 'Animation ')#self.df.index[current_idx])
+
+        self.canvas.mpl_connect('draw_event', self.update_slider)
+        #print(str(self.date_slider.__dict__))
+        #raise Exception()
 
     def df_get_values(self):
-        current_date = pd.to_datetime(self.date_slider.val)
+        current_idx = self.date_slider.val
         WL = []
         x_wl = []
         for k, obs in enumerate(self.selected_obsids):
-            val = self.df.loc[current_date, obs].values()[0]
+            try:
+                val = self.df.iloc[[current_idx]][obs]
+            except KeyError:
+                continue
             WL.append(val)
             x_wl.append(float(self.length_along[k]))
-        return x_wl, WL, current_date
+        return x_wl, WL, current_idx
 
     def update_animation(self, datevalue):
-        x_wl, WL, _ = self.df_get_values()
+        x_wl, WL, current_idx = self.df_get_values()
         #l.set_ydata(amp * np.sin(2 * np.pi * freq * t))
         if self._waterlevel_lineplot is not None and self.df is not None:
+            #self.slider_annotation.set_text(longdateformat(longdateformat(df_idx_as_datetime(self.df, current_idx))))
+            #self.slider_annotation.set_xy(self.df.iloc[[current_idx]].index.astype(np.int64).values[0], self.df.iloc[[current_idx]].mean(axis=1))
             self._waterlevel_lineplot.set_ydata(WL)
+            self.axvline.set_xdata(df_idx_as_datetime(self.df, current_idx))
             self.canvas.draw_idle()
+
+    def update_slider(self, event):
+
+        xmin, xmax = self.wlvl_axes.get_xlim()
+
+        ##TODO: WHYYYYY is 1974 significant!!! Fore some reason, the dates are correct if adding this date!
+        _1970 = mdates.date2num(datetime.date(1970, 1, 1))
+        xmin_1970 = _1970 + int(round(xmin, 0))
+        xmax_1970 = _1970 + int(round(xmax, 0))
+        #min_date =
+
+        #swe_tz = pytz.timezone('Europe/Stockholm')
+        #min_date = swe_tz.localize(mdates.num2date(xmin), is_dst=None)
+        #max_date = swe_tz.localize(mdates.num2date(xmax), is_dst=None)
+        min_date = mdates.num2date(xmin_1970).replace(tzinfo=None)
+        max_date = mdates.num2date(xmax_1970).replace(tzinfo=None)
+        #print("Min {} max {} ".format(mdates.num2date(xmin), mdates.num2date(xmax)))
+        #print("self.wlvl_axes.get_xlim(): " + str(self.wlvl_axes.get_xlim()))
+        #print("date: " + str(mdates.num2date(xmin)))
+        min_idx = self.df.index.get_loc(min_date, method='nearest')
+        #min_idx = 0
+        #max_idx = 2
+        max_idx = self.df.index.get_loc(max_date, method='nearest')
+        prev_val = self.date_slider.val
+        #print(str(self.df.index))
+        #print("Min idx: " + str(min_idx))
+        #print("max: " + str(max_idx))
+
+        self.date_slider.valmin = min_idx
+        self.date_slider.valmax = max_idx
+        if prev_val > max_idx:
+            newval = max_idx
+            #self.date_slider.set_val(max_idx)
+        elif prev_val < min_idx:
+            newval = min_idx
+        else:
+            newval = prev_val
+        self.date_slider.valinit = newval
+        self.date_slider.reset()
+        print("Here")
+
+        self.sliderax.set_xlim(left=min_idx, right=max_idx)
+
+            #self.date_slider.set_val(min_idx)
+        #self.date_slider.se
 
     def plot_specific_water_level(self):
 
@@ -1513,8 +1598,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 def resample(df, valuecol, rule, resample_kwargs):
     how = resample_kwargs.get('how', 'mean')
     del resample_kwargs['how']
-
-    df = getattr(df[valuecol].resample(rule, **resample_kwargs), how)()
+    df = df if valuecol is None else df[valuecol]
+    df = getattr(df.resample(rule, **resample_kwargs), how)()
     return df
 
 
@@ -1524,3 +1609,12 @@ def groupby(df, indexcol, filters):
     if filters is not None:
         df = df.groupby(by=filters)
     return df
+
+def longdateformat(adate):
+    return adate.strftime('%Y-%m-%d %H:%M:%S')
+
+def df_idx_as_date(df, idx):
+    return df.iloc[[idx]].index.values[0]
+
+def df_idx_as_datetime(df, idx):
+    return pd.to_datetime(str(df_idx_as_date(df, idx)))
