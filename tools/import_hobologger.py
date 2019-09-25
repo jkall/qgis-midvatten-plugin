@@ -232,8 +232,3 @@ class TzConverter(gui_utils.RowEntry):
 
 class FileError(Exception):
     pass
-
-def set_groupbox_children_visibility(parent_widget, visible=True):
-    children = parent_widget.findChildren(QtGui.QWidget)
-    for child in children:
-        child.setVisible(visible)

@@ -79,7 +79,14 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
 
         self.selected_column = self.columns.currentText()
 
-        selected_values = utils.getselectedobjectnames(thelayer=self.activelayer, column_name=self.selected_column)
+        selected = activelayer.selectedFeatures()
+        idx = activelayer.dataProvider().fieldNameIndex(self.selected_column)
+        if idx == -1:
+            idx = activelayer.dataProvider().fieldNameIndex(self.selected_column.upper())  # backwards compatibility
+        selected_values = [obs[idx] for obs in selected]  # value in column obsid is stored as unicode
+
+        selected_feature_ids = [f.id() for f in selected]
+
         if not selected_values:
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ValuesFromSelectedFeaturesGui',
                                                                               'No features selected!')))
@@ -87,12 +94,33 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
             if self.unique_sorted_list_checkbox.isChecked():
                 selected_values = sorted(set(selected_values))
             nr = len(selected_values)
+
+            filter_string = '"{}" IN ({})'.format(self.selected_column,
+                                                ', '.join(["'{}'".format(value.replace("'", "''"))
+                                                           for value in selected_values if value is not None]))
+
+            nulls = [value for value in selected_values if value is None]
+            if nulls:
+                filter_string += ' or "{}" IS NULL'.format(self.selected_column)
+
+            #filter_layer_checkbox
+            bar_prefix = ''
+            msg = ''
+            if self.filter_layer_checkbox.isChecked():
+
+                try:
+                    activelayer.setSubsetString(filter_string)
+                except Exception as e:
+                    bar_prefix = 'Filtering failed! '
+                    msg = 'Filtering failed, msg: ' + str(e)
+
+            activelayer.selectByIds(selected_feature_ids)
+
             utils.MessagebarAndLog.info(bar_msg=ru(
-                QCoreApplication.translate('ValuesFromSelectedFeaturesGui',
+                QCoreApplication.translate('ValuesFromSelectedFeaturesGui', bar_prefix +
                                            'List of %s selected %s written to log'))%(str(nr), self.selected_column),
-                                        log_msg='{} IN ({})'.format(self.selected_column,
-                                            ', '.join(["'{}'".format(value) if value is not None else 'NULL'
-                                                        for value in selected_values])))
+                                        log_msg=filter_string + '\n' + msg)
+
             self.close()
 
 

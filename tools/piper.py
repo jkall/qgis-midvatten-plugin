@@ -299,7 +299,11 @@ class PiperPlot(object):
                     dummyplot.append(ax1.plot(1000,1000,self.markerset[tp[0]], ls='',label=tp[0]))
                     ph,l = ax1.get_legend_handles_labels()
                 leg = plt.figlegend(ph,l, ncol=6)
-                leg.draggable(state=True)
+                try:
+                    leg.set_draggable(state=True)
+                except AttributeError:
+                    # For older version of matplotlib
+                    leg.draggable(state=True)
                 frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)    # set the frame face color transparent
             elif self.ms.settingsdict['piper_markers']=='obsid':
@@ -308,7 +312,11 @@ class PiperPlot(object):
                     dummyplot.append(ax1.plot(1000,1000,self.markerset[obs], ls='',label=obs))
                     ph,l = ax1.get_legend_handles_labels()
                 leg = plt.figlegend(ph,l, ncol=6)
-                leg.draggable(state=True)
+                try:
+                    leg.set_draggable(state=True)
+                except AttributeError:
+                    # For older version of matplotlib
+                    leg.draggable(state=True)
                 frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)    # set the frame face color transparent
             elif self.ms.settingsdict['piper_markers']=='date_time':
@@ -317,7 +325,11 @@ class PiperPlot(object):
                     dummyplot.append(ax1.plot(1000,1000,self.markerset[date_time[0]], ls='',label=date_time[0]))
                     ph,l = ax1.get_legend_handles_labels()
                 leg = plt.figlegend(ph,l, ncol=6)
-                leg.draggable(state=True)
+                try:
+                    leg.set_draggable(state=True)
+                except AttributeError:
+                    # For older version of matplotlib
+                    leg.draggable(state=True)
                 frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)    # set the frame face color transparent
             else:    #no legend if no unique markers

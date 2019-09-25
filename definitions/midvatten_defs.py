@@ -58,11 +58,14 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotbw':2,
             'secplotlocation':8,
             'secplotselectedDEMs':[],
-            'stratigraphyplotted':2,
-            'secplotlabelsplotted':0,
+            'stratigraphyplotted':True,
+            'secplothydrologyplotted':False,
+            'secplotlabelsplotted':True,
+            'secplotlegendplotted':True,
             'secplot_loaded_template': '',
             'secplot_templates': '',
             'secplotwidthofplot': 1,
+            'secplotincludeviews': False,
             'settingslocation':1,
             'compactwqualreport':'',
             'custplot_tabwidget':0,
@@ -734,6 +737,9 @@ def secplot_default_template():
         loaded_template['Axes_set_xlabel'] = {
             'xlabel': ru(QCoreApplication.translate('SectionPlot', "Distance along section")),
             'fontsize': 10}
+        loaded_template['Axes_set_xlabel_stratplot'] = {
+            'xlabel': ru(QCoreApplication.translate('SectionPlot', "Observation Location Code")),
+            'fontsize': 10}
         loaded_template['Axes_set_xlim'] = None  # Tuple like (min, max)
         loaded_template['Axes_set_ylim'] = None  # Tuple like (min, max)
         loaded_template['Axes_set_ylabel'] = {
@@ -778,8 +784,8 @@ def secplot_default_template():
         loaded_template['obsid_Axes_bar'] = {'edgecolor': 'black',
                                                   'fill': False,
                                                   'linewidth': 0.5}
-        loaded_template['plot_height'] = None
-        loaded_template['plot_width'] = None
+        loaded_template["rcParams"] = {"savefig.dpi": 450,
+                                       "figure.figsize": [6.4, 4.8]}
         loaded_template[
             'Figure_subplots_adjust'] = {}  # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
         loaded_template['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,

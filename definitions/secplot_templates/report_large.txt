@@ -1,43 +1,58 @@
 {
     "Axes_set_xlabel": {
-        "fontsize": 10},
+        "fontsize": 8},
     "Axes_set_xlabel_stratplot": {
-            "xlabel": "obsid",
-            "fontsize": 10},
+        "xlabel": "obsid",
+        "fontsize": 10},
     "Axes_set_xlim": None,
     "Axes_set_ylabel": {
-        "fontsize": 10},
+        "fontsize": 8},
     "Axes_set_ylim": None,
     "Figure_subplots_adjust": {
-    },
+        "bottom": 0.08,
+        "left": 0.09,
+        "right": 0.95,
+        "top": 0.973},
     "dems_Axes_plot": {
         "DEFAULT": {
                 "linestyle": "-",
                 "linewidth": 1,
                 "marker": "None",
-                "zorder": 3}},
+                "zorder": 3},
+        "bedrock": {
+                "label": "bedrock",
+                "linestyle": "--",
+                "linewidth": 1.5,
+                "marker": "None",
+                "zorder": 3,
+                "color": "black"},
+        "dem": {
+                "label": "dem",
+                "linestyle": "-",
+                "linewidth": 0.5,
+                "marker": "None",
+                "zorder": 3,
+                "color": "green"}},
     "drillstop_Axes_plot": {
         "color": "black",
         "linestyle": "",
         "marker": "^",
-        "markersize": 8},
+        "markersize": 6,
+        "zorder": 6},
     "geology_Axes_bar": {
         "DEFAULT": {
-            "edgecolor": "black",
-            "zorder": 5}},
+                "edgecolor": "black",
+                "linewidth": 0.5,
+                "zorder": 5}},
     "grid_Axes_grid": {
-        "b": True,
-        "color": "0.65",
-        "linestyle": "-",
-        "which": "both",
-        "zorder": 0},
+        "b": False},
     "layer_Axes_annotate": {
         "bbox": {
                 "alpha": 0.6,
                 "boxstyle": "square,pad=0.05",
                 "edgecolor": "white",
                 "fc": "white"},
-        "fontsize": 8,
+        "fontsize": 6,
         "ha": "left",
         "textcoords": "offset points",
         "va": "center",
@@ -46,19 +61,26 @@
                 0, ),
         "zorder": 10},
     "legend_Axes_legend": {
-        "fontsize": 10,
+        "borderpad": 0.2,
+        "columnspacing": 0.1,
+        "fontsize": 6,
         "framealpha": 1,
-        "loc": 0},
-    "legend_Frame_set_facecolor": "1",
-    "legend_Frame_set_fill": False,
-    "legend_Text_set_fontsize": 8,
+        "handlelength": 1,
+        "handletextpad": 0.2,
+        "labelspacing": 0,
+        "loc": 10,
+        "markerscale": 1,
+        "numpoints": 1},
+    "legend_Frame_set_facecolor": "white",
+    "legend_Frame_set_fill": True,
+    "legend_Text_set_fontsize": 6,
     "obsid_Axes_annotate": {
         "bbox": {
                 "alpha": 0.4,
                 "boxstyle": "square,pad=0.05",
                 "edgecolor": "white",
                 "fc": "white"},
-        "fontsize": 8,
+        "fontsize": 6,
         "ha": "center",
         "rotation": 0,
         "textcoords": "offset points",
@@ -72,9 +94,9 @@
         "linewidth": 0.5,
         "zorder": 5},
     "rcParams": {"savefig.dpi": 450,
-                 "figure.figsize": [6.4, 4.8]},
+                 "figure.figsize": [6.4, 6.4]},
     "ticklabels_Text_set_fontsize": {
-        "fontsize": 8},
+        "fontsize": 6},
     "wlevels_Axes_plot": {
         "DEFAULT": {
                 "linestyle": "-",

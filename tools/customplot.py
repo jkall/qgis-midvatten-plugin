@@ -196,12 +196,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             plt.close(fignum)
 
         self.custplotfigure = plt.figure()
-
         self.axes = self.custplotfigure.add_subplot(111)
-
         self.canvas = FigureCanvas(self.custplotfigure)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
+        utils.PickAnnotator(self.custplotfigure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
@@ -455,25 +454,25 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             raise Exception('Programming error. Must be time or XY!')
 
         if plottype == "step-pre":
-            self.p[i], = plotfunc(numtime, table2.values, '', drawstyle='steps-pre', marker='None', label=self.plabels[i], **next(self.line_cycler))# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, drawstyle='steps-pre', marker='None', label=self.plabels[i], **next(self.line_cycler))# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
         elif plottype == "step-post":
-            self.p[i], = plotfunc(numtime, table2.values, '', drawstyle='steps-post', marker='None', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, drawstyle='steps-post', marker='None', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "line and cross":
-            self.p[i], = plotfunc(numtime, table2.values, '', marker='x', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='x', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "marker":
-            self.p[i], = plotfunc(numtime, table2.values, '', linestyle='None', label=self.plabels[i], **next(self.marker_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, linestyle='None', label=self.plabels[i], **next(self.marker_cycler))
         elif plottype == "line":
-            self.p[i], = plotfunc(numtime, table2.values, '', marker='None', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='None', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "frequency" and FlagTimeXY == "time":
             try:
-                self.p[i], = plotfunc(numtime, table2.values, '', marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
+                self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
                 self.plabels[i]='frequency '+str(self.plabels[i])
             except:
-                self.p[i], = plotfunc(np.array([]),np.array([]), '', marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
+                self.p[i], = plotfunc(np.array([]),np.array([]), '', picker=2, marker='None', label='frequency '+str(self.plabels[i]), **next(self.line_cycler))
                 self.plabels[i]='frequency '+str(self.plabels[i])
         else:
             # line and marker
-            self.p[i], = plotfunc(numtime, table2.values, '', label=self.plabels[i], **next(self.line_and_marker_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, label=self.plabels[i], **next(self.line_and_marker_cycler))
 
 
     def LastSelections(self):#set same selections as last plot
@@ -750,10 +749,22 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncol=ncol)
 
             leg.set_zorder(999)
-            leg.set_draggable(state=True)
+            try:
+                leg.set_draggable(state=True)
+            except AttributeError:
+                # For older version of matplotlib
+                leg.draggable(state=True)
         else:
             self.axes.legend_ = None
 
+        self.update_plot_size()
+
+        self.canvas.draw()
+
+        self.plot_tabwidget.setCurrentIndex(0)
+        #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
+
+    def update_plot_size(self):
         if self.dynamic_plot_size.isChecked():
             self.widgetPlot.setMinimumWidth(10)
             self.widgetPlot.setMaximumWidth(16777215)
@@ -768,11 +779,6 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.canvas.setFixedSize(width_pixels, height_pixels)
             self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
             self.widgetPlot.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*3)
-
-        self.canvas.draw()
-
-        self.plot_tabwidget.setCurrentIndex(0)
-        #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
     def storesettings(self):
         self.ms.settingsdict['custplot_table1'] = str(self.table_ComboBox_1.currentText())

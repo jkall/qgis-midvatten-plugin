@@ -5,9 +5,9 @@ name=Midvatten
 qgisMinimumVersion=3.4.5
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
-version=Version 1.6.1
+version=Version 1.6.2
 author=Josef Källgården, Henrik Spångmyr
-email=groundwatergis@gmail.com
+email=midvattenplugin@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
 
 ;optional metadata entries
@@ -20,21 +20,37 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
+        Version 1.6.2:
+        - Customplot: New feature: line-label as annotation when clicking on plots.
+        - List of values from selected features: Added filter checkbox.
+        - Added more supported date formats.
+        - Fieldlogger import: Fixed bug where h_toc was empty string.
+        - NotFoundQuestion: Added ignore checkbox.
+        - Compact water quality report: Bug fixes. Added options for column sorting and row sorting.
+        - Sectionplot: New ui for sectionplot. Settings in separate tab but can be floatable to separate window.
+        - Sectionplot: Plot and settings now separated in two tabs.
+        - Sectionplot: If no section line is selected, Sectionplot now plots like the Stratigraphyplot. (Thanks to Simon O'Connor!)
+        - Sectionplot: Capacity colors can now be used in the same way as Stratigraphyplot. (Thanks to Simon O'Connor!)
+        - Sectionplot: Hydroexplanation (capacity explanation) can now be used as text for layers. (Thanks to Simon O'Connor!)
+        - Sectionplot: Sectionplot can now be maximized. (Thanks to Simon O'Connor!)
+        - Sectionplot: Plotsize now set in template in inches in "rcParams": {"figure.figsize": [6.4, 4.8]} and by checking radiobutton Plotsize: "Fixed".
+        - Sectionplot: Sectionplot can now be used with one obsid. No longer limited to more than one.
+        - Sectionplot: Sectionplot can now be used with only a selected line layer (for plotting DEMS and seismic).
+        - Sectionplot: Bug fixes..
+        - Sectionplot: Settings tab can now be redocked by closing the window.
+        - Sectionplot: Removed redraw button. Legend updates automatically when clicking NavigationToolbar Apply button.
+        - Csv import: Added checkbox to ignore not null restrictions. Useful for Postgres importes with serial primary key columns.
         Version 1.6.1:
-        - Public release.
-        Version 1.6.1b3:
         - Bug fix for translation support when the overridden locale was not the same as system locale.
         - Water quality report: Fixed error when parameter had "'" in the name.
         - Loggercalibration: Added error message.
         - Loggercalibration: Fix for when logger ts contained nan-values.
         - ContinousColorCycle: Fix for different numpy versions.
-        Version 1.6.1b2:
         - Loggercalibration: Fixes bug with adjust trend buttons.
         - Loggercalibration: Adjusted "adjust trend" so that it selects x and y values from canvas instead of from database.
                              This makes it possible to adjust trend without measurements.
         - Fieldlogger import: Fixes python error bug when trying to load stored settings (second try)..
         - Customplot: Fix for customplot when colors run out.
-        Version 1.6.1b1:
         - Sectionplot: Fixes bug where bars where put in legend and one symbol was skipped.
         - Customplot: Added 'legend.midv_ncol' to matplotlib rcparams.
         - Fieldlogger import: Fixes python error bug when trying to load stored settings.
@@ -45,31 +61,23 @@ changelog=
         - Sectionplot: Printing x and y limits in bottom right corner.
         - Compact water quality report: Bug fixes.
         - Customplot: Bug fix for discontinous plots (#312)
-        Version 1.6.0b8
         - Import csv gui: Importing geometries from vectorlayers supported. If a feature has a geometry, a "geometry" column will be added to loaded file data.
         - Fieldlogger import: Bug fix where w_qual_lab parameter was not filled in automatically from stored settings.
         - Fieldlogger import: Instrument and unit are filled automatically based on last entry for current staff.
         - Customplot: Added pandas.DataFrame.Rolling instead of rolling_mean for pandas version >=0.18.0. Changed center to checkbox instead of lineedit.
         - A messagebar message is issued if the database is old.
-        Version 1.6.0b7
         - qgis3-branch moved to master branch. The old master branch for qgis2 is now the qgis2-branch.
-        Version 1.6.0b6
         - Fieldlogger export: Adjustments to new locations file format.
         - Interlab4: Fix so that the highest resolution parameter (the one with lowest value) is imported as the original parameter name. Duplicates are given a duplicate suffix.
-        Version 1.6.0b5
         - Customplot: Fixes #293. Added checkbox "Regular xaxis interval".
         - Customplot: Fixed tab widget resizing bugs. Restructured settings.
         - Interlab4: Fix so that the highest resolution parameter is imported if there are duplicates.
         - Waterqualityreport: Bug fixes for #294.
-        Version 1.6.0b4:
         - Stratigraphy: Hidden feature: If selected layer is missing in table stratigraphy but has "length" column, it will be plottet as a layer with no geology.
-        Version 1.6.0b3:
         - Updated translation files.
-        Version 1.6.0b2:
         - Sectionplot: Methods for producing graded dems (issue #254) but not implemented in gui yet.
         - Interlab4: feature to dump tables to csv.
         - Improved utility to get values from selected features.
-        Version 1.6.0b1:
         - Update for QGIS3.
         For changes until ver 1.6, see separate document changelog_history
 

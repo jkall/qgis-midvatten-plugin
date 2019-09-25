@@ -32,12 +32,13 @@ from qgis.PyQt import QtCore
 from collections import OrderedDict
 from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QWidget, QDialog
+import matplotlib.pyplot as plt
 
 import db_utils
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer
-from midvatten import midvatten
+from midvatten import Midvatten
 
 from mocks_for_tests import DummyInterface2
 from tools.tests.mocks_for_tests import DummyInterface
@@ -140,6 +141,9 @@ class MidvattenTestBase(object):
         QWidget.show = show
         QDialog.exec_ = show
 
+    def tearDown(self):
+        plt.close('all')
+
 
 class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
     mock_instance_settings_database = mock.MagicMock()
@@ -156,7 +160,7 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
         #self.iface = mock.MagicMock()
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
+        self.midvatten = Midvatten(self.iface)
         self.ms = mock.MagicMock()
         self.ms.settingsdict = OrderedDict()
         try:
@@ -170,6 +174,7 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
             os.remove(self.TEMP_DBPATH)
         except OSError:
             pass
+        super().tearDown()
 
 
 class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
@@ -234,7 +239,7 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
         #self.iface = mock.MagicMock()
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
+        self.midvatten = Midvatten(self.iface)
         self.ms = mock.MagicMock()
         self.ms.settingsdict = OrderedDict()
 
@@ -257,6 +262,8 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
         except Exception as e:
             print("Failure resetting db: " + str(e))
             print("MidvattenTestPostgisNotCreated tearDownproblem: " + str(mock_messagebar.mock_calls))
+
+        super().tearDown()
 
 
 class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):

@@ -95,7 +95,33 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "['P1' 'P2' 'P3']"
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-        assert len(self.myplot.p) == len(self.myplot.Labels)
+        assert len(self.myplot.p) == len(self.myplot.labels)
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_plot_section_no_linelayer_message(self, mock_messagebar):
+
+        @mock.patch('sectionplot.SectionPlot.do_it')
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_sectionplot):
+            mock_layer = mock.Mock(spec=QgsVectorLayer)
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = mock_layer
+            mock_layer.selectedFeatureCount.return_value = 2
+            mock_geom = mock.Mock()
+            mock_geom.wkbType.return_value = 'test'
+            mock_feature = mock.Mock()
+            mock_feature.geometry.return_value = mock_geom
+            mock_layer.getFeatures.return_value = [mock_feature]
+            self.midvatten.plot_section()
+
+        _test(self)
+        assert call.info(bar_msg='No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.', duration=10) in mock_messagebar.mock_calls
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -213,7 +239,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             self.myplot.draw_plot()
         _test(self.midvatten, self.vlayer)
 
-        test_string = utils_for_tests.create_test_string(self.myplot.LengthAlong)
+        test_string = utils_for_tests.create_test_string(self.myplot.length_along)
         assert any([test_string == "[ 0.          0.62469505  1.87408514]",
                     test_string == "[0.         0.62469505 1.87408514]"])
 
@@ -246,7 +272,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             return myplot
         myplot = _test(self.midvatten, self.vlayer)
 
-        test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
+        test_string = utils_for_tests.create_test_string(myplot.length_along)
         assert any([test_string == "[ 1.  3.  5.]", test_string == "[1. 3. 5.]"])
         assert mock.call.info(log_msg='Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
         assert not mock_messagebar.warning.called
@@ -274,7 +300,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
-            self.myplot.Stratigraphy_checkBox.setChecked(True)
+            self.myplot.Stratigraphy_radioButton.setChecked(True)
+            self.myplot.Legend_checkBox.setChecked(True)
             gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
             self.myplot.datetimetextEdit.append('2015')
             self.myplot.draw_plot()
@@ -282,8 +309,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.Labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.Labels)
+        print(str(self.myplot.labels))
+        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
         assert len(self.myplot.skipped_bars) == 2
         #assert False
 
@@ -311,7 +338,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
-            self.myplot.Stratigraphy_checkBox.setChecked(True)
+            self.myplot.Stratigraphy_radioButton.setChecked(True)
+            self.myplot.Legend_checkBox.setChecked(True)
             gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
             self.myplot.datetimetextEdit.append('2015')
             self.myplot.draw_plot()
@@ -320,13 +348,19 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.Labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.Labels)
+        print(str(self.myplot.labels))
+        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
         assert len(self.myplot.skipped_bars) == 4
 
     def tearDown(self):
-        QgsProject.instance().addMapLayer(self.vlayer)
-        QgsProject.instance().removeMapLayer(self.vlayer.id())
+        try:
+            QgsProject.instance().addMapLayer(self.vlayer)
+        except:
+            pass
+        try:
+            QgsProject.instance().removeMapLayer(self.vlayer.id())
+        except:
+            pass
         super(self.__class__, self).tearDown()
 
 

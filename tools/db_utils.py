@@ -292,14 +292,15 @@ def connect_with_spatialite_connect(dbpath):
     return conn
 
 
-def check_connection_ok():
+def check_connection_ok(write_error_msg=True):
     try:
         dbconnection = DbConnectionManager()
         connection_ok = dbconnection.connect2db()
         dbconnection.closedb()
     except Exception as e:
-        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('check_connection_ok', 'Could not connect to db: %s'))%str(e),
-                                        duration=30)
+        if write_error_msg:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('check_connection_ok', 'Could not connect to db: %s'))%str(e),
+                                            duration=30)
         connection_ok = False
     return connection_ok
 

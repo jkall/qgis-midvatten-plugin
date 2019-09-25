@@ -193,7 +193,8 @@ class Askuser(QtWidgets.QDialog):
 
 
 class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle='Warning', msg='', existing_list=None, default_value='', parent=None, button_names=['Ignore', 'Cancel', 'Ok'], combobox_label='Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=''):
+    window_position = qgis.PyQt.QtCore.QPoint(500, 150)
+    def __init__(self, dialogtitle='Warning', msg='', existing_list=None, default_value='', parent=None, button_names=['Ignore', 'Cancel', 'Ok'], combobox_label='Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column='', ignore_checkbox=False):
         QtWidgets.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -206,7 +207,11 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
             for existing in existing_list:
                 self.comboBox.addItem(existing)
 
-        for button_name in button_names:
+        if ignore_checkbox:
+            self.ignore_checkbox = qgis.PyQt.QtWidgets.QCheckBox(QCoreApplication.translate('NotFoundQuestion', 'Ignore database missmatch'), self)
+            self.ignore_checkbox.setToolTip(QCoreApplication.translate('NotFoundQuestion', 'Ignore database missmatch and try to import anyway'))
+            self.ignore_layout.addWidget(self.ignore_checkbox)
+        for idx, button_name in enumerate(button_names):
             button = QtWidgets.QPushButton(button_name)
             button.setObjectName(button_name.lower())
             self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
@@ -224,9 +229,9 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
 
         _label = QtWidgets.QLabel(msg)
         if 140 < _label.height() <= 300:
-            self.setGeometry(500, 150, self.width(), 415)
+            self.setGeometry(NotFoundQuestion.window_position.x(), NotFoundQuestion.window_position.y(), self.width(), 415)
         elif _label.height() > 300:
-            self.setGeometry(500, 150, self.width(), 600)
+            self.setGeometry(NotFoundQuestion.window_position.x(), NotFoundQuestion.window_position.y(), self.width(), 600)
 
         self.exec_()
 
@@ -256,6 +261,7 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
     def closeEvent(self, event):
         if self.answer is None:
             self.set_answer_and_value('cancel')
+        NotFoundQuestion.window_position = self.geometry().topLeft()
         super(NotFoundQuestion, self).closeEvent(event)
 
         #self.close()
@@ -963,7 +969,6 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
     filtered_data = []
     data_to_ask_for = []
     add_column = False
-
     try:
         index = file_data[0].index(header_value)
     except ValueError:
@@ -1021,37 +1026,43 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
                     found = True
                     break
         if found:
+
             continue
 
-        #Put the found similar values on top, but include all values in the database as well
+        submitted_value = None
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
+        while submitted_value not in existing_values:
+            #Put the found similar values on top, but include all values in the database as well
+            msg = returnunicode(QCoreApplication.translate('filter_nonexisting_values_and_ask', '(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, '\n'.join([': '.join((file_data[0][_colnr], word if word is not None else '')) for _colnr, word in enumerate(row)]))
+            question = NotFoundQuestion(dialogtitle=QCoreApplication.translate('filter_nonexisting_values_and_ask', 'User input needed'),
+                                        msg=msg,
+                                        existing_list=similar_values,
+                                        default_value=similar_values[0],
+                                        button_names=['Cancel', 'Ok', 'Skip'],
+                                        reuse_header_list=sorted(headers_colnr.keys()),
+                                        reuse_column=reuse_column,
+                                        ignore_checkbox=True)
+            answer = question.answer
 
-        msg = returnunicode(QCoreApplication.translate('filter_nonexisting_values_and_ask', '(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, '\n'.join([': '.join((file_data[0][_colnr], word if word is not None else '')) for _colnr, word in enumerate(row)]))
-        question = NotFoundQuestion(dialogtitle=QCoreApplication.translate('filter_nonexisting_values_and_ask', 'WARNING'),
-                                    msg=msg,
-                                    existing_list=similar_values,
-                                    default_value=similar_values[0],
-                                    button_names=['Cancel', 'Ok', 'Skip'],
-                                    reuse_header_list=sorted(headers_colnr.keys()),
-                                    reuse_column=reuse_column
-                                    )
-        answer = question.answer
-        submitted_value = returnunicode(question.value)
-        reuse_column = returnunicode(question.reuse_column)
-        if answer == 'cancel':
-            raise UserInterruptError()
-        elif answer == 'ok':
-            current_value = submitted_value
-        elif answer == 'skip':
-            current_value = None
+            submitted_value = returnunicode(question.value)
+            reuse_column = returnunicode(question.reuse_column)
 
-        if reuse_column:
-            already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
+            if answer == 'cancel':
+                raise UserInterruptError()
 
-        if current_value is not None:
-            row[index] = current_value
-            filtered_data.append(row)
+            if answer == 'skip':
+                submitted_value = None
+
+            if reuse_column:
+                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = submitted_value
+
+            if submitted_value is not None:
+                row[index] = submitted_value
+                filtered_data.append(row)
+
+            if answer == 'skip' or question.ignore_checkbox.isChecked():
+                break
 
     return filtered_data
 
@@ -1629,6 +1640,9 @@ class PlotTemplates(object):
             selected = self.template_list.selectedItems()
             if selected:
                 filename = selected[0].filename
+                template = self.parse_template(filename)
+                if template:
+                    self.templates[filename] = template
                 self.loaded_template = self.templates[filename]['template']
 
     @general_exception_handler
@@ -2079,7 +2093,7 @@ def warn_about_old_database():
         if version:
             wikipage = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database'
             if version <= latest_database_version():
-                MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s'''))%(latest_database_version(), wikipage), duration=120)
+                MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s'''))%(latest_database_version(), wikipage), duration=15)
 
     #wikipage_view_obs_points = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#add-view_obs_points-as-workaround-for-qgis-bug-20633'
     if dbconnection.dbtype == 'spatialite' and not all([db_utils.verify_table_exists('view_obs_points', dbconnection=dbconnection),
@@ -2125,3 +2139,68 @@ def add_view_obs_points_obs_lines():
 
 def get_full_filename(filename):
     return os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename)
+
+
+class PickAnnotator(object):
+    def __init__(self, fig, canvas=None, mpltoolbar=None):
+        self.fig = fig
+        self.annotation = None
+        if canvas is None:
+            canvas = fig.canvas
+        if mpltoolbar is None:
+            mpltoolbar = fig.canvas.manager.toolbar
+        canvas.mpl_connect('pick_event', lambda event: self.identify_plot(mpltoolbar, event))
+        canvas.mpl_connect('figure_enter_event', self.remove_annotation)
+        MessagebarAndLog.info( log_msg=QCoreApplication.translate("PickAnnotator", 'PickAnnotator initialized.'))
+
+    def identify_plot(self, mpltoolbar, event):
+        try:
+            if mpltoolbar._active:
+                return
+            artist = event.artist
+            ax = artist.axes
+            mouseevent = event.mouseevent
+
+            try:
+                xtext = datetime.datetime.strftime(num2date(mouseevent.xdata), '%Y-%m-%d %H:%M:%S')
+            except:
+                xtext = mouseevent.xdata
+
+            try:
+                ytext = round(mouseevent.ydata, 3)
+            except:
+                ytext = mouseevent.ydata
+            new_text = ', '.join(['"{}"'.format(artist.get_label()), str(xtext), str(ytext)])
+
+            pos = (mouseevent.xdata, mouseevent.ydata)
+            if not isinstance(self.annotation, mpl.text.Annotation):
+                try:
+                    self.annotation = ax.annotate(text=new_text, xy=pos, fontsize=8, xycoords='data',
+                                                  bbox=dict(boxstyle='round',
+                                                            fc="w", ec="k", alpha=0.5))
+                except:
+                    self.annotation = ax.annotate(new_text, xy=pos, fontsize=8, xycoords='data',
+                                                  bbox=dict(boxstyle='round', fc="w", ec="k", alpha=0.5))
+            else:
+                self.annotation.set_text(new_text)
+                self.annotation.set_x(pos[0])
+                self.annotation.set_y(pos[1])
+
+            self.fig.canvas.draw()
+            self.fig.canvas.flush_events()
+        except Exception as e:
+            MessagebarAndLog.info(
+                log_msg=QCoreApplication.translate("PickAnnotator", 'Adding annotation failed, msg: %s.') % str(e))
+            raise
+
+    def remove_annotation(self, event):
+        if isinstance(self.annotation, mpl.text.Annotation):
+            try:
+                self.annotation.remove()
+                self.annotation = None
+                self.fig.canvas.draw()
+                self.fig.canvas.flush_events()
+            except Exception as e:
+                MessagebarAndLog.info(
+                    log_msg=QCoreApplication.translate("PickAnnotator", 'Removing annotation failed, msg: %s.') % str(
+                        e))

@@ -120,7 +120,13 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         utils.start_waiting_cursor()  #show the user this may take a long time...
         parsed_files = []
         for selected_file in files:
-            res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+            try:
+                res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+            except:
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                      '''Error on file %s.''')) % selected_file)
+                raise
+
             if res == 'cancel':
                 self.status = True
                 utils.stop_waiting_cursor()
@@ -173,6 +179,11 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         #Header
         file_to_import_to_db =  [parsed_files_with_obsid[0][0][0]]
         file_to_import_to_db.extend([row for parsed_file in parsed_files_with_obsid for row in parsed_file[0][1:]])
+
+        # Add comment to import:
+        #file_to_import_to_db[0].append('comment')
+        #comment = ''
+        #[row.append(comment) for row in file_to_import_to_db[1:]]
 
         if not import_all_data:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
