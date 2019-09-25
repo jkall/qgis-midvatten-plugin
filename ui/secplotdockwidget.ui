@@ -29,7 +29,7 @@
          <x>0</x>
          <y>0</y>
          <width>835</width>
-         <height>1441</height>
+         <height>1475</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -279,6 +279,19 @@ p, li { white-space: pre-wrap; }
                                   <widget class="QLabel" name="label_11">
                                    <property name="text">
                                     <string>Resample how</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="3" column="0">
+                                  <widget class="QCheckBox" name="skip_nan">
+                                   <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                                     <horstretch>0</horstretch>
+                                     <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                   </property>
+                                   <property name="text">
+                                    <string>Skip NaN</string>
                                    </property>
                                   </widget>
                                  </item>

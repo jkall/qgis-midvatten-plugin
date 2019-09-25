@@ -386,7 +386,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(myplot.figure.axes) > 1
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-        assert False
+        #assert False
 
     def tearDown(self):
         try:
