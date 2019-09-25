@@ -37,9 +37,15 @@ def strat_symbology(iface):
     """
     root = QgsProject.instance().layerTreeRoot()
     dbconnection = db_utils.DbConnectionManager()
+    plot_types = defs.PlotTypesDict()
+    #current_locale = utils.getcurrentlocale()[0]
+    #if current_locale != 'sv_SE':
+    #    bedrock_types = plot_types['rock']
+    #else:
+    #    bedrock_types = plot_types['berg']
+
     add_views_to_db(dbconnection)
 
-    plot_types = defs.PlotTypesDict()
     geo_colors = defs.geocolorsymbols()
     hydro_colors = defs.hydrocolors()
     groupname = 'Midvatten strat symbology'
