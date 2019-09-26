@@ -100,6 +100,32 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_plot_section_no_linelayer_message(self, mock_messagebar):
+
+        @mock.patch('sectionplot.SectionPlot.do_it')
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_sectionplot):
+            mock_layer = mock.Mock(spec=QgsVectorLayer)
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = mock_layer
+            mock_layer.selectedFeatureCount.return_value = 2
+            mock_geom = mock.Mock()
+            mock_geom.wkbType.return_value = 'test'
+            mock_feature = mock.Mock()
+            mock_feature.geometry.return_value = mock_geom
+            mock_layer.getFeatures.return_value = [mock_feature]
+            self.midvatten.plot_section()
+
+        _test(self)
+        assert call.info(bar_msg='No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.', duration=10) in mock_messagebar.mock_calls
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section_with_string_obsid(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash with string obsid """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
@@ -327,8 +353,14 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert len(self.myplot.skipped_bars) == 4
 
     def tearDown(self):
-        QgsProject.instance().addMapLayer(self.vlayer)
-        QgsProject.instance().removeMapLayer(self.vlayer.id())
+        try:
+            QgsProject.instance().addMapLayer(self.vlayer)
+        except:
+            pass
+        try:
+            QgsProject.instance().removeMapLayer(self.vlayer.id())
+        except:
+            pass
         super(self.__class__, self).tearDown()
 
 

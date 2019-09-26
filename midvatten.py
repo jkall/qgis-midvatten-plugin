@@ -813,7 +813,7 @@ class Midvatten(object):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode."))
             raise utils.UsageError()
 
-        selected_layer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
+        selected_layer = qgis.utils.iface.mapCanvas().currentLayer() #MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         if not selected_layer:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one layer and one feature!'), duration=10)
             raise utils.UsageError()
@@ -823,6 +823,9 @@ class Midvatten(object):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
                                             log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(selected_layer)))
             raise utils.UsageError()
+
+        selected_obspoints = None
+
         for feat in selected_layer.getFeatures():
             geom = feat.geometry()
             if geom.wkbType() == QgsWkbTypes.LineString or geom.wkbType() == QgsWkbTypes.MultiLineString:
@@ -847,6 +850,9 @@ class Midvatten(object):
         if not selected_layer and not selected_obspoints:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one feature!'), duration=10)
             raise utils.UsageError()
+        elif not selected_layer:
+            utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten", 'No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.'), duration=10)
+
 
         if len(selected_obspoints) > 0:
             selected_obspoints = ru(selected_obspoints, keep_containers=True)

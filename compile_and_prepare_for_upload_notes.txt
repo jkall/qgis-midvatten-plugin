@@ -19,6 +19,12 @@ $ cd ~/pythoncode/qgis_plugins/midvatten && pyrcc4 -o resources.py resources.qrc
 - for ui where direct load is not possible, compile new ui-files (i.e. create corresponding py files):
 $ cd ~/pythoncode/qgis_plugins/midvatten/ui && pyuic4 -xo myui.py myui.ui
 
+# ----------- Translations -------------
+cd path/to/midvatten/plugin/
+pylupdate5 -verbose midvatten.pro
+# Translate strings using QtLinguist.
+lrelease i18n/midvatten_*.ts
+
 # ----------- Tests -------------
 cd path/to/midvatten/plugin/
 nosetests -vv --with-doctest --nocapture
