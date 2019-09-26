@@ -128,10 +128,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.resample_how.setText('mean')
         self.resample_how.setToolTip(defs.pandas_how_tooltip())
 
-        self.specific_dates_groupbox.clicked.connect(lambda: self.w_levels_chosen(self.specific_dates_groupbox))
-        self.animation_groupbox.clicked.connect(lambda: self.w_levels_chosen(self.animation_groupbox))
-
-
     def init_figure(self):
         try:
             self.title = self.axes.get_title()
@@ -178,20 +174,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
-
-    def w_levels_chosen(self, clicked_groupbox):
-        #TODO: Check that pandas and matplotlib is of a supported version
-        if clicked_groupbox is self.animation_groupbox and not pandas_on:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('''SectionPlot''', 'This function requires python pandas which is not installed!')))
-            self.animation_groupbox.setChecked(False)
-            self.specific_dates_groupbox.setChecked(True)
-            #set_groupbox_children_visibility(self.specific_dates_groupbox)
-            return
-
-        not_clicked = self.animation_groupbox if clicked_groupbox is not self.animation_groupbox else self.specific_dates_groupbox
-        #set_groupbox_children_visibility(clicked_groupbox)
-        not_clicked.setChecked(False if clicked_groupbox.isChecked() else True)
-        #set_groupbox_children_visibility(not_clicked)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()
@@ -1242,7 +1224,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if self.specific_dates_groupbox.isChecked():
             if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates']) > 0:  # PLOT Water Levels
                 self.plot_specific_water_level()
-        else:
+        if self.animation_groupbox.isChecked():
             self.plot_water_level_animation()
 
     def plot_water_level_animation(self):
