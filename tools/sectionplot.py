@@ -1292,27 +1292,32 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.axvline = self.wlvl_axes.axvline(df_idx_as_datetime(self.df, valinit), color='black', linewidth=2, linestyle='--') # mdates.date2num(df_idx_as_datetime(self.df, valinit)))
 
         self.date_slider.on_changed(self.update_animation)
-        x_wl, WL, current_idx = self.df_get_values()
+        current_idx = self.get_slider_idx()
+        x_wl, WL = self.get_water_levels_from_df(self.df, current_idx, self.selected_obsids, self.length_along)
         self.animation_label_idx = len(self.labels)
         self.waterlevel_lineplot(x_wl, WL, longdateformat(df_idx_as_datetime(self.df, current_idx)))
 
         self.canvas.mpl_connect('draw_event', self.update_slider)
 
-    def df_get_values(self):
-        current_idx = int(round(self.date_slider.val, 0))
+    def get_slider_idx(self):
+        return int(round(self.date_slider.val, 0))
+
+    @staticmethod
+    def get_water_levels_from_df(df, idx, columns, length_along):
         WL = []
         x_wl = []
-        for k, obs in enumerate(self.selected_obsids):
+        for k, col in enumerate(columns):
             try:
-                val = self.df.iloc[[current_idx]][obs]
+                val = df.iloc[[idx]][col]
             except KeyError:
                 continue
             WL.append(val)
-            x_wl.append(float(self.length_along[k]))
-        return x_wl, WL, current_idx
+            x_wl.append(float(length_along[k]))
+        return x_wl, WL
 
     def update_animation(self, datevalue):
-        x_wl, WL, current_idx = self.df_get_values()
+        current_idx = self.get_slider_idx()
+        x_wl, WL = self.get_water_levels_from_df(self.df, current_idx, self.selected_obsids, self.length_along)
         if self._waterlevel_lineplot is not None and self.df is not None:
             self._waterlevel_lineplot.set_ydata(WL)
             self.axvline.set_xdata(df_idx_as_datetime(self.df, current_idx))
@@ -1321,7 +1326,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.update_legend()
 
     def update_slider(self, event):
-
         xmin, xmax = self.wlvl_axes.get_xlim()
         # For some reason, matplotlib gives me days from 1970 instead of from 1900.
         _1970 = mdates.date2num(datetime.date(1970, 1, 1))
