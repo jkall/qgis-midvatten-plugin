@@ -147,11 +147,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             plt.close(fignum)
         self.figure = plt.figure()
         if self.animation_groupbox.isChecked():
-            self.gridspec = GridSpec(nrows=3, ncols=1, height_ratios=[20, 5, 1], hspace=0.35)
+            self.gridspec = GridSpec(nrows=2, ncols=2, height_ratios=[20, 1])
         else:
             self.gridspec = GridSpec(nrows=1, ncols=1)
 
-        self.axes = self.figure.add_subplot(self.gridspec[0:1, 0:1])
+        self.axes = self.figure.add_subplot(self.gridspec[0:2, 0:1])
         self.canvas = FigureCanvas(self.figure)
 
         self.canvas.mpl_connect('button_release_event', lambda event: self.update_barwidths_from_plot())
@@ -1254,7 +1254,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         valuemax = len(self.df)-1
         valinit = valuemin
         #valstep = 1
-        self.wlvl_axes = self.figure.add_subplot(self.gridspec[1:2, 0:1])
+        self.wlvl_axes = self.figure.add_subplot(self.gridspec[0:1, 1:2])
         self.df.plot(ax=self.wlvl_axes)
         self.wlvl_axes.set_xlabel('')
 
@@ -1268,7 +1268,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         for label in self.wlvl_axes.xaxis.get_ticklabels():
             label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
 
-        self.sliderax = self.figure.add_subplot(self.gridspec[2:3, 0:1])
+        self.sliderax = self.figure.add_subplot(self.gridspec[1:2, 1:2])
         self.date_slider = Slider(self.sliderax, 'Date', valuemin, valuemax, valinit=valinit, valfmt='%1.0f')
 
         self.axvline = self.wlvl_axes.axvline(df_idx_as_datetime(self.df, valinit), color='black', linewidth=2, linestyle='--') # mdates.date2num(df_idx_as_datetime(self.df, valinit)))
