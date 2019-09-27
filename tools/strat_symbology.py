@@ -4,7 +4,7 @@
  This is the part of the Midvatten plugin that load stratigraphy symbology
                               -------------------
         begin                : 2019-09-18
-        copyright            : (C) 2011 by joskal
+        copyright            : (C) 2019 by HenrikSpa
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/
 
@@ -25,9 +25,12 @@ from qgis.PyQt.QtGui import QColor
 import db_utils
 import midvatten_utils as utils
 from builtins import object
+import traceback
 
 from definitions import midvatten_defs as defs
 from midvatten_utils import add_layers_to_list
+from qgis.PyQt.QtCore import QCoreApplication
+
 
 def strat_symbology(iface):
     """
@@ -38,17 +41,20 @@ def strat_symbology(iface):
     root = QgsProject.instance().layerTreeRoot()
     dbconnection = db_utils.DbConnectionManager()
     plot_types = defs.PlotTypesDict()
-    #current_locale = utils.getcurrentlocale()[0]
-    #if current_locale != 'sv_SE':
-    #    bedrock_types = plot_types['rock']
-    #else:
-    #    bedrock_types = plot_types['berg']
-
-    add_views_to_db(dbconnection)
-
+    bedrock_geoshort = defs.bedrock_geoshort()
+    bedrock_types = plot_types[bedrock_geoshort]
     geo_colors = defs.geocolorsymbols()
     hydro_colors = defs.hydrocolors()
     groupname = 'Midvatten strat symbology'
+
+    try:
+        add_views_to_db(dbconnection, bedrock_types)
+    except:
+        utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('strat_symbology', '''Creating database views failed, see log message panel'''),
+                                        log_msg=QCoreApplication.translate('strat_symbology', '''%s''')%str(traceback.format_exc()))
+        dbconnection.closedb()
+        return
+
     root.removeChildNode(root.findGroup(groupname))
     stratigraphy_group = qgis.core.QgsLayerTreeGroup(name=groupname, checked=True)
     root.insertChildNode(0, stratigraphy_group)
@@ -72,10 +78,7 @@ def strat_symbology(iface):
             group.children()[-1].setExpanded(False)
 
         if bedrock_stylename is not None:
-            apply_style(layers[3], bedrock_stylename)
-            QgsProject.instance().addMapLayer(layers[3], False)
-            group.addLayer(layers[3])
-            group.children()[-1].setExpanded(False)
+            create_bedrock_symbology(layers[3], bedrock_stylename, bedrock_geoshort, group)
 
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
         color_group.setIsMutuallyExclusive(True)
@@ -85,6 +88,29 @@ def strat_symbology(iface):
 
     iface.mapCanvas().refresh()
 
+def create_bedrock_symbology(bedrock_layer, bedrock_stylename, bedrock_geoshort, group):
+    apply_style(bedrock_layer, bedrock_stylename)
+    bedrock_root_rule = bedrock_layer.renderer().rootRule()
+    bedrock_rules = bedrock_root_rule.children()
+
+    if len(bedrock_rules) not in (2, 3):
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('strat_symbology',
+                                                                          'Style and code discrepancy! The style %s has an unsupported number of rules!'))
+        return
+    if len(bedrock_rules) == 3:
+        # Bars with triangle, open and closed ending
+        bedrock_triangle, bedrock_closed_ending, bedrock_open_ending = bedrock_rules
+        bedrock_triangle.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+    elif len(bedrock_rules) == 2:
+        # Rings with open and closed ending
+        bedrock_closed_ending, bedrock_open_ending = bedrock_rules
+
+    bedrock_closed_ending.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+    bedrock_open_ending.setFilterExpression(
+        '''LOWER("drillstop") NOT LIKE '%{}%' OR "drillstop" IS NULL '''.format(bedrock_geoshort))
+    QgsProject.instance().addMapLayer(bedrock_layer, False)
+    group.addLayer(bedrock_layer)
+    group.children()[-1].setExpanded(False)
 
 def apply_style(layer, stylename):
     # now try to load the style file
@@ -104,7 +130,6 @@ def apply_style(layer, stylename):
         except:
             pass
 
-
 def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     apply_style(layer, stylename)
 
@@ -115,8 +140,6 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
         print(str(stylename))
         raise
     for_cloning = root.children()[-1]
-    #rock_key = 'berg' if utils.getcurrentlocale()[0] == 'sv_SE' else 'rock'
-    #root.children()[0].setFilterExpression('''"{}" {}'''.format('geoshort', plot_types[rock_key][1]))
 
     for key, types in plot_types.items():
         color = QColor(colors.get(key, [None, 'white'])[1])
@@ -131,31 +154,34 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
             ssl.setStrokeColor(color)
         root.insertChild(1, rule)
 
-
-def add_views_to_db(dbconnection):
+def add_views_to_db(dbconnection, bedrock_types):
     view_name = 'bars_strat'
-    dbconnection.execute('''DROP VIEW IF EXISTS {};'''.format(view_name))
+    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    if dbconnection.dbtype == 'spatialite':
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
     dbconnection.execute('''
 CREATE VIEW {} AS
-    SELECT stratigraphy.rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
-    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid);'''.format(view_name))
+    SELECT stratigraphy.{} AS rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
+    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid)'''.format(view_name, db_utils.rowid_string(dbconnection)))
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
+        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
 
     view_name = 'w_lvls_last_geom'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
-    dbconnection.execute('''CREATE VIEW {} AS SELECT b.rowid AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
+    dbconnection.execute('''CREATE VIEW {} AS SELECT b.{} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;'''.format(view_name, db_utils.rowid_string(dbconnection)))
+    if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
 
     view_name = 'bedrock'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    if dbconnection.dbtype == 'spatialite':
+        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
     bergy = (
         '''
-CREATE VIEW {} AS
- SELECT a.rowid, a.obsid,
+CREATE VIEW {view_name} AS
+ SELECT a.{rowid}, a.obsid,
     a.h_toc,
     a.h_gs,
     a.h_tocags,
@@ -191,14 +217,13 @@ CREATE VIEW {} AS
      LEFT JOIN (SELECT s.obsid, MIN(s.depthtop) AS soildepth,
                 'Stratigraphy: '||MIN(s.geology)||' '||MIN(s.geoshort) AS geo
                 FROM stratigraphy s
-                WHERE LOWER(s.geoshort) LIKE '%berg%' OR LOWER(s.geology) LIKE '%rock%'
+                WHERE LOWER(s.geoshort) {bedrock_types}
                 GROUP BY s.obsid
                 ) u ON a.obsid = u.obsid
-    ORDER BY a.obsid'''.format(view_name))
+    ORDER BY a.obsid'''.format(**{'view_name': view_name, 'bedrock_types': bedrock_types, 'rowid': db_utils.rowid_string(dbconnection)}))
     dbconnection.execute(bergy)
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' ;'''.format(view_name))
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
+        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
 
     dbconnection.commit()
 
