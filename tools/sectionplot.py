@@ -146,6 +146,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             fignum = self.figure.number
             plt.close(fignum)
         self.figure = plt.figure()
+
         if self.animation_groupbox.isChecked():
             self.gridspec = GridSpec(nrows=2, ncols=2, height_ratios=[20, 1])
         else:
@@ -174,6 +175,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
+
+        pick_annotator = utils.PickAnnotator(self.figure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()
@@ -1052,7 +1055,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     settings = self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable]
                     settings['label'] = settings.get('label', plotlable)
                     self.labels.append(settings['label'])
-
+                    settings['picker'] = 2
                     lineplot, = self.axes.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                     self.p.append(lineplot)
 
@@ -1130,6 +1133,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             label = 'drillstop like ' + self.ms.settingsdict['secplotdrillstop']
         self.labels.append(label)
         settings['label'] = label
+        settings['picker'] = 2
         lineplot,=self.axes.plot(self.x_ds, self.z_ds, **settings)
         self.p.append(lineplot)
 
@@ -1210,12 +1214,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def plot_obs_lines_data(self):
         plotlable = self.get_plot_label_name(self.y1_column, self.labels)
         self.labels.append(self.y1_column)
-        lineplot, = self.axes.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1, marker ='None', linestyle ='-', label=plotlable)# PLOT!!
+        lineplot, = self.axes.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1, picker=2, marker ='None', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
         plotlable = self.get_plot_label_name(self.y2_column, self.labels)
         self.labels.append(self.y2_column)
-        lineplot, = self.axes.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, marker ='None', linestyle ='-', label=plotlable)# PLOT!!
+        lineplot, = self.axes.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, picker=2, marker ='None', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
     def plot_water_level(self):   # Adding a plot for each water level date identified
@@ -1255,12 +1259,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         valinit = valuemin
         #valstep = 1
         self.wlvl_axes = self.figure.add_subplot(self.gridspec[0:1, 1:2])
-        self.df.plot(ax=self.wlvl_axes)
+        self.df.plot(ax=self.wlvl_axes, picker=2)
         self.wlvl_axes.set_xlabel('')
 
-        Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).items() if k != 'ylabel'])
-        ylabel = self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).get('ylabel', defs.secplot_default_template()['Axes_set_ylabel']['ylabel'])
-        self.wlvl_axes.set_ylabel(ylabel, **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
+        #Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).items() if k != 'ylabel'])
+        #ylabel = self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).get('ylabel', defs.secplot_default_template()['Axes_set_ylabel']['ylabel'])
+        #self.wlvl_axes.set_ylabel(ylabel, **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
+        self.wlvl_axes.set_ylabel('')
 
         for label in self.wlvl_axes.yaxis.get_ticklabels():
             label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
@@ -1370,6 +1375,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         settings = self.secplot_templates.loaded_template['wlevels_Axes_plot'][plotlable]
         settings['label'] = settings.get('label', plotlable)
         self.labels.append(settings['label'])
+        settings['picker'] = 2
         lineplot, = self.axes.plot(x_wl, WL, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
         self._waterlevel_lineplot = lineplot
         self.p.append(lineplot)
