@@ -81,6 +81,15 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         dbconnection.closedb()
         return
 
+    old_group = root.findGroup(groupname)
+    previously_visible = ''
+    if old_group:
+        for child in old_group.children():
+            if child.isVisible():
+                previously_visible = child.name()
+    else:
+        previously_visible = 'Bars'
+
     root.removeChildNode(root.findGroup(groupname))
     stratigraphy_group = qgis.core.QgsLayerTreeGroup(name=groupname, checked=True)
     root.insertChildNode(0, stratigraphy_group)
@@ -98,7 +107,7 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         xfactor = settings[name.lower()][1]
         yfactor = settings[name.lower()][2]
 
-        group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
+        group = qgis.core.QgsLayerTreeGroup(name=name)
         group.setExpanded(False)
         stratigraphy_group.insertChildNode(0, group)
         layers = []
@@ -126,6 +135,9 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         color_group.addLayer(layers[0])
         color_group.addLayer(layers[1])
 
+    for child in stratigraphy_group.children():
+        if child.name() == previously_visible:
+            child.setItemVisibilityChecked(True)
     iface.mapCanvas().refresh()
 
 def create_bedrock_symbology(bedrock_layer, bedrock_stylename, bedrock_geoshort, group):
@@ -198,7 +210,6 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
 def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
     if xfactor is None and yfactor is None:
         return
-
     renderer = layer.renderer()
     try:
         root = renderer.rootRule()
@@ -224,18 +235,17 @@ def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
     if labeling:
         if isinstance(labeling, QgsVectorLayerSimpleLabeling):
             settings = labeling.settings()
-            #if settings.geometryGeneratorEnabled():
             ddf = settings.dataDefinedProperties()
             if xfactor is not None:
                 #'PositionX' = index 9
-                p = QgsProperty()
-                p.setExpressionString(ddf.property(9).asExpression().replace('/**{xfactor}*/', '* ' + str(xfactor)))
+                p = QgsProperty.fromExpression(ddf.property(9).expressionString().replace('/**{xfactor}*/', '* ' + str(xfactor)))
                 ddf.setProperty(9, p)
             if yfactor is not None:
                 #'PositionY' = index 10
-                p = QgsProperty()
-                p.setExpressionString(ddf.property(10).asExpression().replace('/**{yfactor}*/', '* ' + str(yfactor)))
+                p = QgsProperty.fromExpression(ddf.property(10).asExpression().replace('/**{yfactor}*/', '* ' + str(yfactor)))
                 ddf.setProperty(10, p)
+            settings.setDataDefinedProperties(ddf)
+            labeling.setSettings(settings)
 
 def add_views_to_db(dbconnection, bedrock_types):
     view_name = 'bars_strat'
