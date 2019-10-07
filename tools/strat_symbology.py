@@ -30,6 +30,9 @@ import traceback
 from definitions import midvatten_defs as defs
 from midvatten_utils import add_layers_to_list
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt import uic
+
+ui_strat_symbology =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'strat_symbology_dialog.ui'))[0]
 
 
 def strat_symbology(iface):
