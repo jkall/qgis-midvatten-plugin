@@ -19,7 +19,7 @@
 """
 import os
 import qgis.utils
-from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer
+from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer, QgsGeometryGeneratorSymbolLayer, QgsMarkerSymbol
 from qgis.PyQt.QtGui import QColor
 
 import db_utils
@@ -126,10 +126,39 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
         rule.setLabel(key)
         sl = rule.symbol().symbolLayer(0)
         sl.setColor(color)
+
+        #QgsGeometryGeneratorSymbolLayer.setGeometryExpression(). This could be used to allow a factor in the expression.
+        # It must be used for every layer (bedrock and w_levels) as well though.
+
+
         if sl.subSymbol() is not None:
             ssl = sl.subSymbol().symbolLayer(0)
             ssl.setStrokeColor(color)
         root.insertChild(1, rule)
+
+def set_geometry_width_and_factor(layer, xfactor=None, yfactor=None):
+    # TODO: Ongoing developement
+    renderer = layer.renderer()
+    root = renderer.rootRule()
+    for child in root.children():
+        if isinstance(child, QgsGeometryGeneratorSymbolLayer):
+            geometry_expression = child.geometryExpression()
+            if xfactor is not None:
+                geometry_expression = geometry_expression.replace('{xfactor}', str(xfactor))
+            else:
+                geometry_expression = geometry_expression.replace('{xfactor}', '')
+            if yfactor is not None:
+                geometry_expression = geometry_expression.replace('{yfactor}', str(yfactor))
+            else:
+                geometry_expression = geometry_expression.replace('{yfactor}', '')
+
+        #elif isinstance(child, QgsMarkerSymbol):
+        #    if child.dataDefinedSize() is not None:
+        #        child.setDataDefinedSize('''coalesce(scale_linear("soildepth", 1, 54.3, 1, 10), 0)''')
+
+
+
+
 
 
 def add_views_to_db(dbconnection):
