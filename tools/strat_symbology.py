@@ -96,10 +96,6 @@ def create_bedrock_symbology(bedrock_layer, bedrock_stylename, bedrock_geoshort,
     bedrock_root_rule = bedrock_layer.renderer().rootRule()
     bedrock_rules = bedrock_root_rule.children()
 
-    if len(bedrock_rules) not in (2, 3):
-        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('strat_symbology',
-                                                                          'Style and code discrepancy! The style %s has an unsupported number of rules!'))
-        return
     if len(bedrock_rules) == 3:
         # Bars with triangle, open and closed ending
         bedrock_triangle, bedrock_closed_ending, bedrock_open_ending = bedrock_rules
@@ -107,6 +103,10 @@ def create_bedrock_symbology(bedrock_layer, bedrock_stylename, bedrock_geoshort,
     elif len(bedrock_rules) == 2:
         # Rings with open and closed ending
         bedrock_closed_ending, bedrock_open_ending = bedrock_rules
+    else:
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('strat_symbology',
+                                                                          'Style and code discrepancy! The style %s has an unsupported number of rules!'))
+        return
 
     bedrock_closed_ending.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
     bedrock_open_ending.setFilterExpression(
