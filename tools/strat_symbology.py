@@ -19,7 +19,8 @@
 """
 import os
 import qgis.utils
-from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer, QgsGeometryGeneratorSymbolLayer, QgsMarkerSymbol
+from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer, QgsGeometryGeneratorSymbolLayer, QgsMarkerSymbol,\
+    QgsVectorLayerSimpleLabeling, QgsProperty
 from qgis.PyQt.QtGui import QColor
 
 import db_utils
@@ -32,12 +33,34 @@ from midvatten_utils import add_layers_to_list
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt import uic
 
-ui_strat_symbology =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'strat_symbology_dialog.ui'))[0]
+strat_symbology_dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'strat_symbology_dialog.ui'))[0]
 
 
-def strat_symbology(iface):
+class StratSymbology(qgis.PyQt.QtWidgets.QDialog, strat_symbology_dialog):
+    def __init__(self, iface, parent):
+        self.iface = iface
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
+        self.setupUi(self)  # Required by Qt4 to initialize the UI
+        self.ok_button.clicked.connect(lambda : self.create_symbology())
+        self.show()
+
+    def create_symbology(self):
+        strat_symbology(self.iface,
+                        self.rings_groupbox.isChecked(),
+                        self.bars_groupbox.isChecked(),
+                        self.static_bars_groupbox.isChecked(),
+                        self.bars_xfactor.value(),
+                        self.bars_yfactor.value(),
+                        self.static_bars_xfactor.value(),
+                        self.static_bars_yfactor.value())
+
+
+def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor, bars_yfactor, static_bars_xfactor,
+                    static_bars_yfactor):
     """
-    TODO: berg and rock are hardcoded both in code and in view
+    TODO: There is a logical bug where layers that should get caught as ELSE isn't because the shadow  ("maxdepthbot"  =  "depthbot")
+          gets them... I might have to put the shadow in other layer...
     :param iface:
     :return:
     """
@@ -62,9 +85,19 @@ def strat_symbology(iface):
     stratigraphy_group = qgis.core.QgsLayerTreeGroup(name=groupname, checked=True)
     root.insertChildNode(0, stratigraphy_group)
     stratigraphy_group.setIsMutuallyExclusive(True)
+
+    settings = {'bars': [plot_bars, bars_xfactor, bars_yfactor],
+                'static bars': [plot_static_bars, static_bars_xfactor, static_bars_yfactor],
+                'rings': [plot_rings, None, None]}
+
     for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
                                                                 ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock'),
                                                                 ('Rings', 'rings_strat', None, 'rings_bedrock')):
+        if not settings[name.lower()][0]:
+            continue
+        xfactor = settings[name.lower()][1]
+        yfactor = settings[name.lower()][2]
+
         group = qgis.core.QgsLayerTreeGroup(name=name, checked=True)
         group.setExpanded(False)
         stratigraphy_group.insertChildNode(0, group)
@@ -72,16 +105,20 @@ def strat_symbology(iface):
         add_layers_to_list(layers, ['bars_strat', 'bars_strat', 'w_lvls_last_geom', 'bedrock'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels', 'Bedrock'])
         symbology_using_cloning(plot_types, geo_colors, layers[0], stylename, 'geoshort')
         symbology_using_cloning({k: "= '{}'".format(k) for k in sorted(hydro_colors.keys())}, hydro_colors, layers[1], stylename, 'capacity')
+        scale_geometry_by_factor(layers[0], xfactor=xfactor, yfactor=yfactor)
+        scale_geometry_by_factor(layers[1], xfactor=xfactor, yfactor=yfactor)
         QgsProject.instance().addMapLayers(layers[:2], False)
 
         if wlvls_stylename is not None and 'h_tocags' in layers[2].fields().names():
             apply_style(layers[2], wlvls_stylename)
+            scale_geometry_by_factor(layers[2], xfactor=xfactor, yfactor=yfactor)
             QgsProject.instance().addMapLayer(layers[2], False)
             group.addLayer(layers[2])
             group.children()[-1].setExpanded(False)
 
         if bedrock_stylename is not None:
             create_bedrock_symbology(layers[3], bedrock_stylename, bedrock_geoshort, group)
+            scale_geometry_by_factor(layers[3], xfactor=xfactor, yfactor=yfactor)
 
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
         color_group.setIsMutuallyExclusive(True)
@@ -158,28 +195,47 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
             ssl.setStrokeColor(color)
         root.insertChild(1, rule)
 
-def set_geometry_width_and_factor(layer, xfactor=None, yfactor=None):
-    # TODO: Ongoing developement
-    # QgsGeometryGeneratorSymbolLayer.setGeometryExpression(). This could be used to allow a factor in the expression.
-    # It must be used for every layer (bedrock and w_levels) as well though.
+def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
+    if xfactor is None and yfactor is None:
+        return
 
     renderer = layer.renderer()
-    root = renderer.rootRule()
-    for child in root.children():
-        if isinstance(child, QgsGeometryGeneratorSymbolLayer):
-            geometry_expression = child.geometryExpression()
-            if xfactor is not None:
-                geometry_expression = geometry_expression.replace('{xfactor}', str(xfactor))
-            else:
-                geometry_expression = geometry_expression.replace('{xfactor}', '')
-            if yfactor is not None:
-                geometry_expression = geometry_expression.replace('{yfactor}', str(yfactor))
-            else:
-                geometry_expression = geometry_expression.replace('{yfactor}', '')
+    try:
+        root = renderer.rootRule()
+    except AttributeError:
+        symbols = [renderer.symbol()]
+    else:
+        symbols = [rule.symbol() for rule in root.children()]
 
-        #elif isinstance(child, QgsMarkerSymbol):
-        #    if child.dataDefinedSize() is not None:
-        #        child.setDataDefinedSize('''coalesce(scale_linear("soildepth", 1, 54.3, 1, 10), 0)''')
+    for symbol in symbols:
+        sl = symbol.symbolLayer(0)
+        if isinstance(sl, QgsGeometryGeneratorSymbolLayer):
+            geometry_expression = sl.geometryExpression()
+            if xfactor is not None:
+                geometry_expression = geometry_expression.replace('/**{xfactor}*/', '* ' + str(xfactor))
+            if yfactor is not None:
+                geometry_expression = geometry_expression.replace('/**{yfactor}*/', '* ' + str(yfactor))
+            sl.setGeometryExpression(geometry_expression)
+            # elif isinstance(rule, QgsMarkerSymbol):
+            #    if rule.dataDefinedSize() is not None:
+            #        rule.setDataDefinedSize('''coalesce(scale_linear("soildepth", 1, 54.3, 1, 10), 0)''')
+
+    labeling = layer.labeling()
+    if labeling:
+        if isinstance(labeling, QgsVectorLayerSimpleLabeling):
+            settings = labeling.settings()
+            #if settings.geometryGeneratorEnabled():
+            ddf = settings.dataDefinedProperties()
+            if xfactor is not None:
+                #'PositionX' = index 9
+                p = QgsProperty()
+                p.setExpressionString(ddf.property(9).asExpression().replace('/**{xfactor}*/', '* ' + str(xfactor)))
+                ddf.setProperty(9, p)
+            if yfactor is not None:
+                #'PositionY' = index 10
+                p = QgsProperty()
+                p.setExpressionString(ddf.property(10).asExpression().replace('/**{yfactor}*/', '* ' + str(yfactor)))
+                ddf.setProperty(10, p)
 
 def add_views_to_db(dbconnection, bedrock_types):
     view_name = 'bars_strat'

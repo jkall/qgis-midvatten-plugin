@@ -63,7 +63,7 @@ from export_data import ExportData
 import db_utils
 from qgis.core import QgsWkbTypes, QgsVectorLayer
 import matplotlib_replacements
-from strat_symbology import strat_symbology
+from strat_symbology import StratSymbology
 #import profilefromdem
 
 
@@ -705,7 +705,8 @@ class Midvatten(object):
         if err_flag:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
         else:
-            strat_symbology(qgis.utils.iface)
+            _strat_symbology = StratSymbology(qgis.utils.iface, self.iface.mainWindow())
+
         utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
