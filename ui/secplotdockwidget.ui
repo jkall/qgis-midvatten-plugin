@@ -27,9 +27,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-21</y>
          <width>835</width>
-         <height>1475</height>
+         <height>1436</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -148,6 +148,12 @@
                            </item>
                            <item>
                             <widget class="QgsCollapsibleGroupBox" name="wlvl_groupbox">
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
                              <property name="title">
                               <string>Water levels</string>
                              </property>
@@ -163,12 +169,18 @@
                                 <item>
                                  <widget class="QLabel" name="label">
                                   <property name="text">
-                                   <string>w level table:</string>
+                                   <string>W level table:</string>
                                   </property>
                                  </widget>
                                 </item>
                                 <item>
                                  <widget class="QCheckBox" name="include_views_checkBox">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="text">
                                    <string>Include views</string>
                                   </property>
@@ -176,6 +188,12 @@
                                 </item>
                                 <item>
                                  <widget class="QComboBox" name="wlvltableComboBox">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>Table with water level data</string>
                                   </property>
@@ -203,8 +221,14 @@
                                      <verstretch>0</verstretch>
                                     </sizepolicy>
                                    </property>
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
-                                    <string>date time f w level:</string>
+                                    <string>Date time for water level:</string>
                                    </property>
                                   </widget>
                                  </item>
@@ -215,6 +239,12 @@
                                      <horstretch>0</horstretch>
                                      <verstretch>0</verstretch>
                                     </sizepolicy>
+                                   </property>
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
                                    </property>
                                    <property name="toolTip">
                                     <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -239,7 +269,7 @@ p, li { white-space: pre-wrap; }
                               <item>
                                <widget class="QGroupBox" name="animation_groupbox">
                                 <property name="title">
-                                 <string>Animation</string>
+                                 <string>Interactive mode</string>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
@@ -250,26 +280,58 @@ p, li { white-space: pre-wrap; }
                                 <layout class="QGridLayout" name="gridLayout">
                                  <item row="1" column="1">
                                   <widget class="QLineEdit" name="resample_base">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="inputMethodHints">
                                     <set>Qt::ImhDigitsOnly</set>
                                    </property>
                                   </widget>
                                  </item>
                                  <item row="0" column="1">
-                                  <widget class="QLineEdit" name="resample_rule"/>
+                                  <widget class="QLineEdit" name="resample_rule">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
+                                  </widget>
                                  </item>
                                  <item row="0" column="0">
                                   <widget class="QLabel" name="label_9">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
                                     <string>Resample rule</string>
                                    </property>
                                   </widget>
                                  </item>
                                  <item row="2" column="1">
-                                  <widget class="QLineEdit" name="resample_how"/>
+                                  <widget class="QLineEdit" name="resample_how">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
+                                  </widget>
                                  </item>
                                  <item row="1" column="0">
                                   <widget class="QLabel" name="label_10">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
                                     <string>Resample base</string>
                                    </property>
@@ -277,6 +339,12 @@ p, li { white-space: pre-wrap; }
                                  </item>
                                  <item row="2" column="0">
                                   <widget class="QLabel" name="label_11">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
                                     <string>Resample how</string>
                                    </property>
@@ -289,6 +357,12 @@ p, li { white-space: pre-wrap; }
                                      <horstretch>0</horstretch>
                                      <verstretch>0</verstretch>
                                     </sizepolicy>
+                                   </property>
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
                                    </property>
                                    <property name="text">
                                     <string>Skip NaN</string>
@@ -303,6 +377,12 @@ p, li { white-space: pre-wrap; }
                            </item>
                            <item>
                             <widget class="QgsCollapsibleGroupBox" name="dem_groupbox">
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
                              <property name="title">
                               <string>Digital elevation models</string>
                              </property>
@@ -314,6 +394,12 @@ p, li { white-space: pre-wrap; }
                                   <horstretch>0</horstretch>
                                   <verstretch>0</verstretch>
                                  </sizepolicy>
+                                </property>
+                                <property name="font">
+                                 <font>
+                                  <family>DejaVu Sans</family>
+                                  <pointsize>9</pointsize>
+                                 </font>
                                 </property>
                                 <property name="cursor" stdset="0">
                                  <cursorShape>ArrowCursor</cursorShape>
@@ -337,6 +423,12 @@ p, li { white-space: pre-wrap; }
                            </item>
                            <item>
                             <widget class="QgsCollapsibleGroupBox" name="bar_groupbox">
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
                              <property name="title">
                               <string>Bars</string>
                              </property>
@@ -344,14 +436,14 @@ p, li { white-space: pre-wrap; }
                               <item row="0" column="0">
                                <widget class="QLabel" name="label_2">
                                 <property name="text">
-                                 <string>drillstop:</string>
+                                 <string>Drillstop:</string>
                                 </property>
                                </widget>
                               </item>
                               <item row="3" column="0">
                                <widget class="QLabel" name="label_6">
                                 <property name="text">
-                                 <string>Barwidths</string>
+                                 <string>Barwidths:</string>
                                 </property>
                                </widget>
                               </item>
@@ -389,6 +481,12 @@ p, li { white-space: pre-wrap; }
                                   <verstretch>0</verstretch>
                                  </sizepolicy>
                                 </property>
+                                <property name="font">
+                                 <font>
+                                  <family>DejaVu Sans</family>
+                                  <pointsize>9</pointsize>
+                                 </font>
+                                </property>
                                 <property name="toolTip">
                                  <string extracomment="not yet implemented">select specific drillstop that will be indicated in plot, use % for wildcard</string>
                                 </property>
@@ -398,6 +496,12 @@ p, li { white-space: pre-wrap; }
                                <widget class="QComboBox" name="textcolComboBox">
                                 <property name="enabled">
                                  <bool>true</bool>
+                                </property>
+                                <property name="font">
+                                 <font>
+                                  <family>DejaVu Sans</family>
+                                  <pointsize>9</pointsize>
+                                 </font>
                                 </property>
                                </widget>
                               </item>
@@ -433,6 +537,12 @@ p, li { white-space: pre-wrap; }
                                  </item>
                                  <item>
                                   <widget class="QRadioButton" name="radioButton">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
                                     <string>None</string>
                                    </property>
@@ -446,6 +556,12 @@ p, li { white-space: pre-wrap; }
                                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                                  <item>
                                   <widget class="QRadioButton" name="width_of_profile">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
                                     <string>% of profile</string>
                                    </property>
@@ -456,6 +572,12 @@ p, li { white-space: pre-wrap; }
                                  </item>
                                  <item>
                                   <widget class="QRadioButton" name="width_of_plot">
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
+                                   </property>
                                    <property name="text">
                                     <string>% of plot</string>
                                    </property>
@@ -471,6 +593,12 @@ p, li { white-space: pre-wrap; }
                                      <width>0</width>
                                      <height>27</height>
                                     </size>
+                                   </property>
+                                   <property name="font">
+                                    <font>
+                                     <family>DejaVu Sans</family>
+                                     <pointsize>9</pointsize>
+                                    </font>
                                    </property>
                                    <property name="toolTip">
                                     <string>give stratigraphy bar width (% of full scale) which also affects sampling interval for DEM(s)</string>
@@ -491,6 +619,12 @@ p, li { white-space: pre-wrap; }
                            </item>
                            <item>
                             <widget class="QgsCollapsibleGroupBox" name="plots_groupbox">
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
                              <property name="title">
                               <string>Plot settings</string>
                              </property>
@@ -524,6 +658,12 @@ p, li { white-space: pre-wrap; }
                                 </item>
                                 <item>
                                  <widget class="QRadioButton" name="dynamic_plot_size">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic plotsize: The plot size will adjust to the customplot window size.&lt;br/&gt;Fixed: The plot size will be set to the parameter figure.figsize from the used style file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
@@ -537,6 +677,12 @@ p, li { white-space: pre-wrap; }
                                 </item>
                                 <item>
                                  <widget class="QRadioButton" name="radioButton_2">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic plotsize: The plot size will adjust to the customplot window size.&lt;br/&gt;Fixed: The plot size will be set to the parameter figure.figsize from the used style file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
@@ -550,7 +696,7 @@ p, li { white-space: pre-wrap; }
                               <item>
                                <widget class="QLabel" name="label_4">
                                 <property name="text">
-                                 <string>Templates</string>
+                                 <string>Templates:</string>
                                 </property>
                                </widget>
                               </item>
@@ -561,6 +707,12 @@ p, li { white-space: pre-wrap; }
                                 </property>
                                 <item row="1" column="2">
                                  <widget class="QPushButton" name="edit_button">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit current loaded template.&lt;/p&gt;&lt;p&gt;Note: Changes are not saved to a template file. Use Save as... to save changes to file.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
@@ -578,6 +730,12 @@ p, li { white-space: pre-wrap; }
                                 </item>
                                 <item row="2" column="2">
                                  <widget class="QPushButton" name="load_button">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the selected template.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
@@ -594,10 +752,22 @@ p, li { white-space: pre-wrap; }
                                     <verstretch>0</verstretch>
                                    </sizepolicy>
                                   </property>
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                  </widget>
                                 </item>
                                 <item row="4" column="2">
                                  <widget class="QPushButton" name="import_button">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import template files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
@@ -608,6 +778,12 @@ p, li { white-space: pre-wrap; }
                                 </item>
                                 <item row="5" column="2">
                                  <widget class="QPushButton" name="remove_button">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove a template from the list.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Note:&lt;/p&gt;&lt;p&gt;* Saved template files will not be removed from disk.&lt;/p&gt;&lt;p&gt;* Templates in default template folder will reappear again next time Section plot is used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
@@ -618,6 +794,12 @@ p, li { white-space: pre-wrap; }
                                 </item>
                                 <item row="3" column="2">
                                  <widget class="QPushButton" name="save_as_button">
+                                  <property name="font">
+                                   <font>
+                                    <family>DejaVu Sans</family>
+                                    <pointsize>9</pointsize>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the loaded template to file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
