@@ -27,9 +27,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-21</y>
+         <y>0</y>
          <width>835</width>
-         <height>1436</height>
+         <height>1430</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -267,7 +267,7 @@ p, li { white-space: pre-wrap; }
                                </widget>
                               </item>
                               <item>
-                               <widget class="QGroupBox" name="animation_groupbox">
+                               <widget class="QGroupBox" name="interactive_groupbox">
                                 <property name="title">
                                  <string>Interactive mode</string>
                                 </property>

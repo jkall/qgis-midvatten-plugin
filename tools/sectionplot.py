@@ -147,7 +147,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             plt.close(fignum)
         self.figure = plt.figure()
 
-        if self.animation_groupbox.isChecked():
+        if self.interactive_groupbox.isChecked():
             self.gridspec = GridSpec(nrows=2, ncols=2, height_ratios=[20, 1])
         else:
             self.gridspec = GridSpec(nrows=1, ncols=1)
@@ -1228,10 +1228,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if self.specific_dates_groupbox.isChecked():
             if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates']) > 0:  # PLOT Water Levels
                 self.plot_specific_water_level()
-        if self.animation_groupbox.isChecked():
-            self.plot_water_level_animation()
+        if self.interactive_groupbox.isChecked():
+            self.plot_water_level_interactive()
 
-    def plot_water_level_animation(self):
+    def plot_water_level_interactive(self):
         sql = '''SELECT date_time, level_masl, obsid FROM {} WHERE obsid IN ({})'''.format(self.ms.settingsdict['secplotwlvltab'], utils.sql_unicode_list(self.selected_obsids))
         self.df = pd.read_sql(sql,
                          self.dbconnection.conn, index_col='date_time', coerce_float=True, params=None, parse_dates=['date_time'],

@@ -347,7 +347,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
         assert len(self.myplot.skipped_bars) == 4
 
-    @attr(status='only')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_w_levels_animation(self, mock_messagebar):
@@ -371,22 +370,18 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
             gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
-            self.myplot.animation_groupbox.setChecked(True)
-            self.myplot.w_levels_chosen(self.myplot.animation_groupbox)
+            self.myplot.interactive_groupbox.setChecked(True)
             #self.myplot.datetimetextEdit.append('2015')
-
 
             self.myplot.draw_plot()
             return self.myplot
 
         myplot = _test(self)
         print(str(mock_messagebar.mock_calls))
-        assert myplot.animation_groupbox.isChecked()
-        assert not myplot.specific_dates_groupbox.isChecked()
+        assert myplot.interactive_groupbox.isChecked()
         assert len(myplot.figure.axes) > 1
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-        #assert False
 
     def tearDown(self):
         try:
