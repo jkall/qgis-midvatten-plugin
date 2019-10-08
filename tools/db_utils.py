@@ -391,7 +391,6 @@ def db_tables_columns_info(table=None, dbconnection=None):
     if table is not None:
         if table not in existing_tablenames:
             return {}
-
     if table is None:
         tablenames = existing_tablenames
     elif not isinstance(table, (list, tuple)):
@@ -403,6 +402,10 @@ def db_tables_columns_info(table=None, dbconnection=None):
 
     for tablename in tablenames:
         columns = get_table_info(tablename, dbconnection=dbconnection)
+        if columns is None:
+            utils.MessagebarAndLog.warning(log_msg=ru(
+                QCoreApplication.translate('db_tables_columns_info', 'Getting columns from table %s failed!')) % (tablename))
+            continue
         tables_dict[tablename] = columns
     return tables_dict
 

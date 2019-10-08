@@ -55,6 +55,7 @@ class Drillreport(object):        # general observation point info for the selec
             #                                    "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
             merged_question = True
 
+        obsids = sorted(set(obsids))
         if merged_question:
             f, rpt = self.open_file(', '.join(obsids), reportpath)
             for obsid in obsids:

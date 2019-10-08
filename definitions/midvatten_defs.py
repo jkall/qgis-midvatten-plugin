@@ -308,6 +308,9 @@ def geocolorsymbols():
     """
     return dictionary
 
+def bedrock_geoshort():
+    return 'berg' if utils.getcurrentlocale()[0] == 'sv_SE' else 'rock'
+
 def get_subset_of_tables_fr_db(category='obs_points'):
     """returns various subsets of tables from the db, argument category is one of:
         'obs_points' - returns all tables containing observational data related to obs_points
