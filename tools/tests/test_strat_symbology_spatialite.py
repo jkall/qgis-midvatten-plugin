@@ -24,8 +24,6 @@ class TestStratSymbology(utils_for_tests.MidvattenTestSpatialiteDbSv):
         def _test(self, mock_iface):
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
-            #root = qgis.core.QgsLayerTreeGroup(name='root', checked=True)
-            #mock_root.return_value = root
             self.midvatten.load_strat_symbology()
             self.ss = self.midvatten.strat_symbology
             try:

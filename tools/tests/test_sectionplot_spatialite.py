@@ -57,7 +57,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
-        
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
@@ -88,7 +88,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "['P1' 'P2' 'P3']"
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-        assert len(self.myplot.p) == len(self.myplot.labels)
+        #print(str(mock_messagebar.mock_calls))
+        print("self.myplot.p {} self.myplot.labels {}".format(str(self.myplot.p), str(self.myplot.labels)))
+        assert len(self.myplot.p) - 1 == len(self.myplot.labels)  # The bars should not be labeled, so there is one less label than plot.
         
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section_no_linelayer_message(self, mock_messagebar):

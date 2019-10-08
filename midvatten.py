@@ -450,8 +450,11 @@ class Midvatten(object):
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
-            print(str(OBSID_P))
-            print(str(OBSID_L))
+            try:
+                print(str(OBSID_P))
+                print(str(OBSID_L))
+            except:
+                pass
             utils.stop_waiting_cursor()
 
             selected_all = ru(QCoreApplication.translate("Midvatten", 'selected')) if any([OBSID_P, OBSID_L]) else ru(QCoreApplication.translate("Midvatten", 'all'))

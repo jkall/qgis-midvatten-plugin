@@ -158,7 +158,7 @@ class PrepareForQgis2Threejs(object):
 
         for key in self.strat_layers_dict:
             if self.dbconnection.dbtype == 'spatialite':
-                db_utils.sql_alter_db("delete from views_geometry_columns where view_name = " + key, dbconnection=self.dbconnection)
+                db_utils.sql_alter_db("delete from views_geometry_columns where view_name = '{}'".format(key), dbconnection=self.dbconnection)
 
             db_utils.sql_alter_db("drop view if exists " + key, dbconnection=self.dbconnection)
 
