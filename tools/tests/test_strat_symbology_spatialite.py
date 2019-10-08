@@ -11,7 +11,7 @@ from nose.plugins.attrib import attr
 from qgis.core import QgsProject
 
 
-@attr(status='only')
+@attr(status='on')
 class TestStratSymbology(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')

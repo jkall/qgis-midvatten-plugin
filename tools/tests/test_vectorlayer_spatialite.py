@@ -32,7 +32,7 @@ import string
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     def create_vlayer(self, no_print=False):
@@ -87,7 +87,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x for x in self.vlayer.selectedFeatureIds()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
-        assert self.vlayer.featureCount() == 3
+
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
@@ -112,7 +112,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x for x in self.vlayer.selectedFeatureIds()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
-        assert self.vlayer.featureCount() == 3
+
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
@@ -137,7 +137,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x for x in self.vlayer.selectedFeatureIds()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
-        assert self.vlayer.featureCount() == 3
+
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
@@ -161,8 +161,6 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         self.select_features(no_print=True)
         feature_ids = [feature.id() for feature in self.vlayer.getFeatures()]
 
-
-
         reference_ids = tuple(range(1, 1001))
 
         print("First 10 ids: " + str(feature_ids[:10]))
@@ -176,7 +174,8 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x for x in self.vlayer.selectedFeatureIds()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
-        assert self.vlayer.featureCount() == len(reference_ids)
+
+        
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_vlayer_2000_ints(self, mock_skippopup, mock_messagebar):
@@ -212,7 +211,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x for x in self.vlayer.selectedFeatureIds()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
-        assert self.vlayer.featureCount() == len(reference_ids)
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_vlayer_2000_strings(self, mock_skippopup, mock_messagebar):
@@ -251,4 +250,3 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x for x in self.vlayer.selectedFeatureIds()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
-        assert self.vlayer.featureCount() == len(reference_ids)

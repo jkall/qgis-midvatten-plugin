@@ -33,9 +33,10 @@ from nose.plugins.attrib import attr
 from qgis.core import QgsProject
 
 
-#
-@attr(status='on')
-class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
+#Not supported yet
+
+@attr(status='off')
+class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestPostgisDbSv):
     """ This test has conflicts with sectionplot, so its off!
     """
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -47,7 +48,6 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
         dbconnection.execute('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('1', 2, 1, 2, 'fyll'); ''')
         dbconnection.commit_and_closedb()
         #print(str(db_utils.sql_load_fr_db('''SELECT * FROM stratigraphy;''')))
-
 
         canvas = MagicMock()
         mock_iface.mapCanvas.return_value = canvas
@@ -82,6 +82,7 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test == ref
 
         assert not mock_messagebar.mock_calls
+
 
 
 

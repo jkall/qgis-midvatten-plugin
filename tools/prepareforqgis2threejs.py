@@ -151,17 +151,16 @@ class PrepareForQgis2Threejs(object):
 
     def drop_db_views(self):
         # TODO: Update to support PostGIS
-        sql1="delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'"
-        sql2="drop view if exists strat_obs_p_for_qgsi2threejs"
-        db_utils.sql_alter_db(sql1, dbconnection=self.dbconnection)
-        db_utils.sql_alter_db(sql2, dbconnection=self.dbconnection)
+        if self.dbconnection.dbtype == 'spatialite':
+            db_utils.sql_alter_db("delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'", dbconnection=self.dbconnection)
 
-        placeholder_sign = db_utils.placeholder_sign(self.dbconnection)
-        sql1="delete from views_geometry_columns where view_name = %s"%placeholder_sign
-        sql2="drop view if exists "
+        db_utils.sql_alter_db("drop view if exists strat_obs_p_for_qgsi2threejs", dbconnection=self.dbconnection)
+
         for key in self.strat_layers_dict:
-            db_utils.sql_alter_db(sql1, dbconnection=self.dbconnection, all_args=[(key,)])
-            db_utils.sql_alter_db(sql2 + key, dbconnection=self.dbconnection)
+            if self.dbconnection.dbtype == 'spatialite':
+                db_utils.sql_alter_db("delete from views_geometry_columns where view_name = " + key, dbconnection=self.dbconnection)
+
+            db_utils.sql_alter_db("drop view if exists " + key, dbconnection=self.dbconnection)
 
     def remove_views(self):
         remove_group = self.root.findGroup("stratigraphy_layers_for_qgis2threejs")

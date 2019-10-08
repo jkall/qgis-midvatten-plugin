@@ -46,15 +46,13 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
     
 
     def create_and_select_vlayer(self):
-
-
         self.midvatten.ms.settingsdict['secplotdrillstop'] = "%berg%"
-
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
         uri.setDataSource('', 'obs_lines', 'geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+        QgsProject.instance().addMapLayer(self.vlayer)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
@@ -356,17 +354,3 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert len(myplot.figure.axes) > 1
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-
-    def tearDown(self):
-        try:
-            QgsProject.instance().addMapLayer(self.vlayer)
-        except:
-            pass
-        try:
-            QgsProject.instance().removeMapLayer(self.vlayer.id())
-        except:
-            pass
-        super(self.__class__, self).tearDown()
-
-
-

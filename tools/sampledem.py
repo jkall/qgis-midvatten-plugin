@@ -137,7 +137,6 @@ def sampling(pointsamplinglayer, rastersamplinglayer): # main process from point
     # process raster after raster and point after point...
     pointFeat = QgsFeature()#??????????????????
     np = 0
-    snp = pointProvider.featureCount()
     DEMLEV = []
     for pointFeat in pointProvider.getFeatures():
         np += 1

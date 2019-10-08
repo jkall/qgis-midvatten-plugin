@@ -157,7 +157,6 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
 class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-
     def setUp(self, mock_messagebar):
         super(TestObsPointsTriggers, self).setUp()
         db_utils.sql_alter_db("""DROP TRIGGER IF EXISTS trigger_after_insert_obs_points_geom_fr_coords ON obs_points;""")

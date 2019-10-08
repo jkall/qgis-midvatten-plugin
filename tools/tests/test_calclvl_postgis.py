@@ -41,7 +41,6 @@ class TestCalclvl(utils_for_tests.MidvattenTestPostgisDbSv):
         widget = QtWidgets.QWidget()
         self.calclvl = Calclvl(widget, 1)
 
-
     def test_calcall(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')
         db_utils.sql_alter_db('''INSERT into w_levels (obsid, meas, date_time) VALUES ('rb1', 222, '2005-01-01 00:00:00')''')
