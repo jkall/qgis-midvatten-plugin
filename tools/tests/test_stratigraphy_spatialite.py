@@ -19,9 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import str
+
 from qgis.core import QgsProject, QgsVectorLayer
 
 import db_utils
@@ -35,15 +33,14 @@ import utils_for_tests
 
 @attr(status='on')
 class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
         self.midvatten.ms.settingsdict['secplotdrillstop'] = "%berg%"
-
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
         uri.setDataSource('', 'obs_points', 'geometry', '', 'rowid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+        QgsProject.instance().addMapLayer(self.vlayer)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
@@ -57,7 +54,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_stratigraphy(self, mock_skippopup, mock_messagebar):
         """
         
@@ -72,7 +68,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('1', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
         self.create_and_select_vlayer()
 
-        dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
+        dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()
         print(str(mock_skippopup.mock_calls))
@@ -89,7 +85,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_stratigraphy_with_other_obsid_numbers(self, mock_skippopup, mock_messagebar):
         """
 
@@ -104,7 +99,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('8', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
         self.create_and_select_vlayer()
 
-        dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
+        dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()
         print(str(mock_skippopup.mock_calls))
@@ -122,7 +117,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_stratigraphy_with_string_obsid(self, mock_skippopup, mock_messagebar):
         """
 
@@ -137,11 +131,12 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
         self.create_and_select_vlayer()
 
-        dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
+        dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()
         print(str(mock_skippopup.mock_calls))
         test = utils.anything_to_string_representation(dlg.data)
+        print(str(dlg.data))
         test_survey = utils.anything_to_string_representation(repr(dlg.data['P1']))
         test_strata = utils.anything_to_string_representation(
             utils.returnunicode(dlg.data['P1'].strata, keep_containers=True))
@@ -155,7 +150,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_stratigraphy_gap(self, mock_skippopup, mock_messagebar):
         """
         
@@ -171,7 +165,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         self.create_and_select_vlayer()
 
-        dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
+        dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()
         test = utils.anything_to_string_representation(dlg.data)
@@ -187,7 +181,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_stratigraphy_missing_h_gs_use_h_toc(self, mock_skippopup, mock_messagebar):
         """
         
@@ -206,13 +199,13 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('3', 2, 2, 6, 'morän', 'morän', '3', 'j')''')
         self.create_and_select_vlayer()
 
-        dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
+        dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()
         test = utils.anything_to_string_representation(dlg.data)
         test_survey = utils.anything_to_string_representation(repr(dlg.data['1']))
         test_strata = utils.anything_to_string_representation(utils.returnunicode(dlg.data['1'].strata, keep_containers=True))
-        #print(str(mock_skippopup.mock_calls))
+        print(str(mock_skippopup.mock_calls))
         assert len(mock_skippopup.mock_calls) == 1
         print(str(mock_messagebar.mock_calls))
         assert mock_skippopup.mock_calls == [mock.call('Warning, h_gs is missing. See messagebar.')]
@@ -225,8 +218,3 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test_survey == '''"SURVEY('1', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''
         print("Test strata " + test_strata)
         assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
-
-    def tearDown(self):
-        QgsProject.instance().addMapLayer(self.vlayer)
-        QgsProject.instance().removeMapLayer(self.vlayer.id())
-        super().tearDown()

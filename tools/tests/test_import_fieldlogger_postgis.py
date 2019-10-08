@@ -24,11 +24,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
     mock_askuser = MockReturnUsingDictIn({'It is a strong': answer_no.get_v(), 'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
-
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_staff_not_given(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
@@ -53,8 +48,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test_staff_not_given(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
                 mock_savefilename.return_value = [[filename]]
@@ -66,9 +60,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
                 importer.start_import(importer.observations)
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg='Import error, staff not given')
-
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_full_integration_test_to_db(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -102,8 +93,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -148,8 +138,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_w_levels_value_to_level_masl(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -183,8 +172,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -229,8 +217,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_w_levels_value_to_meas(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -264,8 +251,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -310,8 +296,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_w_levels_value_to_both(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -346,8 +331,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -393,8 +377,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_datetimefilter(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -428,8 +411,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -479,8 +461,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_datetimefilter_still_work_after_update_button(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -514,8 +495,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -576,8 +556,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_change_datetimefilter_after_update_button(self):
         #Changing datetime filter should reset sublocation filter and input fields and
         #input fields should yet again be set from stored settings. Thus, the only
@@ -619,8 +598,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -687,8 +665,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_changeing_filter_must_not_change_observations_before_import(self):
         #Changing datetime filter should reset sublocation filter and input fields and
         #input fields should yet again be set from stored settings. Thus, the only
@@ -726,8 +703,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -785,8 +761,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             assert create_test_string(obs_before) == create_test_string(obs_after)
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_into_zz_flowtype(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('2')''')
         #db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('5')''')
@@ -804,8 +779,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_askuser):
                 mock_charset.return_value = ('utf-8', True)
                 mock_savefilename.return_value = [[filename]]
@@ -857,8 +831,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             reference_string = '{comments: (True, [(2, 2016-12-12 10:03:15, onlycomment, teststaff)]), w_flow: (True, [(2, testid, Momflow2, 2016-12-12 10:03:07, 123.0, aunit, None)]), zz_flowtype: (True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_w_levels_value_calculate_level_masl(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1202', 0)''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1608', 0)''')
@@ -885,8 +858,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
@@ -927,8 +899,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             print(reference_string)
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_full_integration_test_to_db_qual_depth(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -963,8 +934,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)

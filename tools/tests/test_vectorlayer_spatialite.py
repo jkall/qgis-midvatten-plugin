@@ -32,18 +32,16 @@ import string
 import utils_for_tests
 
 
-@attr(status='off')
+@attr(status='only')
 class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def create_vlayer(self, no_print=False):
-
-
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
         uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+        QgsProject.instance().addMapLayer(self.vlayer)
 
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
@@ -68,8 +66,6 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_vlayer(self, mock_skippopup, mock_messagebar):
         """
 
@@ -95,8 +91,6 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_vlayer_other_ints_ids(self, mock_skippopup, mock_messagebar):
         """
 
@@ -122,8 +116,6 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_vlayer_strings(self, mock_skippopup, mock_messagebar):
         """
 
@@ -149,8 +141,6 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_vlayer_1000_features(self, mock_skippopup, mock_messagebar):
         """
 
@@ -187,11 +177,8 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
         assert self.vlayer.featureCount() == len(reference_ids)
-
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_vlayer_2000_ints(self, mock_skippopup, mock_messagebar):
         """
 
@@ -226,11 +213,8 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
         assert self.vlayer.featureCount() == len(reference_ids)
-
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance',
-                utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_vlayer_2000_strings(self, mock_skippopup, mock_messagebar):
         """
 
@@ -268,8 +252,3 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x.id() for x in self.vlayer.getSelectedFeatures()])) == reference_ids
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
         assert self.vlayer.featureCount() == len(reference_ids)
-
-    def tearDown(self):
-        QgsProject.instance().addMapLayer(self.vlayer)
-        QgsProject.instance().removeMapLayer(self.vlayer.id())
-        super().tearDown()

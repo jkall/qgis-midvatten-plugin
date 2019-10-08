@@ -42,7 +42,7 @@ from mocks_for_tests import MockUsingReturnValue
 class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure levelogger goes all the way to the end without errors
     """
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files(self):
 
         files = [('Serial_number:;;;;;;',
@@ -106,10 +106,8 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -140,7 +138,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     print(str(test_string))
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_skip_duplicate_datetimes(self):
         files = [('Serial_number:;;;;;;',
                     '123;;;;;;',
@@ -203,7 +201,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -229,7 +226,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_filter_dates(self):
         files = [('Serial_number:;;;;;;',
                     '123;;;;;;',
@@ -292,7 +289,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -318,7 +314,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_all_dates(self):
         files = [('Serial_number:;;;;;;',
                     '123;;;;;;',
@@ -383,7 +379,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -410,7 +405,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_try_capitalize(self):
         files = [('Serial_number:;;;;;;',
                     '123;;;;;;',
@@ -472,7 +467,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
             @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -502,7 +496,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             reference_string = r'''(True, [(Rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (Rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None)])'''
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_cancel(self):
 
         files = [
@@ -534,7 +528,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
             @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -568,7 +561,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             print(str(test_string))
             assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_skip_missing_water_level(self):
 
         files = [('Serial_number:;;;;;;',
@@ -634,7 +627,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -668,7 +660,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     print(reference_string)
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_not_skip_missing_water_level(self):
         files = [('Serial_number:;;;;;;',
                     '123;;;;;;',
@@ -733,7 +725,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -769,7 +760,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, None, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_datetime_filter(self):
         files = [('Location=rb1',
                 'Date/time,Water head[cm],Temperature[°C]',
@@ -828,7 +819,6 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
 
 
                 @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                 @mock.patch('import_data_to_db.utils.Askuser')
                 @mock.patch('qgis.utils.iface', autospec=True)
                 @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -858,7 +848,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                 print(str(test_string))
                 assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_skip_obsid(self):
         files = [('Serial_number:;;;;;;',
                     '123;;;;;;',
@@ -922,10 +912,8 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch("midvatten_utils.MessagebarAndLog")
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -966,7 +954,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     print(reference_string)
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_level_as_m(self):
 
         files = [('Serial_number:;;;;;;',
@@ -1030,10 +1018,8 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -1064,7 +1050,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     print(str(test_string))
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_wlvllogg_import_from_levelogger_files_cond_as_uscm(self):
 
         files = [('Serial_number:;;;;;;',
@@ -1094,10 +1080,8 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')

@@ -35,8 +35,7 @@ from utils_for_tests import create_test_string
 
 @attr(status='on')
 class TestGetFunctions(utils_for_tests.MidvattenTestPostgisDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     def test_get_last_logger_dates(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
@@ -53,8 +52,6 @@ class TestGetFunctions(utils_for_tests.MidvattenTestPostgisDbSv):
 @attr(status='on')
 class TestCalculateDbTableRows(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_get_db_statistics(self, mock_messagebar):
         """
         Test that calculate_db_table_rows can be run without major error
@@ -69,8 +66,6 @@ class TestCalculateDbTableRows(utils_for_tests.MidvattenTestPostgisDbSv):
 class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.latest_database_version')
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_warn_about_old_database(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '999.999.999'
         utils.warn_about_old_database()
@@ -79,8 +74,6 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('midvatten_utils.latest_database_version')
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_warn_about_old_database_not_old(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         utils.warn_about_old_database()
@@ -88,8 +81,6 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('midvatten_utils.latest_database_version')
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_warn_about_view_obs_points_missing_assert_no_msg(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         utils.warn_about_old_database()
@@ -97,8 +88,6 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('midvatten_utils.latest_database_version')
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_warn_about_view_obs_lines_missing_assert_no_msg(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         utils.warn_about_old_database()
@@ -107,8 +96,6 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestPostgisDbSv):
 @attr(status='on')
 class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_add_view_obs_points_obs_lines(self, mock_messagebar):
         utils.add_view_obs_points_obs_lines()
         print(str(mock_messagebar.mock_calls))

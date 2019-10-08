@@ -366,7 +366,6 @@ class TestContinousColorCycle(object):
                        (('color', 'r'), ('linestyle', '-')),
                        (('color', 'b'), ('linestyle', '-'), ('marker', 'o')),
                        (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
-
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.np.random.rand')
     def test_continous_color_cycle_ran_out(self, mock_np_random_rand, mock_messagebar):

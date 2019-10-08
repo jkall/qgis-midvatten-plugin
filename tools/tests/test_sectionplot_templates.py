@@ -53,7 +53,6 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         self.template_folder = os.path.join(os.path.split(os.path.split(os.path.dirname(__file__))[0])[0], 'definitions', 'secplot_templates')
 
         self.sectionplot = mock.MagicMock()
-
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_load_from_msettings(self, mock_messagebar):
         test_str = '''{"test": 1}'''

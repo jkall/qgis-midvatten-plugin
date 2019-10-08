@@ -39,7 +39,6 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """
 
     @mock.patch('matplotlib.pyplot.Figure.show')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_piper_plot_default_settings(self, mock_showplot):
         mock_ms = mock.MagicMock()
         mock_ms.settingsdict = {r"""piper_cl""": '',
@@ -58,7 +57,6 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test == ref
 
     @mock.patch('matplotlib.pyplot.Figure.show')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_piper_plot_user_chosen_settings(self, mock_showplot):
         mock_ms = mock.MagicMock()
         mock_ms.settingsdict = {r"""piper_cl""": 'cl',
@@ -79,7 +77,6 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.getselectedobjectnames')
     @mock.patch('matplotlib.pyplot.Figure.show')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_piper_plot_get_data(self, mock_showplot, mock_selected, mock_messagebar):
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, type, geometry) VALUES ('P1', 'well', ST_GeomFromText('POINT(633466 711659)', 3006))''')

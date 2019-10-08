@@ -31,8 +31,7 @@ import utils_for_tests
 
 @attr(status='on')
 class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_tables_columns_info_all_tables(self):
         """  """
         #Assert that obsid is primary key and not null in obs_points
@@ -47,8 +46,7 @@ class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
         assert col_obsid[4] is None
         assert int(col_obsid[5]) == 1
 
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_tables_columns_info_only_obs_points(self):
         """  """
         # Assert that obsid is primary key and not null in obs_points
@@ -66,8 +64,7 @@ class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
 
 @attr(status='on')
 class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_tables_columns_no_dbconnection_supplied(self):
         """  """
         tables_columns = db_utils.tables_columns()
@@ -78,8 +75,7 @@ class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
         for tablename in ['geometry_columns', 'spatial_ref_sys']:
             assert tablename not in tables_columns
 
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_tables_columns_dbconnection_supplied(self):
         """  """
         dbconnection = db_utils.DbConnectionManager()
@@ -94,8 +90,7 @@ class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
 
 @attr(status='on')
 class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_get_foreign_keys(self):
         """  """
         foreign_keys = db_utils.get_foreign_keys('w_levels')
@@ -103,8 +98,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
         reference = '{obs_points: [(obsid, obsid)]}'
         assert test_string == reference
 
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_get_foreign_keys_no_keys(self):
         """  """
         foreign_keys = db_utils.get_foreign_keys('obs_points')
@@ -115,8 +109,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
 
 @attr(status='on')
 class TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+
     def test_verify_table_exists(self):
         exists = db_utils.verify_table_exists('obs_points')
         assert exists
@@ -133,7 +126,6 @@ class TestNonplotTables(object):
                         'zz_meteoparam',
                         'zz_strat',
                         'zz_hydro')
-
     def test_as_string(self):
         tables = db_utils.nonplot_tables(as_tuple=False)
 

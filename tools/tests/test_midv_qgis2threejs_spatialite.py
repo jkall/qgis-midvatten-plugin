@@ -38,12 +38,9 @@ from qgis.core import QgsProject
 class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ This test has conflicts with sectionplot, so its off!
     """
-
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super().setUp()
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_prepare_qgis2threejs(self, mock_iface, mock_messagebar):

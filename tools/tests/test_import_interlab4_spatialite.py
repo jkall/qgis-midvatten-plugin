@@ -36,10 +36,9 @@ import utils_for_tests
 @attr(status='on')
 class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def setUp(self):
-        super(self.__class__, self).setUp()
-        self.importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
+        super().setUp()
+        self.importinstance = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_interlab4_full_test_to_db(self):
 
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
@@ -64,7 +63,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten_utils.NotFoundQuestion')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -74,7 +72,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 mock_not_found_question.return_value.value = 'anobsid'
                 mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
-                importer = Interlab4Import(self.iface.mainWindow(), self.ms)
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
                 importer.parse_observations_and_populate_gui()
                 importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
 
@@ -86,7 +84,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test_string)
         assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_interlab4_full_test_to_db_staff_0(self):
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
@@ -109,7 +107,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten_utils.NotFoundQuestion')
-            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -119,7 +116,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 mock_not_found_question.return_value.value = 'anobsid'
                 mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
-                importer = Interlab4Import(self.iface.mainWindow(), self.ms)
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
                 importer.parse_observations_and_populate_gui()
                 importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
 

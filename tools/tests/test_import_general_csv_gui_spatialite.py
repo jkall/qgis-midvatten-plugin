@@ -47,7 +47,7 @@ from mocks_for_tests import MockUsingReturnValue
 class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00,5.0']
@@ -58,8 +58,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -117,7 +115,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     print(str(test_string))
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_obs_points(self):
         file = ['obsid,testcol',
                  'rb1,test']
@@ -128,8 +126,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -187,7 +183,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_obsid_not_in_db(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00,5.0']
@@ -198,9 +194,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -264,7 +258,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_vlf_data_obsid_not_in_db(self):
         file = ['obsid,length2,real_comp,imag_comp,comment',
                 'obsid2,500,2,10,acomment']
@@ -275,9 +269,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -341,7 +333,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = '''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_no_header(self):
         file = ['rb1,2016-03-15 10:30:00,5.0']
 
@@ -351,8 +343,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -409,7 +399,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_many_rows(self):
         file = ['obsid,date_time,meas']
         base = datestring_to_date('1900-01-01 00:01:01')
@@ -422,8 +412,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -482,7 +470,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     assert import_time < 10
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_obsid_from_selection_obsidcol_existed(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00,5.0']
@@ -493,9 +481,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch('midvatten_utils.get_selected_features_as_tuple')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -556,7 +542,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_obsid_from_selection(self):
         file = ['date_time,meas',
                  '2016-03-15 10:30:00,5.0']
@@ -567,9 +553,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
                     @mock.patch('midvatten_utils.get_selected_features_as_tuple')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -630,7 +614,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_meteo_two_header_columns_same_name(self):
         file = ['obsid,instrumentid,parameter,date_time,reading_num,reading_num,aunit',
                  'rb1,inst1,precip,2016-03-15 10:30:00,5.0,6.0,cm(H2O)']
@@ -641,8 +625,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -699,7 +681,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = '''(True, [(rb1, inst1, precip, 2016-03-15 10:30:00, 5.0, 5.0, cm(H2O), None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_comma_decimal_separator(self):
         file = ['obsid;date_time;meas',
                  'rb1;2016-03-15 10:30:00;5,0']
@@ -710,8 +692,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -767,7 +747,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_convert_comma_to_point(self):
         file = ['obsid;date_time;meas',
                  'rb1;2016-03-15 10:30:00;5,0']
@@ -778,8 +758,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -835,7 +813,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_static_value(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00,5.0']
@@ -846,8 +824,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -906,7 +882,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, a comment)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_slash_in_date_time(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016/03/15 10:30,5.0']
@@ -917,8 +893,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -974,7 +948,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_remove_preceeding_trailing_spaces_tabs(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00 ,\t5.0']
@@ -985,8 +959,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -1042,7 +1014,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_file_twice(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00,5.0']
@@ -1055,7 +1027,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.MessagebarAndLog')
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -1117,7 +1088,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     print(str(test_string))
                     assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_w_levels_factor(self):
         file = ['obsid,date_time,meas',
                  'rb1,2016-03-15 10:30:00,5.0']
@@ -1128,8 +1099,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -1194,7 +1163,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def create_and_select_vlayer(self):
 
 
@@ -1217,7 +1186,7 @@ class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print("6. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
 
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_import_obs_points_from_layer(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
         self.create_and_select_vlayer()
@@ -1225,8 +1194,6 @@ class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         utils_askuser_answer_no_obj = MockUsingReturnValue(None)
         utils_askuser_answer_no_obj.result = 0
         utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
         @mock.patch('import_data_to_db.utils.Askuser')
         @mock.patch('qgis.utils.iface', autospec=True)
         @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)

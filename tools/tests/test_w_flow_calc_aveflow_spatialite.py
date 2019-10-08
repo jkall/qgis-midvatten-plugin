@@ -40,7 +40,6 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calcall(self, mock_messagebar):
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('1')''')
@@ -70,7 +69,6 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calselected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         mock_getselectedobjectnames.return_value = ['1']
 

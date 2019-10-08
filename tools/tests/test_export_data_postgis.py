@@ -57,8 +57,6 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_export_csv(self, mock_iface, mock_savepath, mock_messagebar):
         mock_savepath.return_value = '/tmp/'
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
@@ -128,8 +126,6 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_export_csv_no_selection(self, mock_iface, mock_savepath, mock_messagebar):
         mock_savepath.return_value = '/tmp/'
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')

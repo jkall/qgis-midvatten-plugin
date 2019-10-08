@@ -37,7 +37,7 @@ import utils_for_tests
 class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     def setUp(self):
         super(self.__class__, self).setUp()
-        self.importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
+        self.importinstance = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
 
     def test_interlab4_parse_filesettings_utf16(self):
         interlab4_lines = (

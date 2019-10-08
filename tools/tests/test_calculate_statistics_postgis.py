@@ -35,8 +35,7 @@ import utils_for_tests
 
 @attr(status='on')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestPostgisDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', autospec=True)

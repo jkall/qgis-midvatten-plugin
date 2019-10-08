@@ -57,7 +57,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_export_csv(self, mock_iface, mock_savepath):
         mock_savepath.return_value = '/tmp/'
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
@@ -125,7 +124,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_export_csv_no_selection(self, mock_iface, mock_savepath):
         mock_savepath.return_value = '/tmp/'
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
@@ -192,7 +190,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(reference_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -279,7 +277,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         reference_string = '\n'.join(reference_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -373,7 +371,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple')
     @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
@@ -426,7 +423,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
@@ -540,7 +536,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print("Ref\n" + reference_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')

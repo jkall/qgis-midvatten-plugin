@@ -30,7 +30,7 @@ from definitions import midvatten_defs
 
 @attr(status='on')
 class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_tables_columns(self):
         res = db_utils.db_tables_columns_info()
         assert res
@@ -44,7 +44,7 @@ class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 @attr(status='on')
 class TestGeocolorsymbols(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_only_moran(self):
         db_utils.sql_alter_db('DELETE FROM zz_strat')
         db_utils.sql_alter_db('DELETE FROM zz_stratigraphy_plots')
@@ -56,7 +56,7 @@ class TestGeocolorsymbols(utils_for_tests.MidvattenTestSpatialiteDbSv):
         reference_string = '''{"moran": ("thePattern", "theQTcolor", ), "morän": ("thePattern", "theQTcolor", )}'''
         assert test_string == reference_string
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+
     def test_missing_colors_patterns(self):
         db_utils.sql_alter_db('DELETE FROM zz_strat')
         db_utils.sql_alter_db('DELETE FROM zz_stratigraphy_plots')

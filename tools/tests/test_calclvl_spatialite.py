@@ -40,9 +40,7 @@ class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
         super(self.__class__, self).setUp()
         widget = QtWidgets.QWidget()
         self.calclvl = Calclvl(widget, 1)
-
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calcall(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')
         db_utils.sql_alter_db('''INSERT into w_levels (obsid, meas, date_time) VALUES ('rb1', 222, '2005-01-01 00:00:00')''')
@@ -58,7 +56,6 @@ class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test_string == reference_string
 
     @mock.patch('wlevels_calc_calibr.utils.getselectedobjectnames')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calc_selected(self, mock_selected_obsids):
         mock_selected_obsids.return_value = ['rb1']
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')
@@ -77,7 +74,6 @@ class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test_string == reference_string
 
     @mock.patch('wlevels_calc_calibr.utils.getselectedobjectnames')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calc_selected_overwrite(self, mock_selected_obsids):
         mock_selected_obsids.return_value = ['rb1', 'rb2']
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')
@@ -99,7 +95,6 @@ class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('wlevels_calc_calibr.utils.getselectedobjectnames')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calc_selected_dont_overwrite(self, mock_selected_obsids, mock_messagebar):
         mock_selected_obsids.return_value = ['rb1', 'rb2']
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')
@@ -125,7 +120,6 @@ class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('wlevels_calc_calibr.utils.getselectedobjectnames')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calc_selected_dont_overwrite_dont_skip_nulls(self, mock_selected_obsids, mock_messagebar, mock_skippopup):
         mock_selected_obsids.return_value = ['rb1', 'rb2']
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')
@@ -152,7 +146,6 @@ class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('wlevels_calc_calibr.utils.getselectedobjectnames')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calc_selected_dont_overwrite_skip_nulls(self, mock_selected_obsids, mock_messagebar, mock_skippopup):
         mock_selected_obsids.return_value = ['rb1', 'rb2']
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('rb1', 1)''')

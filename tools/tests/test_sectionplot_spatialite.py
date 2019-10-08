@@ -39,17 +39,13 @@ import utils_for_tests
 class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestSectionPlot, self).setUp()
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
         self.midvatten.ms.settingsdict['secplot_templates'] = ''
         self.midvatten.ms.settingsdict['secplotlocation'] = 0
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
-
-
         self.midvatten.ms.settingsdict['secplotdrillstop'] = "%berg%"
 
         dbconnection = db_utils.DbConnectionManager()
@@ -57,12 +53,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         uri.setDataSource('', 'obs_lines', 'geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+        QgsProject.instance().addMapLayer(self.vlayer)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
-
+        
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
@@ -72,8 +68,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         self.create_and_select_vlayer()
         print(str(self.vlayer.selectedFeatureCount()))
-
-        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+        
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
@@ -82,7 +77,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
-            self.midvatten.ms = self.ms
             self.myplot = self.midvatten.myplot
             self.myplot.drillstoplineEdit.setText("%berg%")
             self.myplot.draw_plot()
@@ -95,13 +89,11 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
         assert len(self.myplot.p) == len(self.myplot.labels)
-
+        
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_no_linelayer_message(self, mock_messagebar):
 
         @mock.patch('sectionplot.SectionPlot.do_it')
-        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames, mock_sectionplot):
@@ -121,7 +113,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.critical.called
         
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_string_obsid(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash with string obsid """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
@@ -131,8 +122,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         self.create_and_select_vlayer()
         print(str(self.vlayer.selectedFeatureCount()))
-
-        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
@@ -141,7 +130,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
-            self.midvatten.ms = self.ms
             self.myplot = self.midvatten.myplot
             self.myplot.drillstoplineEdit.setText("%berg%")
             self.myplot.draw_plot()
@@ -155,7 +143,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_depth(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
@@ -163,7 +150,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
 
         self.create_and_select_vlayer()
-
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
@@ -180,7 +166,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_w_levels(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
@@ -190,7 +175,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
 
         self.create_and_select_vlayer()
-
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
@@ -211,7 +195,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_length_along_slope(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
 
@@ -221,7 +204,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 0)', 3006))''')
 
         self.create_and_select_vlayer()
-
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
@@ -244,7 +226,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_length_along(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
@@ -253,7 +234,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 10)', 3006))''')
 
         self.create_and_select_vlayer()
-
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
@@ -275,7 +255,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_p_label_lengths(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
@@ -285,7 +264,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
 
         self.create_and_select_vlayer()
-
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
@@ -310,7 +288,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         #assert False
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_p_label_lengths_with_geology(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
@@ -322,7 +299,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 2, 1, 2, 'gravel')''')
 
         self.create_and_select_vlayer()
-
+        
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
@@ -347,7 +324,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(self.myplot.skipped_bars) == 4
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_w_levels_animation(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
@@ -358,7 +334,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-02 00:00:00', '15', '200', '185')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-03 00:00:00', '15', '200', '185')''')
         self.create_and_select_vlayer()
-
+        
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
@@ -381,17 +357,3 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(myplot.figure.axes) > 1
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-
-    def tearDown(self):
-        try:
-            QgsProject.instance().addMapLayer(self.vlayer)
-        except:
-            pass
-        try:
-            QgsProject.instance().removeMapLayer(self.vlayer.id())
-        except:
-            pass
-        super(self.__class__, self).tearDown()
-
-
-
