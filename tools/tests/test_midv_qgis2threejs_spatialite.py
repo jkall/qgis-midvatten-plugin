@@ -30,12 +30,10 @@ import mock
 import utils_for_tests
 from mock import MagicMock
 from nose.plugins.attrib import attr
-from qgis.core import QgsApplication
+from qgis.core import QgsProject
 
 
 #
-
-
 @attr(status='off')
 class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ This test has conflicts with sectionplot, so its off!
@@ -43,19 +41,12 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
-        super(TestPrepareQgis2Threejs, self).setUp()
-
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def init_qgis(self):
-        self.qgs = QgsApplication([], True)
-        self.qgs.initQgis()
+        super().setUp()
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_prepare_qgis2threejs(self, mock_iface, mock_messagebar):
-        self.init_qgis()
-
         dbconnection = db_utils.DbConnectionManager()
         dbconnection.execute('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('1', 1, ST_GeomFromText('POINT(1 1)', 3006)); ''')
         dbconnection.execute('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('1', 1, 0, 1, 'torv'); ''')
@@ -103,7 +94,7 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     def tearDown(self):
         #QgsProject.instance().addMapLayer(self.vlayer)
-        #QgsProject.instance().removeMapLayer(self.vlayer.id())
-        super(self.__class__, self).tearDown()
+        QgsProject.instance().removeAllMapLayers()
+        super().tearDown()
 
 

@@ -8,7 +8,7 @@ import mock
 import qgis
 import utils_for_tests
 from nose.plugins.attrib import attr
-from qgis.core import QgsProject, QgsApplication
+from qgis.core import QgsProject
 
 
 @attr(status='on')
@@ -17,8 +17,7 @@ class TestStratSymbology(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestStratSymbology, self).setUp()
-        self.qgs = QgsApplication([], True)
-        self.qgs.initQgis()
+
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)

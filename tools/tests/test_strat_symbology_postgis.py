@@ -8,7 +8,7 @@ import mock
 import qgis
 import utils_for_tests
 from nose.plugins.attrib import attr
-from qgis.core import QgsProject, QgsApplication
+from qgis.core import QgsProject
 
 
 @attr(status='on')
@@ -18,8 +18,6 @@ class TestStratSymbology(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def setUp(self):
         super(TestStratSymbology, self).setUp()
-        self.qgs = QgsApplication([], True)
-        self.qgs.initQgis()
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -52,5 +50,3 @@ class TestStratSymbology(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = '["root", "", [["Midvatten strat symbology", "", [["Rings", "", [["Bedrock", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]], ["Static bars", "", [["W levels", True, []], ["Bedrock", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]], ["Bars", "", [["W levels", True, []], ["Bedrock", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]]]]]]'
         assert test == ref
         assert mock_messagebar.mock_calls == []
-
-

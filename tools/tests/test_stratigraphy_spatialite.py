@@ -22,7 +22,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
-from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
+from qgis.core import QgsProject, QgsVectorLayer
 
 import db_utils
 import midvatten_utils as utils
@@ -37,9 +37,6 @@ import utils_for_tests
 class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
-        self.qgs = QgsApplication([], True)
-        self.qgs.initQgis()
-
         self.midvatten.ms.settingsdict['secplotdrillstop'] = "%berg%"
 
         dbconnection = db_utils.DbConnectionManager()
@@ -215,9 +212,8 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         test = utils.anything_to_string_representation(dlg.data)
         test_survey = utils.anything_to_string_representation(repr(dlg.data['1']))
         test_strata = utils.anything_to_string_representation(utils.returnunicode(dlg.data['1'].strata, keep_containers=True))
-
+        #print(str(mock_skippopup.mock_calls))
         assert len(mock_skippopup.mock_calls) == 1
-        print(str(mock_skippopup.mock_calls))
         print(str(mock_messagebar.mock_calls))
         assert mock_skippopup.mock_calls == [mock.call('Warning, h_gs is missing. See messagebar.')]
         assert mock_messagebar.mock_calls == [mock.call.warning(bar_msg="Obsid 2: using h_gs '' failed, using 'h_toc' instead.", duration=90, log_msg='False'),
@@ -233,4 +229,4 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def tearDown(self):
         QgsProject.instance().addMapLayer(self.vlayer)
         QgsProject.instance().removeMapLayer(self.vlayer.id())
-        super(self.__class__, self).tearDown()
+        super().tearDown()

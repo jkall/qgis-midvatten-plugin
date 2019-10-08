@@ -33,6 +33,8 @@ from collections import OrderedDict
 from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QWidget, QDialog
 import matplotlib.pyplot as plt
+from qgis.core import QgsProject
+import unittest
 
 import db_utils
 import midvatten_utils as utils
@@ -41,20 +43,13 @@ from import_data_to_db import midv_data_importer
 from midvatten import Midvatten
 
 from mocks_for_tests import DummyInterface2
-from tools.tests.mocks_for_tests import DummyInterface
+
 
 
 class test_qapplication_is_running(object):
     """ Tests that the QApplication is running
     """
-    def setUp(self):
-        self.iface = DummyInterface()
-
-    def tearDown(self):
-        pass
-
     def test_iface(self):
-        iface = self.iface
         assert QgsApplication.instance() is not None
 
 def dict_to_sorted_list(adict):
@@ -83,13 +78,6 @@ def dict_to_sorted_list(adict):
         result_list.append(utils.returnunicode(adict)) #.encode('utf-8'))
     return result_list
 
-def init_test():
-    QgsApplication.setPrefixPath(r'/usr', True)
-    app = QgsApplication.initQgis()
-    QtCore.QCoreApplication.setOrganizationName('QGIS')
-    QtCore.QCoreApplication.setApplicationName('QGIS2')
-    return app
-
 def create_test_string(anything=None):
     r""" Turns anything into a string used for testing
     :param anything: just about anything
@@ -116,6 +104,7 @@ def create_test_string(anything=None):
         aunicode = utils.returnunicode(str(anything))
     return aunicode
 
+
 class ContextualStringIO(io.StringIO):
     """ Copied function from stackoverflow
     """
@@ -130,6 +119,9 @@ class MidvattenTestBase(object):
     def __init__(self):
         self.stop_show()
 
+    def setUp(self):
+        pass
+
     def stop_show(self):
         """ Replace QWidget.show to stop the tests from producing a lot of dialogs.
 
@@ -143,6 +135,7 @@ class MidvattenTestBase(object):
 
     def tearDown(self):
         plt.close('all')
+        QgsProject.instance().removeAllMapLayers()
 
 
 class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
@@ -150,13 +143,13 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
     mock_instance_settings_database.return_value.readEntry.return_value = ("{'spatialite': {'dbpath': '/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
 
     def __init__(self):
-        super(MidvattenTestSpatialiteNotCreated, self).__init__()
+        super().__init__()
         self.TEMP_DB_SETTINGS = {'spatialite': {'dbpath': '/tmp/tmp_midvatten_temp_db.sqlite'}}
         self.TEMP_DBPATH = '/tmp/tmp_midvatten_temp_db.sqlite'
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
     def setUp(self):
-
+        super().setUp()
         #self.iface = mock.MagicMock()
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -174,6 +167,11 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
             os.remove(self.TEMP_DBPATH)
         except OSError:
             pass
+        self.dummy_iface = None
+        self.iface = None
+        self.midvatten = None
+        self.ms.settingsdict = None
+        self.ms = None
         super().tearDown()
 
 
@@ -185,13 +183,17 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
-        super(MidvattenTestSpatialiteDbSv, self).setUp()
+        super().setUp()
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         mock_savefilename.return_value = (self.TEMP_DBPATH, 'Spatialite (*.sqlite)')
         self.midvatten.new_db()
+
+    def tearDown(self):
+        self.midvatten = None
+        super().tearDown()
 
 class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
@@ -201,7 +203,7 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
-        super(MidvattenTestSpatialiteDbEn, self).setUp()
+        super().setUp()
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'en_US'
         mock_answer_yes.return_value.result = 1
@@ -212,8 +214,12 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
 class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
-        super(MidvattenTestSpatialiteDbSvImportInstance, self).setUp()
+        super().setUp()
         self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        self.importinstance = None
+        super().tearDown()
 
 
 class MidvattenTestPostgisNotCreated(MidvattenTestBase):
@@ -228,7 +234,7 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
     mock_instance_settings_database.return_value.readEntry.return_value = SETTINGS_DATABASE
 
     def __init__(self):
-        super(MidvattenTestPostgisNotCreated, self).__init__()
+        super().__init__()
         self.TEMP_DB_SETTINGS = MidvattenTestPostgisNotCreated.TEMP_DB_SETTINGS
         self.SETTINGS_DATABASE = MidvattenTestPostgisNotCreated.SETTINGS_DATABASE
         pass
@@ -236,6 +242,7 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
     @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
     def setUp(self):
+        super().setUp()
         #self.iface = mock.MagicMock()
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -274,7 +281,7 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten_utils.Askuser')
     @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def setUp(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
-        super(MidvattenTestPostgisDbSv, self).setUp()
+        super().setUp()
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
         mock_answer_yes.return_value.result = 1
@@ -285,8 +292,12 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
 class MidvattenTestPostgisDbSvImportInstance(MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def setUp(self):
-        super(MidvattenTestPostgisDbSvImportInstance, self).setUp()
+        super().setUp()
         self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        self.importinstance = None
+        super().tearDown()
 
 
 

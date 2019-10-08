@@ -37,7 +37,7 @@ from import_general_csv_gui import GeneralCsvImportGui
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
+from qgis.core import QgsProject, QgsVectorLayer
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
@@ -1229,8 +1229,7 @@ class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def create_and_select_vlayer(self):
-        self.qgs = QgsApplication([], True)
-        self.qgs.initQgis()
+
 
         self.midvatten.ms.settingsdict['secplotdrillstop'] = "%berg%"
 

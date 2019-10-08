@@ -20,7 +20,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
-from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
+from qgis.core import QgsProject, QgsVectorLayer
 
 import db_utils
 import midvatten_utils as utils
@@ -37,8 +37,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance',
                 utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_vlayer(self, no_print=False):
-        self.qgs = QgsApplication([], True)
-        self.qgs.initQgis()
+
 
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
@@ -270,12 +269,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
         assert self.vlayer.featureCount() == len(reference_ids)
 
-
-
-
-
-
     def tearDown(self):
         QgsProject.instance().addMapLayer(self.vlayer)
         QgsProject.instance().removeMapLayer(self.vlayer.id())
-        super(self.__class__, self).tearDown()
+        super().tearDown()
