@@ -72,7 +72,6 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
     geo_colors = defs.geocolorsymbols()
     hydro_colors = defs.hydrocolors()
     groupname = 'Midvatten strat symbology'
-
     try:
         add_views_to_db(dbconnection, bedrock_types)
     except:
@@ -98,7 +97,6 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
     settings = {'bars': [plot_bars, bars_xfactor, bars_yfactor],
                 'static bars': [plot_static_bars, static_bars_xfactor, static_bars_yfactor],
                 'rings': [plot_rings, None, None]}
-
     for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
                                                                 ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock'),
                                                                 ('Rings', 'rings_strat', None, 'rings_bedrock')):
@@ -117,7 +115,6 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         scale_geometry_by_factor(layers[0], xfactor=xfactor, yfactor=yfactor)
         scale_geometry_by_factor(layers[1], xfactor=xfactor, yfactor=yfactor)
         QgsProject.instance().addMapLayers(layers[:2], False)
-
         if wlvls_stylename is not None and 'h_tocags' in layers[2].fields().names():
             apply_style(layers[2], wlvls_stylename)
             scale_geometry_by_factor(layers[2], xfactor=xfactor, yfactor=yfactor)
@@ -128,7 +125,6 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         if bedrock_stylename is not None:
             create_bedrock_symbology(layers[3], bedrock_stylename, bedrock_geoshort, group)
             scale_geometry_by_factor(layers[3], xfactor=xfactor, yfactor=yfactor)
-
         color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
         color_group.setIsMutuallyExclusive(True)
         group.insertChildNode(-1, color_group)

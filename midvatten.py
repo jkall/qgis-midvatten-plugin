@@ -705,7 +705,7 @@ class Midvatten(object):
         if err_flag:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
         else:
-            _strat_symbology = StratSymbology(qgis.utils.iface, self.iface.mainWindow())
+            self.strat_symbology = StratSymbology(qgis.utils.iface, self.iface.mainWindow())
 
         utils.stop_waiting_cursor()
 
