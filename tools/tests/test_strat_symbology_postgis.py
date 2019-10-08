@@ -12,28 +12,31 @@ from qgis.core import QgsProject, QgsApplication
 
 
 @attr(status='on')
-class TestStratSymbology(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestStratSymbology(utils_for_tests.MidvattenTestPostgisDbSv):
 
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def setUp(self):
         super(TestStratSymbology, self).setUp()
         self.qgs = QgsApplication([], True)
         self.qgs.initQgis()
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_strat_symbology(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('1', 5, ST_GeomFromText('POINT(1 2)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('1', 1, 0, 1, 'sand', 'sand', '3', 'j')''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('1', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
 
-        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface):
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             root = qgis.core.QgsLayerTreeGroup(name='root', checked=True)
-            utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database.return_value.layerTreeRoot.return_value = root
+            utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database.return_value.layerTreeRoot.return_value = root
             self.midvatten.load_strat_symbology()
             self.ss = self.midvatten.strat_symbology
             try:

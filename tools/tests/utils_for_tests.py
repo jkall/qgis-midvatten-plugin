@@ -325,3 +325,15 @@ def compare_strings(str1, str2):
         return 'The same'
 
 
+def recursive_children(parent):
+    try:
+        children = parent.children()
+    except AttributeError:
+        children = []
+
+    try:
+        valid = parent.layer().isValid()
+    except AttributeError:
+        valid = ''
+
+    return [parent.name(), valid, [recursive_children(child) for child in children]]

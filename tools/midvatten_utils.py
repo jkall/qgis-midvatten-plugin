@@ -1987,21 +1987,18 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
             tablename = 'view_{}'.format(tablename)
 
-        layer = create_layer(tablename, geometrycolumn=geometrycolumn, dbconnection=dbconnection, layername=layername)
-
-        valid = layer.isValid()
-        if not valid:
-            #Try to add it as a view by adding key column
-            layer = create_layer(tablename, geometrycolumn=geometrycolumn, sql=None, keycolumn='obsid',
-                                 dbconnection=dbconnection, layername=layername)
-            valid = layer.isValid()
-
-        if not valid:
-            MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
+        for keycolumn in [None, 'obsid', 'rowid']:
+            layer = create_layer(tablename, geometrycolumn=geometrycolumn, dbconnection=dbconnection, layername=layername,
+                                 keycolumn=keycolumn)
+            if layer.isValid():
+                break
         else:
-            if tablename in ['view_obs_points', 'view_obs_lines']:
-                layer.setName(orig_tablename)
-            resultlist.append(layer)
+            MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
+            return
+
+        if tablename in ['view_obs_points', 'view_obs_lines']:
+            layer.setName(orig_tablename)
+        resultlist.append(layer)
 
 
 def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';', encoding="utf-8", **kwds):

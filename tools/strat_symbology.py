@@ -248,10 +248,21 @@ def add_views_to_db(dbconnection, bedrock_types):
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
-    dbconnection.execute('''
-CREATE VIEW {} AS
-    SELECT stratigraphy.{} AS rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
-    "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid)'''.format(view_name, db_utils.rowid_string(dbconnection)))
+        sql = '''
+    CREATE VIEW {} AS
+        SELECT stratigraphy.{} AS rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
+        "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid)'''.format(view_name, db_utils.rowid_string(dbconnection))
+    else:
+        sql = '''
+        CREATE VIEW {} AS
+            SELECT row_number() OVER (ORDER BY "obsid", "stratid") "rowid",
+            "obsid", "maxdepthbot", "stratid", "depthtop", "depthbot", "geology", "geoshort", "capacity", "development", "comment", "geometry"
+            FROM (
+            SELECT "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
+            "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid)
+            ) b'''.format(
+            view_name, db_utils.rowid_string(dbconnection))
+    dbconnection.execute(sql)
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
 
@@ -259,9 +270,15 @@ CREATE VIEW {} AS
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
-    dbconnection.execute('''CREATE VIEW {} AS SELECT b.{} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;'''.format(view_name, db_utils.rowid_string(dbconnection)))
-    if dbconnection.dbtype == 'spatialite':
+        dbconnection.execute('''CREATE VIEW {view_name} AS 
+                                SELECT b.{rowid} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry 
+                                FROM w_levels AS a JOIN obs_points AS b using (obsid) 
+                                GROUP BY obsid;'''.format(
+            **{'view_name': view_name, 'rowid': db_utils.rowid_string(dbconnection)}))
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
+    else:
+        dbconnection.execute('''CREATE VIEW {view_name} AS SELECT a.obsid AS obsid, a.date_time AS date_time, a.meas AS meas, a.level_masl AS level_masl, c.h_tocags AS h_tocags, c.geometry AS geometry FROM w_levels AS a JOIN (SELECT obsid, max(date_time) as date_time FROM w_levels GROUP BY obsid) as b ON a.obsid=b.obsid and a.date_time=b.date_time JOIN obs_points AS c ON a.obsid=c.obsid;'''
+                             .format(**{'view_name': view_name}))
 
     view_name = 'bedrock'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
@@ -270,7 +287,8 @@ CREATE VIEW {} AS
     bergy = (
         '''
 CREATE VIEW {view_name} AS
- SELECT a.{rowid}, a.obsid,
+ SELECT a.{rowid},
+    a.obsid,
     a.h_toc,
     a.h_gs,
     a.h_tocags,
@@ -310,9 +328,9 @@ CREATE VIEW {view_name} AS
                 GROUP BY s.obsid
                 ) u ON a.obsid = u.obsid
     ORDER BY a.obsid'''.format(**{'view_name': view_name, 'bedrock_types': bedrock_types, 'rowid': db_utils.rowid_string(dbconnection)}))
+
     dbconnection.execute(bergy)
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
 
     dbconnection.commit()
-
