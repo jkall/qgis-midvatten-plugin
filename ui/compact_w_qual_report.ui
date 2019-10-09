@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>479</width>
-    <height>591</height>
+    <width>482</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,6 +34,13 @@
        <string>Table data</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="1">
+        <widget class="QComboBox" name="sql_table">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="QRadioButton" name="from_active_layer">
          <property name="toolTip">
@@ -67,12 +74,44 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="sql_table">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Column</string>
          </property>
         </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="data_column"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_5">
+      <property name="title">
+       <string>Aggregation</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Unique date_time format</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="date_time_format"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Method</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="method"/>
        </item>
       </layout>
      </widget>
@@ -82,15 +121,8 @@
       <property name="title">
        <string>Table layout</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Number of data cols</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
         <widget class="QLineEdit" name="num_data_cols">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
@@ -100,14 +132,14 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
+       <item>
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Rowheader colwidth %</string>
+          <string>Number of data cols</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item>
         <widget class="QLineEdit" name="rowheader_colwidth_percent">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
@@ -117,20 +149,53 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Rowheader colwidth %</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QRadioButton" name="empty_row_between_tables">
          <property name="text">
           <string>Empty row between tables</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item>
         <widget class="QRadioButton" name="page_break_between_tables">
          <property name="text">
           <string>Page brake between tables</string>
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="title">
+       <string>Date_time layout</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QRadioButton" name="date_time_as_columns">
+         <property name="text">
+          <string>As columns</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="date_time_as_rows">
+         <property name="text">
+          <string>As rows</string>
          </property>
         </widget>
        </item>
@@ -213,7 +278,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>479</width>
+     <width>482</width>
      <height>23</height>
     </rect>
    </property>
