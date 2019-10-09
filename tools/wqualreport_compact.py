@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- This is the part of the Midvatten plugin that returns a report with water quality data for the selected obs_point. 
+ This is the part of the Midvatten plugin that returns a report with water quality data for the selected obs_point.
                               -------------------
         begin                : 2011-10-18
         copyright            : (C) 2011 by joskal
@@ -74,18 +74,14 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
             return min_decimals
 
 
-        self.date_time_formats = {'YYYY-MM': '%Y-%m',
-                                  'YYYY-MM-DD': '%Y-%m-%d',
-                                  'YYYY-MM-DD hh': '%Y-%m-%d %H',
-                                  'YYYY-MM-DD hh:mm': '%Y-%m-%d %H:%M',
-                                  'YYYY-MM-DD hh:mm:ss': '%Y-%m-%d %H:%M:%S'}
+        self.date_time_formats = ['YYYY-MM', 'YYYY-MM-DD', 'YYYY-MM-DD hh', 'YYYY-MM-DD hh:mm', 'YYYY-MM-DD hh:mm:ss']
         self.methods = {'concat': lambda x: ', '.join([ru(y) for y in x]),
                         'avg': lambda x: x[0] if len(x) < 2 else round(sum([float(y) for y in x])/float(len(x)), num_decimals(x)),
                         'sum': lambda x: x[0] if len(x) < 2 else round(sum([float(y) for y in x]), num_decimals(x)),
                         'min': lambda x: min([float(y) for y in x]),
                         'max': lambda x: max([float(y) for y in x])}
 
-        self.date_time_format.addItems(self.date_time_formats.keys())
+        self.date_time_format.addItems(self.date_time_formats)
         self.method.addItems(self.methods.keys())
 
         tables = list(db_utils.tables_columns().keys())
@@ -162,7 +158,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         sort_alphabetically = self.sort_alphabetically.isChecked()
         sort_by_obsid = self.sort_by_obsid.isChecked()
         date_time_as_columns = self.date_time_as_columns.isChecked()
-        date_time_format = self.date_time_formats[self.date_time_format.currentText()]
+        date_time_format = self.date_time_format.currentText()
         method = self.methods[self.method.currentText()]
         data_column = self.data_column.currentText()
 
@@ -262,7 +258,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             nr_header_rows = 1
 
-        dateformatter = lambda x: date_utils.datestring_to_date(x).strftime(date_time_format)
+        #dateformatter = lambda x: date_utils.datestring_to_date(x).strftime(date_time_format)
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
@@ -282,12 +278,12 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
             if not w_qual_lab_layer.selectedFeatureCount():
                 w_qual_lab_layer.selectAll()
-            data, par_unit_order = self.get_data_from_qgislayer(w_qual_lab_layer, dateformatter, data_column)
+            data, par_unit_order = self.get_data_from_qgislayer(w_qual_lab_layer, date_time_format, data_column)
         else:
-            data, par_unit_order = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), dateformatter, data_column)
+            data, par_unit_order = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), date_time_format, data_column)
 
         if date_time_as_columns:
-            report_data, num_data = self.data_to_printlist(data, par_unit_order, sort_parameters_alphabetically, sort_by_obsid)
+            report_data, num_data = self.data_to_printlist(data, par_unit_order, sort_parameters_alphabetically, sort_by_obsid, method)
         else:
             report_data, num_data = self.data_to_printlist_dates(data, par_unit_order, sort_parameters_alphabetically, method)
 
@@ -313,7 +309,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
-    def get_data_from_sql(self, table, obsids, dateformatter, data_column):
+    def get_data_from_sql(self, table, obsids, dateformatter, data_column, method, dbconnection=None):
         """
 
         :param skip_or_keep_reports_with_parameters: a dict like {'IN': ['par1', 'par2'], 'NOT IN': ['par3', 'par4']}
@@ -322,11 +318,12 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         :param dbconnection:
         :return:
         """
-        sql = '''SELECT obsid, date_time, report, parameter, unit, %s FROM %s'''%(data_column, table)
+
+        sql = '''SELECT obsid, date_time, group_concat(report, parameter, unit, %s FROM %s'''%(data_column, table)
         if obsids:
             sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
 
-        rows = db_utils.sql_load_fr_db(sql)[1]
+        rows = db_utils.sql_load_fr_db(sql, dbconnection=None)[1]
 
         data = {}
         par_unit_order = []
@@ -338,7 +335,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         return data, par_unit_order
 
-    def get_data_from_qgislayer(self, w_qual_lab_layer, dateformatter, data_column):
+    def get_data_from_qgislayer(self, w_qual_lab_layer, dateformatter, data_column, method):
         """
         obsid, date_time, report, {parameter} || ', ' ||
                  CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
@@ -356,27 +353,25 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         indexes = {column: fields.indexFromName(column) for column in columns}
 
-        data = {}
-        par_unit_order = []
-        invalid_features = 0
-        num_features = 0
-        for feature in w_qual_lab_layer.selectedFeatures():
-            if not feature.isValid():
-                invalid_features += 1
-                continue
 
-            attrs = feature.attributes()
-            obsid = attrs[indexes['obsid']]
-            date_time = dateformatter(attrs[indexes['date_time']])
-            report = attrs[indexes['report']]
-            parameter = attrs[indexes['parameter']]
-            unit = attrs[indexes['unit']]
-            value = attrs[indexes[data_column]]
-            par_unit = ', '.join([x for x in [parameter, unit] if x])
-            if par_unit not in par_unit_order:
-                par_unit_order.append(par_unit)
-            data.setdefault(obsid, {}).setdefault(date_time, {}).setdefault(report, {})[par_unit] = value
-            num_features += 1
+        file_data = [columns]
+        file_data.extend([[feature.attributes()[indexes['obsid']],
+                     feature.attributes()[indexes['date_time']],
+                     feature.attributes()[indexes['report']],
+                     feature.attributes()[indexes['parameter']],
+                     feature.attributes()[indexes['unit']],
+                     feature.attributes()[indexes[data_column]]]
+                     for feature in w_qual_lab_layer.selectedFeatures()
+                     if feature.isValid()])
+
+        num_features = len(file_data)
+        invalid_features = len([feature for feature in w_qual_lab_layer.selectedFeatures() if not feature.isValid()])
+        obsids = [x[0] for x in file_data[1:]]
+
+        temptable_name = '_wqualreport_compat_temporary_table_'
+        dbconnection = db_utils.DbConnectionManager()
+        list_to_table(file_data, temptable_name, [], dbconnection=dbconnection)
+
 
         if invalid_features:
             msgfunc = utils.MessagebarAndLog.warning
@@ -385,9 +380,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(nr_of_selected), str(num_features), str(invalid_features)))
 
-        return data, par_unit_order
+        return self.get_data_from_sql(temptable_name, obsids, dateformatter, data_column, method, dbconnection)
 
-    def data_to_printlist(self, data, par_unit_order, sort_parameters_alphabetically=True, sort_by_obsid=True):
+    def data_to_printlist(self, data, par_unit_order, sort_parameters_alphabetically=True, sort_by_obsid=True, method=None):
         num_data = 0
 
         if sort_parameters_alphabetically:
@@ -515,6 +510,30 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         #Separate tables:
         if page_break_between_tables:
             f.write("""<p style="page-break-before: always"></p>""")
+
+
+def list_to_table(file_data, temptable_name, primary_keys_for_concat, dbconnection=None):
+    if not isinstance(dbconnection, db_utils.DbConnectionManager):
+        dbconnection = db_utils.DbConnectionManager()
+    fieldnames_types = ['{} TEXT'.format(field_name) for field_name in file_data[0]]
+    temptable_name = dbconnection.create_temporary_table_for_import(temptable_name, fieldnames_types)
+
+    placeholder_sign = db_utils.placeholder_sign(dbconnection)
+
+    concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
+    added_rows = set()
+    numskipped = 0
+    sql = """INSERT INTO %s VALUES (%s)""" % (temptable_name, ', '.join([placeholder_sign for x in range(len(file_data[0]))]))
+    for row in file_data[1:]:
+        if  primary_keys_for_concat:
+            concatted = '|'.join([row[idx] for idx in concat_cols])
+            if concatted in added_rows:
+                numskipped += 1
+                continue
+            else:
+                added_rows.add(concatted)
+        args = tuple([None if any([r is None, not r.strip() if r is not None else None]) else r for r in row])
+        dbconnection.cursor.execute(sql, args)
 
 
 def sql_list(alist):

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>482</width>
-    <height>827</height>
+    <height>858</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,7 +90,7 @@
     <item>
      <widget class="QGroupBox" name="groupBox_5">
       <property name="title">
-       <string>Aggregation</string>
+       <string>Aggregation (only with Date_time layout as rows)</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
@@ -205,7 +205,7 @@
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>Sort columns</string>
+       <string>Sort columns  (only with Date_time layout as columns)</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
