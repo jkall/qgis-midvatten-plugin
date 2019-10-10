@@ -116,8 +116,6 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 
         self.pushButton_ok.clicked.connect(lambda x: self.wqualreport())
 
-        #self.from_active_layer.setToolTip(ru(QCoreApplication.translate('CompactWqualReport', 'Do not use an sqlite database view or a qgis sql query as the active layer! This can result in invalid features and mismatching data!\nIf the active layer is a layer like that, export the layer to a different format or convert into a proper sqlite table instead.')))
-        #self.label_4.setToolTip(self.from_active_layer.toolTip())
         self.from_active_layer.clicked.connect(lambda x: self.set_columns_from_activelayer())
         self.from_sql_table.clicked.connect(lambda x: self.set_columns_from_sql_layer())
         self.sql_table.currentIndexChanged.connect(lambda x: self.set_columns_from_sql_layer())
@@ -150,7 +148,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 
     @utils.general_exception_handler
     def wqualreport(self):
-
+        utils.start_waiting_cursor()
         num_data_cols = int(self.num_data_cols.text())
         rowheader_colwidth_percent = int(self.rowheader_colwidth_percent.text())
         empty_row_between_tables = self.empty_row_between_tables.isChecked()
@@ -170,6 +168,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                             page_break_between_tables, from_active_layer, sql_table, sort_alphabetically, sort_by_obsid,
                             date_time_as_columns, date_time_format, method, data_column)
+        utils.stop_waiting_cursor()
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
@@ -254,7 +253,6 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                  page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically,
                  sort_by_obsid, date_time_as_columns, date_time_format, method, data_column):
         #show the user this may take a long time...
-        utils.start_waiting_cursor()
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
@@ -289,8 +287,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             values = [data_column]
             report_data = self.data_to_printlist(df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
 
-        #utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
-
+        # Split the data into separate tables with the specified number of columns
         for startcol in range(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
             for rownr, row in enumerate(report_data):
@@ -299,14 +296,12 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             filtered = [row for row in printlist if any(row[1:])]
 
             self.htmlcols = len(filtered[0])
-            self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
-                        page_break_between_tables=page_break_between_tables, nr_header_rows=len(columns))
+            self.write_html_table(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
+                                  page_break_between_tables=page_break_between_tables, nr_header_rows=len(columns))
 
         # write some finishing html and close the file
         f.write("\n</body></html>")
         f.close()
-
-        utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
@@ -334,29 +329,19 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
     def get_data_from_qgislayer(self, w_qual_lab_layer, data_column):
         """
-        obsid, date_time, report, {parameter} || ', ' ||
-                 CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
-                 value
         """
         fields = w_qual_lab_layer.fields()
-        nr_of_selected = w_qual_lab_layer.selectedFeatureCount()
         fieldnames = [field.name() for field in fields]
         columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', data_column]
-        for column in columns:
-            if not column in fieldnames:
+
+        if any([column not in fieldnames for column in columns]):
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain column %s'))%column)
 
         indexes = {column: fields.indexFromName(column) for column in columns}
         features = [f for f in w_qual_lab_layer.getFeatures('True') if f.id() in w_qual_lab_layer.selectedFeatureIds()]
         file_data = [columns]
-        file_data.extend([[ru(feature.attributes()[indexes['obsid']]),
-                           ru(feature.attributes()[indexes['date_time']]),
-                              ru(feature.attributes()[indexes['report']]),
-                                 ru(feature.attributes()[indexes['parameter']]),
-                                    ru(feature.attributes()[indexes['unit']]),
-                                       ru(feature.attributes()[indexes[data_column]])]
-                     for feature in features
-                     if feature.isValid()])
+        file_data.extend([[ru(feature.attributes()[indexes[col]]) for col in columns]
+                           for feature in features if feature.isValid()])
 
         df = pd.DataFrame(file_data[1:], columns=file_data[0])
         df['date_time'] = pd.to_datetime(df['date_time'])
@@ -368,7 +353,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             msgfunc = utils.MessagebarAndLog.info
 
-        msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(nr_of_selected), str(num_features), str(invalid_features)))
+        msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(w_qual_lab_layer.selectedFeatureCount()), str(num_features), str(invalid_features)))
         return df
 
     def data_to_printlist(self, df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format):
@@ -396,70 +381,21 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             df = df.sort_index(axis=0, level=[x for x in rows if x != 'parunit'])
 
-        #df = df.drop('par_unit_order')
+        # Drop par_unit_order order
         df.index = df.index.droplevel(0)
 
-        f = io.StringIO()
-        df.to_csv(f, sep=';', quotechar='"')
-        f.seek(0)
-        reader = csv.reader(f, delimiter=';', quotechar='"')
-        rows = list(reader)[1:]
+        index = [list(row) if isinstance(row, tuple) else [row] for row in df.index.values.tolist()]
+        columns = [x[1:] for x in df.columns.values.tolist()]
+        values = df.values.tolist()
+        printlist = [['']*df.index.nlevels for _ in range(df.columns.nlevels-1)]
+        [row.extend([c[idx] for c in columns]) for idx, row in enumerate(printlist)]
+        [row.extend(values[idx]) for idx, row in enumerate(index)]
+        printlist.extend(index)
 
-        return rows
+        return printlist
 
-    def data_to_printlist_dates(self, data, par_unit_order, sort_parameters_alphabetically=True, method=None):
-        num_data = 0
-
-        if sort_parameters_alphabetically:
-            distinct_parameters = sorted(par_unit_order, key=lambda s: s[0].lower())
-        else:
-            distinct_parameters = par_unit_order
-
-        params_dates = {}
-        for obsid, date_times in data.items():
-            for date_time, reports in date_times.items():
-                for report, parameters in sorted(reports.items()):
-                    for parameter, reading_txt in parameters.items():
-                        if date_time not in params_dates.get(parameter, []):
-                            params_dates.setdefault(parameter, []).append(date_time)
-
-        if sort_parameters_alphabetically:
-            params_dates = {parameter: sorted(date_time) for parameter, date_time in sorted(params_dates.items())}
-        else:
-            params_dates = {parameter: sorted(params_dates[parameter]) for parameter in distinct_parameters}
-
-        outlist = [['parameter', 'date_time']]
-        outlist[0].extend(sorted(data.keys()))
-
-        for parameter, date_times in params_dates.items():
-            for date_time in date_times:
-                outlist.append([parameter, date_time])
-                for obsid in outlist[0][2:]:
-                    if date_time in data[obsid]:
-                        reports_parameters = data[obsid][date_time]
-                        values = []
-                        for report, parameters in reports_parameters.items():
-                            if parameter in parameters:
-                                values.append(parameters[parameter])
-                        if values:
-                            if method is not None:
-                                try:
-                                    word = method(values)
-                                except:
-                                    word = ', '.join([ru(y) for y in values])
-                            else:
-                                word = ''
-                            outlist[-1].append(word)
-                            num_data += 1
-                        else:
-                            outlist[-1].append('')
-                    else:
-                        outlist[-1].append('')
-
-        return outlist, num_data
-
-    def WriteHTMLReport(self, ReportData, f, rowheader_colwidth_percent, empty_row_between_tables=False,
-                        page_break_between_tables=False, nr_header_rows=3):
+    def write_html_table(self, ReportData, f, rowheader_colwidth_percent, empty_row_between_tables=False,
+                         page_break_between_tables=False, nr_header_rows=3):
         rpt = """<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0 PADDING-BOTTOM=0 PADDING=0>"""
         f.write(rpt)
 
@@ -492,7 +428,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         f.write("\n</table><p></p><p></p>")
 
-        #All in one table:
+        #All in one table:Wqualreport
         if empty_row_between_tables:
             f.write("""<p>empty_row_between_tables</p>""")
 

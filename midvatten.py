@@ -968,9 +968,6 @@ class Midvatten(object):
     @utils.general_exception_handler
     def waterqualityreportcompact(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
-        if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
-            err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
         if err_flag == 0:
             CompactWqualReportUi(self.iface.mainWindow(), self.ms)
 
