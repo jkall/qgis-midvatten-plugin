@@ -111,9 +111,8 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 
         self.pushButton_ok.clicked.connect(lambda x: self.wqualreport())
 
-        self.from_active_layer.setToolTip(ru(QCoreApplication.translate('CompactWqualReport', 'Do not use an sqlite database view or a qgis sql query as the active layer! This can result in invalid features and mismatching data!\nIf the active layer is a layer like that, export the layer to a different format or convert into a proper sqlite table instead.')))
-        self.label_4.setToolTip(self.from_active_layer.toolTip())
-        self.from_active_layer.clicked.connect(lambda x: self.active_layer_warning())
+        #self.from_active_layer.setToolTip(ru(QCoreApplication.translate('CompactWqualReport', 'Do not use an sqlite database view or a qgis sql query as the active layer! This can result in invalid features and mismatching data!\nIf the active layer is a layer like that, export the layer to a different format or convert into a proper sqlite table instead.')))
+        #self.label_4.setToolTip(self.from_active_layer.toolTip())
         self.from_active_layer.clicked.connect(lambda x: self.set_columns_from_activelayer())
         self.from_sql_table.clicked.connect(lambda x: self.set_columns_from_sql_layer())
         self.sql_table.currentIndexChanged.connect(lambda x: self.set_columns_from_sql_layer())
@@ -131,9 +130,6 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.update_from_stored_settings(self.stored_settings)
 
         self.show()
-
-    def active_layer_warning(self):
-        utils.pop_up_info(self.from_active_layer.toolTip(), 'Warning!')
 
     def set_columns_from_sql_layer(self):
         fields = self.tables_columns[self.sql_table.currentText()]
@@ -155,8 +151,6 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         empty_row_between_tables = self.empty_row_between_tables.isChecked()
         page_break_between_tables = self.page_break_between_tables.isChecked()
         from_active_layer = self.from_active_layer.isChecked()
-        if from_active_layer:
-            self.active_layer_warning()
         from_sql_table = self.from_sql_table.isChecked()
         sql_table = self.sql_table.currentText()
         sort_alphabetically = self.sort_alphabetically.isChecked()
@@ -344,7 +338,6 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                  CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
                  value
         """
-
         fields = w_qual_lab_layer.fields()
         nr_of_selected = w_qual_lab_layer.selectedFeatureCount()
 
@@ -356,13 +349,17 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         indexes = {column: fields.indexFromName(column) for column in columns}
 
+        selected_ids = w_qual_lab_layer.selectedFeatureIds()
+        ids = [f for f in w_qual_lab_layer.getFeatures('True') if f.id() in selected_ids]
+
         data = {}
         par_unit_order = []
         invalid_features = 0
         num_features = 0
-        for feature in w_qual_lab_layer.selectedFeatures():
+        for feature in ids: # selectedFeatures():
             if not feature.isValid():
                 invalid_features += 1
+                print("Invalid")
                 continue
 
             attrs = feature.attributes()
