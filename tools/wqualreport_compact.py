@@ -24,12 +24,15 @@ from builtins import range
 from builtins import object
 import codecs
 import os
+import pandas as pd
 from operator import itemgetter
 import time  # for debugging
 from functools import partial
 
 import qgis.PyQt
 import ast
+import io
+import csv
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QUrl, Qt, QDir
 from qgis.PyQt.QtGui import QDesktopServices, QCursor
@@ -62,6 +65,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.manual_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate('CompactWqualReportUi', '(manual)'))
         self.manual_label.setOpenExternalLinks(True)
 
+        """
         def num_decimals(alist):
             try:
                 [float(x.replace(',', '.')) for x in alist]
@@ -72,6 +76,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                                 if len(str(x).replace(',', '.').split('.')) == 2 else None
                                 for x in alist])
             return min_decimals
+        """
 
 
         self.date_time_formats = {'YYYY-MM': '%Y-%m',
@@ -79,11 +84,11 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                                   'YYYY-MM-DD hh': '%Y-%m-%d %H',
                                   'YYYY-MM-DD hh:mm': '%Y-%m-%d %H:%M',
                                   'YYYY-MM-DD hh:mm:ss': '%Y-%m-%d %H:%M:%S'}
-        self.methods = {'concat': lambda x: ', '.join([ru(y) for y in x]),
-                        'avg': lambda x: x[0] if len(x) < 2 else round(sum([float(y) for y in x])/float(len(x)), num_decimals(x)),
-                        'sum': lambda x: x[0] if len(x) < 2 else round(sum([float(y) for y in x]), num_decimals(x)),
-                        'min': lambda x: min([float(y) for y in x]),
-                        'max': lambda x: max([float(y) for y in x])}
+        self.methods = {'concat': lambda x: ', '.join(x),
+                        'mean': lambda x: x.mean() if x.dtype == 'float64' else ', '.join(x),
+                        'sum': lambda x: x.sum() if x.dtype == 'float64' else ', '.join(x),
+                        'min': lambda x: x.min() if x.dtype == 'float64' else ', '.join(x),
+                        'max': lambda x: x.max() if x.dtype == 'float64' else ', '.join(x)}
 
         self.date_time_format.addItems(self.date_time_formats.keys())
         self.method.addItems(self.methods.keys())
@@ -251,13 +256,6 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         #show the user this may take a long time...
         utils.start_waiting_cursor()
 
-        if date_time_as_columns:
-            nr_header_rows = 3
-        else:
-            nr_header_rows = 1
-
-        dateformatter = lambda x: date_utils.datestring_to_date(x).strftime(date_time_format)
-
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
             os.makedirs(reportfolder)
@@ -276,16 +274,22 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
             if not w_qual_lab_layer.selectedFeatureCount():
                 w_qual_lab_layer.selectAll()
-            data, par_unit_order = self.get_data_from_qgislayer(w_qual_lab_layer, dateformatter, data_column)
+            df = self.get_data_from_qgislayer(w_qual_lab_layer, data_column)
         else:
-            data, par_unit_order = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), dateformatter, data_column)
+            df = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), data_column)
 
         if date_time_as_columns:
-            report_data, num_data = self.data_to_printlist(data, par_unit_order, sort_parameters_alphabetically, sort_by_obsid)
+            columns = ['obsid', 'date_time', 'report']
+            rows = ['parunit']
+            values = [data_column]
+            report_data = self.data_to_printlist(df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
         else:
-            report_data, num_data = self.data_to_printlist_dates(data, par_unit_order, sort_parameters_alphabetically, method)
+            columns = ['obsid']
+            rows = ['parunit', 'date_time']
+            values = [data_column]
+            report_data = self.data_to_printlist(df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
 
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
+        #utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
 
         for startcol in range(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
@@ -296,7 +300,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
             self.htmlcols = len(filtered[0])
             self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
-                        page_break_between_tables=page_break_between_tables, nr_header_rows=nr_header_rows)
+                        page_break_between_tables=page_break_between_tables, nr_header_rows=len(columns))
 
         # write some finishing html and close the file
         f.write("\n</body></html>")
@@ -307,7 +311,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
-    def get_data_from_sql(self, table, obsids, dateformatter, data_column):
+    def get_data_from_sql(self, table, obsids, data_column):
         """
 
         :param skip_or_keep_reports_with_parameters: a dict like {'IN': ['par1', 'par2'], 'NOT IN': ['par3', 'par4']}
@@ -316,23 +320,19 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         :param dbconnection:
         :return:
         """
+
         sql = '''SELECT obsid, date_time, report, parameter, unit, %s FROM %s'''%(data_column, table)
         if obsids:
             sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
 
-        rows = db_utils.sql_load_fr_db(sql)[1]
+        dbconnection = db_utils.DbConnectionManager()
+        df = pd.read_sql(con=dbconnection.conn, sql=sql,
+                         parse_dates=['date_time'])
+        dbconnection.closedb()
 
-        data = {}
-        par_unit_order = []
-        for row in rows:
-            par_unit = ', '.join([x for x in [row[3], row[4]] if x])
-            data.setdefault(row[0], {}).setdefault(dateformatter(row[1]), {}).setdefault(row[2], {})[par_unit] = row[5]
-            if par_unit not in par_unit_order:
-                par_unit_order.append(par_unit)
+        return df
 
-        return data, par_unit_order
-
-    def get_data_from_qgislayer(self, w_qual_lab_layer, dateformatter, data_column):
+    def get_data_from_qgislayer(self, w_qual_lab_layer, data_column):
         """
         obsid, date_time, report, {parameter} || ', ' ||
                  CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
@@ -340,7 +340,6 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         """
         fields = w_qual_lab_layer.fields()
         nr_of_selected = w_qual_lab_layer.selectedFeatureCount()
-
         fieldnames = [field.name() for field in fields]
         columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', data_column]
         for column in columns:
@@ -348,77 +347,65 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain column %s'))%column)
 
         indexes = {column: fields.indexFromName(column) for column in columns}
+        features = [f for f in w_qual_lab_layer.getFeatures('True') if f.id() in w_qual_lab_layer.selectedFeatureIds()]
+        file_data = [columns]
+        file_data.extend([[ru(feature.attributes()[indexes['obsid']]),
+                           ru(feature.attributes()[indexes['date_time']]),
+                              ru(feature.attributes()[indexes['report']]),
+                                 ru(feature.attributes()[indexes['parameter']]),
+                                    ru(feature.attributes()[indexes['unit']]),
+                                       ru(feature.attributes()[indexes[data_column]])]
+                     for feature in features
+                     if feature.isValid()])
 
-        selected_ids = w_qual_lab_layer.selectedFeatureIds()
-        ids = [f for f in w_qual_lab_layer.getFeatures('True') if f.id() in selected_ids]
+        df = pd.DataFrame(file_data[1:], columns=file_data[0])
+        df['date_time'] = pd.to_datetime(df['date_time'])
 
-        data = {}
-        par_unit_order = []
-        invalid_features = 0
-        num_features = 0
-        for feature in ids: # selectedFeatures():
-            if not feature.isValid():
-                invalid_features += 1
-                print("Invalid")
-                continue
-
-            attrs = feature.attributes()
-            obsid = attrs[indexes['obsid']]
-            date_time = dateformatter(attrs[indexes['date_time']])
-            report = attrs[indexes['report']]
-            parameter = attrs[indexes['parameter']]
-            unit = attrs[indexes['unit']]
-            value = attrs[indexes[data_column]]
-            par_unit = ', '.join([x for x in [parameter, unit] if x])
-            if par_unit not in par_unit_order:
-                par_unit_order.append(par_unit)
-            data.setdefault(obsid, {}).setdefault(date_time, {}).setdefault(report, {})[par_unit] = value
-            num_features += 1
-
+        num_features = len(file_data) - 1
+        invalid_features = len(features) - num_features
         if invalid_features:
             msgfunc = utils.MessagebarAndLog.warning
         else:
             msgfunc = utils.MessagebarAndLog.info
 
         msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(nr_of_selected), str(num_features), str(invalid_features)))
+        return df
 
-        return data, par_unit_order
+    def data_to_printlist(self, df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format):
+        df['parunit'] = df['parameter'] + ', ' + df['unit'].fillna('')
+        par_unit_order = {val: idx for idx, val in enumerate(df['parunit'].drop_duplicates(keep='first').tolist())}
+        df['par_unit_order'] = df['parunit']
+        df = df.replace({'par_unit_order': par_unit_order})
+        df['date_time'] = df['date_time'].dt.strftime(date_time_format)
+        rows.insert(0, 'par_unit_order')
 
-    def data_to_printlist(self, data, par_unit_order, sort_parameters_alphabetically=True, sort_by_obsid=True):
-        num_data = 0
+        df = pd.pivot_table(df, values=values, index=rows, columns=columns,
+                            aggfunc=method)
+
+        if len(columns) == 3:
+            if sort_by_obsid:
+                    order = ['obsid', 'date_time', 'report']
+            else:
+                    order = ['date_time', 'obsid', 'report']
+        else:
+            order = ['obsid']
+        df = df.sort_index(axis=1, level=order)
 
         if sort_parameters_alphabetically:
-            distinct_parameters = sorted(par_unit_order, key=lambda s: s[0].lower())
+            df = df.sort_index(axis=0, level=[x for x in rows if x != 'par_unit_order'])
         else:
-            distinct_parameters = par_unit_order
+            df = df.sort_index(axis=0, level=[x for x in rows if x != 'parunit'])
 
-        outlist = [['obsid'], ['date_time'], ['report']]
-        outlist.extend([[p] for p in distinct_parameters])
+        #df = df.drop('par_unit_order')
+        df.index = df.index.droplevel(0)
 
-        data_as_list = [(obsid, date_time, report, parameters)
-                        for obsid, date_times in data.items()
-                        for date_time, reports in date_times.items()
-                        for report, parameters in sorted(reports.items())]
+        f = io.StringIO()
+        df.to_csv(f, sep=';', quotechar='"')
+        f.seek(0)
+        reader = csv.reader(f, delimiter=';', quotechar='"')
+        rows = list(reader)[1:]
 
-        if sort_by_obsid:
-            sort_key = lambda s: (s[0].lower(), s[1], s[2])
-        else:
-            sort_key = lambda s: (s[1], s[0], s[2])
-
-        for obsid, date_time, report, parameters in sorted(data_as_list, key=sort_key):
-            outlist[0].append(obsid)
-            outlist[1].append(date_time)
-            outlist[2].append(report)
-
-            for parameterlist in outlist[3:]:
-                if parameterlist[0] in parameters:
-                    value = parameters[parameterlist[0]]
-                    num_data += 1
-                else:
-                    value = ''
-                parameterlist.append(value)
-
-        return outlist, num_data
+        return rows
 
     def data_to_printlist_dates(self, data, par_unit_order, sort_parameters_alphabetically=True, method=None):
         num_data = 0
