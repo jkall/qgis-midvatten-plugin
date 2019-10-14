@@ -121,8 +121,15 @@
       <property name="title">
        <string>Table layout</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Number of data cols</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
         <widget class="QLineEdit" name="num_data_cols">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
@@ -132,14 +139,14 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="label">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Number of data cols</string>
+          <string>Rowheader colwidth %</string>
          </property>
         </widget>
        </item>
-       <item>
+       <item row="1" column="1">
         <widget class="QLineEdit" name="rowheader_colwidth_percent">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
@@ -149,21 +156,14 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Rowheader colwidth %</string>
-         </property>
-        </widget>
-       </item>
-       <item>
+       <item row="2" column="0" colspan="2">
         <widget class="QRadioButton" name="empty_row_between_tables">
          <property name="text">
           <string>Empty row between tables</string>
          </property>
         </widget>
        </item>
-       <item>
+       <item row="3" column="0" colspan="2">
         <widget class="QRadioButton" name="page_break_between_tables">
          <property name="text">
           <string>Page brake between tables</string>
@@ -288,4 +288,3 @@
  <resources/>
  <connections/>
 </ui>
-

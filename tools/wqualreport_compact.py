@@ -25,6 +25,7 @@ from builtins import object
 import codecs
 import os
 import pandas as pd
+import numpy as np
 from operator import itemgetter
 import time  # for debugging
 from functools import partial
@@ -280,24 +281,25 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             columns = ['obsid', 'date_time', 'report']
             rows = ['parunit']
             values = [data_column]
-            report_data = self.data_to_printlist(df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
+            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
         else:
             columns = ['obsid']
             rows = ['parunit', 'date_time']
             values = [data_column]
-            report_data = self.data_to_printlist(df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
+            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
 
         # Split the data into separate tables with the specified number of columns
-        for startcol in range(1, len(report_data[0]), num_data_cols):
-            printlist = [[row[0]] for row in report_data]
+        for startcol in range(len(rows), len(report_data[0]), num_data_cols):
+            printlist = [row[:len(rows)] for row in report_data]
             for rownr, row in enumerate(report_data):
                 printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
 
-            filtered = [row for row in printlist if any(row[1:])]
+            filtered = [row for row in printlist if any(row[len(rows):])]
 
             self.htmlcols = len(filtered[0])
             self.write_html_table(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
-                                  page_break_between_tables=page_break_between_tables, nr_header_rows=len(columns))
+                                  page_break_between_tables=page_break_between_tables, nr_header_rows=len(columns),
+                                  nr_row_header_columns=len(rows))
 
         # write some finishing html and close the file
         f.write("\n</body></html>")
@@ -384,6 +386,8 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         # Drop par_unit_order order
         df.index = df.index.droplevel(0)
 
+        df = df.replace(np.nan, '', regex=True)
+
         index = [list(row) if isinstance(row, tuple) else [row] for row in df.index.values.tolist()]
         columns = [x[1:] for x in df.columns.values.tolist()]
         values = df.values.tolist()
@@ -395,33 +399,35 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         return printlist
 
     def write_html_table(self, ReportData, f, rowheader_colwidth_percent, empty_row_between_tables=False,
-                         page_break_between_tables=False, nr_header_rows=3):
+                         page_break_between_tables=False, nr_header_rows=3, nr_row_header_columns=1):
         rpt = """<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0 PADDING-BOTTOM=0 PADDING=0>"""
         f.write(rpt)
 
-        for counter, sublist in enumerate(ReportData):
-            sublist = ru(sublist, keep_containers=True)
+        for counter, row in enumerate(ReportData):
+            row = ru(row, keep_containers=True)
             try:
                 if counter < nr_header_rows:
-                    rpt = "<tr><TH WIDTH={}%><font size=1>{}</font></th>".format(str(rowheader_colwidth_percent), sublist[0])
+                    rpt = "<tr>"
+                    for idx in range(nr_row_header_columns):
+                        rpt += "<TH WIDTH={}%><font size=1>{}</font></th>".format(str(rowheader_colwidth_percent), row[idx])
 
-                    data_colwidth = (100.0 - float(rowheader_colwidth_percent)) / len(sublist[1:])
+                    data_colwidth = (100.0 - (float(rowheader_colwidth_percent)*nr_row_header_columns)) / len(row[nr_row_header_columns:])
 
                     coltext = "<th width ={colwidth}%><font size=1>{data}</font></th>"
                     rpt += "".join([coltext.format(**{"colwidth": str(data_colwidth),
-                                                      "data": x}) for x in sublist[1:]])
+                                                      "data": x}) for x in row[nr_row_header_columns:]])
 
                     rpt += "</tr>\n"
                 else:
                     rpt = "<tr>"
-                    rpt += """<td align=\"left\"><font size=1>{}</font></td>""".format(sublist[0])
+                    for idx in range(nr_row_header_columns):
+                        rpt += """<td align=\"left\"><font size=1>{}</font></td>""".format(row[idx])
                     coltext = """<td align=\"right\"><font size=1>{}</font></td>"""
-                    rpt += "".join([coltext.format(x) for x in sublist[1:]])
-
+                    rpt += "".join([coltext.format(x) for x in row[nr_row_header_columns:]])
                     rpt += "</tr>\n"
             except:
                 try:
-                    print("here was an error: %s"%sublist)
+                    print("here was an error: %s"%row)
                 except:
                     pass
             f.write(rpt)
@@ -435,6 +441,16 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         #Separate tables:
         if page_break_between_tables:
             f.write("""<p style="page-break-before: always"></p>""")
+
+def isnan(x):
+    if x is None:
+        return True
+    try:
+        answer = np.isnan(x)
+    except TypeError:
+        return False
+    else:
+        return answer
 
 
 def sql_list(alist):
