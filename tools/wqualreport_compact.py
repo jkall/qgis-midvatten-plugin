@@ -17,36 +17,30 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
-from builtins import object
+from __future__ import print_function
+
+import ast
 import codecs
 import os
-import pandas as pd
-import numpy as np
-from operator import itemgetter
-import time  # for debugging
-from functools import partial
-
-import qgis.PyQt
-import ast
-import io
-import csv
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtCore import QUrl, Qt, QDir
-from qgis.PyQt.QtGui import QDesktopServices, QCursor
-from qgis.PyQt.QtWidgets import QApplication
+from builtins import object
+from builtins import range
+from builtins import str
 
 import db_utils
 import gui_utils
+import numpy as np
+import pandas as pd
 import qgis
-# midvatten modules
-import midvatten_utils as utils
-import date_utils
-from midvatten_utils import returnunicode as ru
+import qgis.PyQt
 from midvatten_utils import general_exception_handler
+from midvatten_utils import returnunicode as ru
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QUrl, QDir
+from qgis.PyQt.QtGui import QDesktopServices
+from qgis.PyQt.QtWidgets import QApplication
+
+import midvatten_utils as utils
 
 custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'compact_w_qual_report.ui'))[0]
 
@@ -66,30 +60,17 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.manual_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate('CompactWqualReportUi', '(manual)'))
         self.manual_label.setOpenExternalLinks(True)
 
-        """
-        def num_decimals(alist):
-            try:
-                [float(x.replace(',', '.')) for x in alist]
-            except (TypeError, ValueError):
-                return None
-
-            min_decimals = min([len(str(x).replace(',', '.').split('.')[-1])
-                                if len(str(x).replace(',', '.').split('.')) == 2 else None
-                                for x in alist])
-            return min_decimals
-        """
-
-
         self.date_time_formats = {'YYYY-MM': '%Y-%m',
                                   'YYYY-MM-DD': '%Y-%m-%d',
                                   'YYYY-MM-DD hh': '%Y-%m-%d %H',
                                   'YYYY-MM-DD hh:mm': '%Y-%m-%d %H:%M',
                                   'YYYY-MM-DD hh:mm:ss': '%Y-%m-%d %H:%M:%S'}
-        self.methods = {'concat': lambda x: ', '.join(x),
-                        'mean': lambda x: x.mean() if x.dtype == 'float64' else ', '.join(x),
-                        'sum': lambda x: x.sum() if x.dtype == 'float64' else ', '.join(x),
-                        'min': lambda x: x.min() if x.dtype == 'float64' else ', '.join(x),
-                        'max': lambda x: x.max() if x.dtype == 'float64' else ', '.join(x)}
+
+        self.methods = {'concat': lambda x: ', '.join([ru(y) for y in x.values]),
+                    'avg': lambda x: round(sum([float(y) for y in x.values]) / float(len(x.values)), num_decimals(x.values)) if all([floatable(y) for y in x.values]) else ', '.join([ru(y) for y in x.values]),
+                    'sum': lambda x: round(sum([float(y) for y in x]), num_decimals(x)) if all([floatable(y) for y in x.values]) else ', '.join(x.values),
+                    'min': lambda x: min(x.values),
+                    'max': lambda x: min(x.values)}
 
         self.date_time_format.addItems(self.date_time_formats.keys())
         self.method.addItems(self.methods.keys())
@@ -267,15 +248,20 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         rpt += "<html><body>"
         f.write(rpt)
 
+        if date_time_as_columns:
+            data_columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', data_column]
+        else:
+            data_columns = ['obsid', 'date_time', 'parameter', 'unit', data_column]
+
         if from_active_layer:
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
             if w_qual_lab_layer is None:
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
             if not w_qual_lab_layer.selectedFeatureCount():
                 w_qual_lab_layer.selectAll()
-            df = self.get_data_from_qgislayer(w_qual_lab_layer, data_column)
+            df = self.get_data_from_qgislayer(w_qual_lab_layer, data_columns)
         else:
-            df = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), data_column)
+            df = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), data_columns)
 
         if date_time_as_columns:
             columns = ['obsid', 'date_time', 'report']
@@ -308,7 +294,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
-    def get_data_from_sql(self, table, obsids, data_column):
+    def get_data_from_sql(self, table, obsids, columns):
         """
 
         :param skip_or_keep_reports_with_parameters: a dict like {'IN': ['par1', 'par2'], 'NOT IN': ['par3', 'par4']}
@@ -318,7 +304,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         :return:
         """
 
-        sql = '''SELECT obsid, date_time, report, parameter, unit, %s FROM %s'''%(data_column, table)
+        sql = '''SELECT obsid, date_time, report, parameter, unit, %s FROM %s'''%(', '.join(columns), table)
         if obsids:
             sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
 
@@ -329,15 +315,14 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         return df
 
-    def get_data_from_qgislayer(self, w_qual_lab_layer, data_column):
+    def get_data_from_qgislayer(self, w_qual_lab_layer, columns):
         """
         """
         fields = w_qual_lab_layer.fields()
         fieldnames = [field.name() for field in fields]
-        columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', data_column]
 
         if any([column not in fieldnames for column in columns]):
-                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain column %s'))%column)
+                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain columns %s'))%str(columns))
 
         indexes = {column: fields.indexFromName(column) for column in columns}
         features = [f for f in w_qual_lab_layer.getFeatures('True') if f.id() in w_qual_lab_layer.selectedFeatureIds()]
@@ -455,3 +440,30 @@ def isnan(x):
 
 def sql_list(alist):
     return ', '.join(["'{}'".format(x) for x in alist])
+
+def floatable(anything):
+    if isinstance(anything, (pd.DataFrame, pd.Series)):
+        try:
+            anything.astype('float64')
+        except ValueError as e:
+            return False
+        else:
+            return True
+    else:
+        try:
+            float(anything)
+        except (ValueError, TypeError):
+            return False
+        else:
+            return True
+
+def num_decimals(alist):
+    try:
+        [float(x.replace(',', '.')) for x in alist]
+    except (TypeError, ValueError):
+        return 0
+
+    min_decimals = min([len(str(x).replace(',', '.').split('.')[-1])
+                        if len(str(x).replace(',', '.').split('.')) == 2 else None
+                        for x in alist])
+    return min_decimals if min_decimals is not None else 0
