@@ -22,6 +22,8 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3b2:
         - Sectionplot: Interactive mode for water levels.
+        - Compact water quality report: Added feature to print parameter+unit and date_time as rows.
+        - Interlab4 import: Changed logic for duplicate parameters. The smallest unit is now used as the main parameter (ng/l < µg/l < mg/l).
         Version 1.6.3b1:
         - New feature: Utilities / Load stratigraphy symbology to qgis.
         Version 1.6.2:

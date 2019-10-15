@@ -482,7 +482,12 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                            'g/l Pt': ('mg/l Pt', 1000.0),
                            'mg/l Pt': ('mg/l Pt', 1.0),
                            'µg/l Pt': ('mg/l Pt', 0.001),
-                           'ng/l Pt': ('mg/l Pt', 0.000001)}
+                           'ng/l Pt': ('mg/l Pt', 0.000001),
+                           'g': ('mg', 1000.0),
+                           'mg': ('mg', 1.0),
+                           'µg': ('mg', 0.001),
+                           'ng': ('mg', 0.000001)
+                           }
         return unit_conversion.get(unit, None)
 
 
@@ -506,7 +511,6 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
             splitted = str_value.split('.')
         except:
             return None
-
         if len(splitted) == 0:
             return None
         if len(splitted) == 1:
@@ -557,19 +561,21 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 new_nr_of_decimals = self.number_of_decimals(new_value)
                 existing_nr_of_decimals = self.number_of_decimals(existing_value)
                 if new_nr_of_decimals > existing_nr_of_decimals:
-                    done = True
+                    pass
                 elif new_nr_of_decimals < existing_nr_of_decimals:
                     primary_data = existing_data
                     primary_value = existing_value
                     primary_unit = existing_unit
                     duplicate_data = new_data
-                    done = True
                 else:
-                    # Both have equal length and this comparison fails.
-                    done = False
-
-            if not done:
-                # Compare the float values and use the smallest one
+                    # Both have equal length. Use the smallest value. This is assumed to be the best value.
+                    if existing_value_float < new_value_float:
+                        primary_data = existing_data
+                        primary_value = existing_value
+                        primary_unit = existing_unit
+                        duplicate_data = new_data
+            else:
+                # Compare the unit factors and use the smallest factor which is assumed to be of highest resolution
                 new_unit_factor = self.unitconversion_factor(new_unit)
                 existing_unit_factor = self.unitconversion_factor(existing_unit)
 
@@ -578,7 +584,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     converted_existing_unit, existing_factor = existing_unit_factor
 
                     if converted_new_unit == converted_existing_unit:
-                        if existing_value_float * existing_factor < new_value_float * new_factor:
+                        if existing_factor < new_factor:
                             # Current value is less than previous value, so replace data with new data.
                             primary_data = existing_data
                             primary_value = existing_value
