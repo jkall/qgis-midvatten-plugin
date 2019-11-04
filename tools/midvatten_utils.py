@@ -338,9 +338,14 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
 
 
 def find_layer(layer_name):
-    for name, search_layer in QgsProject.instance().mapLayers().items():
-        if search_layer.name() == layer_name:
-            return search_layer
+    found_layers = [layer for name, layer in QgsProject.instance().mapLayers().items()
+                    if layer.name() == layer_name]
+    if len(found_layers) == 0:
+        raise UsageError(returnunicode(QCoreApplication.translate('find_layer', 'The layer %s was not found!'))%layer_name)
+    elif len(found_layers) > 1:
+        raise UsageError(returnunicode(QCoreApplication.translate('find_layer', 'Found %s layers with the name "%s". There can be only one!'))%(str(len(found_layers)), layer_name))
+    else:
+        return found_layers[0]
 
 
 def get_all_obsids(table='obs_points'):
@@ -366,6 +371,8 @@ def get_selected_features_as_tuple(layername=None):
     """
     if layername is not None:
         obs_points_layer = find_layer(layername)
+        if obs_points_layer is None:
+            return tuple()
         selected_obs_points = getselectedobjectnames(obs_points_layer)
     else:
         selected_obs_points = getselectedobjectnames()
@@ -576,10 +583,13 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
 
 
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
+    if isinstance(allcritical_layers, str):
+        allcritical_layers = (allcritical_layers, )
+
     errorsignal = 0
     if not mset.settingsareloaded:
         mset.loadSettings()
-
+    print("allcritical_layers: " + str(allcritical_layers))
     for layername in allcritical_layers:
         layerexists = find_layer(str(layername))
         if layerexists:
