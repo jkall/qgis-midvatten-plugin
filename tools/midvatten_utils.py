@@ -589,14 +589,19 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
     errorsignal = 0
     if not mset.settingsareloaded:
         mset.loadSettings()
-    print("allcritical_layers: " + str(allcritical_layers))
     for layername in allcritical_layers:
-        layerexists = find_layer(str(layername))
-        if layerexists:
-            if layerexists.isEditable():
-                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', "Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layerexists.name()))
-                #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
-                errorsignal += 1
+        if not layername:
+            continue
+        try:
+            layerexists = find_layer(str(layername))
+        except UsageError:
+            pass
+        else:
+            if layerexists:
+                if layerexists.isEditable():
+                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', "Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layerexists.name()))
+                    #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
+                    errorsignal += 1
 
     if not mset.settingsdict['database']:
         MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', "Error, No database found. Please check your Midvatten Settings. Reset if needed."))
