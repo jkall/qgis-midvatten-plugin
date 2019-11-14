@@ -208,6 +208,13 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , PRIMARY KEY(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );
+CREATE TABLE interlab4_obsid_assignment /*Assign obsids automatically during interlab4 import*/(
+specifik_provplats text NOT NULL --The attribute Specifik Provplats from interlab4 file format.
+, provplatsnamn text NOT NULL --The attribute Provplatsnamn from interlab4 file format.
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
+, PRIMARY KEY(specifik_provplats, provplatsnamn)
+, FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
+);
 SPATIALITE CREATE VIEW obs_p_w_qual_field AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_field AS b using (obsid);
 SPATIALITE CREATE VIEW obs_p_w_qual_lab AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_lab AS b using (obsid);
 SPATIALITE CREATE VIEW obs_p_w_strat AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.h_toc AS h_toc, a.h_gs AS h_gs, a.geometry AS geometry FROM obs_points AS a JOIN stratigraphy AS b using (obsid);

@@ -416,12 +416,16 @@ class ImportTableChooser(VRowEntry):
         tables_columns = self.tables_columns
         file_header = self.file_header
         import_method_name = self.import_method
-        layer = utils.find_layer(import_method_name)
-        if layer is not None:
-            if layer.isEditable():
-                utils.pop_up_info(ru(QCoreApplication.translate('ImportTableChooser', "Layer %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layer.name()), ru(QCoreApplication.translate('GeneralCsvImportGui', "Error")),)
-                self.import_method = ''
-                import_method_name = None
+        try:
+            layer = utils.find_layer(import_method_name)
+        except utils.UsageError:
+            pass
+        else:
+            if layer is not None:
+                if layer.isEditable():
+                    utils.pop_up_info(ru(QCoreApplication.translate('ImportTableChooser', "Layer %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layer.name()), ru(QCoreApplication.translate('GeneralCsvImportGui', "Error")),)
+                    self.import_method = ''
+                    import_method_name = None
 
         self.specific_table_info.setText(defs.specific_table_info.get(import_method_name, ''))
 
