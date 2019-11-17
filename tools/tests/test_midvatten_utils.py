@@ -308,7 +308,7 @@ class TestGeneralExceptionHandler(object):
         assert len(one_arg_args_kwargs('a')[2]) == 0
 
 @attr(status='on')
-class TestContinousColorCycle(object):
+class TestContinuousColorCycle(object):
     def setUp(self):
         perform_all_replacements()
 
@@ -321,8 +321,8 @@ class TestContinousColorCycle(object):
         color_cycle = color_cycler()
 
         used_style_color_combo = set()
-        color_line_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
-        color_marker_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, marker_cycler, used_style_color_combo)
+        color_line_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_marker_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, marker_cycler, used_style_color_combo)
 
 
         res = []
@@ -346,9 +346,9 @@ class TestContinousColorCycle(object):
         color_cycle = color_cycler()
 
         used_style_color_combo = set()
-        color_style_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len, style_cycler, used_style_color_combo)
-        color_line_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
-        color_marker_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, marker_cycler,
+        color_style_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len, style_cycler, used_style_color_combo)
+        color_line_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_marker_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, marker_cycler,
                                                        used_style_color_combo)
 
         res = []
@@ -380,7 +380,7 @@ class TestContinousColorCycle(object):
 
         used_style_color_combo = set()
 
-        color_line_cycle = utils.ContinousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_line_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
 
         res = []
         res.append(dict_to_tuple(next(color_line_cycle)))

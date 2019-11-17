@@ -233,9 +233,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             color_cycler = mpl.rcParams['axes.prop_cycle']
             color_cycle_len = len(color_cycler)
             color_cycle = color_cycler()
-            self.line_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_line_cycle'], self.used_style_color_combo)
-            self.marker_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_marker_cycle'], self.used_style_color_combo)
-            self.line_and_marker_cycler = utils.ContinousColorCycle(color_cycle, color_cycle_len,
+            self.line_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_line_cycle'], self.used_style_color_combo)
+            self.marker_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_marker_cycle'], self.used_style_color_combo)
+            self.line_and_marker_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len,
                                                                     mpl.rcParams['axes.midv_marker_cycle'] * mpl.rcParams['axes.midv_line_cycle'],
                                                                     self.used_style_color_combo)
         else:
