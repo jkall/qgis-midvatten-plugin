@@ -58,7 +58,7 @@ changelog=
         - Water quality report: Fixed error when parameter had "'" in the name.
         - Loggercalibration: Added error message.
         - Loggercalibration: Fix for when logger ts contained nan-values.
-        - ContinousColorCycle: Fix for different numpy versions.
+        - ContinuousColorCycle: Fix for different numpy versions.
         - Loggercalibration: Fixes bug with adjust trend buttons.
         - Loggercalibration: Adjusted "adjust trend" so that it selects x and y values from canvas instead of from database.
                              This makes it possible to adjust trend without measurements.

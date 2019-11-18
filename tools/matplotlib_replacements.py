@@ -66,19 +66,29 @@ def replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_functions():
 
     def apply_func(old_func):
         def use_style_context(self, *args, **kwargs):
+            old_f = getattr(self, old_func)
             if hasattr(self, 'midv_use_style'):
                 mpl.style.reload_library()
                 with plt.style.context(self.midv_use_style):
-                    old_f = getattr(self, old_func)
                     old_f(*args, **kwargs)
             else:
-                getattr(self, old_func)(*args, **kwargs)
+                old_f(*args, **kwargs)
 
         return use_style_context
     for old_func in ['edit_parameters', 'configure_subplots', 'save_figure']:
         new_name = '_midv_old_{}'.format(old_func)
         setattr(NavigationToolbar, new_name, getattr(NavigationToolbar, old_func))
         setattr(NavigationToolbar, old_func, apply_func(new_name))
+
+    _funcs = ['edit_parameters', 'configure_subplots', 'save_figure']
+    for old_func in _funcs:
+        new_name = '_midv_old_{}'.format(old_func)
+        if hasattr(NavigationToolbar, new_name):
+            continue
+        else:
+            setattr(NavigationToolbar, new_name, getattr(NavigationToolbar, old_func))
+            setattr(NavigationToolbar, old_func, apply_func(new_name))
+
 
 def add_to_rc_defaultParams():
     """

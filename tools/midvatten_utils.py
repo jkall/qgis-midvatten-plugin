@@ -2039,7 +2039,7 @@ def dict_to_tuple(adict):
     return tuple([(k, v) for k, v in sorted(adict.items())])
 
 
-class ContinousColorCycle(object):
+class ContinuousColorCycle(object):
     def __init__(self, color_cycle, color_cycle_len, style_cycler, used_style_color_combo):
         self.color_cycle = color_cycle
         self.color_cycle_len = color_cycle_len
