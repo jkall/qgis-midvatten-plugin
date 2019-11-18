@@ -345,17 +345,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def get_plot_data_seismic(self):
         utils.start_waiting_cursor()
         # Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any
-        My_format = [('obsline_x', float), ('obsline_y1', float), ('obsline_y2', float)]
+        My_format = [('obsline_x', float), ('obsline_y1', float), ('obsline_y2', float), ('obsline_y3', float)]
         obsline_x=[]
         obsline_y1=[]  # bedrock
         obsline_y2=[]  # ground surface
+        obsline_y3=[] # gw_table
         x='length'
         self.y1_column='bedrock'
         self.y2_column='ground'
+        self.y3_column='gw_table'
         table='seismic_data'
         if self.sectionlinelayer and self.sectionlinelayer.name()=='obs_lines':
             obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
-            sql = r"""select %s as x, %s as y1, %s as y2 from %s where obsid='%s'"""%(x, self.y1_column,self.y2_column,table,obsline_id)
+            sql = r"""select %s as x, %s as y1, %s as y2, %s as y3 from %s where obsid='%s'"""%(x, self.y1_column,self.y2_column, self.y3_column,table,obsline_id)
             conn_OK, recs = db_utils.sql_load_fr_db(sql, self.dbconnection)
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
@@ -1214,12 +1216,28 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def plot_obs_lines_data(self):
         plotlable = self.get_plot_label_name(self.y1_column, self.labels)
         self.labels.append(self.y1_column)
-        lineplot, = self.axes.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1, picker=2, marker ='None', linestyle ='-', label=plotlable)# PLOT!!
+
+        def remove_nones(xdata, ydata):
+            x_y = [(xdata[idx], row) for idx, row in enumerate(ydata) if not np.isnan(row)]
+            x = [row[0] for row in x_y]
+            y = [row[1] for row in x_y]
+            return x, y
+
+        x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1)
+        print(str(y))
+        lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
         plotlable = self.get_plot_label_name(self.y2_column, self.labels)
         self.labels.append(self.y2_column)
-        lineplot, = self.axes.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, picker=2, marker ='None', linestyle ='-', label=plotlable)# PLOT!!
+        x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2)
+        lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
+        self.p.append(lineplot)
+
+        plotlable = self.get_plot_label_name(self.y3_column, self.labels)
+        self.labels.append(self.y3_column)
+        x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y3)
+        lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
     def plot_water_level(self):   # Adding a plot for each water level date identified
