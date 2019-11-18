@@ -21,6 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.3b4:
+        - List of values from selected features: Now supports int and float columns as well.
         - Database structure: Added a new table "interlab4_obsid_assignment" to assign obsid automatically during interlab4 import.
         - Interlab4: Added support for the new table "interlab4_obsid_assignment" to assign obsid automatically during interlab4 import by checking the new box "Assign obsid using table"
         - GeneralCsvImport: Bug fixes.

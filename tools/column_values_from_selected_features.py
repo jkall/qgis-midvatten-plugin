@@ -96,7 +96,7 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
             nr = len(selected_values)
 
             filter_string = '"{}" IN ({})'.format(self.selected_column,
-                                                ', '.join(["'{}'".format(value.replace("'", "''"))
+                                                ', '.join(["'{}'".format(value.replace("'", "''")) if isinstance(value, str) else str(value)
                                                            for value in selected_values if value is not None]))
 
             nulls = [value for value in selected_values if value is None]
