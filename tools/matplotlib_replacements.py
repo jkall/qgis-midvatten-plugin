@@ -20,6 +20,7 @@
 """
 import six
 import matplotlib as mpl
+import definitions.midvatten_defs as defs
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -96,8 +97,8 @@ def add_to_rc_defaultParams():
 
     :return:
     """
-    params_to_add = {'axes.midv_line_cycle': [cycler('linestyle', ['-', '--', '-.', ':']), rcsetup.validate_cycler],
-                     'axes.midv_marker_cycle': [cycler('marker', ['o', '+', 's', 'x']), rcsetup.validate_cycler],
+    params_to_add = {'axes.midv_line_cycle': [defs.midv_line_cycle(), rcsetup.validate_cycler],
+                     'axes.midv_marker_cycle': [defs.midv_marker_cycle(), rcsetup.validate_cycler],
                      'legend.midv_ncol': [1, rcsetup.validate_int]}
 
     rcsetup.defaultParams.update(params_to_add)
@@ -105,6 +106,7 @@ def add_to_rc_defaultParams():
                     six.iteritems(rcsetup.defaultParams))
     mpl.rcParamsDefault.update({k: v[0] for k, v in params_to_add.items()})
     mpl.rcdefaults()
+
 
 def perform_all_replacements():
     add_to_rc_defaultParams()

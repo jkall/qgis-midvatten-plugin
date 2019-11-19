@@ -23,6 +23,7 @@ from builtins import str
 from collections import OrderedDict
 import os
 import io
+from cycler import cycler
 
 import db_utils
 import midvatten_utils as utils
@@ -928,3 +929,9 @@ def pandas_how_tooltip():
                            'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
                            'See pandas pandas.DataFrame.resample documentation for more info\n'
                            '(though "how" is not explained a lot)'))
+
+def midv_line_cycle():
+    return cycler('linestyle', ['-', '--', '-.', ':', (0, (3, 2, 1, 1, 1, 1))])
+
+def midv_marker_cycle():
+    return cycler('marker', ['o', '+', 's', 'x', "1", "2", "3", "4"])
