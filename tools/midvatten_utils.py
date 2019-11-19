@@ -595,7 +595,12 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         try:
             layerexists = find_layer(str(layername))
         except UsageError:
-            pass
+            errorsignal += 1
+            MessagebarAndLog.warning(bar_msg=returnunicode(
+                QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode',
+                                           "Error layer %s is required but missing!")) % str(
+                layername.name()))
+            errorsignal += 1
         else:
             if layerexists:
                 if layerexists.isEditable():

@@ -200,6 +200,13 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
     def obsid_assignment_using_table(self, ask_obsid_table, existing_obsids, connection_columns):
         remaining_lablitteras_obsids = {}
+        header = [x.lower() for x in ask_obsid_table[0]]
+        try:
+            [header.index(col) for col in connection_columns]
+        except ValueError:
+            #One of the connection columns didn't have a value
+            return remaining_lablitteras_obsids, ask_obsid_table, []
+
         _ask_obsid_table = [ask_obsid_table[0]]
         add_to_table = []
         try:
@@ -207,8 +214,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         except Exception as e:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Error, could not get data from %s.'))%self.obsid_assignment_table,
                                            log_msg=ru(str(e)))
-            return remaining_lablitteras_obsids, ask_obsid_table
-        header = [x.lower() for x in ask_obsid_table[0]]
+            return remaining_lablitteras_obsids, ask_obsid_table, []
+
         connection_dict = {(row[0], row[1]): row[2] for row in connection_table}
         for row in ask_obsid_table[1:]:
             current = (row[header.index(connection_columns[0])], row[header.index(connection_columns[1])])

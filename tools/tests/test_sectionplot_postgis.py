@@ -54,6 +54,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         QgsProject.instance().addMapLayer(self.vlayer)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
+        print(str(feature_ids))
         self.vlayer.selectByIds(feature_ids)
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -65,10 +66,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006))''')
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
+        def _test_plot_section(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -120,10 +123,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
         print(str(self.vlayer.selectedFeatureCount()))
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
+        def _test_plot_section(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -149,10 +154,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
+        def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -174,10 +181,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -202,10 +211,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
+        def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -232,10 +243,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
+        def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -263,10 +276,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -299,10 +314,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -334,10 +351,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-03 00:00:00', '15', '200', '185')''')
         self.create_and_select_vlayer()
 
+        @mock.patch('midvatten_utils.find_layer')
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
             mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0

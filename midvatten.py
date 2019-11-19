@@ -811,12 +811,6 @@ class Midvatten(object):
 
     @utils.general_exception_handler
     def plot_section(self):
-        all_critical_layers=('obs_points')
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
-        if not(err_flag == 0):
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode."))
-            raise utils.UsageError()
-
         selected_layer = qgis.utils.iface.mapCanvas().currentLayer() #MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         if not selected_layer:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one layer and one feature!'), duration=10)
@@ -827,9 +821,7 @@ class Midvatten(object):
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
                                             log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(selected_layer)))
             raise utils.UsageError()
-
         selected_obspoints = None
-
         for feat in selected_layer.getFeatures():
             geom = feat.geometry()
             if geom.wkbType() == QgsWkbTypes.LineString or geom.wkbType() == QgsWkbTypes.MultiLineString:
@@ -837,9 +829,17 @@ class Midvatten(object):
                     utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select only one line feature that defines the section'))
                     raise utils.UsageError()
                 else:
-                    obs_points_layer = utils.find_layer('obs_points')
-                    selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
-                    break
+                    try:
+                        obs_points_layer = utils.find_layer('obs_points')
+                    except utils.UsageError:
+                        utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
+                        break
+                    else:
+                        if obs_points_layer.isEditable():
+                            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is in editing mode! Plotting without observations!"))
+                            break
+                        else:
+                            selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
             else:
                 selected_layer = None
                 #utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", 'Reverting to simple stratigraphy plot. For section plot, you must activate the vector line layer and select exactly one feature that defines the section'))
@@ -847,9 +847,18 @@ class Midvatten(object):
                 # and get a list (selected_obspoints) of selected obs_points
                 selected_obspoints = utils.getselectedobjectnames()  # Finding obsid from currently selected layer
                 if not selected_obspoints:
-                    obs_points_layer = utils.find_layer('obs_points')
-                    selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
-                break
+                    utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "The current layer had no selected obsids. Trying to plot from layer obs_points!"))
+                    try:
+                        obs_points_layer = utils.find_layer('obs_points')
+                    except utils.UsageError:
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
+                        break
+                    else:
+                        if obs_points_layer.isEditable():
+                            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is in editing mode! Plotting without observations!"))
+                            break
+                        else:
+                            selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
 
         if not selected_layer and not selected_obspoints:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one feature!'), duration=10)
@@ -857,8 +866,7 @@ class Midvatten(object):
         elif not selected_layer:
             utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten", 'No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.'), duration=10)
 
-
-        if len(selected_obspoints) > 0:
+        if selected_obspoints is not None and len(selected_obspoints) > 0:
             selected_obspoints = ru(selected_obspoints, keep_containers=True)
         else:
             selected_obspoints = []
