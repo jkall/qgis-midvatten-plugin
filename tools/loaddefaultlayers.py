@@ -70,6 +70,10 @@ class LoadLayers(object):
             d_domain_tables = [x for x in list(tables_columns.keys()) if x.startswith('zz_')]
             add_layers_to_list(layer_list, d_domain_tables, dbconnection=dbconnection)
 
+        elif self.group_name == 'Midvatten_data_tables':
+            data_tables = defs.data_tables()
+            add_layers_to_list(layer_list, data_tables, dbconnection=dbconnection)
+
         w_lvls_last_geom = None
 
         #now loop over all the layers and set styles etc

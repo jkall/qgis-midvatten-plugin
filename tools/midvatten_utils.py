@@ -582,7 +582,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     return text
 
 
-def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
+def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=(''), only_error_if_editing_enabled=True):
     if isinstance(allcritical_layers, str):
         allcritical_layers = (allcritical_layers, )
 
@@ -595,12 +595,13 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         try:
             layerexists = find_layer(str(layername))
         except UsageError:
-            errorsignal += 1
-            MessagebarAndLog.warning(bar_msg=returnunicode(
-                QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode',
-                                           "Error layer %s is required but missing!")) % str(
-                layername))
-            errorsignal += 1
+            if not only_error_if_editing_enabled:
+                errorsignal += 1
+                MessagebarAndLog.warning(bar_msg=returnunicode(
+                    QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode',
+                                               "Error layer %s is required but missing!")) % str(
+                    layername))
+                errorsignal += 1
         else:
             if layerexists:
                 if layerexists.isEditable():

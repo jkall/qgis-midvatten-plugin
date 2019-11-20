@@ -935,3 +935,6 @@ def midv_line_cycle():
 
 def midv_marker_cycle():
     return cycler('marker', ['o', '+', 's', 'x', "1", "2", "3", "4"])
+
+def data_tables():
+    return ['meteo', 'seismic_data', 'vlf_data', 'w_levels_logger']

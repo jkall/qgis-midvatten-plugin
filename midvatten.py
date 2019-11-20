@@ -178,11 +178,15 @@ class Midvatten(object):
         self.actionPrepareFor2Qgis2ThreeJS.triggered.connect(lambda x: self.prepare_layers_for_qgis2threejs())
 
         self.actionloaddatadomains = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
-        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
+        self.actionloaddatadomains.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
         self.actionloaddatadomains.triggered.connect(lambda x: self.load_data_domains())
+
+        self.actionloaddatatables = QAction(QIcon(os.path.join(os.path.dirname(__file__), "icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten", "Load data tables to qgis"), self.iface.mainWindow())
+        self.actionloaddatatables.setWhatsThis(QCoreApplication.translate("Midvatten", "Load the remaining data tables from the database"))
+        self.actionloaddatatables.triggered.connect(lambda x: self.load_data_tables())
         
         self.actionloadstratsymbology = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten","Load stratigraphy symbology to qgis"), self.iface.mainWindow())
-        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load stratiraphy symbology from database"))
+        self.actionloadstratsymbology.setWhatsThis(QCoreApplication.translate("Midvatten","Load stratiraphy symbology from database"))
         self.actionloadstratsymbology.triggered.connect(lambda x: self.load_strat_symbology())
 
         self.actionVacuumDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "vacuum.png")), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
@@ -307,6 +311,7 @@ class Midvatten(object):
         self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionloaddatadomains)
+        self.menu.utils.addAction(self.actionloaddatatables)
         self.menu.utils.addAction(self.actionloadstratsymbology)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         self.menu.utils.addAction(self.actionresetSettings)
@@ -547,7 +552,7 @@ class Midvatten(object):
         :return: Writes to db.
         """
         #TODO: Add all layers here
-        allcritical_layers = ('obs_points', 'obs_lines', 'zz_flowtype', 'staff') #Editing mode is checked when selecting table
+        allcritical_layers = ('obs_points', 'obs_lines', 'zz_flowtype', 'zz_staff') #Editing mode is checked when selecting table
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
@@ -695,10 +700,16 @@ class Midvatten(object):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_domains err_flag: %s'))%str(err_flag))
         if err_flag == 0:
-            d_domain_tables = [str(x) for x in list(db_utils.tables_columns().keys()) if x.startswith('zz_')]
-            err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
-            if err_flag == 0:
-                LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
+            LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
+        utils.stop_waiting_cursor()
+
+    @utils.general_exception_handler
+    def load_data_tables(self):
+        utils.start_waiting_cursor()
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_tables err_flag: %s'))%str(err_flag))
+        if err_flag == 0:
+            LoadLayers(qgis.utils.iface, self.ms.settingsdict, 'Midvatten_data_tables')
         utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
@@ -709,7 +720,6 @@ class Midvatten(object):
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
         else:
             self.strat_symbology = StratSymbology(qgis.utils.iface, self.iface.mainWindow())
-
         utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
