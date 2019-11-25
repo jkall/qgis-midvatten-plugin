@@ -53,7 +53,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         #self.MainWindow.setWindowTitle("Import interlab4 data to w_qual_lab table")
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
-        self.obsid_assignment_table = 'interlab4_obsid_assignment'
+        self.obsid_assignment_table = 'zz_interlab4_obsid_assignment'
 
     def parse_observations_and_populate_gui(self):
         filenames = utils.select_files(only_one_file=False,

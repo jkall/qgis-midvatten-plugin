@@ -208,7 +208,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , PRIMARY KEY(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );
-CREATE TABLE interlab4_obsid_assignment /*Assign obsids automatically during interlab4 import*/(
+CREATE TABLE zz_interlab4_obsid_assignment /*Assign obsids automatically during interlab4 import*/(
 specifik_provplats text NOT NULL --The attribute Specifik Provplats from interlab4 file format.
 , provplatsnamn text NOT NULL --The attribute Provplatsnamn from interlab4 file format.
 , obsid text NOT NULL --Obsid linked to obs_points.obsid

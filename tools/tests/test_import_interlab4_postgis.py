@@ -136,8 +136,8 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
 
-        db_utils.sql_alter_db('''INSERT INTO interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
-        db_utils.sql_alter_db('''INSERT INTO interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo2 vattenverk', 'obsid2')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo2 vattenverk', 'obsid2')''')
 
 
 
@@ -193,8 +193,8 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
 
-        db_utils.sql_alter_db('''INSERT INTO interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
-        db_utils.sql_alter_db('''INSERT INTO interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid2')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid2')''')
 
 
         interlab4_lines = (
@@ -249,7 +249,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
 
-        db_utils.sql_alter_db('''INSERT INTO interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
 
 
         interlab4_lines = (
@@ -295,6 +295,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         print(test_string)
         assert test_string == reference_string
 
-        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM interlab4_obsid_assignment'''))
+        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM zz_interlab4_obsid_assignment'''))
         reference_string = '(True, [(Demo, Demo1 vattenverk, obsid1), (Demo, Demo2 vattenverk, anobsid)])'
         assert test_string == reference_string

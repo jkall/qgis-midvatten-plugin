@@ -228,7 +228,11 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                                                  ('Temperature[°C]', 'temp_degc'),
                                                  ('Conductivity[mS/cm]', 'cond_mscm'),
                                                  ('1:Conductivity[mS/cm]', 'cond_mscm'),
-                                                 ('2:Spec.cond.[mS/cm]', 'cond_mscm')])
+                                                 ('2:Spec.cond.[mS/cm]', 'cond_mscm'),
+                                                 ('Conductivity[ms/cm]', 'cond_mscm'),
+                                                 ('1:Conductivity[ms/cm]', 'cond_mscm'),
+                                                 ('2:Spec.cond.[ms/cm]', 'cond_mscm')
+                                                 ])
 
         filedata = []
         begin_extraction = False
@@ -282,7 +286,6 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         new_header = ['date_time', 'head_cm', 'temp_degc', 'cond_mscm']
         colnrs_to_import = [translated_header.index(x) if x in translated_header else None for x in new_header]
-
         date_col = colnrs_to_import[0]
         filedata.append(new_header)
 

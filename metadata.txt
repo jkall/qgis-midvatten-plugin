@@ -22,6 +22,8 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3b5:
         - New feature: Load data tables to qgis. Loads w_levels_logger, meteo, vlf_data and seismic_data to qgis.
+        - Interlab4: Renambed table "interlab4_obsid_assignment" to "zz_interlab4_obsid_assignment".
+        - Diveroffice Import: Added support for more conductivity headers.
         Version 1.6.3b4:
         - Customplot: Removed midv_*-settings from the matplotlib style to stop the error messages. They are now hard coded in midvatten_defs instead.
         - SectionPlot: Updates for seismic data: Added feature to plot gw tabel. Changed symbology to marker='+' and now plot connected lines.
