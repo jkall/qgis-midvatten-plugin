@@ -834,7 +834,14 @@ class Midvatten(object):
         selected_obspoints = None
         for feat in selected_layer.getFeatures():
             geom = feat.geometry()
-            if geom.wkbType() == QgsWkbTypes.LineString or geom.wkbType() == QgsWkbTypes.MultiLineString:
+            if geom.wkbType() in (QgsWkbTypes.LineString, 2,
+                                  QgsWkbTypes.MultiLineString, 5,
+                                  QgsWkbTypes.LineStringZ, 1002,
+                                  QgsWkbTypes.MultiLineStringZ, 1005,
+                                  QgsWkbTypes.LineStringM, 2002,
+                                  QgsWkbTypes.MultiLineStringM, 2005,
+                                  QgsWkbTypes.LineStringZM, 3002,
+                                  QgsWkbTypes.MultiLineStringZM, 3005):
                 if nrofselected != 1:
                     utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select only one line feature that defines the section'))
                     raise utils.UsageError()
