@@ -77,7 +77,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('Interlab4Import', 'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
+        self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras(), self.ignore_provplatsnamn.isChecked()))
 
         self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('Interlab4Import', 'Instructions')))
         self.help_label.setToolTip(ru(QCoreApplication.translate('Interlab4Import',
@@ -102,7 +102,14 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         self.dump_2_temptable.setChecked(False)
         self.gridLayout_buttons.addWidget(self.dump_2_temptable, 1, 0)
 
-        self.use_obsid_assignment_table = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Assign obsid using table')))
+        self.use_obsid_assignment_table = qgis.PyQt.QtWidgets.QGroupBox(ru(QCoreApplication.translate('Interlab4Import', 'Assign obsid using table')))
+        self.use_obsid_assignment_table.setCheckable(True)
+        self.use_obsid_assignment_table.setLayout(qgis.PyQt.QtWidgets.QVBoxLayout())
+        self.ignore_provplatsnamn = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Ignore provtagningsorsak')))
+        self.ignore_provplatsnamn.setToolTip(ru(QCoreApplication.translate('Interlab4Import', 'If not set, the user is requested for obsid if the metadata "provtagningsorsak" is not empty')))
+        self.use_obsid_assignment_table.layout().addWidget(self.ignore_provplatsnamn)
+        self.ignore_provplatsnamn.setChecked(False)
+
         tables = tables_columns()
         if self.obsid_assignment_table not in tables:
             self.use_obsid_assignment_table.setToolTip(ru(QCoreApplication.translate('Interlab4Import', "(Table %s doesn't exist!) Assign obsid for each lablittera using table '%s'. Only possible if the table exists!")) % (self.obsid_assignment_table, self.obsid_assignment_table))
@@ -121,7 +128,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
     @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
-    def start_import(self, all_lab_results, lablitteras_to_import):
+    def start_import(self, all_lab_results, lablitteras_to_import, ignore_provplatsnamn):
         all_lab_results = copy.deepcopy(all_lab_results)
         all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.items() if lablittera in lablitteras_to_import])
 
@@ -135,7 +142,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         connection_columns = ('specifik provplats', 'provplatsnamn')
         if self.use_obsid_assignment_table.isChecked():
-            remaining_lablitteras_obsids, ask_obsid_table, add_to_table = self.obsid_assignment_using_table(ask_obsid_table, existing_obsids, connection_columns)
+            remaining_lablitteras_obsids, ask_obsid_table, add_to_table = self.obsid_assignment_using_table(ask_obsid_table, existing_obsids, connection_columns,
+                                                                                                            ignore_provplatsnamn)
         else:
             remaining_lablitteras_obsids = {}
 
@@ -198,7 +206,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         utils.stop_waiting_cursor()
 
-    def obsid_assignment_using_table(self, ask_obsid_table, existing_obsids, connection_columns):
+    def obsid_assignment_using_table(self, ask_obsid_table, existing_obsids, connection_columns, ignore_provplatsnamn):
         remaining_lablitteras_obsids = {}
         header = [x.lower() for x in ask_obsid_table[0]]
         try:
@@ -219,16 +227,17 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         connection_dict = {(row[0], row[1]): row[2] for row in connection_table}
         for row in ask_obsid_table[1:]:
             current = (row[header.index(connection_columns[0])], row[header.index(connection_columns[1])])
-            try:
-                idx = header.index('provtagningsorsak')
-            except ValueError:
-                pass
-            else:
-                provtagningsorsak = row[idx].replace('-', '').replace('0', '').strip()
-                # If the field staff has made a comment on the bottles, do not set obsid automatically.
-                if provtagningsorsak:
-                    _ask_obsid_table.append(row)
-                    continue
+            if not ignore_provplatsnamn:
+                try:
+                    idx = header.index('provtagningsorsak')
+                except ValueError:
+                    pass
+                else:
+                    provtagningsorsak = row[idx].replace('-', '').replace('0', '').strip()
+                    # If the field staff has made a comment on the bottles, do not set obsid automatically.
+                    if provtagningsorsak:
+                        _ask_obsid_table.append(row)
+                        continue
             obsid = connection_dict.get(current, None)
             if obsid is None:
                 _ask_obsid_table.append(row)

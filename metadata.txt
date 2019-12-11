@@ -23,6 +23,7 @@ changelog=
         Version 1.6.3b6:
         - Sectionplot: Added support for more linetypes for the profile line.
         - Diveroffice/HOBO-logger/Levelogger import: Added export csv button.
+        - Interlab4 import: Added button to ignore provtagningsorsak.
         Version 1.6.3b5:
         - New feature: Load data tables to qgis. Loads w_levels_logger, meteo, vlf_data and seismic_data to qgis.
         - Interlab4: Renambed table "interlab4_obsid_assignment" to "zz_interlab4_obsid_assignment".
