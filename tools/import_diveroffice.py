@@ -97,9 +97,23 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', 'Start import'))
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
-        self.start_import_button.clicked.connect(lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
+        self.start_import_button.clicked.connect(
+            lambda: self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked,
+                                      confirm_names=self.confirm_names.checked,
+                                      import_all_data=self.import_all_data.checked,
+                                      from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date,
+                                      export_csv=False, import_to_db=True))
 
-        self.gridLayout_buttons.setRowStretch(2, 1)
+        self.export_csv_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', 'Export csv'))
+        self.gridLayout_buttons.addWidget(self.export_csv_button, 2, 0)
+        self.export_csv_button.clicked.connect(
+            lambda: self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked,
+                                      confirm_names=self.confirm_names.checked,
+                                      import_all_data=self.import_all_data.checked,
+                                      from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date,
+                                      export_csv=True, import_to_db=False))
+
+        self.gridLayout_buttons.setRowStretch(3, 1)
 
         self.show()
 
@@ -114,7 +128,8 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
     @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
-    def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None, to_date=None):
+    def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None,
+                     to_date=None, export_csv=False, import_to_db=True):
         """
         """
         utils.start_waiting_cursor()  #show the user this may take a long time...
@@ -193,13 +208,23 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             utils.stop_waiting_cursor()
             return True
 
-        importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import('w_levels_logger', file_to_import_to_db)
+        if import_to_db:
+            importer = import_data_to_db.midv_data_importer()
+            answer = importer.general_import('w_levels_logger', file_to_import_to_db)
+
+        if export_csv:
+            path = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(
+                self, 'Save File', '', 'CSV(*.csv)')
+            if path:
+                path = ru(path[0])
+                utils.write_printlist_to_file(path, file_to_import_to_db)
 
         utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():
             self.close()
+
+
 
     @staticmethod
     def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
