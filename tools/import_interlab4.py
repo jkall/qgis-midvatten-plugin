@@ -77,7 +77,6 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('Interlab4Import', 'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras(), self.ignore_provplatsnamn.isChecked()))
 
         self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('Interlab4Import', 'Instructions')))
         self.help_label.setToolTip(ru(QCoreApplication.translate('Interlab4Import',
@@ -105,10 +104,10 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         self.use_obsid_assignment_table = qgis.PyQt.QtWidgets.QGroupBox(ru(QCoreApplication.translate('Interlab4Import', 'Assign obsid using table')))
         self.use_obsid_assignment_table.setCheckable(True)
         self.use_obsid_assignment_table.setLayout(qgis.PyQt.QtWidgets.QVBoxLayout())
-        self.ignore_provplatsnamn = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Ignore provtagningsorsak')))
-        self.ignore_provplatsnamn.setToolTip(ru(QCoreApplication.translate('Interlab4Import', 'If not set, the user is requested for obsid if the metadata "provtagningsorsak" is not empty')))
-        self.use_obsid_assignment_table.layout().addWidget(self.ignore_provplatsnamn)
-        self.ignore_provplatsnamn.setChecked(False)
+        self.ignore_provtagningsorsak = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Ignore provtagningsorsak')))
+        self.ignore_provtagningsorsak.setToolTip(ru(QCoreApplication.translate('Interlab4Import', 'If not set, the user is requested for obsid if the metadata "provtagningsorsak" is not empty')))
+        self.use_obsid_assignment_table.layout().addWidget(self.ignore_provtagningsorsak)
+        self.ignore_provtagningsorsak.setChecked(False)
 
         tables = tables_columns()
         if self.obsid_assignment_table not in tables:
@@ -124,11 +123,13 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.gridLayout_buttons.setRowStretch(5, 1)
 
+        self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras(), self.ignore_provtagningsorsak.isChecked()))
+
         self.show()
 
     @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
-    def start_import(self, all_lab_results, lablitteras_to_import, ignore_provplatsnamn):
+    def start_import(self, all_lab_results, lablitteras_to_import, ignore_provtagningsorsak):
         all_lab_results = copy.deepcopy(all_lab_results)
         all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.items() if lablittera in lablitteras_to_import])
 
@@ -143,7 +144,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         connection_columns = ('specifik provplats', 'provplatsnamn')
         if self.use_obsid_assignment_table.isChecked():
             remaining_lablitteras_obsids, ask_obsid_table, add_to_table = self.obsid_assignment_using_table(ask_obsid_table, existing_obsids, connection_columns,
-                                                                                                            ignore_provplatsnamn)
+                                                                                                            ignore_provtagningsorsak)
         else:
             remaining_lablitteras_obsids = {}
 
@@ -163,15 +164,16 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     header = answer[0]
                     handled = set()
                     for row in answer[1:]:
-                        try:
-                            idx = header.index('provtagningsorsak')
-                        except ValueError:
-                            pass
-                        else:
-                            provtagningsorsak = row[idx].replace('-', '').replace('0', '').strip()
-                            # If the field staff has made a comment on the bottles, do not set obsid automatically.
-                            if provtagningsorsak:
-                                continue
+                        if not ignore_provtagningsorsak:
+                            try:
+                                idx = header.index('provtagningsorsak')
+                            except ValueError:
+                                pass
+                            else:
+                                provtagningsorsak = row[idx].replace('-', '').replace('0', '').strip()
+                                # If the field staff has made a comment on the bottles, do not set obsid automatically.
+                                if provtagningsorsak:
+                                    continue
 
                         current = (row[header.index(connection_columns[0])], row[header.index(connection_columns[1])])
                         if current in add_to_table and current not in handled:
@@ -206,7 +208,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         utils.stop_waiting_cursor()
 
-    def obsid_assignment_using_table(self, ask_obsid_table, existing_obsids, connection_columns, ignore_provplatsnamn):
+    def obsid_assignment_using_table(self, ask_obsid_table, existing_obsids, connection_columns, ignore_provtagningsorsak):
         remaining_lablitteras_obsids = {}
         header = [x.lower() for x in ask_obsid_table[0]]
         try:
@@ -227,7 +229,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         connection_dict = {(row[0], row[1]): row[2] for row in connection_table}
         for row in ask_obsid_table[1:]:
             current = (row[header.index(connection_columns[0])], row[header.index(connection_columns[1])])
-            if not ignore_provplatsnamn:
+            if not ignore_provtagningsorsak:
                 try:
                     idx = header.index('provtagningsorsak')
                 except ValueError:
