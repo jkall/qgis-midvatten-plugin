@@ -580,7 +580,7 @@ class Midvatten(object):
             if sanity.result == 1:
                 from import_interlab4 import Interlab4Import
                 importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
-                importinstance.parse_observations_and_populate_gui()
+                importinstance.init_gui()
                 if importinstance.status=='True':      #
                     utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:

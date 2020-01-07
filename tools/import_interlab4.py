@@ -36,7 +36,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import import_data_to_db
 import midvatten_utils as utils
 from date_utils import datestring_to_date
-from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
+from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit, get_line
 from midvatten_utils import Cancel, returnunicode as ru
 from db_utils import tables_columns, sql_load_fr_db, sql_alter_db
 
@@ -56,30 +56,28 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         self.status = True
         self.obsid_assignment_table = 'zz_interlab4_obsid_assignment'
 
-    def parse_observations_and_populate_gui(self):
-        filenames = utils.select_files(only_one_file=False,
-                                       extension="lab (*.lab)")
-
-        skip_reports = [str(x[0]) for x in sql_load_fr_db('''SELECT DISTINCT report FROM w_qual_lab;''')[1]]
-
-        self.all_lab_results = self.parse(filenames, skip_reports)
-
+    def init_gui(self):
         splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(splitter)
 
-        self.specific_meta_filter = MetaFilterSelection(self.all_lab_results)
+        self.specific_meta_filter = MetaFilterSelection(None)
 
         splitter.addWidget(self.specific_meta_filter.widget)
 
-        self.metadata_filter = MetadataFilter(self.all_lab_results)
+        self.metadata_filter = MetadataFilter(None)
         splitter.addWidget(self.metadata_filter.widget)
 
         self.metadata_filter.update_selection_button.clicked.connect(lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
-
         self.metadata_filter.buttonSave.clicked.connect(lambda: self.handle_save())
 
+        self.skip_imported_reports = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Skip imported reports')))
+        self.skip_imported_reports.setChecked(True)
+
+        self.select_files_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('Interlab4Import', 'Select files...')))
+        self.select_files_button.clicked.connect(lambda: self.load_files())
+
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('Interlab4Import', 'Start import')))
-        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
+        self.start_import_button.setDisabled(True)
 
         self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('Interlab4Import', 'Instructions')))
         self.help_label.setToolTip(ru(QCoreApplication.translate('Interlab4Import',
@@ -97,12 +95,12 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Close dialog after import')))
         self.close_after_import.setChecked(True)
-        self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
+
 
         self.dump_2_temptable = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Save datatable to csv')))
         self.dump_2_temptable.setToolTip(ru(QCoreApplication.translate('Interlab4Import','save the data table into a csv file, at system temporary path, for examination in another application')))
         self.dump_2_temptable.setChecked(False)
-        self.gridLayout_buttons.addWidget(self.dump_2_temptable, 1, 0)
+
 
         self.use_obsid_assignment_table = qgis.PyQt.QtWidgets.QGroupBox(ru(QCoreApplication.translate('Interlab4Import', 'Assign obsid using table')))
         self.use_obsid_assignment_table.setCheckable(True)
@@ -119,16 +117,36 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         else:
             self.use_obsid_assignment_table.setToolTip(ru(QCoreApplication.translate('Interlab4Import', "Assign obsid for each lablittera using table '%s'."))%self.obsid_assignment_table)
             self.use_obsid_assignment_table.setChecked(True)
-        self.gridLayout_buttons.addWidget(self.use_obsid_assignment_table, 2, 0)
 
-        self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
-        self.gridLayout_buttons.addWidget(self.help_label, 4, 0)
-
-        self.gridLayout_buttons.setRowStretch(5, 1)
+        self.gridLayout_buttons.addWidget(self.skip_imported_reports, 0, 0)
+        self.gridLayout_buttons.addWidget(self.select_files_button, 1, 0)
+        self.gridLayout_buttons.addWidget(get_line(), 2, 0)
+        self.gridLayout_buttons.addWidget(self.close_after_import, 3, 0)
+        self.gridLayout_buttons.addWidget(self.dump_2_temptable, 4, 0)
+        self.gridLayout_buttons.addWidget(self.use_obsid_assignment_table, 5, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 6, 0)
+        self.gridLayout_buttons.addWidget(self.help_label, 7, 0)
+        self.gridLayout_buttons.setRowStretch(8, 1)
 
         self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras(), self.ignore_provtagningsorsak.isChecked()))
 
         self.show()
+
+    @utils.general_exception_handler
+    def load_files(self):
+        filenames = utils.select_files(only_one_file=False,
+                                       extension="lab (*.lab)")
+
+        if self.skip_imported_reports.isChecked():
+            skip_reports = [str(x[0]) for x in sql_load_fr_db('''SELECT DISTINCT report FROM w_qual_lab;''')[1]]
+        else:
+            skip_reports = []
+
+        self.all_lab_results = self.parse(filenames, skip_reports)
+        self.specific_meta_filter.update_combobox(self.all_lab_results)
+        self.metadata_filter.update_table(self.all_lab_results)
+
+        self.start_import_button.setDisabled(False)
 
     @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
@@ -728,11 +746,16 @@ class MetaFilterSelection(VRowEntry):
         super(MetaFilterSelection, self).__init__()
         self.layout.addWidget(qgis.PyQt.QtWidgets.QLabel('Column header'))
         self.combobox = qgis.PyQt.QtWidgets.QComboBox()
-        self.combobox.addItem('')
-        self.combobox.addItems(get_metadata_headers(all_lab_results))
+        if all_lab_results:
+            self.update_combobox(all_lab_results)
         self.layout.addWidget(self.combobox)
         self.items = ExtendedQPlainTextEdit()
         self.layout.addWidget(self.items)
+
+    def update_combobox(self, all_lab_results):
+        self.combobox.clear()
+        self.combobox.addItem('')
+        self.combobox.addItems(get_metadata_headers(all_lab_results))
 
     def get_items_dict(self):
         selected_items = self.items.get_all_data()
@@ -780,8 +803,9 @@ class MetadataFilter(VRowEntry):
 
         self.table_items = {}
 
-        self.update_table(all_lab_results)
-        self.update_nr_of_selected()
+        if all_lab_results:
+            self.update_table(all_lab_results)
+            self.update_nr_of_selected()
         self.layout.addWidget(self.table)
 
 
@@ -890,6 +914,6 @@ def get_metadata_headers(all_lab_results):
         table_header.update(list(metadata.keys()))
 
     sorted_table_header = ['lablittera']
-    sorted_table_header.extend([head for head in table_header if
+    sorted_table_header.extend([head for head in sorted(table_header) if
                                      head not in sorted_table_header])
     return sorted_table_header
