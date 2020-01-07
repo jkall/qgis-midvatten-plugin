@@ -28,6 +28,7 @@ import io
 import os
 import csv
 from datetime import datetime
+import re
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
@@ -59,7 +60,9 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         filenames = utils.select_files(only_one_file=False,
                                        extension="lab (*.lab)")
 
-        self.all_lab_results = self.parse(filenames)
+        skip_reports = [str(x[0]) for x in sql_load_fr_db('''SELECT DISTINCT report FROM w_qual_lab;''')[1]]
+
+        self.all_lab_results = self.parse(filenames, skip_reports)
 
         splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(splitter)
@@ -255,11 +258,14 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         return remaining_lablitteras_obsids, _ask_obsid_table, add_to_table
 
 
-    def parse(self, filenames):
+    def parse(self, filenames, skip_reports=None):
         """ Reads the interlab
         :param filenames:
         :return: A dict like {<lablittera>: {'metadata': {'metadataheader': value, ...}, <par1_name>: {'dataheader': value, ...}}}
         """
+        if skip_reports is None:
+            skip_reports = []
+
         all_lab_results = {}
 
         for filename in filenames:
@@ -317,8 +323,9 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                         continue
 
                     if parse_metadata_values:
-                        metadata = dict([(metadata_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
-                        lab_results.setdefault(metadata['lablittera'], {})['metadata'] = metadata
+                        if str(cols[0]) not in skip_reports:
+                            metadata = dict([(metadata_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
+                            lab_results.setdefault(metadata['lablittera'], {})['metadata'] = metadata
                         continue
 
                     if read_data_header:
@@ -328,40 +335,41 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                         continue
 
                     if parse_data_values:
-                        data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
-                        if 'mätvärdetal' in data:
-                            data['mätvärdetal'] = data['mätvärdetal'].replace(decimalsign, '.')
+                        if str(cols[0]) not in skip_reports:
+                            data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
+                            if 'mätvärdetal' in data:
+                                data['mätvärdetal'] = data['mätvärdetal'].replace(decimalsign, '.')
 
-                        if not 'parameter' in data:
-                            utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s"))%str(cols))
-                            continue
+                            if not 'parameter' in data:
+                                utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s"))%str(cols))
+                                continue
 
-                        if data['lablittera'] not in lab_results:
-                            utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata."))%data['lablittera'])
-                            file_error = True
-                            break
+                            if data['lablittera'] not in lab_results:
+                                utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata."))%data['lablittera'])
+                                file_error = True
+                                break
 
-                        # If two parameter with the same name exists in the report, use the highest resolution one, that is, the one with the lowest value.
-                        existing_data = lab_results[data['lablittera']].get(data['parameter'], None)
-                        if existing_data is not None:
-                            primary_data, _duplicate_data = self.compare_duplicate_parameters(data, existing_data)
+                            # If two parameter with the same name exists in the report, use the highest resolution one, that is, the one with the lowest value.
+                            existing_data = lab_results[data['lablittera']].get(data['parameter'], None)
+                            if existing_data is not None:
+                                primary_data, _duplicate_data = self.compare_duplicate_parameters(data, existing_data)
 
-                            lab_results[data['lablittera']][data['parameter']] = primary_data
+                                lab_results[data['lablittera']][data['parameter']] = primary_data
 
-                            dupl_index = 1
-                            duplicate_parname = _duplicate_data['parameter']
-                            while duplicate_parname in lab_results[data['lablittera']]:
-                                duplicate_translation = 'dubblett' if utils.getcurrentlocale()[0] == 'sv_SE' else 'duplicate'
-                                duplicate_parname = '%s (%s %s)'%(_duplicate_data['parameter'], duplicate_translation, str(dupl_index))
-                                dupl_index += 1
-                            else:
-                                _duplicate_data['parameter'] = duplicate_parname
-                                lab_results[data['lablittera']][_duplicate_data['parameter']] = _duplicate_data
+                                dupl_index = 1
+                                duplicate_parname = _duplicate_data['parameter']
+                                while duplicate_parname in lab_results[data['lablittera']]:
+                                    duplicate_translation = 'dubblett' if utils.getcurrentlocale()[0] == 'sv_SE' else 'duplicate'
+                                    duplicate_parname = '%s (%s %s)'%(_duplicate_data['parameter'], duplicate_translation, str(dupl_index))
+                                    dupl_index += 1
+                                else:
+                                    _duplicate_data['parameter'] = duplicate_parname
+                                    lab_results[data['lablittera']][_duplicate_data['parameter']] = _duplicate_data
 
-                            continue
+                                continue
 
 
-                        lab_results[data['lablittera']][data['parameter']] = data
+                            lab_results[data['lablittera']][data['parameter']] = data
 
                 if not file_error:
                     all_lab_results.update(lab_results)
@@ -791,21 +799,19 @@ class MetadataFilter(VRowEntry):
         nr_of_rows = self.table.rowCount()
         table_header_colnr = dict([(self.table.horizontalHeaderItem(colnr).text(), colnr) for colnr in range(nr_of_cols)])
 
-        """
-        [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in xrange(nr_of_cols)]
-         for header, selectionlist in table_header.iteritems()
-         for rownr in xrange(nr_of_rows)
-         for rexp in selectionlist
-         if re.search(rexp, self.table.item(rownr, table_header_colnr[header]).text())]
-        """
+        [[self.table.item(rownr, colnr).setSelected(True) for colnr in range(nr_of_cols)]
+          for rownr in range(nr_of_rows)
+              for header, selectionlist in table_header.items()
+                  if any([re.search(rexp, self.table.item(rownr, table_header_colnr[header]).text())
+                          for rexp in selectionlist])]
 
         #Select all items for chosen rows.
-
+        """
         [[self.table.item(rownr, colnr).setSelected(True) for colnr in range(nr_of_cols)]
          for header, selectionlist in table_header.items()
          for rownr in range(nr_of_rows)
          if self.table.item(rownr, table_header_colnr[header]).text() in selectionlist]
-
+        """
         #Hide all rows that aren't selected
         [(self.table.hideRow(rownr), self.table.item(rownr, 0).setFlags(qgis.PyQt.QtCore.Qt.NoItemFlags))
          if all([not self.table.item(rownr, 0).isSelected(), self.show_only_selected_checkbox.isChecked()])
