@@ -73,8 +73,9 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
                 importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
-                importer.parse_observations_and_populate_gui()
-                importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
+                importer.init_gui()
+                importer.select_files_button.click()
+                importer.start_import_button.click()
 
             _test(self, filename)
 
@@ -117,8 +118,9 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
                 importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
-                importer.parse_observations_and_populate_gui()
-                importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
+                importer.init_gui()
+                importer.select_files_button.click()
+                importer.start_import_button.click()
 
             _test(self, filename)
 
@@ -175,9 +177,10 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 #mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
                 importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
-                importer.parse_observations_and_populate_gui()
+                importer.init_gui()
+                importer.select_files_button.click()
                 importer.use_obsid_assignment_table.setChecked(True)
-                importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
+                importer.start_import_button.click()
 
             _test(self, filename)
 
@@ -231,9 +234,10 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
                 importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
-                importer.parse_observations_and_populate_gui()
+                importer.init_gui()
+                importer.select_files_button.click()
                 importer.use_obsid_assignment_table.setChecked(True)
-                importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
+                importer.start_import_button.click()
 
             _test(self, filename)
 
@@ -286,9 +290,10 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 mock_not_found_question.return_value.reuse_column = 'obsid'
                 mock_filenames.return_value = [[filename]]
                 importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
-                importer.parse_observations_and_populate_gui()
+                importer.init_gui()
+                importer.select_files_button.click()
                 importer.use_obsid_assignment_table.setChecked(True)
-                importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
+                importer.start_import_button.click()
 
             _test(self, filename)
 
