@@ -276,11 +276,15 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         file_column_index = dict([(file_column, idx) for idx, file_column in enumerate(file_data[0])])
         new_file_data = [new_file_header]
         #The loop "for db_column in sorted(db_columns)" is used for cases where one file column is sent to multiple database columns.
-        try:
-            new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.items()) for db_column in sorted(db_columns)] for rownr, row in enumerate(file_data[1:])])
-        except IndexError as e:
-            raise IndexError(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Import error on row number %s:\n%s'))%(str(rownr + 1), '\n'.join([': '.join(x) for x in zip(file_data[0], row)])))
 
+        # Due to the python3 non-leaking behaviour, this try-except no longer performs the way its intended, so I'm not
+        # using it anymore.
+        #try:
+        res = [[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.items()) for
+                 db_column in sorted(db_columns)] for rownr, row in enumerate(file_data[1:])]
+        #except IndexError as e:
+        #    raise IndexError(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Import error on row number %s:\n%s'))%(str(rownr + 1), '\n'.join([': '.join(x) for x in zip(file_data[0], row)])))
+        new_file_data.extend(res)
         return new_file_data
 
     def add_line(self, layout=None):
