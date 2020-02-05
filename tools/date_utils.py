@@ -24,6 +24,7 @@ import re
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from qgis.PyQt.QtCore import QCoreApplication
+import pytz
 
 def find_date_format(datestring, suppress_error_msg=False):
     """
@@ -242,4 +243,42 @@ def parse_timezone_to_timedelta(tz_string):
     td = datetime.timedelta(hours=hours, minutes=minutes)
     return td
 
+def convert_timezone_for_data(from_name, to_name, data):
+    #from_timezone = get_timezone_from_name
+    # If there is multiple adjustments for each name, for example w_levels with multiple dates,
+    # each value has to be checked against this.
+    # Perhaps convert data into np.array each time for the conversion itself if data is in a list or tuple.
+    # Then extract all dates that are within a period and convert those.
 
+    if isinstance(data, str):
+        return convert_timezone(from_name, to_name, data)
+    elif isinstance(data, np.recarray):
+        pass
+        # Loop through recarray and change values in fastest way possible
+    elif isinstance(data, list):
+        recarray = list_to_recarray(data)
+        return [convert_timezone(from_name, to_name, date_time_str) for date_time_str in data]
+
+
+def convert_timezone(from_timezone, to_timezone, datestring_or_date):
+    if isinstance(datestring_or_date, (str,)):
+        pass
+    return pytz.timezone(from_timezone).localize(adate, is_dst=None).astimezone(to_timezone)
+
+def convert_swe_date_to_utc(adatestring):
+    adate = datestring_to_date(adatestring)
+    swe_tz = pytz.timezone('Europe/Stockholm')
+    local_dt = swe_tz.localize(adate, is_dst=None)
+    utc_dt = local_dt.astimezone(pytz.utc)
+    # utc = pytz.timezone('UTC')
+    # a_date = datestring_to_date(datestring)
+    # diff = utc.localize(a_date) - swe_tz.localize(a_date)
+    # as_date = as_date.replace(tzinfo=None)
+    # as_date = swe_tz.localize(as_date)
+    # as_date = as_date.replace(tzinfo=None)
+    return utc_dt
+
+def convert_swe_local_time_to_normal_time(adatestring):
+    utc_dt = convert_swe_date_to_utc(adatestring)
+    swe_normaltime = utc_dt + datetime.timedelta(hours=1)
+    return swe_normaltime
