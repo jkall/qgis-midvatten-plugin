@@ -3,7 +3,7 @@
 /***************************************************************************
  This part of the Midvatten plugin handles importing of water level measurements
  to the database. Also some calculations and calibrations. 
- 
+
  This part is to a big extent based on QSpatialite plugin.
                              -------------------
         begin                : 2011-10-18
@@ -46,7 +46,7 @@ except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
 import midvatten_utils as utils
-from midvatten_utils import fn_timer, returnunicode as ru
+from midvatten_utils import timer, fn_timer, returnunicode as ru
 from date_utils import dateshift, datestring_to_date, long_dateformat
 import db_utils
 
@@ -158,7 +158,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.setWindowTitle(ru(QCoreApplication.translate('Calibrlogger', "Calculate water level from logger"))) # Set the title for the dialog
         self.INFO.setText(ru(QCoreApplication.translate('Calibrlogger', "Select the observation point with logger data to be adjusted.")))
         self.log_calc_manual.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/4.-Edit-data\">Midvatten manual</a>")
-      
+
         # Create a plot window with one single subplot
         self.calibrplotfigure = plt.figure()
         self.axes = self.calibrplotfigure.add_subplot( 111 )
@@ -170,7 +170,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.show()
 
         self.cid =[]
-                
+
         self.pushButtonSet.clicked.connect(lambda x: self.set_logger_pos())
         self.pushButtonAdd.clicked.connect(lambda x: self.add_to_level_masl())
         self.pushButtonFrom.clicked.connect(lambda x: self.set_from_date_from_x())
@@ -205,15 +205,23 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         return str(self.combobox_obsid.currentText().replace(uncalibrated_str, ''))
 
     @fn_timer
+    def get_all_obsids_in_w_levels_logger(self):
+        return [row[0] for row in db_utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger ORDER BY obsid""")[1]]
+
+    @fn_timer
+    def get_uncalibrated_obsids(self, obsid=None):
+        return [row[0] for row in db_utils.sql_load_fr_db("""SELECT obsid 
+                                                      FROM w_levels_logger 
+                                                      {}
+                                                      GROUP BY obsid HAVING level_masl IS NULL AND head_cm IS NOT NULL 
+                                                      ORDER BY obsid""".format('' if obsid is None
+                                                                                  else "WHERE obsid = '{}' ".format(obsid)))[1]]
+
+    @fn_timer
     def load_obsid_from_db(self):
         self.combobox_obsid.clear()
-        res = db_utils.sql_load_fr_db("""SELECT DISTINCT obsid, (CASE WHEN level_masl IS NULL AND head_cm IS NOT NULL THEN 'uncalibrated' ELSE 'calibrated' END) AS status FROM w_levels_logger ORDER BY obsid""")[1]
-        all_obsids = {}
-        for row in res:
-            all_obsids.setdefault(row[0], []).append(row[1])
-        self.combobox_obsid.addItems(sorted(all_obsids))
-        obsids_with_uncalibrated_data = [_obsid for _obsid, status in all_obsids.items() if 'uncalibrated' in status]
-        self.update_combobox_with_calibration_info(_obsids_with_uncalibrated_data=obsids_with_uncalibrated_data)
+        self.combobox_obsid.addItems(self.get_all_obsids_in_w_levels_logger())
+        self.update_combobox_with_calibration_info(_obsids_with_uncalibrated_data=self.get_uncalibrated_obsids())
 
     @fn_timer
     def update_combobox_with_calibration_info(self, obsid=None, _obsids_with_uncalibrated_data=None):
@@ -235,7 +243,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         num_entries = self.combobox_obsid.count()
 
         if obsid is None and _obsids_with_uncalibrated_data is None:
-            obsids_with_uncalibrated_data = [row[0] for row in db_utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger WHERE level_masl IS NULL""")[1]]
+            obsids_with_uncalibrated_data = self.get_uncalibrated_obsids()
         elif _obsids_with_uncalibrated_data is not None:
             obsids_with_uncalibrated_data = _obsids_with_uncalibrated_data
 
@@ -247,7 +255,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 if current_obsid != obsid:
                     continue
                 if obsids_with_uncalibrated_data is None:
-                    obsids_with_uncalibrated_data = [row[0] for row in db_utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger WHERE obsid = '%s' AND level_masl IS NULL"""%current_obsid)[1]]
+                    obsids_with_uncalibrated_data = self.get_uncalibrated_obsids(current_obsid)
 
             if current_obsid in obsids_with_uncalibrated_data:
                 new_text = current_obsid + uncalibrated_str
@@ -427,10 +435,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def sql_into_recarray(self, sql):
-        """ Converts and runs an sql-string and turns the answer into an np.recarray and returns it""" 
+        """ Converts and runs an sql-string and turns the answer into an np.recarray and returns it"""
         list_of_lists = db_utils.sql_load_fr_db(sql)[1]
         return self.list_of_list_to_recarray(list_of_lists)
-     
+
     @fn_timer
     def list_of_list_to_recarray(self, list_of_lists):
         my_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
@@ -450,13 +458,13 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.calib_help.setText("")
             return
         self.axes.clear()
-        
+
         p=[None]*2 # List for plot objects
-    
+
         # Load manual reading (full time series) for the obsid
         if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts):
             self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15, color='#1f77b4ff')
-        
+
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
             logger_line_style = '.-'
@@ -508,11 +516,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         if time_list is None:
             time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(a_recarray))
         self.plot_the_recarray(axes, time_list, a_recarray, lable, line_style, picker=picker, zorder=zorder, markersize=markersize, color=color)
-        
+
     @fn_timer
     def a_recarray_to_timestring_list(self, a_recarray):
         return [a_recarray.date_time[idx] for idx in range(len(a_recarray))]
-        
+
     @fn_timer
     def timestring_list_to_time_list(self, timestring_list):
         """Get help from function datestr2num to get date and time into float"""
@@ -564,7 +572,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             found_date = num2date(event.mouseevent.xdata)
         date_holder.setDateTime(found_date)
         self.reset_plot_selects_and_calib_help()
-    
+
     @fn_timer
     def reset_plot_selects_and_calib_help(self):
         """ Reset self.cid and self.calib_help """
@@ -605,7 +613,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def catch_old_level(self):
         """Part of adjustment method 3. adjust level_masl by clicking in plot.
         this part selects a line node and a y-position on the plot"""
-        #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.           
+        #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.
         self.load_obsid_and_init()
         self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
@@ -613,7 +621,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Select a logger node.")))
         self.cid.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))
-            
+
     @fn_timer
     def catch_new_level(self):
         """ Part of adjustment method 3. adjust level_masl by clicking in plot.
@@ -631,12 +639,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         this method extracts the head from head_ts with the same date as the line node.
             4. Calculating y-position - head (or level_masl) and setting self.LoggerPos.
             5. Run calibration.
-        """            
+        """
         if self.log_pos is not None and self.y_pos is not None:
             utils.start_waiting_cursor()
 
             logger_ts = self.level_masl_ts
-            
+
             y_pos = self.y_pos
             log_pos = self.log_pos
             self.y_pos = None
@@ -658,7 +666,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 utils.stop_waiting_cursor()
 
         self.pushButtonMpos.setEnabled(False)
-        
+
     @fn_timer
     def set_log_pos_from_node_date_click(self, event):
         """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
@@ -667,7 +675,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Logger node %s selected, click \"new\" and select new level."))%str(found_date))
         self.log_pos = found_date
         self.pushButtonMpos.setEnabled(True)
- 
+
     @fn_timer
     def set_y_pos_from_y_click(self, event):
         """ Sets the self.y_pos variable to the y value of the click event """
@@ -686,7 +694,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def level_masl_best_fit(self):
         self.loggerpos_masl_or_offset_state = 0
         self.calc_best_fit()
-        
+
     @fn_timer
     def calc_best_fit(self):
         """ Calculates the self.LoggerPos from self.meas_ts and self.head_ts
@@ -726,12 +734,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 calib_func(obsid)
 
         utils.stop_waiting_cursor()
-     
+
     @fn_timer
     def match_ts_values(self, meas_ts, logger_ts, search_radius_tuple):
-        """ Matches two timeseries values for shared timesteps 
-        
-            For every measurement point, a mean of logger values inside 
+        """ Matches two timeseries values for shared timesteps
+
+            For every measurement point, a mean of logger values inside
             measurementpoint + x minutes to measurementpoint - x minutes
             is coupled together.
 
@@ -743,11 +751,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             mixed with the chosen logger positioning. (Hard to explain).
         """
         coupled_vals = []
-        
+
         #Get the search radius, default to 10 minutes
         search_radius = int(search_radius_tuple[0])
         search_radius_period = search_radius_tuple[1]
-  
+
         logger_gen = utils.ts_gen(logger_ts)
         try:
             l = next(logger_gen)
@@ -756,7 +764,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         log_vals = []
 
         all_done = False
-        #The .replace(tzinfo=None) is used to remove info about timezone. Needed for the comparisons. This should not be a problem though as the date scale in the plot is based on the dates from the database. 
+        #The .replace(tzinfo=None) is used to remove info about timezone. Needed for the comparisons. This should not be a problem though as the date scale in the plot is based on the dates from the database.
         outer_begin = self.FromDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
         outer_end = self.ToDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
         logger_step = datestring_to_date(l[0]).replace(tzinfo=None)
@@ -792,7 +800,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 except StopIteration:
                     all_done = True
                     break
-                logger_step = datestring_to_date(l[0]).replace(tzinfo=None)                     
+                logger_step = datestring_to_date(l[0]).replace(tzinfo=None)
 
             if log_vals:
                 mean = np.mean(log_vals)
@@ -801,7 +809,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             if all_done:
                 break
         return coupled_vals
-           
+
     @fn_timer
     def get_search_radius(self):
         """ Get the period search radius, default to 10 minutes """

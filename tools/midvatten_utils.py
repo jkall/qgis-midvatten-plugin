@@ -2225,3 +2225,23 @@ class PickAnnotator(object):
                 MessagebarAndLog.info(
                     log_msg=QCoreApplication.translate("PickAnnotator", 'Removing annotation failed, msg: %s.') % str(
                         e))
+
+
+@contextmanager
+class Timer(object):
+    def init(self, name):
+        self.t0 = time.time()
+        self.name = name
+
+    def stop(self):
+        t1 = time.time()
+        MessagebarAndLog.info(log_msg=QCoreApplication.translate("Timer", 'Total time running %s: %s seconds') % (
+            self.name, str(t1 - self.t0)))
+
+@contextmanager
+def timer(name):
+    t0 = time.time()
+    yield
+    t1 = time.time()
+    MessagebarAndLog.info(
+        log_msg=QCoreApplication.translate("timer", 'Total time running %s: %s seconds') % (name, str(t1 - t0)))
