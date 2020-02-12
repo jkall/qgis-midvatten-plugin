@@ -22,7 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3b7:
         - Loggercalibration: Fix to hopefully reduce initialization time (The feature had very long load time in Windows).
-        - Piperplot: Added marker edge to default style.
+        - Piperplot: Added marker edge to default style..
         Version 1.6.3b6:
         - Sectionplot: Added support for more linetypes for the profile line..
         - Diveroffice/HOBO-logger/Levelogger import: Added export csv button.
