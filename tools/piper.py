@@ -362,7 +362,7 @@ class PiperPlot(object):
             self.left_rotated_text.set_rotation(get_rotation(self.left_ax))
 
         if self.right_rotated_text is None:
-            self.right_rotated_text = self.right_ax.text(50, 50, 'SO4 (% meq) =>', ha='center', va='bottom',
+            self.right_rotated_text = self.right_ax.text(50, 50, '<= SO4 (% meq)', ha='center', va='bottom',
                                            rotation_mode='anchor', rotation=-get_rotation(self.right_ax))
         else:
             self.right_rotated_text.set_rotation(-get_rotation(self.right_ax))
