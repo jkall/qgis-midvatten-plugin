@@ -1,8 +1,10 @@
 savefig.dpi: 300
-xtick.labelsize: 10
-ytick.labelsize: 10
-font.size: 12
-legend.fontsize: 12
+axes.labelsize: medium
+axes.titlesize: medium
+xtick.labelsize: medium
+ytick.labelsize: medium
+font.size: 10
+legend.fontsize: small
 figure.figsize: 14,4.5
 figure.subplot.bottom: 0.2
 figure.subplot.hspace: 0.0
@@ -10,6 +12,7 @@ figure.subplot.left: 0.05
 figure.subplot.right: 0.95
 figure.subplot.top: 0.90
 figure.subplot.wspace: 0.4
+figure.titlesize: medium
 lines.markersize: 8
 lines.markeredgecolor: black
 lines.markeredgewidth: 0.5

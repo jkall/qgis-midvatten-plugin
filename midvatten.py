@@ -791,8 +791,8 @@ class Midvatten(object):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if err_flag == 0:
-            piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
-            dlg = piperplot.get_data_and_make_plot()
+            self.piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
+            self.piperplot.get_data_and_make_plot()
 
     @utils.general_exception_handler
     def plot_timeseries(self):

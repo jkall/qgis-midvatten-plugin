@@ -29,6 +29,7 @@ import datetime
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 from definitions.midvatten_defs import piperplot_style
 
 
@@ -41,6 +42,8 @@ class PiperPlot(object):
     def __init__(self,msettings,activelayer):
         self.ms = msettings
         self.activelayer = activelayer
+        self.left_rotated_text = None
+        self.right_rotated_text = None
 
     def get_data_and_make_plot(self):
         self.create_parameter_selection()
@@ -215,7 +218,9 @@ class PiperPlot(object):
             ax1.set_ylim(0,100)
             ax1b.set_ylim(0,100)
             ax1.set_xlabel('<= Ca (% meq)')
-            ax1b.set_ylabel('Mg (% meq) =>')
+            ax1b.set_ylabel('<= Na+K (% meq)')
+            self.left_ax = ax1
+
             plt.setp(ax1, yticklabels=[])
 
             # next two lines needed to reverse x axis:
@@ -247,7 +252,8 @@ class PiperPlot(object):
             plt.xlim(0,100)
             plt.ylim(0,100)
             plt.xlabel('Cl (% meq) =>')
-            plt.ylabel('SO4 (% meq) =>')
+            plt.ylabel('<= CO3+HCO3 (% meq)')
+            self.right_ax = plt.gca()
 
             # CATIONS AND ANIONS COMBINED IN DIAMOND SHAPE PLOT = BOX IN RECTANGULAR COORDINATES
             # 2 lines below needed to create 2nd y-axis (ax1b) for first plt.subplot
@@ -286,7 +292,7 @@ class PiperPlot(object):
             ax2.set_ylim(0,100)
             ax2.set_xlabel('Na+K (% meq) =>')
             ax2.set_ylabel('SO4+Cl (% meq) =>')
-            ax2.set_title('<= Ca+Mg (% meq)', fontsize = 12)
+            ax2.set_title('<= Ca+Mg (% meq)')
             ax2b.set_ylabel('<= CO3+HCO3 (% meq)')
             ax2b.set_ylim(0,100)
             # next two lines needed to reverse 2nd y axis:
@@ -335,4 +341,28 @@ class PiperPlot(object):
             else:    #no legend if no unique markers
                 pass
 
+            self.set_rotated_axes_labels()
+            self.fig = fig
+            self.fig.canvas.mpl_connect('resize_event', self.set_rotated_axes_labels)
+            self.fig.canvas.mpl_connect('draw_event', self.set_rotated_axes_labels)
             fig.show()
+
+    def set_rotated_axes_labels(self, event=None):
+        print("figure_enter_event")
+        def get_rotation(ax):
+            bbox = ax.get_window_extent()
+            width, height = bbox.width, bbox.height
+            return math.degrees(math.atan(height / width))
+
+        if self.left_rotated_text is None:
+            self.left_rotated_text = self.left_ax.text(50, 50, 'Mg (% meq) =>', ha='center', va='bottom',
+                                                       rotation_mode='anchor',
+                                                       rotation=get_rotation(self.left_ax))
+        else:
+            self.left_rotated_text.set_rotation(get_rotation(self.left_ax))
+
+        if self.right_rotated_text is None:
+            self.right_rotated_text = self.right_ax.text(50, 50, 'SO4 (% meq) =>', ha='center', va='bottom',
+                                           rotation_mode='anchor', rotation=-get_rotation(self.right_ax))
+        else:
+            self.right_rotated_text.set_rotation(-get_rotation(self.right_ax))
