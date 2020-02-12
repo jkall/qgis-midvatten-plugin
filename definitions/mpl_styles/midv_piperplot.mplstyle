@@ -11,6 +11,8 @@ figure.subplot.right: 0.95
 figure.subplot.top: 0.90
 figure.subplot.wspace: 0.4
 lines.markersize: 8
+lines.markeredgecolor: black
+lines.markeredgewidth: 0.5
 legend.facecolor: 0.80
 legend.fancybox: True
 legend.handlelength: 1
