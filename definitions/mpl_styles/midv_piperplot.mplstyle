@@ -4,7 +4,6 @@ axes.titlesize: medium
 xtick.labelsize: medium
 ytick.labelsize: medium
 font.size: 10
-legend.fontsize: small
 figure.figsize: 14,4.5
 figure.subplot.bottom: 0.2
 figure.subplot.hspace: 0.0
@@ -22,3 +21,4 @@ legend.handlelength: 1
 legend.loc: lower center
 legend.numpoints: 1
 legend.shadow: False
+legend.fontsize: medium
