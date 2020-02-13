@@ -367,7 +367,6 @@ class PiperPlot(object):
                                   ymin=equilateral_height(hspace), xlim=(0, 100), ylim=(0, 100))
 
             tri1_t = tri1.get_triangle_nodes(axes_step)
-            print(str(tri1_t))
 
             #ax.triplot(tri1_t[0], tri1_t[1] 'k--')
             #ax.scatter(tri1_t[0], tri1_t[1])
@@ -436,7 +435,7 @@ class PiperPlot(object):
             ax.text(*tri1.transform(65, 15), 'Ca type', ha='center', va='center', **shared_axislabels_params)
             ax.text(*tri1.transform(15, 65), 'Mg type', ha='center', va='center', **shared_axislabels_params)
 
-            ax.text(*tri2.transform(50, 65), 'SO4 type', ha='center', va='center', **shared_axislabels_params)
+            ax.text(*tri2.transform(15, 65), 'SO4 type', ha='center', va='center', **shared_axislabels_params)
             ax.text(*tri2.transform(65, 15), 'Cl type', ha='center', va='center', **shared_axislabels_params)
             ax.text(*tri2.transform(15, 15), 'HCO3 type', ha='center', va='center', **shared_axislabels_params)
 
@@ -459,7 +458,6 @@ class PiperPlot(object):
 
             # Data plotting
 
-
             markers = {'type': lambda i: self.markerset[self.typedict[self.obsrecarray.obsid[i]]],
                        'obsid': lambda i: self.markerset[self.obsrecarray.obsid[i]],
                        'obsid but no legend': lambda i: self.markerset[self.obsrecarray.obsid[i]],
@@ -477,10 +475,9 @@ class PiperPlot(object):
                         markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i))
 
             # loop to use different symbol marker for each water type
-            if self.ms.settingsdict['piper_markers']=='type':
-                for i in range(0, nosamples):
-                    plt.plot(*tri2.transform(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])),
-                             markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i))
+            for i in range(0, nosamples):
+                plt.plot(*tri2.transform(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])),
+                         markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i))
 
             # loop to use different symbol marker for each water type
             h=[]
@@ -490,7 +487,6 @@ class PiperPlot(object):
                 h.append(ax.plot(*rhomb.transform(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum),
                                  markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
                                  **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i)))
-
 
             # Legend for Figures, use dummy plt.plots for proxy artist legend
             if self.ms.settingsdict['piper_markers'] in ['type', 'obsid', 'date_time']:
