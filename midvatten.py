@@ -140,6 +140,10 @@ class Midvatten(object):
         self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), QCoreApplication.translate("Midvatten","Piper diagram"), self.iface.mainWindow())
         self.actionPlotPiper.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a rectangular Piper diagram for selected objects"))
         self.actionPlotPiper.triggered.connect(lambda x: self.plot_piper())
+
+        self.actionPlotPiper2 = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), QCoreApplication.translate("Midvatten","Piper diagram version 2"), self.iface.mainWindow())
+        self.actionPlotPiper2.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a Piper diagram for selected objects"))
+        self.actionPlotPiper2.triggered.connect(lambda x: self.plot_piper2())
                 
         self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), QCoreApplication.translate("Midvatten","Custom plots"), self.iface.mainWindow())
         self.actionPlotSQLite.setWhatsThis(QCoreApplication.translate("Midvatten","Create custom plots for your reports"))
@@ -292,6 +296,7 @@ class Midvatten(object):
         self.menu.plot_data_menu.addAction(self.actionPlotSection)
         self.menu.plot_data_menu.addAction(self.actionPlotSQLite)
         self.menu.plot_data_menu.addAction(self.actionPlotPiper)
+        self.menu.plot_data_menu.addAction(self.actionPlotPiper2)
 
         self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
         self.menu.addMenu(self.menu.report_menu)
@@ -791,7 +796,16 @@ class Midvatten(object):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if err_flag == 0:
-            self.piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
+            self.piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer(), version=1)
+            self.piperplot.get_data_and_make_plot()
+
+    @utils.general_exception_handler
+    def plot_piper2(self):
+        allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        if err_flag == 0:
+            self.piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer(), version=2)
             self.piperplot.get_data_and_make_plot()
 
     @utils.general_exception_handler

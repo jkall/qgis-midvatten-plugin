@@ -904,6 +904,9 @@ def custplot_default_style():
 def piperplot_style():
     return os.path.join(os.path.dirname(__file__), 'mpl_styles', 'midv_piperplot.mplstyle')
 
+def piperplot2_style():
+    return os.path.join(os.path.dirname(__file__), 'mpl_styles', 'midv_piperplot2.mplstyle')
+
 
 def pandas_rule_tooltip():
     return ru(QCoreApplication.translate('pandas_rule_tooltip',

@@ -4,7 +4,7 @@ axes.titlesize: medium
 xtick.labelsize: medium
 ytick.labelsize: medium
 font.size: 10
-figure.figsize: 14,4.5
+figure.figsize: 6.4,6.4
 figure.subplot.bottom: 0.2
 figure.subplot.hspace: 0.0
 figure.subplot.left: 0.05
