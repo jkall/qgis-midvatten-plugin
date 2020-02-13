@@ -1,4 +1,5 @@
 figure.figsize: 10,10
+figure.subplot.hspace: 0.05
 figure.subplot.bottom: 0.10
 figure.subplot.left: 0.015
 figure.subplot.right: 0.98

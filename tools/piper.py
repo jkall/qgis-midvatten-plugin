@@ -29,6 +29,7 @@ import datetime
 import itertools
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from matplotlib.backend_bases import MouseButton
 import numpy as np
 import math
 from definitions.midvatten_defs import piperplot_style, piperplot2_style
@@ -52,6 +53,8 @@ class PiperPlot(object):
 
         self.labels_positive_rotation = []
         self.labels_negative_rotation = []
+        self.l1 = None
+        self.l2 = None
 
     def get_data_and_make_plot(self):
 
@@ -329,126 +332,144 @@ class PiperPlot(object):
                 frame = leg.get_frame()  # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_fill(False)  # set the frame face color transparent
 
-            self.set_rotated_axes_labels()
-            self.fig = fig
-            self.fig.canvas.mpl_connect('resize_event', self.set_rotated_axes_labels)
-            self.fig.canvas.mpl_connect('draw_event', self.set_rotated_axes_labels)
             fig.show()
 
     def make_the_plot2(self):
         nosamples = len(self.obsrecarray.obsid) # Determine number of samples in file
-        # Change default settings for figures
 
         with plt.style.context((piperplot2_style())):
-
-            # Make Figure
-            # -------------------------------------------------------------------------------- #
-
             fig=plt.figure()
-
-            # CATIONS
-            # 2 lines below needed to create 2nd y-axis (ax1b) for first plt.subplot
-            plot_size = 1
-
             ax = fig.add_subplot(111)
-            self.ax = ax
-            self.fig = fig
-            # sidan är figsize / hspace/2.
-            hspace = 20
-            self.hspace = hspace
-            side_length = 100
-            self.side_length = side_length
-            axes_step = 20
-            #side_length, hspace, xmin, ymin, xlim, ylim)
-            tri1 = TriangleGraph(side_length=side_length, hspace=hspace, xmin=0, ymin=0, xlim=(100, 0), ylim=(0, 100))
-            tri2 = TriangleGraph(side_length=side_length, hspace=hspace, xmin=side_length + hspace, ymin=0,
+
+            self.side_length = 100
+            hspace = mpl.rcParams['figure.subplot.hspace'] * self.side_length*2
+
+            # Create data transformation objects that handles all the coordinate transformation between piper data
+            #  values and the axes data coordinates.
+            tri1 = TriangleGraph(side_length=self.side_length, hspace=hspace, xmin=0, ymin=0, xlim=(100, 0), ylim=(0, 100))
+            tri2 = TriangleGraph(side_length=self.side_length, hspace=hspace, xmin=self.side_length + hspace, ymin=0,
                                  xlim=(0, 100), ylim=(0, 100))
-            rhomb = RhomboidGraph(side_length=side_length, hspace=hspace, xmin=tri1.xmin+side_length/2+hspace/2,
+            rhomb = RhomboidGraph(side_length=self.side_length, hspace=hspace, xmin=tri1.xmin+self.side_length/2+hspace/2,
                                   ymin=equilateral_height(hspace), xlim=(0, 100), ylim=(0, 100))
 
-            tri1_t = tri1.get_triangle_nodes(axes_step)
-
-            #ax.triplot(tri1_t[0], tri1_t[1] 'k--')
-            #ax.scatter(tri1_t[0], tri1_t[1])
-            #print(str(*tri1.transform([0, 100, 0], [0, 0, 100])))
-
-
-            for axes_edges in [tri1.transform([0, 100, 0, 0], [0, 0, 100, 0]),
-                               tri2.transform([0, 100, 0, 0], [0, 0, 100, 0]),
-                               rhomb.transform([0, 0, 100, 100, 0], [0, 100, 100, 0, 0])]:
-                ax.plot(*axes_edges, color=mpl.rcParams['axes.edgecolor'],
-                        linewidth=mpl.rcParams['axes.linewidth'])
-            inner_linestyle = 'k--'
-            inner_linestyle_kwargs = {'linewidth': mpl.rcParams['grid.linewidth'],
-                                      'alpha': mpl.rcParams['grid.alpha'],
-                                      'zorder': 0}
-
-            #if mpl.rcParams['axes.grid']:
-            #    for l in rhomb.get_grid_lines(axes_step):
-            #        ax.plot(*l, inner_linestyle, **inner_linestyle_kwargs)
-
-            for tri in [tri1, tri2]:
-                inner_triangle = [[50, 50, 0, 50], [0, 50, 50, 0]]
-                ax.plot(*tri.transform(*inner_triangle), inner_linestyle, **inner_linestyle_kwargs)
-
-            # Rhomb inner lines
-            ax.plot(*rhomb.transform([50, 50], [0, 100]), inner_linestyle, **inner_linestyle_kwargs)
-            ax.plot(*rhomb.transform([0, 100], [50, 50]), inner_linestyle, **inner_linestyle_kwargs)
-            ax.plot(*rhomb.transform([0, 100], [10, 10]), inner_linestyle, **inner_linestyle_kwargs)
-            ax.plot(*rhomb.transform([0, 100], [90, 90]), inner_linestyle, **inner_linestyle_kwargs)
-            ax.plot(*rhomb.transform([10, 10], [0, 100]), inner_linestyle, **inner_linestyle_kwargs)
-            ax.plot(*rhomb.transform([90, 90], [0, 100]), inner_linestyle, **inner_linestyle_kwargs)
-
+            # Add virtual axes features like edges and ticklabels.
             labels_zorder = 2
-            shared_ticklabels_params = {'zorder': labels_zorder, 'rotation_mode': 'anchor', 'fontsize': mpl.rcParams['ytick.labelsize']}
+            shared_axislabels_params = {'zorder': labels_zorder, 'rotation_mode': 'anchor', 'fontsize': mpl.rcParams['axes.labelsize']}
+            self.add_axes_edges(ax, tri1, tri2, rhomb)
+            self.add_grid(ax, tri1, tri2, rhomb)
+            self.add_ticklabels(labels_zorder, ax, tri1, tri2, rhomb)
+            self.add_axes_labels(shared_axislabels_params, ax, tri1, tri2, rhomb)
+            self.add_inner_labels(shared_axislabels_params, ax, tri1, tri2, rhomb)
 
-            # Ticklabels
-            ax.text(*tri1.transform(50, 50), '50%', ha='right', va='bottom', **shared_ticklabels_params)
-            self.labels_positive_rotation.append(ax.text(*tri1.transform(-2, 50), '50%', ha='left', va='bottom', **shared_ticklabels_params))
-            self.labels_negative_rotation.append(ax.text(*tri1.transform(50, 0), '50%', ha='left', va='top', **shared_ticklabels_params))
+            self.plot_data(nosamples, ax, tri1, tri2, rhomb)
 
-            self.labels_negative_rotation.append(ax.text(*tri2.transform(-2, 50), '50%', ha='right', va='bottom', **shared_ticklabels_params))
-            ax.text(*tri2.transform(50, 50), '50%', ha='left', va='bottom', **shared_ticklabels_params)
-            self.labels_positive_rotation.append(ax.text(*tri2.transform(50, -2), '50%', ha='right', va='bottom', **shared_ticklabels_params))
+            if self.ms.settingsdict['piper_markers'] in ['type', 'obsid', 'date_time']:
+                self.add_legend(ax)
 
-            # Rhomb ticklabels
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 0), '10', ha='right', va='bottom', **shared_ticklabels_params))
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 0), '90', ha='right', va='bottom', **shared_ticklabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(-2, 10), '10', ha='right', va='bottom', **shared_ticklabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(-2, 90), '90', ha='right', va='bottom', **shared_ticklabels_params))
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 102), '90', ha='left', va='bottom', **shared_ticklabels_params))
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 102), '10', ha='left', va='bottom', **shared_ticklabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(100, 10), '90', ha='left', va='bottom', **shared_ticklabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(100, 90), '10', ha='left', va='bottom', **shared_ticklabels_params))
+            # Turn of the regular grid and the regular axes edges,
+            # ticklabels and so forth so we only see the piper features
+            ax.grid(False)
+            plt.axis('off')
+            ax.margins(mpl.rcParams['axes.xmargin'], mpl.rcParams['axes.ymargin'])
 
-            shared_axislabels_params = {'zorder': labels_zorder, 'rotation_mode': 'anchor','fontsize': mpl.rcParams['axes.labelsize']}
+            fig.canvas.mpl_connect('resize_event', self.set_rotated_axes_labels)
+            fig.canvas.mpl_connect('draw_event', self.set_rotated_axes_labels)
+            fig.canvas.mpl_connect('button_release_event', self.draw_crossing_lines)
+            fig.canvas.mpl_connect('figure_enter_event', self.remove_crossing_lines)
+            self.pa = utils.PickAnnotator(fig, mousebutton='left')
 
-            self.labels_positive_rotation.append(ax.text(*tri1.transform(80, 20), 'Mg (% meq) =>', ha='center', va='bottom', **shared_axislabels_params))
-            self.labels_negative_rotation.append(ax.text(*tri1.transform(0, 20), '<= Na+K (% meq)', ha='center', va='bottom', **shared_axislabels_params))
-            ax.text(*tri1.transform(25, -1), '<= Ca (% meq)', ha='center', va='top', **shared_axislabels_params)
+            # fig and ax probably must be self-variables to keep the matplotlib event connection living.
+            self.fig = fig
+            self.ax = ax
+            self.rhomb = rhomb
+            self.tri1 = tri1
+            self.tri2 = tri2
+            fig.show()
 
-            self.labels_negative_rotation.append(ax.text(*tri2.transform(80, 20), '<= SO4 (% meq) =>', ha='center', va='bottom', **shared_axislabels_params))
-            self.labels_positive_rotation.append(ax.text(*tri2.transform(0, 20), '<= CO3+HCO3 (% meq)', ha='center', va='bottom', **shared_axislabels_params))
-            ax.text(*tri2.transform(25, -1), 'Cl (% meq) =>', ha='center', va='top', **shared_axislabels_params)
+    def add_grid(self, ax, tri1, tri2, rhomb):
+        grid_linestyle = 'k--'
+        grid_linestyle_kwargs = {'linewidth': mpl.rcParams['grid.linewidth'],
+                                 'alpha': mpl.rcParams['grid.alpha'],
+                                 'zorder': 0}
 
-            ax.text(*tri1.transform(15, 15), 'Na type', ha='center', va='center', **shared_axislabels_params)
-            ax.text(*tri1.transform(65, 15), 'Ca type', ha='center', va='center', **shared_axislabels_params)
-            ax.text(*tri1.transform(15, 65), 'Mg type', ha='center', va='center', **shared_axislabels_params)
+        # if mpl.rcParams['axes.grid']:
+        #    for l in rhomb.get_grid_lines(axes_step):
+        #        ax.plot(*l, grid_linestyle, **grid_linestyle_kwargs)
 
-            ax.text(*tri2.transform(15, 65), 'SO4 type', ha='center', va='center', **shared_axislabels_params)
-            ax.text(*tri2.transform(65, 15), 'Cl type', ha='center', va='center', **shared_axislabels_params)
-            ax.text(*tri2.transform(15, 15), 'HCO3 type', ha='center', va='center', **shared_axislabels_params)
+        for tri in [tri1, tri2]:
+            inner_triangle = [[50, 50, 0, 50], [0, 50, 50, 0]]
+            ax.plot(*tri.transform(*inner_triangle), grid_linestyle, **grid_linestyle_kwargs)
 
-            # Rhomb inner labels
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 0), 'CO3+HCO3', ha='center', va='bottom', **shared_axislabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 10), 'CO3+HCO3, SO4+Cl', ha='center', va='bottom', **shared_axislabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 90), 'SO4+Cl, CO3+HCO3', ha='center', va='top', **shared_axislabels_params))
-            self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 100), 'SO4+Cl', ha='center', va='top', **shared_axislabels_params))
+        # Rhomb inner lines
+        ax.plot(*rhomb.transform([50, 50], [0, 100]), grid_linestyle, **grid_linestyle_kwargs)
+        ax.plot(*rhomb.transform([0, 100], [50, 50]), grid_linestyle, **grid_linestyle_kwargs)
+        ax.plot(*rhomb.transform([0, 100], [10, 10]), grid_linestyle, **grid_linestyle_kwargs)
+        ax.plot(*rhomb.transform([0, 100], [90, 90]), grid_linestyle, **grid_linestyle_kwargs)
+        ax.plot(*rhomb.transform([10, 10], [0, 100]), grid_linestyle, **grid_linestyle_kwargs)
+        ax.plot(*rhomb.transform([90, 90], [0, 100]), grid_linestyle, **grid_linestyle_kwargs)
 
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(100, 50), 'Na+K', ha='center', va='bottom', **shared_axislabels_params))
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 50), 'Na+K, Ca+Mg', ha='center', va='bottom', **shared_axislabels_params))
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 50), 'Ca+Mg, Na+K', ha='center', va='top', **shared_axislabels_params))
-            self.labels_positive_rotation.append(ax.text(*rhomb.transform(0, 50), 'Ca+Mg', ha='center', va='top', **shared_axislabels_params))
+    def add_ticklabels(self, labels_zorder, ax, tri1, tri2, rhomb):
+
+        shared_ticklabels_params = {'zorder': labels_zorder, 'rotation_mode': 'anchor',
+                                    'fontsize': mpl.rcParams['ytick.labelsize']}
+        # 50%
+        #ax.text(*tri1.transform(50, 50), '50%', ha='right', va='bottom', **shared_ticklabels_params)
+        #self.labels_positive_rotation.append(ax.text(*tri1.transform(-2, 50), '50%', ha='left', va='bottom', **shared_ticklabels_params))
+        #self.labels_negative_rotation.append(ax.text(*tri1.transform(50, 0), '50%', ha='left', va='top', **shared_ticklabels_params))
+
+        #self.labels_negative_rotation.append(ax.text(*tri2.transform(-2, 50), '50%', ha='right', va='bottom', **shared_ticklabels_params))
+        #ax.text(*tri2.transform(50, 50), '50%', ha='left', va='bottom', **shared_ticklabels_params)
+        #self.labels_positive_rotation.append(ax.text(*tri2.transform(50, -2), '50%', ha='right', va='bottom', **shared_ticklabels_params))
+
+        # Tri1 left side
+        ax.text(*tri1.transform(90, 10), '10%', ha='right', va='bottom', **shared_ticklabels_params)
+        ax.text(*tri1.transform(10, 90), '90%', ha='right', va='bottom', **shared_ticklabels_params)
+        #Tri1 right side
+        self.labels_positive_rotation.append(ax.text(*tri1.transform(0, 10), '90%', ha='left', va='top', **shared_ticklabels_params))
+        self.labels_positive_rotation.append(ax.text(*tri1.transform(0, 90), '10%', ha='left', va='top', **shared_ticklabels_params))
+        #Tri1 bottom
+        self.labels_negative_rotation.append(ax.text(*tri1.transform(10, 0), '10%', ha='left', va='top', **shared_ticklabels_params))
+        self.labels_negative_rotation.append(ax.text(*tri1.transform(90, 0), '90%', ha='left', va='top', **shared_ticklabels_params))
+
+        #Tri2 left side
+        self.labels_negative_rotation.append(ax.text(*tri2.transform(0, 10), '90%', ha='right', va='top', **shared_ticklabels_params))
+        self.labels_negative_rotation.append(ax.text(*tri2.transform(0, 90), '10%', ha='right', va='top', **shared_ticklabels_params))
+        # Tri2 right side
+        ax.text(*tri2.transform(90, 10), '10%', ha='left', va='bottom', **shared_ticklabels_params)
+        ax.text(*tri2.transform(10, 90), '90%', ha='left', va='bottom', **shared_ticklabels_params)
+        #Tri2 bottom
+        self.labels_positive_rotation.append(ax.text(*tri2.transform(10, 0), '10%', ha='right', va='top', **shared_ticklabels_params))
+        self.labels_positive_rotation.append(ax.text(*tri2.transform(90, 0), '90%', ha='right', va='top', **shared_ticklabels_params))
+
+        # Rhomb ticklabels
+        #Bottom left
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 0), '10%', ha='right', va='bottom', **shared_ticklabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 0), '90%', ha='right', va='bottom', **shared_ticklabels_params))
+        #Top left
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(0, 10), '10%', ha='right', va='top', **shared_ticklabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(0, 90), '90%', ha='right', va='top', **shared_ticklabels_params))
+        #Top right
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 100), '90%', ha='left', va='top', **shared_ticklabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 102), '10%', ha='left', va='top', **shared_ticklabels_params))
+        #Bottom right
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(100, 10), '90%', ha='left', va='bottom', **shared_ticklabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(100, 90), '10%', ha='left', va='bottom', **shared_ticklabels_params))
+
+    def add_axes_edges(self, ax, tri1, tri2, rhomb):
+        for axes_edges in [tri1.transform([0, 100, 0, 0], [0, 0, 100, 0]),
+                           tri2.transform([0, 100, 0, 0], [0, 0, 100, 0]),
+                           rhomb.transform([0, 0, 100, 100, 0], [0, 100, 100, 0, 0])]:
+            ax.plot(*axes_edges, color=mpl.rcParams['axes.edgecolor'],
+                    linewidth=mpl.rcParams['axes.linewidth'])
+
+    def add_axes_labels(self, shared_axislabels_params, ax, tri1, tri2, rhomb):
+            self.labels_positive_rotation.append(ax.text(*tri1.transform(50, 50), 'Mg (% meq) =>', ha='center', va='bottom', **shared_axislabels_params))
+            self.labels_negative_rotation.append(ax.text(*tri1.transform(0, 50), 'Na+K (% meq) =>', ha='center', va='bottom', **shared_axislabels_params))
+            ax.text(*tri1.transform(50, -1), '<= Ca (% meq)', ha='center', va='top', **shared_axislabels_params)
+
+            self.labels_negative_rotation.append(ax.text(*tri2.transform(50, 50), '<= SO4 (% meq)', ha='center', va='bottom', **shared_axislabels_params))
+            self.labels_positive_rotation.append(ax.text(*tri2.transform(0, 50), '<= CO3+HCO3 (% meq)', ha='center', va='bottom', **shared_axislabels_params))
+            ax.text(*tri2.transform(50, -1), 'Cl (% meq) =>', ha='center', va='top', **shared_axislabels_params)
 
             # Rhomb axes labels
             self.labels_positive_rotation.append(ax.text(*rhomb.transform(101, 50), '<= CO3+HCO3 (% meq)', ha='center', va='top', **shared_axislabels_params))
@@ -456,66 +477,75 @@ class PiperPlot(object):
             self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, -1), 'Na+K (% meq) =>', ha='center', va='top', **shared_axislabels_params))
             self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 101), '<= Ca+Mg (% meq)', ha='center', va='bottom', **shared_axislabels_params))
 
-            # Data plotting
+    def add_inner_labels(self, shared_axislabels_params, ax, tri1, tri2, rhomb):
+        ax.text(*tri1.transform(15, 15), 'Na type', ha='center', va='center', **shared_axislabels_params)
+        ax.text(*tri1.transform(65, 15), 'Ca type', ha='center', va='center', **shared_axislabels_params)
+        ax.text(*tri1.transform(15, 65), 'Mg type', ha='center', va='center', **shared_axislabels_params)
 
-            markers = {'type': lambda i: self.markerset[self.typedict[self.obsrecarray.obsid[i]]],
+        ax.text(*tri2.transform(15, 65), 'SO4 type', ha='center', va='center', **shared_axislabels_params)
+        ax.text(*tri2.transform(65, 15), 'Cl type', ha='center', va='center', **shared_axislabels_params)
+        ax.text(*tri2.transform(15, 15), 'HCO3 type', ha='center', va='center', **shared_axislabels_params)
+
+        # Rhomb inner labels
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 0), 'CO3+HCO3', ha='center', va='bottom', **shared_axislabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 10), 'CO3+HCO3, SO4+Cl', ha='center', va='bottom', **shared_axislabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 90), 'SO4+Cl, CO3+HCO3', ha='center', va='top', **shared_axislabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 100), 'SO4+Cl', ha='center', va='top', **shared_axislabels_params))
+
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(100, 50), 'Na+K', ha='center', va='bottom', **shared_axislabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 50), 'Na+K, Ca+Mg', ha='center', va='bottom', **shared_axislabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 50), 'Ca+Mg, Na+K', ha='center', va='top', **shared_axislabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(0, 50), 'Ca+Mg', ha='center', va='top', **shared_axislabels_params))
+
+    def add_legend(self, ax):
+        distinct = set()
+        line_label = []
+        for idx, line in enumerate(ax.lines):
+            label = line.get_label()
+            if label not in distinct:
+                line_label.append((line, label))
+                distinct.add(label)
+
+        leg = ax.legend(*zip(*line_label), ncol=4)
+        try:
+            leg.set_draggable(state=True)
+        except AttributeError:
+            # For older version of matplotlib
+            leg.draggable(state=True)
+        frame = leg.get_frame()  # the matplotlib.patches.Rectangle instance surrounding the legend
+        frame.set_fill(False)  # set the frame face color transparent
+
+    def plot_data(self, nosamples, ax, tri1, tri2, rhomb):
+        markers = {'type': lambda i: self.markerset[self.typedict[self.obsrecarray.obsid[i]]],
                        'obsid': lambda i: self.markerset[self.obsrecarray.obsid[i]],
                        'obsid but no legend': lambda i: self.markerset[self.obsrecarray.obsid[i]],
                        'date_time': lambda i: self.markerset[self.obsrecarray.date_time[i]]}
 
-            _labels = {'type': lambda i: {'label': self.typedict[self.obsrecarray.obsid[i]]},
-                       'obsid': lambda i:  {'label': self.obsrecarray.obsid[i]},
-                       'obsid but no legend': lambda i:  {'label': self.obsrecarray.obsid[i]},
-                       'date_time': lambda i:  {'label': self.obsrecarray.date_time[i]}}
-            default_marker = lambda i: 'ko'
+        _labels = {'type': lambda i: {'label': self.typedict[self.obsrecarray.obsid[i]]},
+                   'obsid': lambda i:  {'label': self.obsrecarray.obsid[i]},
+                   'obsid but no legend': lambda i:  {'label': self.obsrecarray.obsid[i]},
+                   'date_time': lambda i:  {'label': self.obsrecarray.date_time[i]}}
+        default_marker = lambda i: 'ko'
 
-            # loop to use different symbol marker for each water type ("loop through samples and add one plt.plot per sample")
-            for i in range(0, nosamples):
-                ax.plot(*tri1.transform(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i])),
-                        markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i))
+        for i in range(0, nosamples):
+            ax.plot(*tri1.transform(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i])),
+                    markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
+                    **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i),
+                    picker=2)
 
-            # loop to use different symbol marker for each water type
-            for i in range(0, nosamples):
-                plt.plot(*tri2.transform(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])),
-                         markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i))
+        for i in range(0, nosamples):
+            plt.plot(*tri2.transform(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])),
+                     markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
+                     **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i),
+                     picker=2)
 
-            # loop to use different symbol marker for each water type
-            h=[]
-            for i in range(0, nosamples):
-                catsum = (self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i])
-                ansum = (self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])
-                h.append(ax.plot(*rhomb.transform(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum),
-                                 markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
-                                 **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i)))
-
-            # Legend for Figures, use dummy plt.plots for proxy artist legend
-            if self.ms.settingsdict['piper_markers'] in ['type', 'obsid', 'date_time']:
-                distinct = set()
-                line_label = []
-                for idx, line in enumerate(ax.lines):
-                    label = line.get_label()
-                    if label not in distinct:
-                        line_label.append((line, label))
-                        distinct.add(label)
-
-                leg = ax.legend(*zip(*line_label), ncol=4)
-                try:
-                    leg.set_draggable(state=True)
-                except AttributeError:
-                    # For older version of matplotlib
-                    leg.draggable(state=True)
-                frame = leg.get_frame()  # the matplotlib.patches.Rectangle instance surrounding the legend
-                frame.set_fill(False)  # set the frame face color transparent
-
-            ax.grid(False)
-            plt.axis('off')
-            ax.margins(mpl.rcParams['axes.xmargin'], mpl.rcParams['axes.ymargin'])
-
-            self.fig.canvas.mpl_connect('resize_event', self.set_rotated_axes_labels)
-            self.fig.canvas.mpl_connect('draw_event', self.set_rotated_axes_labels)
-
-            fig.show()
-
+        h=[]
+        for i in range(0, nosamples):
+            catsum = (self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i])
+            ansum = (self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])
+            h.append(ax.plot(*rhomb.transform(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum),
+                             markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
+                             **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i), picker=2))
 
     def set_rotated_axes_labels(self, event=None):
         for l in self.labels_positive_rotation:
@@ -523,6 +553,49 @@ class PiperPlot(object):
 
         for l in self.labels_negative_rotation:
             l.set_rotation(-get_rotation(self.ax, self.side_length))
+
+    def draw_crossing_lines(self, event):
+        if event.button != MouseButton.RIGHT:
+            return
+
+        x = event.xdata
+        y = event.ydata
+
+        y0 = 0
+        _x = math.tan(math.radians(30)) * y
+        x0 = x - _x
+
+        y1 = 0
+        x1 = x + _x
+
+        if self.l1 is None:
+            self.l1 = self.ax.plot([x0, x], [y0, y], 'r:', linewidth=2)[0]
+        else:
+            self.l1.set_data([x0, x], [y0, y])
+
+        if self.l2 is None:
+            self.l2 = self.ax.plot([x, x1], [y, y1], 'r:', linewidth=2)[0]
+        else:
+            self.l2.set_data([x, x1], [y, y1])
+
+        self.fig.canvas.draw_idle()
+
+    def remove_crossing_lines(self, event):
+        if isinstance(self.l1, mpl.lines.Line2D):
+            try:
+                self.l1.remove()
+                self.l1 = None
+            except:
+                pass
+        if isinstance(self.l2, mpl.lines.Line2D):
+            try:
+                self.l2.remove()
+                self.l2 = None
+            except:
+                pass
+
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
 
 
 class TriangleGraph(object):
@@ -535,7 +608,6 @@ class TriangleGraph(object):
         self.ymax = ymin + equilateral_height(hspace)
         self.xlim = xlim
         self.ylim = ylim
-        self.reverse_x_factor = 1 if self.xlim[0] > self.xlim[1] else 1
 
     def transform(self, x, y):
         if isinstance(x, (list, tuple)):
@@ -545,8 +617,12 @@ class TriangleGraph(object):
 
     def _transform(self, x, y):
         transformed_y = self.ymin + equilateral_height(self.side_length * ((y / (self.ylim[1] - self.ylim[0]))))
-        transformed_x = self.xmin + self.side_length * ((x + self.reverse_x_factor*(y/2) - self.xlim[0]) / (self.xlim[1] - self.xlim[0]))
+        transformed_x = self.xmin + self.side_length * ((x + (y/2) - self.xlim[0]) / (self.xlim[1] - self.xlim[0]))
         return transformed_x, transformed_y
+
+    def to_piper_coords(self, transformed_x, transformed_y):
+        y = self.ylim[1]((((transformed_y - self.ymin)/math.sin(math.radians(60))) + self.ylim[0])/self.side_length)
+        x = ((transformed_x - self.xmin)/self.side_length) * (self.xlim[1] - self.xlim[0]) - y/2 + self.xlim[0]
 
     def get_triangle_nodes(self, step):
         x_s = []
@@ -560,7 +636,6 @@ class TriangleGraph(object):
         x = np.asarray(x_s)
         y = np.asarray(y_s)
         return x, y
-
 
 
 class RhomboidGraph(object):
@@ -600,15 +675,10 @@ class RhomboidGraph(object):
 
         return lines
 
+
 def equilateral_height(side_length):
     """height of equilateral triangle"""
     return math.sin(math.radians(60))*side_length
-
-
-def _get_rotation(ax):
-    bbox = ax.get_window_extent()
-    width, height = bbox.width, bbox.height
-    return math.degrees(math.atan(height / width))
 
 def get_rotation(ax, side_length):
     #height = hspace + 2*equilateral_height(side_length)

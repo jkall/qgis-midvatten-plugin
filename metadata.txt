@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3b8:
         - Piperplot: Restored old piperplot and added a new version..
+        - Piperplot: Added pick-events and mouse press events to new version.
         Version 1.6.3b7:
         - Loggercalibration: Fix to hopefully reduce initialization time (The feature had very long load time in Windows).
         - Piperplot: Added marker edge to default style..
