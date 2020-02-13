@@ -1,16 +1,17 @@
+figure.figsize: 10,10
+figure.subplot.bottom: 0.10
+figure.subplot.left: 0.015
+figure.subplot.right: 0.98
+figure.subplot.top: 0.985
 savefig.dpi: 300
-axes.labelsize: medium
+axes.labelsize: small
 axes.titlesize: medium
-xtick.labelsize: medium
-ytick.labelsize: medium
+axes.grid: True
+axes.xmargin: 0
+axes.ymargin: 0
+xtick.labelsize: small
+ytick.labelsize: small
 font.size: 10
-figure.figsize: 6.4,6.4
-figure.subplot.bottom: 0.2
-figure.subplot.hspace: 0.0
-figure.subplot.left: 0.05
-figure.subplot.right: 0.95
-figure.subplot.top: 0.90
-figure.subplot.wspace: 0.4
 figure.titlesize: medium
 lines.markersize: 8
 lines.markeredgecolor: black
@@ -18,8 +19,12 @@ lines.markeredgewidth: 0.5
 legend.facecolor: 0.80
 legend.fancybox: True
 legend.handlelength: 1
-legend.loc: lower center
+legend.loc: best
 legend.numpoints: 1
 legend.shadow: False
-legend.fontsize: medium
-axes.grid: True
+legend.fontsize: small
+legend.borderpad     : 0.4      ## border whitespace
+legend.labelspacing  : 0.3      ## the vertical space between the legend entries
+legend.handletextpad : 0.5      ## the space between the legend line and legend text
+legend.columnspacing : 0.5      ## column separation
+grid.linewidth: 0.5
