@@ -438,13 +438,13 @@ class PiperPlot(object):
             self.labels_negative_rotation.append(ax.text(*tri1.transform(0, 20), '<= Na+K (% meq)', ha='center', va='bottom', rotation=-get_rotation(ax, side_length), **shared_label_params))
             ax.text(*tri1.transform(80, 0), '<= Ca (% meq)', ha='center', va='top', **shared_label_params)
 
-            ax.text(*tri1.transform(20, 10), 'Na type', **shared_label_params)
-            ax.text(*tri1.transform(80, 10), 'Ca type', **shared_label_params)
-            ax.text(*tri1.transform(10, 80), 'Mg type', **shared_label_params)
+            ax.text(*tri1.transform(15, 15), 'Na type', ha='center', va='center', **shared_label_params)
+            ax.text(*tri1.transform(65, 15), 'Ca type', ha='center', va='center', **shared_label_params)
+            ax.text(*tri1.transform(15, 65), 'Mg type', ha='center', va='center', **shared_label_params)
 
-            ax.text(*tri2.transform(20, 10), 'SO4 type', **shared_label_params)
-            ax.text(*tri2.transform(80, 10), 'Cl type', **shared_label_params)
-            ax.text(*tri2.transform(10, 80), 'HCO3 type', **shared_label_params)
+            ax.text(*tri2.transform(15, 65), 'SO4 type', ha='center', va='center', **shared_label_params)
+            ax.text(*tri2.transform(65, 15), 'Cl type', ha='center', va='center', **shared_label_params)
+            ax.text(*tri2.transform(15, 15), 'HCO3 type', ha='center', va='center', **shared_label_params)
 
             # loop to use different symbol marker for each water type ("loop through samples and add one plt.plot per sample")
             if self.ms.settingsdict['piper_markers']=='type':
