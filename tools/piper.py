@@ -27,6 +27,7 @@ from builtins import object
 
 import datetime
 import itertools
+from operator import sub
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.backend_bases import MouseButton
@@ -450,7 +451,7 @@ class PiperPlot(object):
         self.labels_negative_rotation.append(ax.text(*rhomb.transform(0, 90), '90%', ha='right', va='top', **shared_ticklabels_params))
         #Top right
         self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 100), '90%', ha='left', va='top', **shared_ticklabels_params))
-        self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 102), '10%', ha='left', va='top', **shared_ticklabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 100), '10%', ha='left', va='top', **shared_ticklabels_params))
         #Bottom right
         self.labels_negative_rotation.append(ax.text(*rhomb.transform(100, 10), '90%', ha='left', va='bottom', **shared_ticklabels_params))
         self.labels_negative_rotation.append(ax.text(*rhomb.transform(100, 90), '10%', ha='left', va='bottom', **shared_ticklabels_params))
@@ -489,13 +490,13 @@ class PiperPlot(object):
         # Rhomb inner labels
         self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 0), 'CO3+HCO3', ha='center', va='bottom', **shared_axislabels_params))
         self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 10), 'CO3+HCO3, SO4+Cl', ha='center', va='bottom', **shared_axislabels_params))
-        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 90), 'SO4+Cl, CO3+HCO3', ha='center', va='top', **shared_axislabels_params))
-        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 100), 'SO4+Cl', ha='center', va='top', **shared_axislabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 89), 'SO4+Cl, CO3+HCO3', ha='center', va='top', **shared_axislabels_params))
+        self.labels_negative_rotation.append(ax.text(*rhomb.transform(50, 99), 'SO4+Cl', ha='center', va='top', **shared_axislabels_params))
 
         self.labels_positive_rotation.append(ax.text(*rhomb.transform(100, 50), 'Na+K', ha='center', va='bottom', **shared_axislabels_params))
         self.labels_positive_rotation.append(ax.text(*rhomb.transform(90, 50), 'Na+K, Ca+Mg', ha='center', va='bottom', **shared_axislabels_params))
-        self.labels_positive_rotation.append(ax.text(*rhomb.transform(10, 50), 'Ca+Mg, Na+K', ha='center', va='top', **shared_axislabels_params))
-        self.labels_positive_rotation.append(ax.text(*rhomb.transform(0, 50), 'Ca+Mg', ha='center', va='top', **shared_axislabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(11, 50), 'Ca+Mg, Na+K', ha='center', va='top', **shared_axislabels_params))
+        self.labels_positive_rotation.append(ax.text(*rhomb.transform(1, 50), 'Ca+Mg', ha='center', va='top', **shared_axislabels_params))
 
     def add_legend(self, ax):
         distinct = set()
@@ -681,12 +682,23 @@ def equilateral_height(side_length):
     return math.sin(math.radians(60))*side_length
 
 def get_rotation(ax, side_length):
-    #height = hspace + 2*equilateral_height(side_length)
-    #width = side_length + 0.5*hspace
-    bbox = ax.get_window_extent()
-    width, height = bbox.width, bbox.height
-    axes_ratio = height / equilateral_height(width)
-    # Det är inte höjden jag ska gå på ovan, utan equlateral height
-    height = equilateral_height(side_length)*axes_ratio
-    width = side_length/2
-    return math.degrees(math.atan(height / width))
+    xlim = sub(*ax.get_xlim())
+    return math.degrees(math.atan(((equilateral_height(xlim)*get_aspect(ax)) / (xlim/2))))
+
+def get_aspect(ax):
+    """
+    https://stackoverflow.com/questions/41597177/get-aspect-ratio-of-axes
+    :param ax:
+    :return:
+    """
+    # Total figure size
+    figW, figH = ax.get_figure().get_size_inches()
+    # Axis size on figure
+    _, _, w, h = ax.get_position().bounds
+    # Ratio of display units
+    disp_ratio = (figH * h) / (figW * w)
+    # Ratio of data units
+    # Negative over negative because of the order of subtraction
+    data_ratio = sub(*ax.get_ylim()) / sub(*ax.get_xlim())
+
+    return disp_ratio / data_ratio
