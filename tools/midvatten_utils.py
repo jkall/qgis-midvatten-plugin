@@ -51,7 +51,6 @@ import tempfile
 import time
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.backend_bases import MouseButton
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWebKitWidgets import QWebView
 from qgis.PyQt import QtCore, QtGui, uic, QtWidgets
@@ -2167,10 +2166,8 @@ class PickAnnotator(object):
     def __init__(self, fig, canvas=None, mpltoolbar=None, mousebutton='left'):
         self.fig = fig
         self.annotation = None
-        mb = {'left': MouseButton.LEFT,
-              'middle': MouseButton.MIDDLE,
-              'right': MouseButton.RIGHT}
-        self.mousebutton = mb[mousebutton]
+
+        self.mousebutton = mousebutton
         if canvas is None:
             canvas = fig.canvas
         if mpltoolbar is None:
@@ -2184,7 +2181,7 @@ class PickAnnotator(object):
             if mpltoolbar._active:
                 return
             mouseevent = event.mouseevent
-            if mouseevent.button != self.mousebutton:
+            if mouseevent.button.name.lower() != self.mousebutton:
                 return
             artist = event.artist
             ax = artist.axes

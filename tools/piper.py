@@ -30,7 +30,6 @@ import itertools
 from operator import sub
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.backend_bases import MouseButton
 import numpy as np
 import math
 from definitions.midvatten_defs import piperplot_style, piperplot2_style
@@ -556,7 +555,7 @@ class PiperPlot(object):
             l.set_rotation(-get_rotation(self.ax, self.side_length))
 
     def draw_crossing_lines(self, event):
-        if event.button != MouseButton.RIGHT:
+        if event.button.name.lower() != 'right':
             return
 
         x = event.xdata
