@@ -109,7 +109,7 @@ class PiperPlot(object):
         return sql
 
     def create_markers(self):
-        marker = itertools.cycle(('r+', 'b.', 'c*','go', 'mv', 'r^', 'b<', 'c>', 'g8', 'ms', 'rp', 'b*', 'ch', 'gH', 'mD', 'rd','b+', 'c.', 'g*','mo', 'rv', 'b^', 'c<', 'g>', 'm8', 'rs', 'bp', 'c*', 'gh', 'mH', 'rD', 'bd', 'c+', 'g.', 'm*','ro', 'bv', 'c^', 'g<', 'm>', 'r8', 'bs', 'cp', 'g*', 'mh', 'rH', 'bD', 'cd','g+', 'm.', 'r*','bo', 'cv', 'g^', 'm<', 'r>', 'b8', 'cs', 'gp', 'm*', 'rh', 'bH', 'cD', 'gd','m+', 'r.', 'b*','co', 'gv', 'm^', 'r<', 'b>', 'c8', 'gs', 'mp', 'r*', 'bh', 'cH', 'gD', 'md')) 
+        marker = itertools.cycle(('k+', 'b.', 'c*','go', 'mv', 'r^', 'b<', 'c>', 'g8', 'ms', 'rp', 'b*', 'ch', 'gH', 'mD', 'rd','kx', 'c.', 'g*','mo', 'rv', 'b^', 'c<', 'g>', 'm8', 'rs', 'bp', 'c*', 'gh', 'mH', 'rD', 'bd', 'k1', 'g.', 'm*','ro', 'bv', 'c^', 'g<', 'm>', 'r8', 'bs', 'cp', 'g*', 'mh', 'rH', 'bD', 'cd','gP', 'm.', 'r*','bo', 'cv', 'g^', 'm<', 'r>', 'b8', 'cs', 'gp', 'm*', 'rh', 'bH', 'cD', 'gd','mP', 'r.', 'b*','co', 'gv', 'm^', 'r<', 'b>', 'c8', 'gs', 'mp', 'r*', 'bh', 'cH', 'gD', 'md'))
         self.markerset = {}
         if self.ms.settingsdict['piper_markers']=='type':
             for tp in self.distincttypes:
