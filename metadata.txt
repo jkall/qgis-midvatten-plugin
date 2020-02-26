@@ -20,11 +20,12 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
+        Version 1.6.3b9:
+        - Sectionplot: Fixes obsidlabel positioning.
         Version 1.6.3b8:
         - Piperplot: Restored old piperplot and added a new version..
         - Piperplot: Added pick-events and mouse press events to new version.
         - Piperplot 1 and 2: Fixes +-markers that apperad more than once due to bordercolor black.
-        - Sectionplot: Fixes obsidlabel positioning.
         Version 1.6.3b7:
         - Loggercalibration: Fix to hopefully reduce initialization time (The feature had very long load time in Windows).
         - Piperplot: Added marker edge to default style..
