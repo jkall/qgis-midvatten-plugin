@@ -101,6 +101,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
 
         self.initUI()
+        self.obsid_annotation = {}
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
         self.template_plot_label.setOpenExternalLinks(True)
 
@@ -843,6 +844,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                             j += 1
                             l += 1
                         del recs
+                        self.obsid_annotation[obs] = (self.x_id[-1], self.z_id[-1])
                     k +=1
                 if len(x)>0:
                     self.ExistingPlotTypes.append(Typ)
@@ -869,6 +871,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     self.obs_p_w_drill_stops.append(item[0])
 
         q=0
+
+        # The priority should be like this:
+        # 1. If stratigraphy exists, then plot obsid at h_toc or h-gs
+        # 2. If only waterlevel exist, then plot obsid at waterlevel
+
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             labellevel = None
             if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0 and self.ms.settingsdict['secplotwlvltab']:
@@ -948,6 +955,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         for rec in recs:  # loop cleanup
                             BarLength.append(rec[0])  # loop cleanup
                             x.append(float(self.length_along[k]))  # - self.barwidth/2)
+
                             sql01 = u"select h_gs from obs_points where obsid = '%s'" % obs
                             sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
                             sql02 = u"select h_toc from obs_points where obsid = '%s'" % obs
@@ -958,11 +966,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                             # print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
 
                             if utils.isfloat(str(sql01_result)) and sql01_result > -999:
-                                z_gs.append(float(str(sql01_result)))
+                                z = float(str(sql01_result))
                             elif utils.isfloat(str(sql02_result)) and sql02_result > -999:
-                                z_gs.append(float(str(sql02_result)))
+                                z = float(str(sql02_result))
                             else:
-                                z_gs.append(0)
+                                z = 0
+                            z_gs.append(z)
 
                             if capacity is None or capacity == '':
                                 Bottom.append(z_gs[i] - float(str((
@@ -1014,7 +1023,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                             l += 1
 
                         del recs
-
                     k += 1
 
                 if len(x) > 0:
@@ -1224,7 +1232,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             return x, y
 
         x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1)
-        print(str(y))
         lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
@@ -1307,8 +1314,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def get_slider_idx(self):
         return int(round(self.date_slider.val, 0))
 
-    @staticmethod
-    def get_water_levels_from_df(df, idx, columns, length_along):
+    def get_water_levels_from_df(self, df, idx, columns, length_along):
         WL = []
         x_wl = []
         for k, col in enumerate(columns):
@@ -1316,8 +1322,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 val = df.iloc[[idx]][col]
             except KeyError:
                 continue
+
             WL.append(val)
             x_wl.append(float(length_along[k]))
+            if col not in self.obsid_annotation or not any([self.ms.settingsdict['stratigraphyplotted'],
+                                                            self.ms.settingsdict['secplothydrologyplotted']]):
+                self.obsid_annotation[col] = (x_wl[-1], WL[-1])
         return x_wl, WL
 
     def update_animation(self, datevalue):
@@ -1381,7 +1391,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                 WL.append(val)
                 x_wl.append(float(self.length_along[k]))
+                if obs not in self.obsid_annotation or not any([self.ms.settingsdict['stratigraphyplotted'],
+                                                                self.ms.settingsdict['secplothydrologyplotted']]):
+                    self.obsid_annotation[obs] = (x_wl[-1], WL[-1])
             self.waterlevel_lineplot(x_wl, WL, datum)
+
 
     def waterlevel_lineplot(self, x_wl, WL, datum):
         plotlable = self.get_plot_label_name(datum, self.labels)
@@ -1496,13 +1510,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             p = self.axes.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar)
             p.skip_legend = True
             self.p.append(p)
-            if plot_labels:#only plot the obsid as annotation if plot_labels if checkbox is activated
-                for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
-                    text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
-        else: #obsid written close to average water level (average of all water levels between given min and max date)
-            if plot_labels:#only plot the obsid as annotation if plot_labels checkbox is activated
-                for m,n,o in zip(self.x_id_wwl,self.z_id_wwl,self.obsid_wlid):#change last arg to the one to be written in plot
-                    text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
+        if plot_labels:
+            for o, m_n in self.obsid_annotation.items():
+                m, n = m_n
+            #for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
+                text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
     def update_barwidths_from_plot(self):
         if not all((self.width_of_plot.isChecked(), len(self.selected_obsids) > 0)):

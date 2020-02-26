@@ -375,3 +375,37 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert len(myplot.figure.axes) > 1
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_plot_section_obsids(self, mock_messagebar):
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(1 0, 4 0)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs, length) VALUES ('P1', ST_GeomFromText('POINT(1 1)', 3006), 50, 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs, length) VALUES ('P2', ST_GeomFromText('POINT(2 2)', 3006), 70, '1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_toc,length) VALUES ('P3', ST_GeomFromText('POINT(4 4)', 3006), 90, NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 1, 0, 1, 'sand')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P3', 2, 1, 2, 'gravel')''')
+
+        self.create_and_select_vlayer()
+        @mock.patch('midvatten_utils.find_layer')
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
+            mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            self.midvatten.plot_section()
+            self.myplot = self.midvatten.myplot
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
+            self.myplot.datetimetextEdit.append('2015')
+            self.myplot.draw_plot()
+
+        _test(self)
+        #print(str(self.myplot.obsid_annotation))
+        assert str(self.myplot.obsid_annotation) == '''{'P1': (0.0, 50.0), 'P3': (3.0, 90.0), 'P2': (1.0, 183.0)}'''
+        print(str(mock_messagebar.mock_calls))
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
