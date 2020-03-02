@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3b9:
         - Sectionplot: Fixes obsidlabel positioning.
+        - Sectionplot: Fixes bug with water level plot labels.
         - GeneralCsvImport: Changed parser to csv.reader to support '"' as quotechar.
         Version 1.6.3b8:
         - Piperplot: Restored old piperplot and added a new version..

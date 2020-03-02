@@ -102,6 +102,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.initUI()
         self.obsid_annotation = {}
+        self.water_level_labels_duplicate_check = []
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
         self.template_plot_label.setOpenExternalLinks(True)
 
@@ -255,6 +256,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         event.accept()
 
     def do_it(self, msettings, selected_obspoints, sectionlinelayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
+        self.obsid_annotation = {}
 
         #show the user this may take a long time...
         utils.start_waiting_cursor()
@@ -366,6 +368,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         utils.stop_waiting_cursor()
 
     def draw_plot(self): #replot
+        self.water_level_labels_duplicate_check = []
+
         rcparams = self.secplot_templates.loaded_template.get('rcParams', {})
         for k, v in rcparams.items():
             try:
@@ -1398,8 +1402,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
 
     def waterlevel_lineplot(self, x_wl, WL, datum):
-        plotlable = self.get_plot_label_name(datum, self.labels)
-
+        plotlable = self.get_plot_label_name(datum, self.water_level_labels_duplicate_check)
+        self.water_level_labels_duplicate_check.append(plotlable)
         settings = self.secplot_templates.loaded_template['wlevels_Axes_plot'].get(plotlable,
                                                                             self.secplot_templates.loaded_template[
                                                                            'wlevels_Axes_plot']['DEFAULT'])
