@@ -29,6 +29,7 @@ from builtins import object
 import copy
 import io
 import os
+import csv
 from operator import itemgetter
 
 import qgis.PyQt
@@ -159,9 +160,12 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             utils.pop_up_info(msg=ru(QCoreApplication.translate('GeneralCsvImportGui', 'File data loaded. Select table to import to.')))
 
     @utils.waiting_cursor
-    def file_to_list(self, filename, charset, delimiter):
-        with io.open(filename, 'r', encoding=charset) as f:
-            file_data = [rawrow.rstrip('\n').rstrip('\r').split(delimiter) for rawrow in f if rawrow.strip()]
+    @staticmethod
+    def file_to_list(filename, charset, delimiter, quotechar='"'):
+        with open(filename, 'rt', encoding=str(charset)) as f:
+            rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r') for row in f]
+            csvreader = csv.reader(rows_unsplit, delimiter=delimiter, quotechar=quotechar)
+            file_data = [ru(row, keep_containers=True) for row in csvreader]
         return file_data
 
     def load_from_active_layer(self, only_selected=False):
