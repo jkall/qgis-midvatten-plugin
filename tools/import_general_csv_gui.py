@@ -159,13 +159,19 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 button.setEnabled(False)
             utils.pop_up_info(msg=ru(QCoreApplication.translate('GeneralCsvImportGui', 'File data loaded. Select table to import to.')))
 
-    @utils.waiting_cursor
     @staticmethod
     def file_to_list(filename, charset, delimiter, quotechar='"'):
-        with open(filename, 'rt', encoding=str(charset)) as f:
-            rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r') for row in f]
-            csvreader = csv.reader(rows_unsplit, delimiter=delimiter, quotechar=quotechar)
-            file_data = [ru(row, keep_containers=True) for row in csvreader]
+        utils.start_waiting_cursor()
+        try:
+            with open(filename, 'rt', encoding=str(charset)) as f:
+                rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r') for row in f]
+                csvreader = csv.reader(rows_unsplit, delimiter=delimiter, quotechar=quotechar)
+                file_data = [ru(row, keep_containers=True) for row in csvreader]
+        except:
+            utils.stop_waiting_cursor()
+            raise
+        else:
+            utils.stop_waiting_cursor()
         return file_data
 
     def load_from_active_layer(self, only_selected=False):
