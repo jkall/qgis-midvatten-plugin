@@ -317,7 +317,9 @@ class Drillreport(object):        # general observation point info for the selec
 
             if include_comments:
                 comment_data = [obs_points_data[obs_points_cols.index(header)-1] for header in ('com_onerow', 'com_html') if
-                                all([obs_points_data[obs_points_cols.index(header)-1].strip(),
+                                all([obs_points_data[obs_points_cols.index(header)-1] is not None,
+                                     obs_points_data[obs_points_cols.index(header) - 1].replace('NULL', ''),
+                                     obs_points_data[obs_points_cols.index(header)-1].strip(),
                                      'text-indent:0px;"><br /></p>' not in obs_points_data[obs_points_cols.index(header)-1],
                                      'text-indent:0px;"></p>' not in obs_points_data[obs_points_cols.index(header)-1],
                                      'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
