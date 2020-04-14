@@ -449,13 +449,6 @@ class Midvatten(object):
 
         if err_flag == 0:
             utils.start_waiting_cursor()  # show the user this may take a long time..
-            dbconnection = db_utils.DbConnectionManager()
-            dbtype = dbconnection.dbtype
-            dbconnection.closedb()
-            if dbtype != 'spatialite':
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite only works when source db is spatialite.')))
-                utils.stop_waiting_cursor()
-                return
 
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
@@ -472,11 +465,11 @@ class Midvatten(object):
             sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from %s obs_points and obs_lines.\n\nContinue?"""))%(selected_all), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             if sanity.result == 1:
                 utils.start_waiting_cursor()#show the user this may take a long time...
-                EPSG_code = db_utils.sql_load_fr_db('''SELECT srid FROM geometry_columns WHERE f_table_name = 'obs_points';''')[1][0][0]
+                source_srid = db_utils.sql_load_fr_db('''SELECT srid FROM geometry_columns WHERE f_table_name = 'obs_points';''')[1][0][0]
 
                 #Let the user chose an EPSG-code for the exported database
                 utils.stop_waiting_cursor()
-                user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code)
+                user_chosen_EPSG_code = utils.ask_for_export_crs(source_srid)
                 utils.start_waiting_cursor()
 
                 if not user_chosen_EPSG_code:

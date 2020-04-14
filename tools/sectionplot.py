@@ -1273,9 +1273,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.df = self.df.reset_index()
         self.df = self.df.pivot(index='date_time', columns='obsid', values='level_masl')
 
-        resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'fill_method': None, 'closed': None, 'label': None,
-                           'convention': 'start', 'kind': None, 'loffset': None, 'limit': None, 'base': int(self.resample_base.text()), 'on': None,
-                           'level': None}
+        resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'convention': 'start',
+                           'base': int(self.resample_base.text())}
 
         self.df = resample(self.df, None, self.resample_rule.text(), resample_kwargs)
 
@@ -1323,7 +1322,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         x_wl = []
         for k, col in enumerate(columns):
             try:
-                val = df.iloc[[idx]][col]
+                val = df.iloc[[idx]][ru(col).encode('utf-8')]
             except KeyError:
                 continue
 

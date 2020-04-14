@@ -66,7 +66,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'labpar1', 's1', '2015-01-01 01:00:00', 'unit1')''')
         db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
-        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''')
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''')
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''')
         db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
@@ -106,7 +106,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
             ", P1;s1;2015-01-01 01:00:00;;labpar1;;;unit1;;",
             "], stratigraphy.csv",
             ", [obsid;stratid;depthtop;depthbot;geology;geoshort;capacity;development;comment",
-            ", P1;1;;;;;;;",
+            ", P1;1;0.0;10.0;;;;;",
             "], meteo.csv",
             ", [obsid;instrumentid;parameter;date_time;reading_num;reading_txt;unit;comment",
             ", P1;meteoinst;precip;2017-01-01 00:19:00;;;;",
@@ -134,7 +134,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'labpar1', 's1', '2015-01-01 01:00:00', 'unit1')''')
         db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
-        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''')
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''')
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''')
         db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
@@ -175,7 +175,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
             ", P1;s1;2015-01-01 01:00:00;;labpar1;;;unit1;;",
             "], stratigraphy.csv",
             ", [obsid;stratid;depthtop;depthbot;geology;geoshort;capacity;development;comment",
-            ", P1;1;;;;;;;",
+            ", P1;1;0.0;10.0;;;;;",
             "], meteo.csv",
             ", [obsid;instrumentid;parameter;date_time;reading_num;reading_txt;unit;comment",
             ", P1;meteoinst;precip;2017-01-01 00:19:00;;;;",
@@ -189,7 +189,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(test_string)
         print(reference_string)
         assert test_string == reference_string
-
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -215,7 +214,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''', dbconnection=dbconnection)
-        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''', dbconnection=dbconnection)
@@ -233,7 +232,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                     '''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
                     '''select obsid, date_time, meas from w_levels''',
-                    '''select obsid, stratid from stratigraphy''',
+                    '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
                     '''select obsid from obs_lines''',
                     '''select obsid, length from seismic_data''',
                     '''select obsid, instrumentid, parameter, date_time from meteo''']
@@ -266,8 +265,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
                             '''select obsid, date_time, meas from w_levels''',
                             ''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
-                            '''select obsid, stratid from stratigraphy''',
-                            ''', [(P1, 1)], ''',
+                            '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
+                            ''', [(P1, 1, 0.0, 10.0)], ''',
                             '''select obsid from obs_lines''',
                             ''', [(L1)], ''',
                             '''select obsid, length from seismic_data''',
@@ -275,8 +274,11 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             '''select obsid, instrumentid, parameter, date_time from meteo''',
                             ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = '\n'.join(reference_string)
+        print("Ref:")
+        print(str(reference_string))
+        print("Test:")
+        print(str(test_string))
         assert test_string == reference_string
-
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -303,7 +305,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''', dbconnection=dbconnection)
-        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''', dbconnection=dbconnection)
@@ -321,7 +323,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                     '''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
                     '''select obsid, date_time, meas from w_levels''',
-                    '''select obsid, stratid from stratigraphy''',
+                    '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
                     '''select obsid from obs_lines''',
                     '''select obsid, length from seismic_data''',
                     '''select obsid, instrumentid, parameter, date_time from meteo''']
@@ -354,8 +356,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
                             '''select obsid, date_time, meas from w_levels''',
                             ''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
-                            '''select obsid, stratid from stratigraphy''',
-                            ''', [(P1, 1)], ''',
+                            '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
+                            ''', [(P1, 1, 0.0, 10.0)], ''',
                             '''select obsid from obs_lines''',
                             ''', [(L1)], ''',
                             '''select obsid, length from seismic_data''',
@@ -366,7 +368,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(test_string)
         print(str(mock_messagebar.mock_calls))
         assert test_string == reference_string
-
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -386,7 +387,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ("åäö", ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('åäö', ST_GeomFromText('POINT(633466 711659)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''')
         db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('åäö', '2015-01-01 00:00:00', 's1', 'comment1')''')
 
@@ -418,6 +419,11 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             '''select obsid, date_time, staff, comment from comments''',
                             ''', [(åäö, 2015-01-01 00:00:00, s1, comment1)]]''']
         reference_string = '\n'.join(reference_string)
+
+        print("Ref")
+        print(reference_string)
+        print("Test")
+        print(test_string)
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -444,7 +450,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
         db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
-        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''')
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''')
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''')
         db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
@@ -460,7 +466,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                     '''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
                     '''select obsid, date_time, meas from w_levels''',
-                    '''select obsid, stratid from stratigraphy''',
+                    '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
                     '''select obsid from obs_lines''',
                     '''select obsid, length from seismic_data''',
                     '''select obsid, instrumentid, parameter, date_time from meteo''']
@@ -481,11 +487,12 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         # The coordinates aquired from st_transform differs from Linux Mint 18.2 to Linux Mint 19
         # In Mint 18, it's -517888.383773 for both postgis and spatialite
         # In Mint 19, it's -517888.383737 for both postgis and spatialite
+        #// I've made changes to the transformation so the above values no longer exists, but the previous issue probably does.
         # !!! No idea why
         
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',
-                            ''', [(P1, POINT(-517888.383773 1.002821))], ''',
+                            ''', [(P1, POINT(-517888.392089 1.000667))], ''',
                             '''select staff from zz_staff''',
                             ''', [(s1)], ''',
                             '''select obsid, date_time, staff, comment from comments''',
@@ -498,8 +505,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
                             '''select obsid, date_time, meas from w_levels''',
                             ''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
-                            '''select obsid, stratid from stratigraphy''',
-                            ''', [(P1, 1)], ''',
+                            '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
+                            ''', [(P1, 1, 0.0, 10.0)], ''',
                             '''select obsid from obs_lines''',
                             ''', [(L1)], ''',
                             '''select obsid, length from seismic_data''',
@@ -522,8 +529,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
                             '''select obsid, date_time, meas from w_levels''',
                             ''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
-                            '''select obsid, stratid from stratigraphy''',
-                            ''', [(P1, 1)], ''',
+                            '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
+                            ''', [(P1, 1, 0.0, 10.0)], ''',
                             '''select obsid from obs_lines''',
                             ''', [(L1)], ''',
                             '''select obsid, length from seismic_data''',
@@ -535,7 +542,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print("Test\n" + test_string)
         print("Ref\n" + reference_string)
         assert test_string == reference_string
-
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -563,7 +569,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         """
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
-        dbconnection.execute('''PRAGMA foreign_keys='off' ''')
+        dbconnection.execute('''PRAGMA foreign_keys='off'  ''')
         dbconnection.execute('''UPDATE zz_strat SET strata = 'filling' WHERE geoshort = 'land fill' ''')
         dbconnection.execute('''INSERT INTO zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values ('filling','Yellow','+','darkGray','NoBrush') ''')
         dbconnection.execute('''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
@@ -606,8 +612,9 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(0, whiteFIX), (1, red)]]''']
 
         reference_string = '\n'.join(reference_string)
+        print(str(test_string))
+        print(str(reference_string))
         assert test_string == reference_string
-
 
 
     def tearDown(self):

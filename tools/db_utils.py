@@ -293,7 +293,12 @@ class DbConnectionManager(object):
 
         if self.dbtype == 'spatialite':
             temptable_name = 'mem.' + temptable_name
-            self.execute("""ATTACH DATABASE ':memory:' AS mem""")
+            try:
+                self.cursor.execute("""ATTACH DATABASE ':memory:' AS mem""")
+            except:
+                #Assume mem already exist.
+                pass
+
             if geometry_colname_type_srid is not None:
                 geom_column = geometry_colname_type_srid[0]
                 geom_type = geometry_colname_type_srid[1]
@@ -323,6 +328,12 @@ class DbConnectionManager(object):
                 self.execute(sql)
         return temptable_name
 
+    def drop_temporary_table(self, temptable_name):
+        if self.dbtype == 'spatialite':
+            self.execute('''DROP TABLE {}'''.format(temptable_name))
+        else:
+            self.execute('''DROP TEMPORARY TABLE IF EXISTS {}'''.format(temptable_name))
+
     def dump_table_2_csv(self, table_name=None):
         self.cursor.execute(u'select * from {}'.format(table_name))
         header = [col[0] for col in self.cursor.description]
@@ -333,6 +344,27 @@ class DbConnectionManager(object):
             printlist.extend(rows)
             utils.write_printlist_to_file(filename, printlist)
 
+    def get_srid(self, table_name, geometry_column='geometry'):
+        srid = None
+        if self.dbtype == 'spatialite':
+            srid = self.execute_and_fetchall("""SELECT srid FROM geometry_columns WHERE f_table_name = '%s'""" % table_name)
+            if not srid:
+                srid = None
+            else:
+                srid = srid[0][0]
+        else:
+            try:
+                self.cursor.execute("""SELECT Find_SRID('{}', '{}', '{}');""".format(self.schemas(), table_name,
+                                                                                     geometry_column))
+            except:
+                #Assume that the column doesn't have a srid/is a geometry.
+                srid = None
+            else:
+
+                srid = self.cursor.fetchall()[0][0]
+        if srid is not None:
+            srid = int(srid)
+        return srid
 
 def connect_with_spatialite_connect(dbpath):
     conn = spatialite_connect(dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)

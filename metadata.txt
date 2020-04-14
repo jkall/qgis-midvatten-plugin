@@ -22,6 +22,8 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3b11
         - db_utils: Fixes postgis connection after changes in QGIS >=3.10.
+        - Sectionplot: Adjustment for new pandas version.
+        - ExportData: Now supports exporting from PostgreSQL+PostGIS to SQLite+Spatialite.
         Version 1.6.3b10
         - GeneralCsvImport: Fixes bug.
         Version 1.6.3b9:
