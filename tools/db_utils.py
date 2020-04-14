@@ -33,22 +33,81 @@ except:
     compression = zipfile.ZIP_STORED
 
 import datetime
+import psycopg2
 import re
 import tempfile
 from collections import OrderedDict
 import sqlite3 as sqlite
 
 import  qgis.core
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtCore import QCoreApplication, QSettings
 
 from qgis.utils import spatialite_connect
-from qgis._core import QgsProject, QgsDataSourceUri
+from qgis._core import QgsProject, QgsDataSourceUri, QgsCredentials
 import db_manager.db_plugins.postgis.connector as postgis_connector
+import db_manager.db_plugins.connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
+
+
+class PostGisDBConnectorMod(db_manager.db_plugins.postgis.connector.PostGisDBConnector):
+    """
+    Based on db_manager.db_plugins.postgis.connector.PostGisDBConnector
+    """
+    def __init__(self, uri):
+        self.connection = None
+
+        self.host = uri.host() or os.environ.get('PGHOST')
+        self.port = uri.port() or os.environ.get('PGPORT')
+
+        username = uri.username() or os.environ.get('PGUSER')
+        password = uri.password() or os.environ.get('PGPASSWORD')
+
+        # Do not get db and user names from the env if service is used
+        if not uri.service():
+            if username is None:
+                username = os.environ.get('USER')
+            self.dbname = uri.database() or os.environ.get('PGDATABASE') or username
+            uri.setDatabase(self.dbname)
+
+        expandedConnInfo = str(uri.connectionInfo(True))
+        try:
+            self.connection = psycopg2.connect(expandedConnInfo)
+        except self.connection_error_types() as e:
+            # get credentials if cached or asking to the user no more than 3 times
+            err = str(e)
+            conninfo = uri.connectionInfo(False)
+
+            for i in range(3):
+                (ok, username, password) = QgsCredentials.instance().get(conninfo, username, password, err)
+                if not ok:
+                    raise ConnectionError(e)
+
+                if username:
+                    uri.setUsername(username)
+
+                if password:
+                    uri.setPassword(password)
+
+                newExpandedConnInfo = uri.connectionInfo(True)
+                try:
+                    self.connection = psycopg2.connect(newExpandedConnInfo)
+                    QgsCredentials.instance().put(conninfo, username, password)
+                except self.connection_error_types() as e:
+                    if i == 2:
+                        raise ConnectionError(e)
+                    err = str(e)
+                finally:
+                    # clear certs for each time trying to connect
+                    self._clearSslTempCertsIfAny(newExpandedConnInfo)
+        finally:
+            # clear certs of the first connection try
+            self._clearSslTempCertsIfAny(expandedConnInfo)
+
+        self.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
 
 class DbConnectionManager(object):
     def __init__(self, db_settings=None):
@@ -117,9 +176,8 @@ class DbConnectionManager(object):
             self.postgis_settings = get_postgis_connections()[connection_name]
             self.uri.setConnection(self.postgis_settings['host'], self.postgis_settings['port'], self.postgis_settings['database'], self.postgis_settings['username'], self.postgis_settings['password'])
             try:
-                self.connector = postgis_connector.PostGisDBConnector(self.uri)
+                self.connector = PostGisDBConnectorMod(self.uri)
             except Exception as e:
-                print(str(e))
                 if 'no password supplied' in str(e):
                     utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'No password supplied for postgis connection')))
                     raise utils.UserInterruptError()
@@ -134,8 +192,6 @@ class DbConnectionManager(object):
         self.check_db_is_locked()
         if self.cursor:
             return True
-
-
 
     def execute(self, sql, all_args=None):
         """
@@ -198,18 +254,9 @@ class DbConnectionManager(object):
         self.closedb()
 
     def schemas(self):
-        """Postgis schemas look like this:
-        Schemas: [(2200, 'public', 'postgres', '{postgres=UC/postgres,=UC/postgres}', 'standard public schema')]
-        This function only returns the first schema.
+        """Only supports schema public
         """
-
-        schemas = self.connector.getSchemas()
-        if schemas is None:
-            return ''
-        else:
-            if len(schemas) > 1:
-                utils.MessagebarAndLog.info(bar_msg='Found more than one schema. Using the first.')
-            return schemas[0][1]
+        return 'public'
 
     def closedb(self):
         self.conn.close()
