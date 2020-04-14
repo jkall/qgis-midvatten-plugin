@@ -50,13 +50,22 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
     def general_import(self, dest_table, file_data, allow_obs_fk_import=False,
                        _dbconnection=None, dump_temptable=False, source_srid=None,
                        skip_confirmation=False, binary_geometry=False):
-        """General method for importing an sqlite table into a goal_table
+        """General method for importing a list of list to a table
 
             self.temptableName must be the name of the table containing the new data to import.
 
-        :param dest_table:
+        :param dest_table: The destination table
+        :param file_data: a list of list with a header list as first row
+        :param allow_obs_fk_import: True to allow creation of obsids in obs_points and obs_lines.
+        :param _dbconnection: A db_utils.DbConnectionManager-instance if other than the currently selected in the midvatten
+                              settings dialog.
+        :param dump_temptable: True to create a csvfile from internal temporary table.
+        :param source_srid: The srid of the source geometry column if the geometry is a WKT or WKB
+        :param skip_confirmation: True to not ask the user to import foreign keys.
+        :param binary_geometry: True if the source geometry column should be parsed as a WKB, else it's parsed as WKT.
         :return:
         """
+
         self.temptable_name = None
 
         if skip_confirmation:

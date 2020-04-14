@@ -64,7 +64,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
 
-        nose.tools.assert_raises(MidvDataImporterError, self.importinstance.general_import, goal_table='w_levels_logger', file_data=file)
+        nose.tools.assert_raises(MidvDataImporterError, self.importinstance.general_import, dest_table='w_levels_logger', file_data=file)
         mock_iface.messageBar.return_value.createMessage.createMessage('Import error, see log message panel')
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
