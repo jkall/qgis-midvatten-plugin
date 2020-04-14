@@ -643,8 +643,8 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
             '''INSERT INTO zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values ('filling','Yellow','+','darkGray','NoBrush') ''')
         dbconnection.execute(
             '''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
-        dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = 0 ''')
-        dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = 0 ''')
+        dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = '0' ''')
+        dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = '0' ''')
         # print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
         dbconnection.commit_and_closedb()
         print("Before export")
@@ -654,8 +654,8 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
         self.midvatten.export_spatialite()
         sql_list = ['''SELECT geoshort, strata FROM zz_strat WHERE geoshort IN ('land fill', 'rock') ''',
                     '''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
-                    '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',
-                    '''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN (0, 1) ''']
+                    '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN ('0', '1')''',
+                    '''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN ('0', '1') ''']
 
         conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
         curs = conn.cursor()
@@ -675,9 +675,9 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
                             ''', [(land fill, filling), (rock, rock)], ''',
                             '''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
                             ''', [(filling, Yellow), (made ground, OrangeFIX), (rock, red)], ''',
-                            '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',
+                            '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN ('0', '1')''',
                             ''', [(0, anexpl), (1, above gwl)], ''',
-                            '''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN (0, 1) ''',
+                            '''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN ('0', '1') ''',
                             ''', [(0, whiteFIX), (1, red)]]''']
 
         reference_string = '\n'.join(reference_string)
