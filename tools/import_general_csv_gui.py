@@ -217,15 +217,15 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         file_data = copy.deepcopy(self.file_data)
 
-        goal_table = self.table_chooser.import_method
+        dest_table = self.table_chooser.import_method
 
-        foreign_keys = db_utils.get_foreign_keys(goal_table)
+        foreign_keys = db_utils.get_foreign_keys(dest_table)
 
         foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.items() for colname in colnames if colname[0] == 'obsid']
         if len(foreign_key_obsid_tables) == 1:
             foreign_key_obsid_table = foreign_key_obsid_tables[0]
         else:
-            foreign_key_obsid_table = goal_table
+            foreign_key_obsid_table = dest_table
         for file_column in list(translation_dict.keys()):
             alter_colnames = []
             new_value = None
@@ -264,17 +264,17 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
-        file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns_info[goal_table])
+        file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns_info[dest_table])
         if columns_factors:
             file_data = self.multiply_by_factor(file_data, columns_factors)
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
-        if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and 'obsid' in file_data[0]:
+        if foreign_key_obsid_table and foreign_key_obsid_table != dest_table and 'obsid' in file_data[0]:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
 
         file_data = self.reformat_date_time(file_data)
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(goal_table=goal_table, file_data=file_data)
+        answer = importer.general_import(dest_table=dest_table, file_data=file_data)
         utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():

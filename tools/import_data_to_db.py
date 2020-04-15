@@ -96,9 +96,9 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
             not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
             #Only use the columns that exists in the goal table.
-            existing_columns_in_goal_table = [col for col in file_data[0] if col in column_headers_types]
+            existing_columns_in_dest_table = [col for col in file_data[0] if col in column_headers_types]
             existing_columns_in_temptable = file_data[0]
-            missing_columns = [column for column in not_null_columns if column not in existing_columns_in_goal_table]
+            missing_columns = [column for column in not_null_columns if column not in existing_columns_in_dest_table]
 
             if missing_columns:
                 raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer', 'Required columns %s are missing for table %s')) % (', '.join(missing_columns), dest_table))
@@ -122,7 +122,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
 
             #Special cases for some tables
             if dest_table == 'stratigraphy':
-                self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
+                self.check_and_delete_stratigraphy(existing_columns_in_dest_table, dbconnection)
 
             # Dump temptable to csv for debugging
             if dump_temptable:
@@ -167,7 +167,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             # Check if current table has geometry:
             geom_columns = db_utils.get_geometry_types(dbconnection, dest_table)
             sourcecols = []
-            for colname in sorted(existing_columns_in_goal_table):
+            for colname in sorted(existing_columns_in_dest_table):
                 null_replacement = db_utils.cast_null(column_headers_types[colname], dbconnection)
                 if colname in list(geom_columns.keys()) and colname in existing_columns_in_temptable:
                     sourcecols.append(self.create_geometry_sql(colname, dest_table, dbconnection, source_srid,
@@ -181,7 +181,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
 
             sql = """INSERT INTO {dest_table} ({dest_columns})\nSELECT {source_columns}\nFROM {source_table}\n"""
             kwargs = {'dest_table': dest_table,
-                      'dest_columns': ', '.join(sorted(existing_columns_in_goal_table)),
+                      'dest_columns': ', '.join(sorted(existing_columns_in_dest_table)),
                       'source_table': self.temptable_name,
                       'source_columns': u',\n    '.join(sourcecols)
                       }
@@ -272,11 +272,11 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         if numskipped:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate('midv_data_importer', "%s nr of duplicate rows in file was skipped while importing."))%str(numskipped))
 
-    def delete_existing_date_times_from_temptable(self, primary_keys, goal_table, dbconnection):
+    def delete_existing_date_times_from_temptable(self, primary_keys, dest_table, dbconnection):
         """
         Deletes duplicate times
         :param primary_keys: a table like ['obsid', 'date_time', ...]
-        :param goal_table: a string like 'w_levels'
+        :param dest_table: a string like 'w_levels'
         :return: None. Alters the temptable self.temptableName
 
         If date 2016-01-01 00:00:00 exists for obsid1, then 2016-01-01 00:00 will not be imported for obsid1.
@@ -299,7 +299,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         sql = '''delete from %s where %s in (select %s from %s)'''%(self.temptable_name,
                                                                                           ' || '.join(pks_and_00),
                                                                                           ' || '.join(pks),
-                                                                                          goal_table)
+                                                                                          dest_table)
         dbconnection.execute(sql)
 
         # Delete records from temptable that have date_time yyyy-mm-dd HH:MM:XX when yyyy-mm-dd HH:MM exist.
@@ -308,7 +308,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                                                                                           ' || '.join(pks),
                                                                                           ' || '.join(pks),
                                                                                           ' || '.join(pks),
-                                                                                          goal_table)
+                                                                                          dest_table)
         dbconnection.execute(sql)
 
     def create_geometry_sql(self, geom_col, table_name, dbconnection, source_srid, null_replacement,
@@ -365,7 +365,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             if skip_obsids:
                 dbconnection.execute('delete from %s where obsid in (%s)' % (self.temptable_name, ', '.join(["'{}'".format(obsid) for obsid in skip_obsids])))
 
-    def import_foreign_keys(self, dbconnection, goal_table, temptablename, foreign_keys, existing_columns_in_temptable):
+    def import_foreign_keys(self, dbconnection, dest_table, temptablename, foreign_keys, existing_columns_in_temptable):
         #TODO: Empty foreign keys are probably imported now. Must add "case when...NULL" to a couple of sql questions here
 
         #What I want to do:
@@ -398,7 +398,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
 
             nr_fk_after = dbconnection.execute_and_fetchall('''select count(*) from %s''' % fk_table)[0][0]
             if nr_fk_after > nr_fk_before:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total %s rows were imported to foreign key table %s while importing to %s.'))%(str(nr_fk_after - nr_fk_before), fk_table, goal_table))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total %s rows were imported to foreign key table %s while importing to %s.'))%(str(nr_fk_after - nr_fk_before), fk_table, dest_table))
 
     def import_error_msg(self):
         return ru(QCoreApplication.translate('midv_data_importer', 'Import error, see log message panel'))

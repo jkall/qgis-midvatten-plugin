@@ -623,7 +623,7 @@ class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
              ['obsid1', '1', '0', '1', 'grusig sand', 'sand', '5', '(j)', 'acomment'],
              ['obsid1', '2', '1', '4', 'siltigt sandigt grus', 'grus', '4+', '(j)', 'acomment2']]
 
-        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #goal_table='stratigraphy')
+        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select * from stratigraphy'''))
@@ -647,7 +647,7 @@ class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
              ['obsid1', '10', '9', '12.1', 's', 's', '1', '(j)', 'acomment'],
              ['obsid1', '11', '12.1', '13', 's', 's', '1', '(j)', 'acomment']]
 
-        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #goal_table='stratigraphy')
+        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select * from stratigraphy'''))
@@ -664,7 +664,7 @@ class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
              ['obsid2', '1', '0', '1', 'grusig sand', 'sand', '5', '(j)', 'acomment'],
              ['obsid2', '3', '1', '4', 'siltigt sandigt grus', 'grus', '4+', '(j)', 'acomment2']]
 
-        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #goal_table='stratigraphy')
+        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select * from stratigraphy'''))
@@ -681,7 +681,7 @@ class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
              ['obsid2', '1', '0', '1', 'grusig sand', 'sand', '5', '(j)', 'acomment'],
              ['obsid2', '2', '3', '4', 'siltigt sandigt grus', 'grus', '4+', '(j)', 'acomment2']]
 
-        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #goal_table='stratigraphy')
+        self.importinstance.general_import(dest_table='stratigraphy', file_data=f) #dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select * from stratigraphy'''))

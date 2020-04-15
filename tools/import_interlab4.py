@@ -222,7 +222,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         importer = import_data_to_db.midv_data_importer()
 
-        answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table, dump_temptable=self.dump_2_temptable.isChecked())
+        answer = importer.general_import(dest_table=u'w_qual_lab', file_data=self.wquallab_data_table, dump_temptable=self.dump_2_temptable.isChecked())
 
         if self.close_after_import.isChecked():
             self.close()

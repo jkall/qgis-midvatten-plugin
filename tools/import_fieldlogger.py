@@ -459,7 +459,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
                 if file_data is None:
                     continue
 
-                importer.general_import(file_data=file_data, goal_table=import_method)
+                importer.general_import(file_data=file_data, dest_table=import_method)
 
         if self.close_after_import.isChecked():
             self.close()
