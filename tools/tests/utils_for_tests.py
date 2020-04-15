@@ -253,6 +253,20 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
 
+
+class MidvattenTestPostgisDbEn(MidvattenTestPostgisNotCreated):
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    def setUp(self, mock_crs_question, mock_answer_yes, mock_locale):
+        super().setUp()
+        mock_locale.return_value.answer = 'ok'
+        mock_locale.return_value.value = 'en_US'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        self.midvatten.new_postgis_db()
+
+
 class MidvattenTestPostgisDbSvImportInstance(MidvattenTestPostgisDbSv):
     def setUp(self):
         super().setUp()

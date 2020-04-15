@@ -39,7 +39,7 @@ from nose.plugins.attrib import attr
 
 
 @attr(status='on')
-class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
+class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -639,10 +639,8 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
             dbconnection=dbconnection)
         #dbconnection.execute('''PRAGMA foreign_keys='off' ''')
         dbconnection.execute('''UPDATE zz_strat SET strata = 'filling' WHERE geoshort = 'land fill' ''')
-        dbconnection.execute(
-            '''INSERT INTO zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values ('filling','Yellow','+','darkGray','NoBrush') ''')
-        dbconnection.execute(
-            '''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
+        dbconnection.execute('''INSERT INTO zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values ('filling','Yellow','+','darkGray','NoBrush') ''')
+        dbconnection.execute('''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
         dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = '0' ''')
         dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = '0' ''')
         # print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
@@ -681,7 +679,9 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
                             ''', [(0, whiteFIX), (1, red)]]''']
 
         reference_string = '\n'.join(reference_string)
+        print("Test")
         print(str(test_string))
+        print("Ref")
         print(str(reference_string))
         assert test_string == reference_string
 
