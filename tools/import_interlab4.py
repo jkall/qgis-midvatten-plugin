@@ -629,6 +629,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         return reading_num
 
     def as_float(self, _value):
+        if _value is None:
+            return None
         try:
             value = float(_value)
         except ValueError:
