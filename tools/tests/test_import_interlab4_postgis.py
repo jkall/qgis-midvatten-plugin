@@ -28,6 +28,8 @@ import midvatten_utils as utils
 import mock
 from import_interlab4 import Interlab4Import
 from nose.plugins.attrib import attr
+import gui_utils
+import uuid
 
 import mocks_for_tests
 import utils_for_tests
@@ -303,3 +305,249 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM zz_interlab4_obsid_assignment'''))
         reference_string = '(True, [(Demo, Demo1 vattenverk, obsid1), (Demo, Demo2 vattenverk, anobsid)])'
         assert test_string == reference_string
+
+
+    def test_interlab4_filter_first(self):
+
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            'DM-990908-1000;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            'DM-990908-1000;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            '#Slut'
+                )
+
+        patterns = ['DM-990908-2773']
+
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = 'ok'
+                mock_filenames.return_value = [[filename]]
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
+                importer.init_gui()
+                importer.select_files_button.click()
+                gui_utils.set_combobox(importer.specific_meta_filter.combobox, 'lablittera', False)
+                importer.specific_meta_filter.items.paste_data(patterns)
+
+                importer.metadata_filter.show_only_selected_checkbox.setChecked(True)
+                importer.metadata_filter.update_selection_button.click()
+                return importer.metadata_filter.get_selected_lablitteras()
+
+
+            lablitteras = _test(self, filename)
+        print(str(lablitteras))
+        assert lablitteras == patterns
+
+
+    def test_interlab4_filter_second(self):
+
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            'DM-990908-1000;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            'DM-990908-1000;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            '#Slut'
+                )
+
+        patterns = ['DM-990908-1000']
+
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = 'ok'
+                mock_filenames.return_value = [[filename]]
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
+                importer.init_gui()
+                importer.select_files_button.click()
+                gui_utils.set_combobox(importer.specific_meta_filter.combobox, 'lablittera', False)
+                importer.specific_meta_filter.items.paste_data(patterns)
+
+                importer.metadata_filter.show_only_selected_checkbox.setChecked(True)
+                importer.metadata_filter.update_selection_button.click()
+                return importer.metadata_filter.get_selected_lablitteras()
+
+
+            lablitteras = _test(self, filename)
+        print(str(lablitteras))
+        assert lablitteras == patterns
+
+
+    def test_interlab4_filter_two_patterns(self):
+
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            'DM-990908-1000;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            'DM-990908-1000;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            '#Slut'
+                )
+
+        patterns = ['DM-990908-2773', 'DM-990908-1000']
+
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = 'ok'
+                mock_filenames.return_value = [[filename]]
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
+                importer.init_gui()
+                importer.select_files_button.click()
+                gui_utils.set_combobox(importer.specific_meta_filter.combobox, 'lablittera', False)
+                importer.specific_meta_filter.items.paste_data(patterns)
+
+                importer.metadata_filter.show_only_selected_checkbox.setChecked(True)
+                importer.metadata_filter.update_selection_button.click()
+                return importer.metadata_filter.get_selected_lablitteras()
+
+
+            lablitteras = _test(self, filename)
+        print(str(lablitteras))
+        assert lablitteras == patterns
+
+
+    def test_interlab4_filter_no_match(self):
+
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            'DM-990908-1000;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            'DM-990908-1000;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            '#Slut'
+                )
+
+        patterns = ['ABCDE']
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = 'ok'
+                mock_filenames.return_value = [[filename]]
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
+                importer.init_gui()
+                importer.select_files_button.click()
+                gui_utils.set_combobox(importer.specific_meta_filter.combobox, 'lablittera', False)
+                importer.specific_meta_filter.items.paste_data(patterns)
+
+                importer.metadata_filter.show_only_selected_checkbox.setChecked(True)
+                importer.metadata_filter.update_selection_button.click()
+                return importer.metadata_filter.get_selected_lablitteras()
+
+
+            lablitteras = _test(self, filename)
+        print(str(lablitteras))
+        assert not lablitteras
+
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_interlab4_filter_many_filters(self, mock_messagebar):
+
+        admheader = 'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;'
+        datheader = 'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;'
+        interlab4_lines = [
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+                ]
+
+        uuids = [str(uuid.uuid1()) for _ in range(5000)]
+        print(str(uuids[:6]))
+        _admheader = ';'.join((['']*len(admheader.split(';')))[:-1])
+        adm_rows = [';'.join([x, _admheader]) for x in uuids]
+
+        _datheader = ';'.join((['']*len(datheader.split(';')))[:-1])
+        dat_rows = [';'.join([x, _datheader]) for x in uuids]
+
+        interlab4_lines.append(admheader)
+        interlab4_lines.extend(adm_rows)
+        interlab4_lines.append('#Provdat')
+        interlab4_lines.append(datheader)
+        interlab4_lines.extend(dat_rows)
+        interlab4_lines.append('#Slut')
+
+        patterns = uuids[:1000]
+        #print(str(patterns))
+        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = 'ok'
+                mock_filenames.return_value = [[filename]]
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
+                importer.init_gui()
+                importer.select_files_button.click()
+                gui_utils.set_combobox(importer.specific_meta_filter.combobox, 'lablittera', False)
+                importer.specific_meta_filter.items.paste_data(patterns)
+                #print(str(importer.specific_meta_filter.items.toPlainText()))
+
+                importer.metadata_filter.show_only_selected_checkbox.setChecked(True)
+                importer.metadata_filter.update_selection_button.click()
+                return importer.metadata_filter.get_selected_lablitteras()
+
+
+            lablitteras = _test(self, filename)
+        #print(str(lablitteras))
+        #print(str(mock_messagebar.mock_calls))
+        assert lablitteras == patterns
+        #assert False

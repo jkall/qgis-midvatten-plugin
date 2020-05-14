@@ -29,9 +29,10 @@ import os
 import csv
 from datetime import datetime
 import re
+from midvatten_utils import Timer
 
 import qgis.PyQt
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, QItemSelectionModel
 
 import import_data_to_db
 import midvatten_utils as utils
@@ -391,7 +392,6 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
                 if not file_error:
                     all_lab_results.update(lab_results)
-
         return all_lab_results
 
     def parse_filesettings(self, filename):
@@ -818,31 +818,44 @@ class MetadataFilter(VRowEntry):
         :return:
         """
         self.table.clearSelection()
-        table_header = {k: v for k, v in table_header.items() if k}
+        table_header = {k: [row for row in v if row] for k, v in table_header.items() if k}
         if not table_header:
             return None
+
+        #patterns = {k: [re.compile(x) for x in v] for k, v in table_header.items()}
+        patterns = {k: re.compile('|'.join(sorted(v))) for k, v in table_header.items()}
+
         nr_of_cols = self.table.columnCount()
         nr_of_rows = self.table.rowCount()
         table_header_colnr = dict([(self.table.horizontalHeaderItem(colnr).text(), colnr) for colnr in range(nr_of_cols)])
 
-        [[self.table.item(rownr, colnr).setSelected(True) for colnr in range(nr_of_cols)]
-          for rownr in range(nr_of_rows)
-              for header, selectionlist in table_header.items()
-                  if any([re.search(rexp, self.table.item(rownr, table_header_colnr[header]).text())
-                          for rexp in selectionlist])]
-
-        #Select all items for chosen rows.
-        """
-        [[self.table.item(rownr, colnr).setSelected(True) for colnr in range(nr_of_cols)]
-         for header, selectionlist in table_header.items()
+        """[[self.table.item(rownr, colnr).setSelected(True) for colnr in range(nr_of_cols)]
          for rownr in range(nr_of_rows)
-         if self.table.item(rownr, table_header_colnr[header]).text() in selectionlist]
-        """
+         for header, pattern in patterns.items()
+         if re.search(pattern, self.table.item(rownr, table_header_colnr[header]).text())]"""
+
+        mode = QItemSelectionModel.Select | QItemSelectionModel.Rows
+        selectedItems = self.table.selectionModel().selection()
+
+        def select(selected_items, table, rownr, mode):
+            table.selectRow(rownr)
+            selected_items.merge(table.selectionModel().selection(), mode)
+
+        [select(selectedItems, self.table, rownr, mode)
+         for rownr in range(nr_of_rows)
+         for header, pattern in patterns.items()
+         if re.search(pattern, self.table.item(rownr, table_header_colnr[header]).text())]
+
+        self.table.selectionModel().clearSelection()
+        self.table.selectionModel().select(selectedItems, mode)
+
         #Hide all rows that aren't selected
         [(self.table.hideRow(rownr), self.table.item(rownr, 0).setFlags(qgis.PyQt.QtCore.Qt.NoItemFlags))
          if all([not self.table.item(rownr, 0).isSelected(), self.show_only_selected_checkbox.isChecked()])
          else (self.table.showRow(rownr), self.table.item(rownr, 0).setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable))
          for rownr in range(nr_of_rows)]
+
+
 
     @utils.waiting_cursor
     def update_table(self, all_lab_results):
