@@ -33,7 +33,7 @@ from collections import OrderedDict
 from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QWidget, QDialog
 import matplotlib.pyplot as plt
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields, QgsGeometry
 import unittest
 import qgis
 
@@ -324,3 +324,46 @@ def recursive_children(parent):
         valid = ''
 
     return [parent.name(), valid, [recursive_children(child) for child in children]]
+
+
+def create_vectorlayer(_fields, data, geometries=None, geomtype='Point', crs=4326):
+    """From GroupStats"""
+    vlayer = QgsVectorLayer("{}?crs=epsg:{}".format(geomtype, str(crs)), "test", "memory")
+    provider = vlayer.dataProvider()
+
+    fields = QgsFields()
+    for _field in _fields:
+        fields.append(_field)
+
+    provider.addAttributes(_fields)
+    vlayer.updateFields()
+    feats = []
+    for f_idx, features_attributes in enumerate(data):
+        feature = QgsFeature(fields)
+        for idx, attr in enumerate(features_attributes):
+            feature[_fields[idx].name()] = attr
+        if geometries:
+            feature.setGeometry(geometries[f_idx])
+        else:
+            feature.setGeometry(None)
+        #print("Feature valid: " + str(feature.isValid()))
+        feats.append(feature)
+    provider.addFeatures(feats)
+    vlayer.updateExtents()
+
+    features = [f for f in vlayer.getFeatures('True') if f.id() in vlayer.allFeatureIds()]
+    feature_ids = [feature.id() for feature in features]
+
+    QgsProject.instance().addMapLayer(vlayer)
+    hide_print = True
+    if not hide_print:
+        print("1. Valid vlayer '{}'".format(vlayer.isValid()))
+        print("2. feature_ids: " + str(feature_ids))
+        print("5. QgsVectorLayer.getFeature(): " + str([vlayer.getFeature(x).id() for x in feature_ids]))
+        print("6. QgsVectorLayer.getFeature() type: " + str([str(type(vlayer.getFeature(x))) for x in feature_ids]))
+        print("7. QgsVectorLayer.getFeatures(): " + str([x.id() for x in vlayer.getFeatures(feature_ids)]))
+        print("8. QgsVectorLayer.featureCount(): " + str(vlayer.featureCount()))
+
+    root = QgsProject.instance().layerTreeRoot()
+    root.addLayer(vlayer)
+    return vlayer

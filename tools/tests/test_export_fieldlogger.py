@@ -23,6 +23,9 @@ from __future__ import absolute_import
 from builtins import object
 
 from collections import OrderedDict
+from qgis.core import QgsField, QgsGeometry
+from PyQt5.QtCore import QVariant
+from qgis.PyQt.QtWidgets import QWidget
 
 import export_fieldlogger
 import mock
@@ -31,10 +34,10 @@ from mock import MagicMock
 from nose.plugins.attrib import attr
 import midvatten_utils as utils
 
-from .utils_for_tests import create_test_string
+from .utils_for_tests import create_test_string, create_vectorlayer
 
 
-@attr(status='on')
+@attr(status='only')
 class TestExportFieldloggerNoDb(object):
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
@@ -201,9 +204,8 @@ class TestExportFieldloggerNoDb(object):
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_assert_empty_input_field_group_list(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': (None, None)}
+    def test_create_export_printlist_assert_empty_input_field_group_list(mock_MessagebarAndLog):
+        latlons = {'1': (None, None)}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('final_parameter_name', 'par1'), ('sublocation_suffix', 'group'), ('location_suffix', 'proj')))]
@@ -212,15 +214,15 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
         parameter_groups[0]._obsid_list.paste_data(['1'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.warning.assert_called_with(bar_msg='Warning: Empty input fields list for group nr 1')
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_assert_no_latlon(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': (None, None)}
+
+    def test_create_export_printlist_assert_no_latlon(mock_MessagebarAndLog):
+        latlons = {'1': (None, None)}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['p1.u1;it1:h1 ']), ('sublocation_suffix', 'proj.group'), ('location_suffix', 'proj')))]
@@ -229,15 +231,15 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
         parameter_groups[0]._obsid_list.paste_data(['1'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.critical.assert_called_with(bar_msg='Critical: Obsid 1 did not have lat-lon coordinates. Check obs_points table')
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
+        
+    def test_create_export_printlist(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj'))),
@@ -248,16 +250,15 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
         
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
         assert reference_string == test_string
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_duplicate_parameters(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1')}
+    def test_create_export_printlist_duplicate_parameters(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj'))),
@@ -268,16 +269,16 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[0]._obsid_list.paste_data(['1'])
         parameter_groups[1]._obsid_list.paste_data(['1'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference_string = '[NAME;INPUTTYPE;HINT, par1;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 1.proj;1.proj.group2;lat1;lon1;par1]'
         assert reference_string == test_string
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_duplicate_sub_location_suffixes(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1')}
+
+    def test_create_export_printlist_duplicate_sub_location_suffixes(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj'))),
@@ -288,27 +289,24 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[0]._obsid_list.paste_data(['1'])
         parameter_groups[1]._obsid_list.paste_data(['1'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
         assert test_string == reference
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_assert_no_critical_msg(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': (123, 465), '2': (123, 465), '3': (123, 465)}
+    def test_create_export_printlist_assert_no_critical_msg(mock_MessagebarAndLog):
+        latlons = {'1': (123, 465), '2': (123, 465), '3': (123, 465)}
 
         stored_settings = [(0, (('input_field_group_list', ['p1.u1;it1:h1', 'l.comment;test;make a comment']), ('location_suffix', 'ls'), ('sublocation_suffix', 'with_p1_u1_and_l_comment'))),
                            (1, (('input_field_group_list', ['comment;test;make a general comment']), ('location_suffix', 'ls'), ('sublocation_suffix', 'with_comment')))]
-
-
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
         parameter_groups[0]._obsid_list.paste_data(['1', '2', '3'])
         parameter_groups[1]._obsid_list.paste_data(['1', '2', '3'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.critical.assert_not_called()
         reference_string = '[NAME;INPUTTYPE;HINT, p1.u1;it1:h1 , l.comment;test;make a comment , comment;test;make a general comment , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.ls;1.ls.with_comment;123;465;comment, 1.ls;1.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 2.ls;2.ls.with_comment;123;465;comment, 2.ls;2.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 3.ls;3.ls.with_comment;123;465;comment, 3.ls;3.ls.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment]'
@@ -316,9 +314,9 @@ class TestExportFieldloggerNoDb(object):
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_not_same_latlon(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
+
+    def test_create_export_printlist_not_same_latlon(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group1'), ('location_suffix', 'proj'))),
@@ -329,16 +327,16 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2]'
         assert reference_string == test_string
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_not_same_latlon2(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
+
+    def test_create_export_printlist_not_same_latlon2(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group1'), ('location_suffix', 'proj'))),
@@ -351,16 +349,16 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
         parameter_groups[2]._obsid_list.paste_data(['2', '4'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 2.proj;2.proj.group3;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2, 4.proj;4.proj.group3;lat4;lon4;par3]'
         assert reference_string == test_string
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_not_same_latlon3(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
+
+    def test_create_export_printlist_not_same_latlon3(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1', 'par2;type2;hint2']), ('sublocation_suffix', 'group1'), ('location_suffix', 'proj'))),
@@ -373,7 +371,7 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[1]._obsid_list.paste_data(['1', '2', '4'])
 
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1|par2, 1.proj;1.proj.group2;lat1;lon1;par3, 2.proj;2.proj.group1;lat2;lon2;par1|par2, 2.proj;2.proj.group2;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1|par2, 4.proj;4.proj.group2;lat4;lon4;par3]'
         assert reference_string == test_string
@@ -391,7 +389,11 @@ class TestExportFieldloggerNoDb(object):
         mock_settingsstrings.side_effect = [('[[0, (("input_field_list", ["DO.mg/L;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), )]]', True),
                                             ('[[0, (("input_field_group_list", ["DO.mg/L;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), ("location_suffix", "2766", ), ("sublocation_suffix", "level", ), )], [1, (("input_field_group_list", ["comment;text;Obsid related comment"], ), ("location_suffix", "1234", ), ("sublocation_suffix", "comment", ), )]]', True)]
 
-        exportfieldlogger = ExportToFieldLogger(None, mock_ms)
+        mock_iface = QWidget()
+        mock_iface.legendInterface = mock.Mock()
+        mock_iface.legendInterface.return_value.layers.return_value = []
+        exportfieldlogger = ExportToFieldLogger(mock_iface, mock_ms)
+        exportfieldlogger.obs_from_vlayer.setChecked(True)
 
         exportfieldlogger.settings_strings_dialogs()
 
@@ -400,9 +402,9 @@ class TestExportFieldloggerNoDb(object):
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def test_create_export_printlist_correct_order(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
+
+    def test_create_export_printlist_correct_order(mock_MessagebarAndLog):
+        latlons = {'1': ('lat1', 'lon1'), '2': ('lat2', 'lon2'), '4': ('lat4', 'lon4')}
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
 
         stored_settings = [(0, (('input_field_group_list', ['par4;type1;hint1', 'par1;type1;hint1']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj'))),
@@ -413,7 +415,7 @@ class TestExportFieldloggerNoDb(object):
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
 
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
         test_string = create_test_string(printlist)
         reference_string = '[NAME;INPUTTYPE;HINT, par4;type1;hint1 , par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par4|par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par4|par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
         assert reference_string == test_string
@@ -442,6 +444,45 @@ class TestExportFieldloggerNoDb(object):
 
         assert tuple(lines) == tuple(result_lines)
 
+    @staticmethod
+    @mock.patch('export_fieldlogger.db_utils.tables_columns')
+    @mock.patch('export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    def test_laton_from_vectorlayer(mock_tables_columns, mock_write_printlist_to_file, mock_MessagebarAndLog):
+        mock_ms = mock.MagicMock()
+        mock_ms.settingsdict = {}
 
+        mock_tables_columns.return_value = {}
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('obsid', QVariant.String, QVariant.typeToName(QVariant.String))]
+        data = [[1, 'obsid1'], [2, 'obsid2'], [3, 'obsid3']]
+        geometries = [QgsGeometry.fromWkt('POINT((1.0 1.0))'),
+                      QgsGeometry.fromWkt('POINT((2.0 2.0))'),
+                      QgsGeometry.fromWkt('POINT((3.0 3.0))')]
+        vlayer = create_vectorlayer(_fields, data, geometries=geometries, geomtype='Point', crs=3006)
+
+        mock_iface = QWidget()
+        mock_iface.legendInterface = mock.Mock()
+        mock_iface.legendInterface.return_value.layers.return_value = [vlayer]
+        exporttofieldlogger = ExportToFieldLogger(mock_iface, mock_ms)
+
+        stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group'),
+                                ('location_suffix', 'proj'))),
+                           (1, (('input_field_group_list', ['par2;type2;hint2']), ('sublocation_suffix', 'group'),
+                                ('location_suffix', 'proj2')))]
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups[0]._obsid_list.paste_data(['obsid1', 'obsid2'])
+        parameter_groups[1]._obsid_list.paste_data(['obsid3'])
+        exporttofieldlogger.parameter_groups = parameter_groups
+        exporttofieldlogger.export()
+
+        print("printlist" + mock_write_printlist_to_file.mock_calls)
+        #printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
+        #test_string = create_test_string(printlist)
+        #reference_string = '[NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        #assert reference_string == test_string
+        print(str(mock_MessagebarAndLog))
+        assert False
 
 

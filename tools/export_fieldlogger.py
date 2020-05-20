@@ -27,6 +27,9 @@ import copy
 import os.path
 import qgis.gui
 from collections import OrderedDict
+from qgis._core import QgsProject
+from qgis.core import QgsWkbTypes, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, QgsCoordinateReferenceSystem
+import gui_utils
 
 from qgis.PyQt.QtCore import QCoreApplication
 
@@ -66,7 +69,6 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         if self.parameter_groups is None or not self.parameter_groups:
             self.parameter_groups = [ParameterGroup()]
 
-
         self.main_vertical_layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Fieldlogger input fields and locations:'))))
         self.main_vertical_layout.addWidget(get_line())
         self.splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
@@ -88,7 +90,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         #ParameterUnitBrowser
         self.parameter_browser = ParameterBrowser(tables_columns, self.widget)
         self.parameter_browser_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Create Input Fields')))
-        self.gridLayout_buttons.addWidget(self.parameter_browser_button, 0, 0)
+        self.gridLayout_buttons.addWidget(self.parameter_browser_button, self.gridLayout_buttons.rowCount(), 0)
         self.parameter_browser_button.clicked.connect(
                      lambda : self.parameter_browser.show())
 
@@ -96,18 +98,34 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         self.add_parameter_group = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'More Fields and Locations')))
         self.add_parameter_group.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Creates an additional empty input field group.')))
-        self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
+        self.gridLayout_buttons.addWidget(self.add_parameter_group, self.gridLayout_buttons.rowCount(), 0)
         #Lambda and map is used to run several functions for every button click
         self.add_parameter_group.clicked.connect(
                      lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup()),
                                   lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]])
 
-        self.gridLayout_buttons.addWidget(get_line(), 2, 0)
+        self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
+
+        # obsid-layers:
+        self.obslayer = ObsLayer(self.iface)
+        self.gridLayout_buttons.addWidget(qgis.PyQt.QtWidgets.QLabel(
+            QCoreApplication.translate('ExportToFieldLogger', 'Coordinates from:')))
+        self.obs_from_obs_points = qgis.PyQt.QtWidgets.QRadioButton(
+            QCoreApplication.translate('ExportToFieldLogger', 'table obs_points'))
+        self.gridLayout_buttons.addWidget(self.obs_from_obs_points, self.gridLayout_buttons.rowCount(), 0)
+        self.obs_from_vlayer = qgis.PyQt.QtWidgets.QRadioButton(
+            QCoreApplication.translate('ExportToFieldLogger', 'vector layer'))
+        self.gridLayout_buttons.addWidget(self.obs_from_vlayer, self.gridLayout_buttons.rowCount(), 0)
+        self.gridLayout_buttons.addWidget(self.obslayer.widget, self.gridLayout_buttons.rowCount(), 0)
+        self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
+        self.obs_from_obs_points.setChecked(True)
+
+        # Obsid settings
 
         #Buttons
         self.save_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Save settings')))
         self.save_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Saves the current input fields settings.')))
-        self.gridLayout_buttons.addWidget(self.save_settings_button, 3, 0)
+        self.gridLayout_buttons.addWidget(self.save_settings_button, self.gridLayout_buttons.rowCount(), 0)
         self.save_settings_button.clicked.connect(
                         lambda: [x() for x in [lambda: utils.save_stored_settings(self.ms,
                                                             self.update_stored_settings(self.parameter_groups),
@@ -118,36 +136,36 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         self.clear_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear all input fields settings.')))
-        self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
+        self.gridLayout_buttons.addWidget(self.clear_settings_button, self.gridLayout_buttons.rowCount(), 0)
         self.clear_settings_button.clicked.connect(
                      lambda: [x() for x in [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))]])
 
         self.settings_strings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings strings')))
         self.settings_strings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Access the settings strings ("Create input fields" and input fields) to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.')))
-        self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
+        self.gridLayout_buttons.addWidget(self.settings_strings_button, self.gridLayout_buttons.rowCount(), 0)
         self.settings_strings_button.clicked.connect(lambda x: self.settings_strings_dialogs())
 
         self.default_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Default settings')))
         self.default_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Updates "Create input fields" and input fields to default settings.')))
-        self.gridLayout_buttons.addWidget(self.default_settings_button, 6, 0)
+        self.gridLayout_buttons.addWidget(self.default_settings_button, self.gridLayout_buttons.rowCount(), 0)
         self.default_settings_button.clicked.connect(lambda x: self.restore_default_settings())
 
-        self.gridLayout_buttons.addWidget(get_line(), 7, 0)
+        self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
 
         self.preview_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Preview')))
         self.preview_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'View a preview of the Fieldlogger location file as pop-up info.')))
-        self.gridLayout_buttons.addWidget(self.preview_button, 8, 0)
+        self.gridLayout_buttons.addWidget(self.preview_button, self.gridLayout_buttons.rowCount(), 0)
         # Lambda and map is used to run several functions for every button click
         self.preview_button.clicked.connect(lambda x: self.preview())
 
         self.export_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Export')))
         self.export_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Exports the current combination of locations and input fields to a Fieldlogger location file.')))
-        self.gridLayout_buttons.addWidget(self.export_button, 9, 0)
+        self.gridLayout_buttons.addWidget(self.export_button, self.gridLayout_buttons.rowCount(), 0)
         # Lambda and map is used to run several functions for every button click
         self.export_button.clicked.connect(lambda x: self.export())
 
-        self.gridLayout_buttons.setRowStretch(10, 1)
+        self.gridLayout_buttons.setRowStretch(self.gridLayout_buttons.rowCount(), 1)
 
         self.show()
 
@@ -276,19 +294,23 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
     @utils.waiting_cursor
     def export(self):
         utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
-        self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))
+        if self.obs_from_obs_points.isChecked():
+            latlons = utils.get_latlon_for_all_obsids()
+        else:
+            latlons = self.obslayer.get_latlon_for_features()
+            print(str(latlons))
+        self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups), latlons)
 
     def preview(self):
         export_printlist = self.create_export_printlist(self.parameter_groups)
         qgis.PyQt.QtWidgets.QMessageBox.information(None, 'Preview', '\n'.join(export_printlist))
 
     @staticmethod
-    def create_export_printlist(parameter_groups):
+    def create_export_printlist(parameter_groups, latlons):
         """
         Creates a result list with FieldLogger format from selected obsids and parameters
         :return: a list with result lines to export to file
         """
-        latlons = utils.get_latlon_for_all_obsids()
 
         sublocations_locations = {}
         locations_sublocations = OrderedDict()
@@ -370,9 +392,11 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
 
 class ParameterGroup(object):
-    def __init__(self):
+    def __init__(self, obsids_layer=None, obsids_layer_column=None):
         """
         """
+        self.obsids_layer = obsids_layer
+        self.obsids_layer_column = obsids_layer_column
         #Widget list:
 
         self._location_suffix = qgis.PyQt.QtWidgets.QLineEdit()
@@ -682,5 +706,89 @@ class MessageBar(qgis.gui.QgsMessageBar):
         self.setParent(0)
         self.hide()
 
+
+class ObsLayer(gui_utils.VRowEntry):
+    def __init__(self, iface):
+        super().__init__()
+        self.iface = iface
+        self._vectorlayers = None
+        self.vectorlayer_list = qgis.PyQt.QtWidgets.QComboBox()
+        self.column_list = qgis.PyQt.QtWidgets.QComboBox()
+        QgsProject.instance().layersAdded.connect(self.update_vectorlayers)
+        self.vectorlayer_list.currentIndexChanged.connect(lambda x: self.update_column_list())
+        self.update_vectorlayers(select_layer='obs_points')
+
+        #self.layout.addWidget(
+        #    qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Layer')))
+        self.layout.addWidget(self.vectorlayer_list)
+        self.layout.addWidget(
+            qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Column')))
+        self.layout.addWidget(self.column_list)
+
+    def get_all_vectorlayers(self):
+        layers = self.iface.legendInterface().layers()
+        vectorlayers = []
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer:
+                for feat in layer.getFeatures():
+                    geom = feat.geometry()
+                    if geom.wkbType() in (QgsWkbTypes.Point, 1,
+                                          QgsWkbTypes.MultiPoint, 4,
+                                          QgsWkbTypes.PointZ, 1001,
+                                          QgsWkbTypes.MultiPointZ, 1004,
+                                          QgsWkbTypes.PointM, 2001,
+                                          QgsWkbTypes.MultiPointM, 2004,
+                                          QgsWkbTypes.PointZM, 3001,
+                                          QgsWkbTypes.MultiPointZM, 3004):
+                        vectorlayers.append(layer)
+                    break
+        return sorted(vectorlayers, key=lambda x: x.name())
+
+    def update_vectorlayers(self, select_layer=None):
+        if select_layer is None:
+            select_layer = self.current_layer()
+
+        self.vectorlayer_list.clear()
+        self._vectorlayers = self.get_all_vectorlayers()
+        for layer in self._vectorlayers:
+            self.vectorlayer_list.addItem(layer.name())
+        if select_layer:
+            if isinstance(select_layer, str):
+                gui_utils.set_combobox(self.vectorlayer_list, select_layer)
+            elif isinstance(select_layer, QgsVectorLayer):
+                for idx, layer in enumerate(self._vectorlayers):
+                    if layer is select_layer:
+                        self.vectorlayer_list.setCurrentIndex(idx)
+                        break
+
+    def update_column_list(self, select_column='obsid'):
+        if select_column is None:
+            select_column = self.current_column()
+
+        self.column_list.clear()
+        fields = self.current_layer().fields()
+        fieldnames = [field.name() for field in fields]
+        self.column_list.addItems(fieldnames)
+        gui_utils.set_combobox(self.column_list, select_column)
+
+    def get_selected(self):
+        return utils.getselectedobjectnames(thelayer=self.current_layer(), column_name=self.current_column())
+
+    def current_layer(self):
+        return self._vectorlayers[self.vectorlayer_list.currentIndex()]
+
+    def current_column(self):
+        return self.column_list.currentText()
+
+    def get_latlon_for_features(self):
+        current_layer = self.current_layer()
+        _from = QgsCoordinateReferenceSystem(current_layer.crs())
+        _to = QgsCoordinateReferenceSystem(4326)
+        transform = QgsCoordinateTransform(_from, _to)
+        fields = current_layer.fields()
+        id_index = fields.indexFromName(self.current_column())
+        features = {f.attributes()[id_index]: f.geometry().transform(transform) for f in current_layer.getFeatures('True')}
+        latlons = {k: (v.asPoint().y(), v.asPoint().x()) for k, v in features.items()}
+        return latlons
 
 
