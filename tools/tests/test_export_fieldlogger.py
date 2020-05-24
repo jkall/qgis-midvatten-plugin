@@ -441,7 +441,6 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         assert tuple(lines) == tuple(result_lines)
 
     @staticmethod
-    @attr(status='only')
     @mock.patch('export_fieldlogger.db_utils.tables_columns')
     @mock.patch('export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
