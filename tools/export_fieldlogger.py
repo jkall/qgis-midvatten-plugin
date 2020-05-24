@@ -27,8 +27,8 @@ import copy
 import os.path
 import qgis.gui
 from collections import OrderedDict
-from qgis._core import QgsProject
-from qgis.core import QgsWkbTypes, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, QgsCoordinateReferenceSystem
+#from qgis._core import QgsProject
+from qgis.core import QgsProject, QgsWkbTypes, QgsGeometry, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, QgsCoordinateReferenceSystem
 import gui_utils
 
 from qgis.PyQt.QtCore import QCoreApplication
@@ -107,14 +107,14 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
 
         # obsid-layers:
-        self.obslayer = ObsLayer(self.iface)
         self.gridLayout_buttons.addWidget(qgis.PyQt.QtWidgets.QLabel(
             QCoreApplication.translate('ExportToFieldLogger', 'Coordinates from:')))
         self.obs_from_obs_points = qgis.PyQt.QtWidgets.QRadioButton(
             QCoreApplication.translate('ExportToFieldLogger', 'table obs_points'))
         self.gridLayout_buttons.addWidget(self.obs_from_obs_points, self.gridLayout_buttons.rowCount(), 0)
         self.obs_from_vlayer = qgis.PyQt.QtWidgets.QRadioButton(
-            QCoreApplication.translate('ExportToFieldLogger', 'vector layer'))
+            QCoreApplication.translate('ExportToFieldLogger', 'vector layer:'))
+        self.obslayer = ObsLayer(self.iface, self.obs_from_vlayer)
         self.gridLayout_buttons.addWidget(self.obs_from_vlayer, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(self.obslayer.widget, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
@@ -290,19 +290,21 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         return True
 
-    @utils.general_exception_handler
-    @utils.waiting_cursor
-    def export(self):
-        utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
+    def get_latlons(self):
         if self.obs_from_obs_points.isChecked():
             latlons = utils.get_latlon_for_all_obsids()
         else:
             latlons = self.obslayer.get_latlon_for_features()
-            print(str(latlons))
-        self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups), latlons)
+        return latlons
+
+    @utils.general_exception_handler
+    @utils.waiting_cursor
+    def export(self):
+        utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
+        self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups, self.get_latlons()))
 
     def preview(self):
-        export_printlist = self.create_export_printlist(self.parameter_groups)
+        export_printlist = self.create_export_printlist(self.parameter_groups, self.get_latlons())
         qgis.PyQt.QtWidgets.QMessageBox.information(None, 'Preview', '\n'.join(export_printlist))
 
     @staticmethod
@@ -311,7 +313,6 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         Creates a result list with FieldLogger format from selected obsids and parameters
         :return: a list with result lines to export to file
         """
-
         sublocations_locations = {}
         locations_sublocations = OrderedDict()
         locations_lat_lon = OrderedDict()
@@ -363,7 +364,6 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         printlist.extend([p_i_h + ' ' if not p_i_h.endswith(' ') else p_i_h for p_i_h in list(parameters_inputtypes_hints.values())])
 
         printlist.append('NAME;SUBNAME;LAT;LON;INPUTFIELD')
-
         for location, sublocations in sorted(locations_sublocations.items()):
             lat, lon = locations_lat_lon[location]
 
@@ -708,8 +708,9 @@ class MessageBar(qgis.gui.QgsMessageBar):
 
 
 class ObsLayer(gui_utils.VRowEntry):
-    def __init__(self, iface):
+    def __init__(self, iface, obs_from_vlayer):
         super().__init__()
+        self.obs_from_vlayer = obs_from_vlayer
         self.iface = iface
         self._vectorlayers = None
         self.vectorlayer_list = qgis.PyQt.QtWidgets.QComboBox()
@@ -718,15 +719,22 @@ class ObsLayer(gui_utils.VRowEntry):
         self.vectorlayer_list.currentIndexChanged.connect(lambda x: self.update_column_list())
         self.update_vectorlayers(select_layer='obs_points')
 
+        self.obs_from_vlayer.toggled.connect(lambda: self.vectorlayer_list.setEnabled(self.obs_from_vlayer.isChecked()))
+        self.obs_from_vlayer.toggled.connect(lambda: self.column_list.setEnabled(self.obs_from_vlayer.isChecked()))
+
+        for combobox in [self.vectorlayer_list, self.column_list]:
+            combobox.setEnabled(False)
+
         #self.layout.addWidget(
         #    qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Layer')))
         self.layout.addWidget(self.vectorlayer_list)
         self.layout.addWidget(
-            qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Column')))
+            qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'column:')))
         self.layout.addWidget(self.column_list)
 
     def get_all_vectorlayers(self):
-        layers = self.iface.legendInterface().layers()
+        #layers = self.iface.legendInterface().layers()
+        layers = [layer for layer in QgsProject.instance().mapLayers().values()]
         vectorlayers = []
         for layer in layers:
             if layer.type() == QgsMapLayer.VectorLayer:
@@ -754,7 +762,7 @@ class ObsLayer(gui_utils.VRowEntry):
             self.vectorlayer_list.addItem(layer.name())
         if select_layer:
             if isinstance(select_layer, str):
-                gui_utils.set_combobox(self.vectorlayer_list, select_layer)
+                gui_utils.set_combobox(self.vectorlayer_list, select_layer, add_if_not_exists=False)
             elif isinstance(select_layer, QgsVectorLayer):
                 for idx, layer in enumerate(self._vectorlayers):
                     if layer is select_layer:
@@ -783,12 +791,19 @@ class ObsLayer(gui_utils.VRowEntry):
     def get_latlon_for_features(self):
         current_layer = self.current_layer()
         _from = QgsCoordinateReferenceSystem(current_layer.crs())
-        _to = QgsCoordinateReferenceSystem(4326)
-        transform = QgsCoordinateTransform(_from, _to)
+        _to = QgsCoordinateReferenceSystem('EPSG:4326')
+        coordinatetransform = QgsCoordinateTransform(_from, _to, QgsProject.instance())
         fields = current_layer.fields()
         id_index = fields.indexFromName(self.current_column())
-        features = {f.attributes()[id_index]: f.geometry().transform(transform) for f in current_layer.getFeatures('True')}
-        latlons = {k: (v.asPoint().y(), v.asPoint().x()) for k, v in features.items()}
+
+        def transform(geometry):
+            geometry = QgsGeometry(geometry)
+            geometry.transform(coordinatetransform)
+            return geometry
+
+        features = {f.attributes()[id_index]: transform(f.geometry()) for f in current_layer.getFeatures('True')}
+        latlons = {k: ((v.asPoint().y(), v.asPoint().x()) if not v.isNull() else (None, None))
+                    for k, v in features.items()}
         return latlons
 
 

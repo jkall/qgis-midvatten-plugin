@@ -501,19 +501,11 @@ class Midvatten(object):
         Exports data to FieldLogger android app format
         :return: None 
         """
-        allcritical_layers = ('obs_points') #none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-
-        if err_flag == 0:
-            from export_fieldlogger import ExportToFieldLogger
-            try:
-                self.export_to_field_logger.activateWindow()
-            except:
-                self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
-        else:
-            utils.MessagebarAndLog.warning(
-                bar_msg=ru(QCoreApplication.translate("Midvatten", 'Error! Verify Midvatten settings. Verify that no layer is in edit mode.')),
-                duration=15, button=False)
+        from export_fieldlogger import ExportToFieldLogger
+        try:
+            self.export_to_field_logger.activateWindow()
+        except:
+            self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
 
     @utils.general_exception_handler
     def import_fieldlogger(self):
