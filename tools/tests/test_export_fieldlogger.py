@@ -92,8 +92,8 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
     @staticmethod
     def test_update_stored_settings_using_real_parameter_groups():
 
-        parameter_groups = [export_fieldlogger.ParameterGroup(),
-                          export_fieldlogger.ParameterGroup()]
+        parameter_groups = [export_fieldlogger.ParameterGroup(None),
+                          export_fieldlogger.ParameterGroup(None)]
 
         setattr(parameter_groups[0], 'input_field_group_list', ['p1.u1;it1:h1', 'p2.u2;it2:h2'])
         setattr(parameter_groups[1], 'location_suffix', 'loc1')
@@ -109,7 +109,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         stored_settings = [(0, (('key0_1', 'value0_1'), ('key0_2', 'value0_2'))), (1, (('key1_1', 'value1_1'), ('key1_2', 'value1_2')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         stored_settings = ExportToFieldLogger.update_stored_settings(parameter_groups)
         assert stored_settings == []
 
@@ -119,7 +119,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('location_suffix', 'value1_1'), ('key1_2', 'value1_2')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(parameter_groups))
         reference = '[[0, ((input_field_group_list, [p1.u1;it1:h1, p2.u2;it2:h2]))], [1, ((location_suffix, value1_1))]]'
         assert stored_settings == reference
@@ -130,7 +130,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('location_suffix', 'value1_1'), ('key1_2', 'value1_2')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(parameter_groups))
         reference = '[[0, ((location_suffix, value1_1))]]'
         assert stored_settings == reference
@@ -141,7 +141,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('location_s%uffix', 'value1_1'), ('key1_2', 'value1_2')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(parameter_groups))
         reference = '[]'
         assert stored_settings == reference
@@ -214,7 +214,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         stored_settings = [(0, (('final_parameter_name', 'par1'), ('sublocation_suffix', 'group'), ('location_suffix', 'proj')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
@@ -230,7 +230,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         stored_settings = [(0, (('input_field_group_list', ['p1.u1;it1:h1 ']), ('sublocation_suffix', 'proj.group'), ('location_suffix', 'proj')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups, latlons)
@@ -247,7 +247,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('input_field_group_list', ['par2;type2;hint2']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj2')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
         
@@ -266,7 +266,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('input_field_group_list', ['par1;type2;hint2']), ('sublocation_suffix', 'group2'), ('location_suffix', 'proj')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1'])
         parameter_groups[1]._obsid_list.paste_data(['1'])
 
@@ -285,7 +285,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('input_field_group_list', ['par2;type2;hint2']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1'])
         parameter_groups[1]._obsid_list.paste_data(['1'])
 
@@ -302,7 +302,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         stored_settings = [(0, (('input_field_group_list', ['p1.u1;it1:h1', 'l.comment;test;make a comment']), ('location_suffix', 'ls'), ('sublocation_suffix', 'with_p1_u1_and_l_comment'))),
                            (1, (('input_field_group_list', ['comment;test;make a general comment']), ('location_suffix', 'ls'), ('sublocation_suffix', 'with_comment')))]
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1', '2', '3'])
         parameter_groups[1]._obsid_list.paste_data(['1', '2', '3'])
 
@@ -322,7 +322,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('input_field_group_list', ['par2;type2;hint2']), ('sublocation_suffix', 'group2'), ('location_suffix', 'proj')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
 
@@ -342,7 +342,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (2, (('input_field_group_list', ['par3;type3;hint3']), ('sublocation_suffix', 'group3'), ('location_suffix', 'proj')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
         parameter_groups[2]._obsid_list.paste_data(['2', '4'])
@@ -363,7 +363,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1', '2', '4'])
         parameter_groups[1]._obsid_list.paste_data(['1', '2', '4'])
 
@@ -407,7 +407,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('input_field_group_list', ['par2;type2;hint2']), ('sublocation_suffix', 'group'), ('location_suffix', 'proj2')))]
 
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['1', '4'])
         parameter_groups[1]._obsid_list.paste_data(['2', '3', '4'])
 
@@ -468,7 +468,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                            (1, (('input_field_group_list', ['par2;type2;hint2']), ('sublocation_suffix', 'group'),
                                 ('location_suffix', 'proj2')))]
 
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings)
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
         parameter_groups[0]._obsid_list.paste_data(['obsid1', 'obsid2'])
         parameter_groups[1]._obsid_list.paste_data(['obsid3'])
         exporttofieldlogger.parameter_groups = parameter_groups

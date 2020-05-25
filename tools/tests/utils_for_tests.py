@@ -41,7 +41,7 @@ import db_utils
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer
-from midvatten import Midvatten
+from midvatten.midvatten import Midvatten
 from qgis.PyQt.QtCore import QSettings
 
 from mocks_for_tests import DummyInterface2

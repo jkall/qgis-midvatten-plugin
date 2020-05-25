@@ -364,37 +364,43 @@ def get_date_time():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
-def get_selected_features_as_tuple(layername=None):
+def get_selected_features_as_tuple(layer_name=None, column_name=None):
     """ Returns all selected features from layername
 
         Returns a tuple of obsids stored as unicode
     """
-    if layername is not None:
-        obs_points_layer = find_layer(layername)
+    if layer_name is not None:
+        obs_points_layer = find_layer(layer_name)
         if obs_points_layer is None:
             return tuple()
-        selected_obs_points = getselectedobjectnames(obs_points_layer)
+        if column_name is not None:
+            selected_obs_points = getselectedobjectnames(layer_name=obs_points_layer, column_name=column_name)
+        else:
+            selected_obs_points = getselectedobjectnames(layer_name=obs_points_layer)
     else:
-        selected_obs_points = getselectedobjectnames()
+        if column_name is not None:
+            selected_obs_points = getselectedobjectnames(column_name=column_name)
+        else:
+            selected_obs_points = getselectedobjectnames()
     #module midv_exporting depends on obsid being a tuple
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
     return obsidtuple
 
 
-def getselectedobjectnames(thelayer='default', column_name='obsid'):
+def getselectedobjectnames(layer_name='default', column_name='obsid'):
     """ Returns a list of obsid as unicode
 
         thelayer is an optional argument, if not given then activelayer is used
     """
-    if thelayer == 'default':
-        thelayer = get_active_layer()
-    if not thelayer:
+    if layer_name == 'default':
+        layer_name = get_active_layer()
+    if not layer_name:
         return []
-    selectedobs = thelayer.selectedFeatures()
-    kolumnindex = thelayer.dataProvider().fieldNameIndex(column_name)  #OGR data provier is used to find index for column named 'obsid'
+    selectedobs = layer_name.selectedFeatures()
+    kolumnindex = layer_name.dataProvider().fieldNameIndex(column_name)  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
-        kolumnindex = thelayer.dataProvider().fieldNameIndex(column_name.upper())  #backwards compatibility
+        kolumnindex = layer_name.dataProvider().fieldNameIndex(column_name.upper())  #backwards compatibility
     observations = [obs[kolumnindex] for obs in selectedobs] # value in column obsid is stored as unicode
     return observations
 
@@ -2114,8 +2120,8 @@ def warn_about_old_database():
                 break
         if version:
             wikipage = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database'
-            if version <= latest_database_version():
-                MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s'''))%(latest_database_version(), wikipage), duration=15)
+            if version < latest_database_version():
+                MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s'''))%(latest_database_version(), wikipage), duration=5)
 
     #wikipage_view_obs_points = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#add-view_obs_points-as-workaround-for-qgis-bug-20633'
     if dbconnection.dbtype == 'spatialite' and not all([db_utils.verify_table_exists('view_obs_points', dbconnection=dbconnection),

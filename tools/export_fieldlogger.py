@@ -70,9 +70,16 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
             if settingskey not in self.ms.settingsdict:
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('ExportToFieldLogger', '%s did not exist in settingsdict'))%settingskey)
 
-        self.parameter_groups = self.create_parameter_groups_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey))
+        self.obs_from_obs_points = qgis.PyQt.QtWidgets.QRadioButton(
+            QCoreApplication.translate('ExportToFieldLogger', 'table obs_points (id obsid)'))
+        self.obs_from_vlayer = qgis.PyQt.QtWidgets.QRadioButton(
+            QCoreApplication.translate('ExportToFieldLogger', 'vector layer:'))
+        self.obslayer = ObsLayer(self.iface, self.obs_from_vlayer)
+
+        self.parameter_groups = self.create_parameter_groups_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey),
+                                                                                   self.obslayer)
         if self.parameter_groups is None or not self.parameter_groups:
-            self.parameter_groups = [ParameterGroup()]
+            self.parameter_groups = [ParameterGroup(self.obslayer)]
 
         self.main_vertical_layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Fieldlogger input fields and locations:'))))
         self.main_vertical_layout.addWidget(get_line())
@@ -106,7 +113,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.gridLayout_buttons.addWidget(self.add_parameter_group, self.gridLayout_buttons.rowCount(), 0)
         #Lambda and map is used to run several functions for every button click
         self.add_parameter_group.clicked.connect(
-                     lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup()),
+                     lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup(self.obslayer)),
                                   lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]])
 
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
@@ -114,12 +121,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         # obsid-layers:
         self.gridLayout_buttons.addWidget(qgis.PyQt.QtWidgets.QLabel(
             QCoreApplication.translate('ExportToFieldLogger', 'Coordinates from:')))
-        self.obs_from_obs_points = qgis.PyQt.QtWidgets.QRadioButton(
-            QCoreApplication.translate('ExportToFieldLogger', 'table obs_points (id obsid)'))
         self.gridLayout_buttons.addWidget(self.obs_from_obs_points, self.gridLayout_buttons.rowCount(), 0)
-        self.obs_from_vlayer = qgis.PyQt.QtWidgets.QRadioButton(
-            QCoreApplication.translate('ExportToFieldLogger', 'vector layer:'))
-        self.obslayer = ObsLayer(self.iface, self.obs_from_vlayer)
         self.gridLayout_buttons.addWidget(self.obs_from_vlayer, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(self.obslayer.widget, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
@@ -216,7 +218,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         return new_widget
 
     @staticmethod
-    def create_parameter_groups_using_stored_settings(stored_settings):
+    def create_parameter_groups_using_stored_settings(stored_settings, obslayer):
         """
         """
         if not stored_settings or stored_settings is None:
@@ -224,7 +226,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         parameter_groups = []
         for index, attrs in stored_settings:
-            parameter_group = ParameterGroup()
+            parameter_group = ParameterGroup(obslayer)
             attrs_set = False
             for attr in attrs:
                 if hasattr(parameter_group, attr[0]):
@@ -401,11 +403,10 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
 
 class ParameterGroup(object):
-    def __init__(self, obsids_layer=None, obsids_layer_column=None):
+    def __init__(self, obslayer):
         """
         """
-        self.obsids_layer = obsids_layer
-        self.obsids_layer_column = obsids_layer_column
+        self.obslayer = obslayer
         #Widget list:
 
         self._location_suffix = qgis.PyQt.QtWidgets.QLineEdit()
@@ -445,7 +446,17 @@ class ParameterGroup(object):
 
         #-------------------------------------------------------------------------------------
         self.paste_from_selection_button.clicked.connect(
-                         lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
+                         lambda : self.paste_from_selection())
+
+    def paste_from_selection(self):
+        if self.obslayer.obs_from_vlayer.isChecked():
+            self._obsid_list.paste_data(
+                utils.get_selected_features_as_tuple(layer_name=self.obslayer.current_layer(),
+                                                     column_name=self.obslayer.current_column()))
+        else:
+            self._obsid_list.paste_data(
+                utils.get_selected_features_as_tuple(layer_name='obs_points',
+                                                     column_name='obsid'))
 
     def get_settings(self):
         settings = (('input_field_group_list', self.input_field_group_list),
