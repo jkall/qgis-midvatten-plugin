@@ -30,8 +30,8 @@ PORT = '80'
 ENDPOINT = '/plugins/RPC2/'
 VERBOSE = False
 
-IGNORE_FOLDERS = ['.git', 'arkiv','arkiv_o_dok','__pycache__','tests']
-IGNORE_FILES = ['.gitignore', 'plugin_zip_and_upload.py','compile_and_prepare_for_upload_notes.txt']
+IGNORE_FOLDERS = ['.git', 'arkiv','arkiv_o_dok','__pycache__','tests', '.idea']
+IGNORE_FILES = ['.gitignore', 'plugin_zip_and_upload.py','compile_and_prepare_for_upload_notes.txt', ':']
 IGNORE_FILESUFFIX = ('.pyc','.zip')
 
 def main(parameters, arguments):
