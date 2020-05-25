@@ -22,7 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.3:
         - Database structure:
-            * Added a new table "zz_interlab4_obsid_assignment" to assign obsid automatically during interlab4 import.
+            * Added a new table "zz_interlab4_obsid_assignment" to assign obsid automatically during interlab4 import..
         - New features:
             * New QGIS-symbology to visualize stratigraphy on the map: Utilities / Load stratigraphy symbology to qgis.
             * Utilities / Load data tables to qgis. Loads w_levels_logger, meteo, vlf_data and seismic_data to qgis.
