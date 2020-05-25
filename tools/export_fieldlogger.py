@@ -120,7 +120,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         # obsid-layers:
         self.gridLayout_buttons.addWidget(qgis.PyQt.QtWidgets.QLabel(
-            QCoreApplication.translate('ExportToFieldLogger', 'Coordinates from:')))
+            QCoreApplication.translate('ExportToFieldLogger', 'Locations from:')))
         self.gridLayout_buttons.addWidget(self.obs_from_obs_points, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(self.obs_from_vlayer, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(self.obslayer.widget, self.gridLayout_buttons.rowCount(), 0)
@@ -303,7 +303,11 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
     def get_latlons(self):
         if self.obs_from_obs_points.isChecked():
-            latlons = utils.get_latlon_for_all_obsids()
+            try:
+                latlons = utils.get_latlon_for_all_obsids()
+            except utils.UsageError as e:
+                utils.MessagebarAndLog.warning(bar_msg=str(e))
+                latlons = {}
         else:
             latlons = self.obslayer.get_latlon_for_features()
         return latlons
@@ -413,7 +417,7 @@ class ParameterGroup(object):
         self._sublocation_suffix = qgis.PyQt.QtWidgets.QLineEdit()
         self._input_field_group_list = ExtendedQPlainTextEdit(keep_sorted=False)
         self._obsid_list = ExtendedQPlainTextEdit(keep_sorted=True)
-        self.paste_from_selection_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ParameterGroup','Paste obs_points selection')))
+        self.paste_from_selection_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ParameterGroup','Paste selected ids')))
         #------------------------------------------------------------------------
         self._location_suffix.setToolTip(ru(QCoreApplication.translate('ParameterGroup',
                                          """(optional)\n"""
@@ -435,11 +439,10 @@ class ParameterGroup(object):
                                         """the user enters the input fields in Fieldlogger. (!!! If the input\n"""
                                         """field already exists in a previous group it will end up on top!!!)""")))
         locations_box_tooltip = ru(QCoreApplication.translate('ParameterGroup',
-                               """Add obsids to Locations box by selecting obsids from the table "obs_points"\n"""
-                                """using it's attribute table or select from map.\n"""
-                                """Then click the button "Paste obs_points selection"\n"""
+                               """Add locations to Locations box by selecting rows in the chosen layer (see "Locations from"\n"""
+                                """in the left column) using it's attribute table or selection from map.\n"""
+                                """Then click the button "Paste selected ids."\n"""
                                 """Copy and paste obsids between Locations boxes."""))
-
 
         self._obsid_list.setToolTip(locations_box_tooltip)
         self.paste_from_selection_button.setToolTip(locations_box_tooltip)
@@ -454,9 +457,12 @@ class ParameterGroup(object):
                 utils.get_selected_features_as_tuple(layer_name=self.obslayer.current_layer(),
                                                      column_name=self.obslayer.current_column()))
         else:
-            self._obsid_list.paste_data(
-                utils.get_selected_features_as_tuple(layer_name='obs_points',
-                                                     column_name='obsid'))
+            try:
+                self._obsid_list.paste_data(
+                    utils.get_selected_features_as_tuple(layer_name='obs_points',
+                                                         column_name='obsid'))
+            except utils.UsageError as e:
+                utils.MessagebarAndLog.warning(bar_msg=str(e))
 
     def get_settings(self):
         settings = (('input_field_group_list', self.input_field_group_list),

@@ -58,7 +58,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
-from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsProject, Qgis, QgsApplication
+from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsProject, Qgis, QgsApplication, QgsMapLayer
 from qgis.gui import QgsMessageBar, QtCore
 from definitions.db_defs import latest_database_version
 
@@ -340,6 +340,7 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
 def find_layer(layer_name):
     found_layers = [layer for name, layer in QgsProject.instance().mapLayers().items()
                     if layer.name() == layer_name]
+
     if len(found_layers) == 0:
         raise UsageError(returnunicode(QCoreApplication.translate('find_layer', 'The layer %s was not found!'))%layer_name)
     elif len(found_layers) > 1:
@@ -370,7 +371,14 @@ def get_selected_features_as_tuple(layer_name=None, column_name=None):
         Returns a tuple of obsids stored as unicode
     """
     if layer_name is not None:
-        obs_points_layer = find_layer(layer_name)
+        if isinstance(layer_name, str):
+            obs_points_layer = find_layer(layer_name)
+        elif isinstance(layer_name, QgsMapLayer):
+            obs_points_layer = layer_name
+        else:
+            MessagebarAndLog.info(log_msg=QCoreApplication.translate('get_selected_features_as_tuple', 'Programming error: The layername "%s" was not str or QgsMapLayer!')%str(layer_name))
+            obs_points_layer = None
+
         if obs_points_layer is None:
             return tuple()
         if column_name is not None:

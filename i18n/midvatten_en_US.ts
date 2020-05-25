@@ -3,7 +3,7 @@
 <context>
     <name></name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1751"/>
+        <location filename="../tools/midvatten_utils.py" line="1759"/>
         <source>Loading saved templates %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -395,7 +395,7 @@ imported rows instead of being read from file column.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2101"/>
+        <location filename="../tools/midvatten_utils.py" line="2109"/>
         <source>Style cycler ran out of unique combinations. Using random color!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2683,42 +2683,42 @@ or press &quot;Save settings&quot; to undo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="337"/>
+        <location filename="../tools/export_fieldlogger.py" line="341"/>
         <source>Warning: Empty input fields list for group nr %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="347"/>
+        <location filename="../tools/export_fieldlogger.py" line="351"/>
         <source>Critical: Obsid %s did not have lat-lon coordinates. Check obs_points table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="357"/>
+        <location filename="../tools/export_fieldlogger.py" line="361"/>
         <source>Warning, parameter error, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="357"/>
+        <location filename="../tools/export_fieldlogger.py" line="361"/>
         <source>The parameter %s exists more than once and the last one will overwrite the previous.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="393"/>
+        <location filename="../tools/export_fieldlogger.py" line="397"/>
         <source>Choose a file name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="400"/>
+        <location filename="../tools/export_fieldlogger.py" line="404"/>
         <source>Writing of file failed!: %s </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="402"/>
+        <location filename="../tools/export_fieldlogger.py" line="406"/>
         <source>Error writing %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="547"/>
+        <location filename="../tools/export_fieldlogger.py" line="553"/>
         <source>(mandatory)
 Either supply a chosen name directly or use parameter
 and unit boxes to create a name.
@@ -2726,7 +2726,7 @@ ex: parameter.unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="554"/>
+        <location filename="../tools/export_fieldlogger.py" line="560"/>
         <source>(mandatory)
 Decides the keyboard layout in the Fieldlogger app.
 numberDecimal|numberSigned: Decimals with allowed &quot;-&quot; sign
@@ -2734,13 +2734,8 @@ text: Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1567"/>
+        <location filename="../tools/midvatten_utils.py" line="1575"/>
         <source>Parsing the settingsstring %s failed. Msg &quot;%s&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/export_fieldlogger.py" line="122"/>
-        <source>Coordinates from:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2751,6 +2746,11 @@ text: Text</source>
     <message>
         <location filename="../tools/export_fieldlogger.py" line="75"/>
         <source>vector layer:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/export_fieldlogger.py" line="122"/>
+        <source>Locations from:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4210,52 +4210,52 @@ wells file</source>
 <context>
     <name>MatplotlibStyles</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1838"/>
+        <location filename="../tools/midvatten_utils.py" line="1846"/>
         <source>Matplotlib style folder %s was not a directory!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1844"/>
+        <location filename="../tools/midvatten_utils.py" line="1852"/>
         <source>Could not create style folder %s, see log message panel!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1848"/>
+        <location filename="../tools/midvatten_utils.py" line="1856"/>
         <source>Matplotlib style folder created %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1851"/>
+        <location filename="../tools/midvatten_utils.py" line="1859"/>
         <source>Matplotlib config directory not found. User styles not used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1871"/>
+        <location filename="../tools/midvatten_utils.py" line="1879"/>
         <source>Failed to load saved style, loading default style instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1914"/>
+        <location filename="../tools/midvatten_utils.py" line="1922"/>
         <source>Failed to load style, check style settings in %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1914"/>
+        <location filename="../tools/midvatten_utils.py" line="1922"/>
         <source>Error msg %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1942"/>
+        <location filename="../tools/midvatten_utils.py" line="1950"/>
         <source>The style file existed. Overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1950"/>
+        <location filename="../tools/midvatten_utils.py" line="1958"/>
         <source>Choose a file name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1982"/>
+        <location filename="../tools/midvatten_utils.py" line="1990"/>
         <source>rcParams written to log, see log messages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5044,12 +5044,12 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2176"/>
+        <location filename="../tools/midvatten_utils.py" line="2184"/>
         <source>Views not added for PostGIS databases (not needed)!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2186"/>
+        <location filename="../tools/midvatten_utils.py" line="2194"/>
         <source>Views added. Please reload layers (Midvatten&gt;Load default db-layers to qgis or &quot;F7&quot;).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5162,7 +5162,7 @@ the CRS you want to use in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2170"/>
+        <location filename="../tools/midvatten_utils.py" line="2178"/>
         <source>sql failed:
 %s
 error msg:
@@ -5192,7 +5192,7 @@ error msg:
 <context>
     <name>ObsLayer</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="751"/>
+        <location filename="../tools/export_fieldlogger.py" line="757"/>
         <source>id column:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5236,43 +5236,43 @@ See Pandas pandas.rolling_mean documentation for more info.</source>
 <context>
     <name>ParameterBrowser</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="559"/>
+        <location filename="../tools/export_fieldlogger.py" line="565"/>
         <source>(optional)
 Hint given to the Fieldlogger user for the parameter. Ex: &quot;depth to water&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="561"/>
+        <location filename="../tools/export_fieldlogger.py" line="567"/>
         <source>Copy input fields to the &quot;Input Fields&quot; boxes using ctrl+c, ctrl+v.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="578"/>
+        <location filename="../tools/export_fieldlogger.py" line="584"/>
         <source>Error, sql failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="578"/>
+        <location filename="../tools/export_fieldlogger.py" line="584"/>
         <source>Cannot get data from sql %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="607"/>
+        <location filename="../tools/export_fieldlogger.py" line="613"/>
         <source>Error, input name not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="610"/>
+        <location filename="../tools/export_fieldlogger.py" line="616"/>
         <source>Error, input type not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="613"/>
+        <location filename="../tools/export_fieldlogger.py" line="619"/>
         <source>Error, input name already existing. No duplicates allowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="617"/>
+        <location filename="../tools/export_fieldlogger.py" line="623"/>
         <source>Warning, hint not given and will be set to a space (&quot; &quot;) as it must exist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5348,12 +5348,7 @@ Hint given to the Fieldlogger user for the parameter. Ex: &quot;depth to water&q
 <context>
     <name>ParameterGroup</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="416"/>
-        <source>Paste obs_points selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/export_fieldlogger.py" line="418"/>
+        <location filename="../tools/export_fieldlogger.py" line="422"/>
         <source>(optional)
 The Fieldlogger location in the Fieldlogger map will be &quot;obsid.LOCATION SUFFIX&quot;.
 
@@ -5362,7 +5357,7 @@ ex: Location suffix 1234 --&gt; obsid.1234</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="423"/>
+        <location filename="../tools/export_fieldlogger.py" line="427"/>
         <source>(optional)
 Fieldlogger sub-location will be obsid.Location suffix.Sub-location suffix
 
@@ -5372,7 +5367,7 @@ ex: level, quality, sample, comment, flow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="429"/>
+        <location filename="../tools/export_fieldlogger.py" line="433"/>
         <source>Copy and paste input fields from &quot;Create Input Fields&quot; to this box
 or from/to other input field boxes.
 The input fields in Fieldlogger will appear in the same order as in
@@ -5383,10 +5378,15 @@ field already exists in a previous group it will end up on top!!!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="437"/>
-        <source>Add obsids to Locations box by selecting obsids from the table &quot;obs_points&quot;
-using it&apos;s attribute table or select from map.
-Then click the button &quot;Paste obs_points selection&quot;
+        <location filename="../tools/export_fieldlogger.py" line="420"/>
+        <source>Paste selected ids</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/export_fieldlogger.py" line="441"/>
+        <source>Add locations to Locations box by selecting rows in the chosen layer (see &quot;Locations from&quot;
+in the left column) using it&apos;s attribute table or selection from map.
+Then click the button &quot;Paste selected ids.&quot;
 Copy and paste obsids between Locations boxes.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5394,17 +5394,17 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PickAnnotator</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2205"/>
+        <location filename="../tools/midvatten_utils.py" line="2213"/>
         <source>PickAnnotator initialized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2245"/>
+        <location filename="../tools/midvatten_utils.py" line="2253"/>
         <source>Adding annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2257"/>
+        <location filename="../tools/midvatten_utils.py" line="2265"/>
         <source>Removing annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5428,64 +5428,64 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PlotTemplates</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1637"/>
+        <location filename="../tools/midvatten_utils.py" line="1645"/>
         <source>Failed to load saved template, loading default template instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1645"/>
+        <location filename="../tools/midvatten_utils.py" line="1653"/>
         <source>Default template not found, loading hard coded default template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1651"/>
+        <location filename="../tools/midvatten_utils.py" line="1659"/>
         <source>Failed to load default template, loading hard coded default template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1651"/>
+        <location filename="../tools/midvatten_utils.py" line="1659"/>
         <source>Error msg %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1655"/>
+        <location filename="../tools/midvatten_utils.py" line="1663"/>
         <source>Loaded template from default template file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1660"/>
+        <location filename="../tools/midvatten_utils.py" line="1668"/>
         <source>Loaded template from default hard coded template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1697"/>
+        <location filename="../tools/midvatten_utils.py" line="1705"/>
         <source>Choose a file name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1758"/>
+        <location filename="../tools/midvatten_utils.py" line="1766"/>
         <source>&quot;%s&quot; was not a file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1772"/>
+        <location filename="../tools/midvatten_utils.py" line="1780"/>
         <source>Loading template %s failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1763"/>
+        <location filename="../tools/midvatten_utils.py" line="1771"/>
         <source>Reading file failed, msg:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1772"/>
+        <location filename="../tools/midvatten_utils.py" line="1780"/>
         <source>Parsing file rows failed, msg:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1639"/>
+        <location filename="../tools/midvatten_utils.py" line="1647"/>
         <source>Loaded template from midvatten settings %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5926,22 +5926,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>StoredSettings</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1672"/>
+        <location filename="../tools/midvatten_utils.py" line="1680"/>
         <source>Replace the settings string with a new settings string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1809"/>
+        <location filename="../tools/midvatten_utils.py" line="1817"/>
         <source>Translating string to dict failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1673"/>
+        <location filename="../tools/midvatten_utils.py" line="1681"/>
         <source>Edit settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1809"/>
+        <location filename="../tools/midvatten_utils.py" line="1817"/>
         <source>Error %s
 for string
 %s</source>
@@ -6218,7 +6218,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Timer</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2268"/>
+        <location filename="../tools/midvatten_utils.py" line="2276"/>
         <source>Total time running %s: %s seconds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6353,7 +6353,7 @@ and parameter: %s</source>
 <context>
     <name>ask_for_charset</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="858"/>
+        <location filename="../tools/midvatten_utils.py" line="866"/>
         <source>Give charset used in the file, normally
 iso-8859-1, utf-8, cp1250 or cp1252.
 
@@ -6361,12 +6361,12 @@ On your computer %s is default.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="869"/>
+        <location filename="../tools/midvatten_utils.py" line="877"/>
         <source>Set charset encoding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="868"/>
+        <location filename="../tools/midvatten_utils.py" line="876"/>
         <source>Give charset used in the file, default charset on normally
 utf-8, iso-8859-1, cp1250 or cp1252.</source>
         <translation type="unfinished"></translation>
@@ -6375,12 +6375,12 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>ask_for_delimiter</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1402"/>
+        <location filename="../tools/midvatten_utils.py" line="1410"/>
         <source>Give delimiter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1408"/>
+        <location filename="../tools/midvatten_utils.py" line="1416"/>
         <source>Delimiter not given. Stopping.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6388,12 +6388,12 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>ask_for_export_crs</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="875"/>
+        <location filename="../tools/midvatten_utils.py" line="883"/>
         <source>Set export crs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="875"/>
+        <location filename="../tools/midvatten_utils.py" line="883"/>
         <source>Give the crs for the exported database.
 </source>
         <translation type="unfinished"></translation>
@@ -6456,14 +6456,14 @@ Must write time resolution also.
 <context>
     <name>calculate_db_table_rows</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1258"/>
+        <location filename="../tools/midvatten_utils.py" line="1266"/>
         <source>Sql failed:
 %s
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1267"/>
+        <location filename="../tools/midvatten_utils.py" line="1275"/>
         <source>Calculation done, see log for results.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6542,7 +6542,7 @@ Must write time resolution also.
 <context>
     <name>filter_nonexisting_values_and_ask</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1079"/>
+        <location filename="../tools/midvatten_utils.py" line="1087"/>
         <source>(Message %s of %s)
 
 Give the %s for:
@@ -6550,7 +6550,7 @@ Give the %s for:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1080"/>
+        <location filename="../tools/midvatten_utils.py" line="1088"/>
         <source>User input needed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6573,12 +6573,12 @@ Supported date formats:
 <context>
     <name>find_layer</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="345"/>
+        <location filename="../tools/midvatten_utils.py" line="346"/>
         <source>The layer %s was not found!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="347"/>
+        <location filename="../tools/midvatten_utils.py" line="348"/>
         <source>Found %s layers with the name &quot;%s&quot;. There can be only one!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6586,7 +6586,7 @@ Supported date formats:
 <context>
     <name>general_exception_handler</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1510"/>
+        <location filename="../tools/midvatten_utils.py" line="1518"/>
         <source>Usage error: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6611,7 +6611,7 @@ Msg2:
 <context>
     <name>get_delimiter</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1353"/>
+        <location filename="../tools/midvatten_utils.py" line="1361"/>
         <source>Must give filename</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6619,12 +6619,12 @@ Msg2:
 <context>
     <name>get_delimiter_from_file_rows</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1396"/>
+        <location filename="../tools/midvatten_utils.py" line="1404"/>
         <source>Delimiter couldn&apos;t be found automatically for %s. Give the correct one (ex &apos;;&apos;):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1386"/>
+        <location filename="../tools/midvatten_utils.py" line="1394"/>
         <source>Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6632,7 +6632,7 @@ Msg2:
 <context>
     <name>get_locale_from_db</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1235"/>
+        <location filename="../tools/midvatten_utils.py" line="1243"/>
         <source>Connection to db failed when getting locale from db.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6640,9 +6640,17 @@ Msg2:
 <context>
     <name>get_quality_instruments</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="792"/>
+        <location filename="../tools/midvatten_utils.py" line="800"/>
         <source>Failed to get quality instruments from sql
 %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>get_selected_features_as_tuple</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="380"/>
+        <source>Programming error: The layername &quot;%s&quot; was not str or QgsMapLayer!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6662,22 +6670,22 @@ Msg2:
 <context>
     <name>get_stored_settings</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1546"/>
+        <location filename="../tools/midvatten_utils.py" line="1554"/>
         <source>Settings key %s did not exist in midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1549"/>
+        <location filename="../tools/midvatten_utils.py" line="1557"/>
         <source>Settings key %s was empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1567"/>
+        <location filename="../tools/midvatten_utils.py" line="1575"/>
         <source>Getting stored settings failed for key %s see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1555"/>
+        <location filename="../tools/midvatten_utils.py" line="1563"/>
         <source>Reading stored settings &quot;%s&quot;:
 %s</source>
         <translation type="unfinished"></translation>
@@ -6960,7 +6968,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>pop_up_info</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="447"/>
+        <location filename="../tools/midvatten_utils.py" line="455"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6984,7 +6992,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>returnunicode</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="538"/>
+        <location filename="../tools/midvatten_utils.py" line="546"/>
         <source>data type unknown, check database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6992,7 +7000,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>save_stored_settings</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1531"/>
+        <location filename="../tools/midvatten_utils.py" line="1539"/>
         <source>Settings %s stored for key %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7000,22 +7008,22 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>select_files</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="838"/>
+        <location filename="../tools/midvatten_utils.py" line="846"/>
         <source>Getting directory for select_files failed with msg %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="843"/>
+        <location filename="../tools/midvatten_utils.py" line="851"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="845"/>
+        <location filename="../tools/midvatten_utils.py" line="853"/>
         <source>Select files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="848"/>
+        <location filename="../tools/midvatten_utils.py" line="856"/>
         <source>No file selected!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7023,17 +7031,17 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>selection_check</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="550"/>
+        <location filename="../tools/midvatten_utils.py" line="558"/>
         <source>Error, select at least one object in the qgis layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="552"/>
+        <location filename="../tools/midvatten_utils.py" line="560"/>
         <source>&quot;&quot;&quot;Error, select exactly %s object in the qgis layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="554"/>
+        <location filename="../tools/midvatten_utils.py" line="562"/>
         <source>Select a qgis layer that has a field obsid!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7057,7 +7065,7 @@ Msg:
 <context>
     <name>sql_failed_msg</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1456"/>
+        <location filename="../tools/midvatten_utils.py" line="1464"/>
         <source>Sql failed, see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7098,7 +7106,7 @@ Msg:
 <context>
     <name>strat_selection_check</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="561"/>
+        <location filename="../tools/midvatten_utils.py" line="569"/>
         <source>Error, select a qgis layer with field h_gs!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7106,7 +7114,7 @@ Msg:
 <context>
     <name>timer</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2276"/>
+        <location filename="../tools/midvatten_utils.py" line="2284"/>
         <source>Total time running %s: %s seconds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7114,7 +7122,7 @@ Msg:
 <context>
     <name>unicode_2_utf8</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="595"/>
+        <location filename="../tools/midvatten_utils.py" line="603"/>
         <source>data type unknown, check database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7122,17 +7130,17 @@ Msg:
 <context>
     <name>verify_layer_selection</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="649"/>
+        <location filename="../tools/midvatten_utils.py" line="657"/>
         <source>Error, you have to select some features!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="651"/>
+        <location filename="../tools/midvatten_utils.py" line="659"/>
         <source>Error, you have to select exactly %s features!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="653"/>
+        <location filename="../tools/midvatten_utils.py" line="661"/>
         <source>Error, you have to select a relevant layer!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7140,28 +7148,28 @@ Msg:
 <context>
     <name>verify_msettings_loaded_and_layer_edit_mode</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="622"/>
+        <location filename="../tools/midvatten_utils.py" line="630"/>
         <source>Error %s is currently in editing mode.
 Please exit this mode before proceeding with this operation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="627"/>
+        <location filename="../tools/midvatten_utils.py" line="635"/>
         <source>Error, No database found. Please check your Midvatten Settings. Reset if needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="633"/>
+        <location filename="../tools/midvatten_utils.py" line="641"/>
         <source>Databas is already in use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="637"/>
+        <location filename="../tools/midvatten_utils.py" line="645"/>
         <source>Error, The selected database doesn&apos;t exist. Please check your Midvatten Settings and database location. Reset if needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="614"/>
+        <location filename="../tools/midvatten_utils.py" line="622"/>
         <source>Error layer %s is required but missing!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7169,12 +7177,12 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>verify_this_layer_selected_and_not_in_edit_mode</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="676"/>
+        <location filename="../tools/midvatten_utils.py" line="684"/>
         <source>Error, you have to select/activate %s layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="673"/>
+        <location filename="../tools/midvatten_utils.py" line="681"/>
         <source>Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7208,27 +7216,27 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>warn_about_old_database</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2122"/>
+        <location filename="../tools/midvatten_utils.py" line="2130"/>
         <source>Database might not be a valid Midvatten database!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2122"/>
+        <location filename="../tools/midvatten_utils.py" line="2130"/>
         <source>msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2130"/>
+        <location filename="../tools/midvatten_utils.py" line="2138"/>
         <source>No row returned from about_db when searching for version.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2145"/>
+        <location filename="../tools/midvatten_utils.py" line="2153"/>
         <source>The database version appears to be older than %s. An upgrade is suggested! See %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2154"/>
+        <location filename="../tools/midvatten_utils.py" line="2162"/>
         <source>Database is missing view_obs_points or view_obs_lines! Add these using Midvatten&gt;Database Management&gt;Add view_obs_points as workaround for qgis bug #20633.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7236,7 +7244,7 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>write_printlist_to_file</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="2058"/>
+        <location filename="../tools/midvatten_utils.py" line="2066"/>
         <source>Data written to file %s.</source>
         <translation type="unfinished"></translation>
     </message>
