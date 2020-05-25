@@ -625,7 +625,7 @@ specific_table_info = {'obs_lines': 'The geometry column supports WKT ("well kno
                        'obs_points': 'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}
 
 def export_fieldlogger_defaults():
-    current_locale = utils.getcurrentlocale()[0]
+    current_locale = utils.getcurrentlocale(print_error_message_in_bar=False)[0]
 
     if current_locale != 'sv_SE':
         input_field_browser =  [

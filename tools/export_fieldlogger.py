@@ -25,6 +25,7 @@ import qgis.PyQt
 import ast
 import copy
 import os.path
+import traceback
 import qgis.gui
 from collections import OrderedDict
 #from qgis._core import QgsProject
@@ -54,7 +55,11 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         self.widget.setMinimumWidth(180)
 
-        tables_columns = db_utils.tables_columns()
+        try:
+            tables_columns = db_utils.tables_columns()
+        except utils.UsageError as e:
+            tables_columns = {}
+            utils.MessagebarAndLog.info(bar_msg=str(e))
 
         self.parameter_groups = None
 
@@ -110,7 +115,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.gridLayout_buttons.addWidget(qgis.PyQt.QtWidgets.QLabel(
             QCoreApplication.translate('ExportToFieldLogger', 'Coordinates from:')))
         self.obs_from_obs_points = qgis.PyQt.QtWidgets.QRadioButton(
-            QCoreApplication.translate('ExportToFieldLogger', 'table obs_points'))
+            QCoreApplication.translate('ExportToFieldLogger', 'table obs_points (id obsid)'))
         self.gridLayout_buttons.addWidget(self.obs_from_obs_points, self.gridLayout_buttons.rowCount(), 0)
         self.obs_from_vlayer = qgis.PyQt.QtWidgets.QRadioButton(
             QCoreApplication.translate('ExportToFieldLogger', 'vector layer:'))
@@ -118,7 +123,11 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.gridLayout_buttons.addWidget(self.obs_from_vlayer, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(self.obslayer.widget, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
-        self.obs_from_obs_points.setChecked(True)
+
+        if tables_columns:
+            self.obs_from_obs_points.setChecked(True)
+        else:
+            self.obs_from_vlayer.setChecked(True)
 
         # Obsid settings
 
@@ -729,7 +738,7 @@ class ObsLayer(gui_utils.VRowEntry):
         #    qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Layer')))
         self.layout.addWidget(self.vectorlayer_list)
         self.layout.addWidget(
-            qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'column:')))
+            qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'id column:')))
         self.layout.addWidget(self.column_list)
 
     def get_all_vectorlayers(self):

@@ -21,7 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.3b14
-        - Fieldlogger export: Now supports exporting directly from a vector layer. Ongoing dev.
+        - Fieldlogger export: Now supports exporting directly from a vector layer.
         Version 1.6.3b13
         - Interlab4: Greatly improves the row filtering performance.
         Version 1.6.3b12

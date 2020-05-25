@@ -502,9 +502,12 @@ class Midvatten(object):
         :return: None 
         """
         from export_fieldlogger import ExportToFieldLogger
-        try:
-            self.export_to_field_logger.activateWindow()
-        except:
+        if hasattr(self, 'export_to_field_logger'):
+            try:
+                self.export_to_field_logger.activateWindow()
+            except:
+                self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
+        else:
             self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
 
     @utils.general_exception_handler
