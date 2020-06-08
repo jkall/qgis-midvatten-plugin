@@ -625,7 +625,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
     def get_reading_num(self, reading_num, reading_txt):
         if reading_num is None and reading_txt is not None:
-            reading_num = reading_txt.replace('<', '').replace('>', '').replace(',', '.')
+            reading_num = reading_txt.replace('<', '').replace('>', '').replace(',', '.').lstrip().rstrip()
         return reading_num
 
     def as_float(self, _value):
