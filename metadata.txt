@@ -22,6 +22,8 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.5b1:
         - Interlab4: Fixes bug when number contained space.
+        - Stratigraphy symbology: Changed to lower(<column name>) instead of just <column name>.
+        - Stratigraphy symbology: Reduced shadow opacity to 40% from 70%.
         Version 1.6.4:
         - Database structure:
             * Added a new table "zz_interlab4_obsid_assignment" to assign obsid automatically during interlab4 import..
