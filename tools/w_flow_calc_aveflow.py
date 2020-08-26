@@ -27,9 +27,11 @@ import qgis.utils
 
 import datetime
 import os
+import datetime as dt
 
 import db_utils
 from matplotlib.dates import datestr2num
+import import_data_to_db
 import numpy as np
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
@@ -37,6 +39,13 @@ from midvatten_utils import returnunicode as ru
 from qgis.PyQt import uic
 
 from qgis.PyQt.QtCore import QCoreApplication
+
+try:
+    import pandas as pd
+except:
+    pandas_on = False
+else:
+    pandas_on = True
 
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_aveflow_dialog.ui'))[0]
 
@@ -52,7 +61,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         self.pushButton_Selected.clicked.connect(lambda x: self.calcselected())
         self.pushButton_Cancel.clicked.connect(lambda x: self.close())
 
-    def calcall(self):
+    def calcall(self, use_pandas=True):
         ok, obsar = db_utils.sql_load_fr_db('''SELECT DISTINCT obsid FROM w_flow WHERE flowtype = 'Accvol' ''')
         #if not ok:
         #    utils.MessagebarAndLog.critical(bar_msg=)
@@ -60,12 +69,18 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Calcave', "No observations with Accvol found, nothing calculated!")))
             return
         self.observations = [obs[0] for obs in obsar]
-        self.calculateaveflow()
+        if pandas_on and use_pandas:
+            self.calculateaveflow_pandas()
+        else:
+            self.calculateaveflow()
 
-    def calcselected(self):
+    def calcselected(self, use_pandas=True):
         obsar = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
         self.observations = [obs for obs in obsar] #turn into a list of python byte strings
-        self.calculateaveflow()
+        if pandas_on and use_pandas:
+            self.calculateaveflow_pandas()
+        else:
+            self.calculateaveflow()
 
     def calculateaveflow(self):
         utils.start_waiting_cursor()
@@ -97,3 +112,56 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Calcave', "Please notice that negative flow was encountered.")))
         utils.stop_waiting_cursor()
         self.close()
+
+    def calculateaveflow_pandas(self):
+        if not pandas_on:
+            utils.MessagebarAndLog.warning(bar_msg=ru(
+                QCoreApplication.translate('Calcave', "Python3 pandas not installed. No calculation done!")))
+            return
+
+        utils.start_waiting_cursor()
+        date_from = self.FromDateTime.dateTime().toPyDateTime()
+        date_to = self.ToDateTime.dateTime().toPyDateTime()
+
+        sql = '''SELECT date_time, reading, obsid, instrumentid, comment FROM w_flow WHERE flowtype = 'Accvol' AND date_time >= '%s' AND date_time <= '%s' AND obsid IN (%s)
+                 ORDER by obsid, instrumentid, date_time'''%(date_from,date_to, utils.sql_unicode_list(self.observations))
+        dbconnection = db_utils.DbConnectionManager()
+        df = pd.read_sql(sql, dbconnection.conn, index_col=['date_time'], coerce_float=True, params=None, parse_dates=['date_time'],
+                             columns=None,
+                             chunksize=None)
+        dbconnection.closedb()
+
+        df['dt'] = df.index.astype('int64')//1e9
+        df = df.sort_values(by=['obsid', 'instrumentid', 'date_time']).reset_index()
+        grouped = df.groupby(by=['obsid', 'instrumentid'])
+        df['aveflow'] = (grouped['reading'].diff() / grouped['dt'].diff()) * 1000
+
+        if (df['aveflow'] < 0).any():
+            utils.MessagebarAndLog.info(
+                bar_msg=ru(QCoreApplication.translate('Calcave', "Please notice that negative flow was encountered.")))
+
+        columns = ['obsid', 'instrumentid', 'date_time', 'aveflow', 'comment']
+        df['date_time'] = df['date_time'].astype(str)
+        df = df.loc[df['aveflow'].notna(), columns] #'[[columns].copy()
+        df.columns = ['obsid', 'instrumentid', 'date_time', 'reading', 'comment']
+        df['flowtype'] = 'Aveflow'
+        df['unit'] = 'l/s'
+
+        file_data = df.values.tolist()
+        file_data.reverse()
+        file_data.append(list(df.columns))
+        file_data.reverse()
+
+        #print('\n'.join([', '.join([str(x) for x in row]) for row in file_data]))
+
+        importer = import_data_to_db.midv_data_importer()
+        importer.general_import(dest_table='w_flow', file_data=file_data)
+
+        utils.stop_waiting_cursor()
+        self.close()
+
+
+
+
+
+

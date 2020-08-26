@@ -46,7 +46,7 @@ def find_date_format(datestring, suppress_error_msg=False):
     """
     datestring = str(datestring)
     date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
-                           '%Y%m%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y%m%d',
+                           '%Y%m%d %H:%M:%S', '%Y%m%d %H:%M', '%Y-%m-%d %H:%M', '%Y%m%d',
                            '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S',
                            '%d-%m-%Y %H:%M', '%d-%m-%Y %H', '%Y/%m/%d %H:%M',
                            '%Y/%m/%d %H', '%Y%m%d %H%M%S', '%Y%m%d %H%M',

@@ -726,11 +726,17 @@ class DatabaseLockedError(Exception):
     pass
 
 
-def placeholder_sign(dbconnection):
-    if dbconnection.dbtype == 'spatialite':
-        return '?'
+def placeholder_sign(dbconnection=None):
+    signs = {'spatialite': '?',
+             'postgis': '%s'}
+
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+        sign = signs.get(dbconnection.dbtype, '%s')
+        dbconnection.closedb()
     else:
-        return '%s'
+        sign = signs.get(dbconnection.dbtype, '%s')
+    return sign
 
 
 def get_dbtype(dbtype):
