@@ -35,7 +35,7 @@ from tools.tests.mocks_for_tests import DummyInterface
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
@@ -97,7 +97,6 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         #reference_list = ['1', '2']
         assert test == reference
 
-
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
@@ -137,7 +136,6 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print("Ref:\n" + str(reference))
         print("Test:\n" + str(test))
         assert test == reference
-
 
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
