@@ -341,6 +341,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.get_plot_data_geo()
         self.get_plot_data_seismic()
         self.get_plot_data_hydro()
+        self.get_missing_obsid_labels()
 
         #draw plot
         self.draw_plot()
@@ -367,8 +368,16 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
         utils.stop_waiting_cursor()
 
+    def get_missing_obsid_labels(self):
+        for idx, obs in enumerate(self.selected_obsids):
+            if obs not in self.obsid_annotation and (self.ms.settingsdict['stratigraphyplotted'] or
+                                                     self.ms.settingsdict['secplothydrologyplotted']):
+                if self.barlengths[idx]:
+                    self.obsid_annotation[obs] = (self.x_id[idx], self.bottoms[idx] + self.barlengths[idx])
+
     def draw_plot(self): #replot
         self.water_level_labels_duplicate_check = []
+
 
         rcparams = self.secplot_templates.loaded_template.get('rcParams', {})
         for k, v in rcparams.items():
@@ -1513,10 +1522,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             p = self.axes.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar)
             p.skip_legend = True
             self.p.append(p)
+
+
+
         if plot_labels:
             for o, m_n in self.obsid_annotation.items():
                 m, n = m_n
-            #for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
+                #for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                 text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
     def update_barwidths_from_plot(self):

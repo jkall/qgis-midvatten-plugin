@@ -496,6 +496,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         #print(str(self.myplot.obsid_annotation))
         print(str(self.myplot.obsid_annotation))
         print(str(mock_messagebar.mock_calls))
+        print(str(self.myplot.obsid_annotation))
         assert str(self.myplot.obsid_annotation) == '''{'P1': (0.0, 50.0), 'P3': (3.0, 90.0), 'P2': (1.0, 183.0)}'''
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
