@@ -607,23 +607,29 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if not self.sectionlinelayer:
             return
         self.rastItems = {}  # dictionary - layer name : layer
-        mc = self.iface.mapCanvas()
-        msg=''
-        for i in range(mc.layerCount()):#find the raster layers
-            layer = mc.layer(i)
+
+        #QgsProject::layers(	)
+        msg = []
+        layers = [QgsProject.instance().mapLayer(_id) for _id in QgsProject.instance().mapLayers()]
+        for layer in layers:
             if layer.type() == layer.RasterLayer:
-                msg=ru(QCoreApplication.translate('SectionPlot', 'please notice that DEM(s) must be single band rasters and have same crs as your selected vector line layer'))
-                if layer.bandCount()==1:#only single band raster layers
-                    #print('raster layer '  + layer.name() + ' has crs '+str(layer.crs().authid()[5:]))#debug
-                    #print('polyline layer ' + self.sectionlinelayer.name() + ' has crs '+str(self.line_crs.authid()[5:]))#debug
-                    if layer.crs().authid()[5:] == self.line_crs.authid()[5:]:#only raster layer with crs corresponding to line layer
-                        self.rastItems[str(layer.name())] = layer
-                        self.inData.addItem(str(layer.name()))
-                        item = self.inData.item(self.inData.count()-1)
-                        if item.text() in self.ms.settingsdict['secplotselectedDEMs']:
-                            item.setSelected(True)
-        if msg !='':
-            self.iface.messageBar().pushMessage(ru(QCoreApplication.translate('SectionPlot', "Info")),msg, 0,duration=10)
+                if layer.bandCount() != 1:  # only single band raster layers
+                    msg.append('Sectionplot: Layer "{}" omitted due to more than one layer band.'.format(ru(layer.name())))
+                elif layer.crs().authid()[5:]!= self.line_crs.authid()[5:]: #only raster layer with crs corresponding to line layer
+                    msg.append('Sectionplot: Layer "{}" omitted due to wrong CRS ("{}" is required, was "{}".'.format(
+                        ru(layer.name()), self.line_crs.authid(), layer.crs().authid()))
+                else:
+                    self.rastItems[str(layer.name())] = layer
+                    self.inData.addItem(str(layer.name()))
+                    item = self.inData.item(self.inData.count() - 1)
+                    if item.text() in self.ms.settingsdict['secplotselectedDEMs']:
+                        item.setSelected(True)
+        if msg:
+            utils.MessagebarAndLog.warning(
+                bar_msg=QCoreApplication.translate('SectionPlot', "One or more layers were omitted due to unfulfilled requirements, see log message panel."),
+                log_msg='\n'.join(msg),
+                duration=30
+            )
         self.get_dem_selection()
 
     def fill_wlvltable(self, include_views):

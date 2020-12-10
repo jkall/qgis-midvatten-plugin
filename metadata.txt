@@ -22,6 +22,8 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.5b4:
         - Stratigraphy symbology: Added option to filter selected obsids.
+        - Sectionplot: Fixed better error messages when dems are omitted.
+        - List of values from selected features: Fixed size error. Added checkbox to copy to clipboard.
         Version 1.6.5b3:
         - Sectionplot: Fixes bug where obsid label was not written but the bar was plotted.
         Version 1.6.5b2:

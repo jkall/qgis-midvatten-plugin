@@ -21,6 +21,7 @@ from __future__ import absolute_import
 import os
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtWidgets import QApplication
 
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
@@ -114,6 +115,9 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
                     bar_prefix = 'Filtering failed! '
                     msg = 'Filtering failed, msg: ' + str(e)
 
+            if self.copy_to_clipboard_checkbox.isChecked():
+                self.copy_to_clipboard(filter_string)
+
             activelayer.selectByIds(selected_feature_ids)
 
             utils.MessagebarAndLog.info(bar_msg=ru(
@@ -122,5 +126,9 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
                                         log_msg=filter_string + '\n' + msg)
 
             self.close()
+
+    def copy_to_clipboard(self, astring):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(astring)
 
 
