@@ -32,6 +32,7 @@ from definitions import midvatten_defs as defs
 from midvatten_utils import add_layers_to_list
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt import uic
+from qgis.core import QgsFeatureRequest, QgsExpression
 
 strat_symbology_dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'strat_symbology_dialog.ui'))[0]
 
@@ -53,11 +54,12 @@ class StratSymbology(qgis.PyQt.QtWidgets.QDialog, strat_symbology_dialog):
                         self.bars_xfactor.value(),
                         self.bars_yfactor.value(),
                         self.static_bars_xfactor.value(),
-                        self.static_bars_yfactor.value())
+                        self.static_bars_yfactor.value(),
+                        self.apply_obsid_filter.isChecked())
 
 
 def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor, bars_yfactor, static_bars_xfactor,
-                    static_bars_yfactor):
+                    static_bars_yfactor, apply_obsid_filter):
     """
     TODO: There is a logical bug where layers that should get caught as ELSE isn't because the shadow  ("maxdepthbot"  =  "depthbot")
           gets them... I might have to put the shadow in other layer...
@@ -130,6 +132,14 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         group.insertChildNode(-1, color_group)
         color_group.addLayer(layers[0])
         color_group.addLayer(layers[1])
+
+        if apply_obsid_filter:
+            selected_obsids = utils.getselectedobjectnames(column_name='obsid')
+            if selected_obsids:
+                filter_string = '''obsid IN ({})'''.format(utils.sql_unicode_list(selected_obsids))
+                for layer in layers:
+                    req = QgsFeatureRequest(QgsExpression(filter_string))
+                    layer.setSubsetString(req.filterExpression().expression())
 
     for child in stratigraphy_group.children():
         if child.name() == previously_visible:

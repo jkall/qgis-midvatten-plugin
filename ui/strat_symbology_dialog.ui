@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>384</height>
+    <height>407</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -121,6 +121,20 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="apply_obsid_filter">
+     <property name="text">
+      <string>Apply selected obsids as filter</string>
+     </property>
     </widget>
    </item>
    <item>
