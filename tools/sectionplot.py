@@ -1336,10 +1336,22 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         WL = []
         x_wl = []
         for k, col in enumerate(columns):
+
             try:
-                val = df.iloc[[idx]][ru(col).encode('utf-8')]
+                val = df.iloc[[idx]][col]
             except KeyError:
                 continue
+            except TypeError:
+                try:
+                    _col = col.encode('utf8').decode('utf8')
+                except Exception as e:
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Sectionplot: Encoding string failed for %s"))%ru(col))
+                    continue
+                else:
+                    try:
+                        val = df.iloc[[idx]][_col]
+                    except KeyError:
+                        continue
 
             WL.append(val)
             x_wl.append(float(length_along[k]))
