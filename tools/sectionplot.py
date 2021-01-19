@@ -447,7 +447,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     self.plot_drill_stop()
 
                 # write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
-                if self.ms.settingsdict['stratigraphyplotted'] or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates']) > 0):
+                if self.ms.settingsdict['stratigraphyplotted'] or self.ms.settingsdict['secplothydrologyplotted'] or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates']) > 0):
                     self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])
 
             else:
