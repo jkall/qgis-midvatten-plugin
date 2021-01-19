@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1053</width>
-    <height>772</height>
+    <width>1108</width>
+    <height>809</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,21 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>3</number>
+    </property>
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
+     <number>3</number>
+    </property>
+    <property name="horizontalSpacing">
+     <number>3</number>
+    </property>
     <item row="0" column="1">
      <widget class="QScrollArea" name="plot_scrollArea">
       <property name="verticalScrollBarPolicy">
@@ -28,8 +43,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>694</width>
-         <height>711</height>
+         <width>747</width>
+         <height>861</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -39,6 +54,18 @@
         </sizepolicy>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTabWidget" name="plot_tabwidget">
           <property name="sizePolicy">
@@ -61,6 +88,18 @@
             <string>Plot</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_3">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QWidget" name="widgetPlot" native="true">
               <property name="sizePolicy">
@@ -76,6 +115,18 @@
                </size>
               </property>
               <layout class="QGridLayout" name="gridLayout_21">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item row="0" column="0">
                 <layout class="QVBoxLayout" name="layoutplot"/>
                </item>
@@ -95,8 +146,29 @@
             <string>Settings</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_6">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_7">
+              <property name="leftMargin">
+               <number>9</number>
+              </property>
+              <property name="rightMargin">
+               <number>9</number>
+              </property>
+              <property name="bottomMargin">
+               <number>9</number>
+              </property>
               <item>
                <widget class="QGroupBox" name="chart_settings">
                 <property name="sizePolicy">
@@ -118,6 +190,18 @@
                  <bool>false</bool>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout">
+                 <property name="leftMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
                  <item>
                   <layout class="QVBoxLayout" name="verticalLayout_6">
                    <item>
@@ -479,6 +563,18 @@
                  <bool>false</bool>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <property name="leftMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
                  <item>
                   <widget class="QLabel" name="matplotlib_style_sheet_reference">
                    <property name="text">
@@ -665,11 +761,26 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>307</width>
-         <height>811</height>
+         <width>308</width>
+         <height>980</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_8">
+        <property name="spacing">
+         <number>9</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QWidget" name="widget" native="true">
           <property name="sizePolicy">
@@ -685,6 +796,18 @@
            </size>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item row="0" column="0">
             <widget class="QTabWidget" name="tabWidget">
              <property name="toolTip">
@@ -704,8 +827,23 @@
                <string>Tab 1</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_7">
+               <property name="leftMargin">
+                <number>6</number>
+               </property>
+               <property name="topMargin">
+                <number>6</number>
+               </property>
+               <property name="rightMargin">
+                <number>6</number>
+               </property>
+               <property name="bottomMargin">
+                <number>6</number>
+               </property>
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_2">
+                 <property name="topMargin">
+                  <number>6</number>
+                 </property>
                  <item row="0" column="0">
                   <widget class="QLabel" name="table_QLabel">
                    <property name="sizePolicy">
@@ -835,7 +973,7 @@
                  <item row="0" column="1">
                   <widget class="QComboBox" name="table_ComboBox_1">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -863,6 +1001,9 @@
                </item>
                <item row="1" column="0">
                 <layout class="QGridLayout" name="gridLayout_3">
+                 <property name="horizontalSpacing">
+                  <number>9</number>
+                 </property>
                  <item row="0" column="0">
                   <widget class="QLabel" name="Filter1_QLabel">
                    <property name="enabled">
@@ -1055,6 +1196,18 @@
                     <bool>true</bool>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_22">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>9</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>6</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
                     <item row="0" column="0" colspan="2">
                      <widget class="QCheckBox" name="dependent_filtering1">
                       <property name="toolTip">
@@ -1185,6 +1338,18 @@
                   <bool>true</bool>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_17">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>9</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item row="0" column="0">
                    <layout class="QGridLayout" name="gridLayout_16">
                     <item row="0" column="0">
@@ -1212,7 +1377,8 @@
                        <string notr="true"/>
                       </property>
                       <property name="text">
-                       <string>y scaling factor (gain)</string>
+                       <string>y scaling factor
+(gain)</string>
                       </property>
                      </widget>
                     </item>
@@ -1282,8 +1448,23 @@
                <string>Tab 2</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_10">
+               <property name="leftMargin">
+                <number>6</number>
+               </property>
+               <property name="topMargin">
+                <number>6</number>
+               </property>
+               <property name="rightMargin">
+                <number>6</number>
+               </property>
+               <property name="bottomMargin">
+                <number>6</number>
+               </property>
                <item row="2" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
                  <item>
                   <widget class="QLabel" name="label_8">
                    <property name="font">
@@ -1354,6 +1535,18 @@
                   <bool>true</bool>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_18">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>9</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item row="0" column="0">
                    <layout class="QGridLayout" name="gridLayout_14">
                     <item row="0" column="0">
@@ -1375,7 +1568,8 @@
                        <string>a in y=ax+b</string>
                       </property>
                       <property name="text">
-                       <string>y scaling factor (gain)</string>
+                       <string>y scaling factor
+(gain)</string>
                       </property>
                      </widget>
                     </item>
@@ -1627,6 +1821,18 @@
                     <bool>true</bool>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_25">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>9</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>6</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
                     <item row="0" column="0" colspan="2">
                      <widget class="QCheckBox" name="dependent_filtering2">
                       <property name="toolTip">
@@ -1681,6 +1887,9 @@
                </item>
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_8">
+                 <property name="topMargin">
+                  <number>6</number>
+                 </property>
                  <item row="0" column="0">
                   <widget class="QLabel" name="table_QLabel_2">
                    <property name="sizePolicy">
@@ -1810,7 +2019,7 @@
                  <item row="0" column="1">
                   <widget class="QComboBox" name="table_ComboBox_2">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -1843,8 +2052,23 @@
                <string>Tab 3</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_13">
+               <property name="leftMargin">
+                <number>6</number>
+               </property>
+               <property name="topMargin">
+                <number>6</number>
+               </property>
+               <property name="rightMargin">
+                <number>6</number>
+               </property>
+               <property name="bottomMargin">
+                <number>6</number>
+               </property>
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_12">
+                 <property name="topMargin">
+                  <number>6</number>
+                 </property>
                  <item row="0" column="0">
                   <widget class="QLabel" name="table_QLabel_3">
                    <property name="sizePolicy">
@@ -1974,7 +2198,7 @@
                  <item row="0" column="1">
                   <widget class="QComboBox" name="table_ComboBox_3">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -2072,6 +2296,18 @@
                   <bool>true</bool>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_20">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>9</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item row="0" column="0">
                    <layout class="QGridLayout" name="gridLayout_19">
                     <item row="0" column="0">
@@ -2345,6 +2581,18 @@
                     <bool>true</bool>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_24">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>9</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>6</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
                     <item row="0" column="0" colspan="2">
                      <widget class="QCheckBox" name="dependent_filtering3">
                       <property name="toolTip">
@@ -2401,27 +2649,11 @@
              </widget>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="Line" name="line">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>400</height>
-              </size>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QLabel" name="maxtstep_QLabel">
                <property name="sizePolicy">
@@ -2498,7 +2730,7 @@
            <item row="3" column="0">
             <widget class="QPushButton" name="PlotChart_QPushButton">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -2511,7 +2743,7 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>200</width>
+               <width>600</width>
                <height>20</height>
               </size>
              </property>
@@ -2545,8 +2777,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1053</width>
-     <height>23</height>
+     <width>1108</width>
+     <height>36</height>
     </rect>
    </property>
   </widget>

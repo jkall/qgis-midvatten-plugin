@@ -23,6 +23,9 @@ changelog=
         Version 1.6.5b5:
         - Sectionplot: Fixed bug where obsid was not visible when plotting hydro colors.
         - Sectionplot: Update for adjustment for new pandas version (water levels interactive mode).
+        - Sectionplot: Fixed margins.
+        - CustomPlot: Fixed margins.
+        - List of values from selected features: Fixed margins.
         Version 1.6.5b4:
         - Stratigraphy symbology: Added option to filter selected obsids.
         - Sectionplot: Fixed better error messages when dems are omitted.
