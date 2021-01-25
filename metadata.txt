@@ -25,6 +25,7 @@ changelog=
         - Sectionplot: Update for adjustment for new pandas version (water levels interactive mode).
         - Sectionplot: Fixed margins.
         - CustomPlot: Fixed margins.
+        - CustomPlot: Using database locale when plotting (affects month names).
         - List of values from selected features: Fixed margins.
         Version 1.6.5b4:
         - Stratigraphy symbology: Added option to filter selected obsids.

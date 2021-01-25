@@ -35,6 +35,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
+import locale
 
 import numpy as np
 
@@ -225,6 +226,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
     @utils.general_exception_handler
     def drawPlot_all(self):
+        old_locale = locale.getlocale(category=locale.LC_ALL)
+        locale.setlocale(locale.LC_ALL, utils.getcurrentlocale())
         utils.start_waiting_cursor()  # show the user this may take a long time...
 
         continous_color = True
@@ -283,7 +286,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.drawn = True
 
         self.refreshPlot()
-    
+        locale.setlocale(old_locale)
         utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
     def drawPlot(self, dbconnection, nop, i, My_format, table_ComboBox, xcol_ComboBox, ycol_ComboBox, Filter1_ComboBox, Filter1_QListWidget, Filter2_ComboBox, Filter2_QListWidget, PlotType_comboBox, pandas_calc, checkBox_remove_mean, LineEditFactor, LineEditOffset):
