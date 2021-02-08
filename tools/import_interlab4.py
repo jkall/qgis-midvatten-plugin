@@ -581,14 +581,15 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         else:
             layout.addWidget(line)
 
+    @utils.general_exception_handler
     def handle_save(self):
         """
         An extra, non-critical, feature to save metadata (as shown in the gui) as a csv file for examination in other application
         """
-        path = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(
-                self, 'Save File', '', 'CSV(*.csv)')
+        path = ru(qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(
+                self, 'Save File', '', 'CSV(*.csv)')[0])
+
         if path:
-            path = ru(path[0])
             printlist = [self.metadata_filter.sorted_table_header]
 
             printlist.extend([[ru(self.metadata_filter.table.item(row, column).text())
@@ -598,6 +599,10 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                          for row in range(self.metadata_filter.table.rowCount())])
 
             utils.write_printlist_to_file(path, printlist)
+        else:
+            utils.MessagebarAndLog.info(
+                log_msg=ru(QCoreApplication.translate('handle_save', 'No file selected!')))
+            raise utils.UserInterruptError()
 
     def unitconversion_factor(self, unit):
         unit_conversion = {'g/l': ('mg/l', 1000.0),

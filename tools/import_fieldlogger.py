@@ -48,7 +48,7 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
-from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
+from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry
 from gui_utils import DateTimeFilter, set_combobox
 
 
@@ -69,6 +69,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
     def parse_observations_and_populate_gui(self):
         splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.add_row(splitter)
+        self.main_vertical_layout.setAlignment(splitter, qgis.PyQt.QtCore.Qt.AlignLeft | qgis.PyQt.QtCore.Qt.AlignTop)
 
         self.observations = self.select_file_and_parse_rows(self.parse_rows)
         if self.observations is None:
@@ -101,14 +102,10 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
 
         #Sublocations
         sublocations = [observation['sublocation'] for observation in self.observations]
-        sublocations_widget = qgis.PyQt.QtWidgets.QWidget()
-        sublocations_layout = qgis.PyQt.QtWidgets.QVBoxLayout()
-        sublocations_widget.setLayout(sublocations_layout)
-        sublocations_layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('FieldloggerImport', 'Select sublocations to import:'))))
-        splitter.addWidget(sublocations_widget)
         self.sublocation_filter = SublocationFilter(sublocations)
         self.settings.append(self.sublocation_filter)
-        sublocations_layout.addWidget(self.settings[-1].widget)
+        splitter.addWidget(self.sublocation_filter.widget)
+        #sublocations_layout.addWidget(self.sublocation_filter.widget)
         #self.add_line(sublocations_layout)
 
         self.stored_settingskey = 'fieldlogger_import_parameter_settings'
@@ -150,7 +147,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
 
         self.gridLayout_buttons.setRowStretch(4, 1)
 
-        self.setGeometry(500, 150, 950, 700)
+        self.setGeometry(500, 150, 1100, 700)
 
         self.show()
 
@@ -573,24 +570,30 @@ class DateShiftQuestion(RowEntry):
         return observation
 
 
-class SublocationFilter(RowEntry):
+class SublocationFilter(VRowEntry):
     def __init__(self, sublocations):
         """
 
         :param sublocations: a list like ['a.b', '1.2.3', ...]
         """
         super(SublocationFilter, self).__init__()
+        self.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(
+            ru(QCoreApplication.translate('FieldloggerImport', 'Select sublocations to import:'))))
+
         self.table = qgis.PyQt.QtWidgets.QTableWidget()
         self.table.setSelectionBehavior(qgis.PyQt.QtWidgets.QAbstractItemView.SelectRows)
         self.table.sizePolicy().setVerticalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.MinimumExpanding)
         self.table.sizePolicy().setVerticalStretch(2)
+        self.table.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.MinimumExpanding)
+
         self.table.setSelectionMode(qgis.PyQt.QtWidgets.QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
         self.update_sublocations(sublocations)
-
         self.layout.addWidget(self.table)
+        self.widget.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.MinimumExpanding)
+        self.widget.sizePolicy().setVerticalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.MinimumExpanding)
         self.layout.addStretch()
 
     def set_selection(self, sublocations, true_or_false):

@@ -156,7 +156,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate('Calibrlogger', "Calculate water level from logger"))) # Set the title for the dialog
-        self.INFO.setText(ru(QCoreApplication.translate('Calibrlogger', "Select the observation point with logger data to be adjusted.")))
+        text = ru(QCoreApplication.translate('Calibrlogger',
+                                             "Select the observation point with logger data to be adjusted."))
+        self.mainWindow.statusBar().showMessage(text, 0)
         self.log_calc_manual.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/4.-Edit-data\">Midvatten manual</a>")
 
         # Create a plot window with one single subplot
@@ -339,6 +341,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             if self.lastcalibr:
                 if all([self.lastcalibr[0][0], self.lastcalibr[0][1] is not None, self.lastcalibr[0][1] != '']):
                     text = ru(QCoreApplication.translate('Calibrlogger', "Last pos. for logger in %s was %s masl at %s"))%(obsid, str(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
+
             self.INFO.setText(text)
 
     @fn_timer
@@ -367,7 +370,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def calibrate(self, obsid=None):
-        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Calibrating")))
 
         if obsid is None:
             obsid = self.load_obsid_and_init()
@@ -382,8 +384,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.Add2Levelmasl.text())
 
         else:
-            self.INFO.setText(ru(QCoreApplication.translate('Calibrlogger', "Select the observation point with logger data to be calibrated.")))
-        self.calib_help.setText("")
+
+            text = ru(QCoreApplication.translate('Calibrlogger',
+                                                 "Select the observation point with logger data to be adjusted."))
+            self.mainWindow.statusBar().showMessage(text, 0)
+
 
     @fn_timer
     def update_level_masl_from_level_masl(self, obsid, fr_d_t, to_d_t, newzref):
@@ -450,12 +455,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def update_plot(self):
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
-        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Updating plot")))
+        self.mainWindow.statusBar().showMessage(ru(QCoreApplication.translate('Calibrlogger', "Updating plot...")), 0)
         last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
         utils.start_waiting_cursor()
         if obsid == None:
-            self.calib_help.setText("")
+            self.mainWindow.statusBar().clearMessage()
             return
         self.axes.clear()
 
@@ -499,7 +504,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.canvas.draw()
         #plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
-        self.calib_help.setText("")
+        self.mainWindow.statusBar().clearMessage()
 
         if last_used_obsid == self.obsid:
             self.mpltoolbar.forward()
@@ -553,12 +558,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     @fn_timer
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.FromDateTime, self.calib_help, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"from\"")))
+        self.set_date_from_x(self.FromDateTime, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"from\"")))
 
     @fn_timer
     def set_to_date_from_x(self):
         """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.ToDateTime, self.calib_help, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"to\"")))
+        self.set_date_from_x(self.ToDateTime, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"to\"")))
 
     @fn_timer
     def set_date_from_x_onclick(self, event, date_holder, from_node=False):
@@ -579,7 +584,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.reset_cid()
         self.log_pos = None
         self.y_pos = None
-        self.calib_help.setText("")
+        self.mainWindow.statusBar().clearMessage()
 
     @fn_timer
     def reset_settings(self):
@@ -619,7 +624,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()
 
-        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Select a logger node.")))
+
+        text = ru(QCoreApplication.translate('Calibrlogger', "Select a logger node."))
+        self.mainWindow.statusBar().showMessage(text, 0)
         self.cid.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))
 
     @fn_timer
@@ -627,11 +634,13 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         """ Part of adjustment method 3. adjust level_masl by clicking in plot.
         this part selects a y-position from the plot (normally user would select a manual measurement)."""
         if self.log_pos is not None:
-            self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Select a y position to move to.")))
+            text = ru(QCoreApplication.translate('Calibrlogger', "Select a y position to move to."))
+            self.mainWindow.statusBar().showMessage(text, 0)
             self.cid.append(self.canvas.mpl_connect('button_press_event', self.set_y_pos_from_y_click))
-            self.calib_help.setText("")
+            self.mainWindow.statusBar().clearMessage()
         else:
-            self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Something wrong, click \"Current\" and try again.")))
+            text = ru(QCoreApplication.translate('Calibrlogger', "Something wrong, click \"Current\" and try again."))
+            self.mainWindow.statusBar().showMessage(text, 0)
 
     @fn_timer
     def calculate_offset(self):
@@ -671,8 +680,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def set_log_pos_from_node_date_click(self, event):
         """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
         found_date = self.get_node_date_from_click(event)
-        #self.calib_help.setText("Logger node " + str(found_date) + " selected, click button \"Calibrate by selection in plot\" again.")
-        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Logger node %s selected, click \"new\" and select new level."))%str(found_date))
+        text = ru(QCoreApplication.translate('Calibrlogger',
+                                             "Logger node %s selected, click \"new\" and select new level.")
+                  )%str(found_date)
+        self.mainWindow.statusBar().showMessage(text, 0)
         self.log_pos = found_date
         self.pushButtonMpos.setEnabled(True)
 
@@ -680,9 +691,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def set_y_pos_from_y_click(self, event):
         """ Sets the self.y_pos variable to the y value of the click event """
         self.y_pos = event.ydata
-        #self.calib_help.setText("Y position set, click button \"Calibrate by selection in plot\" again for calibration.")
         self.calculate_offset()
-        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Offset is calculated, now click \"add\".")))
+        text = ru(QCoreApplication.translate('Calibrlogger', "Offset is calculated, now click \"add\"."))
+        self.mainWindow.statusBar().showMessage(text, 0)
         self.reset_cid()
 
     @fn_timer
@@ -876,12 +887,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         return found_date
 
     @fn_timer
-    def set_date_from_x(self, datetimeedit, qlabel=None, help_msg=None, from_node=False):
+    def set_date_from_x(self, datetimeedit, help_msg=None, from_node=False):
         """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """
         self.reset_plot_selects_and_calib_help()
         self.deactivate_pan_zoom()
-        if qlabel and help_msg:
-            qlabel.setText(help_msg)
+        if help_msg:
+            self.mainWindow.statusBar().showMessage(help_msg, 0)
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()
         self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, datetimeedit, from_node)))

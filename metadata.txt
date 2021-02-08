@@ -20,6 +20,9 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
+        Version 1.6.5b6:
+        - CustomPlot: Fix to gui again.
+        - Interlab4 import: Fixes bug when closing save metadata without selecting file.
         Version 1.6.5b5:
         - Sectionplot: Fixed bug where obsid was not visible when plotting hydro colors.
         - Sectionplot: Update for adjustment for new pandas version (water levels interactive mode).
