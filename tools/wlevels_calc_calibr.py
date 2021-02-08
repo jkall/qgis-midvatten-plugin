@@ -158,7 +158,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.setWindowTitle(ru(QCoreApplication.translate('Calibrlogger', "Calculate water level from logger"))) # Set the title for the dialog
         text = ru(QCoreApplication.translate('Calibrlogger',
                                              "Select the observation point with logger data to be adjusted."))
-        self.mainWindow.statusBar().showMessage(text, 0)
+        self.statusbar.showMessage(text, 0)
         self.log_calc_manual.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/4.-Edit-data\">Midvatten manual</a>")
 
         # Create a plot window with one single subplot
@@ -340,7 +340,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             text = ru(QCoreApplication.translate('Calibrlogger', """There is no earlier known position for the logger in %s"""))%self.selected_obsid
             if self.lastcalibr:
                 if all([self.lastcalibr[0][0], self.lastcalibr[0][1] is not None, self.lastcalibr[0][1] != '']):
-                    text = ru(QCoreApplication.translate('Calibrlogger', "Last pos. for logger in %s was %s masl at %s"))%(obsid, str(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
+                    text = ru(QCoreApplication.translate('Calibrlogger', "Last pos. for logger in %s was %s masl at %s"))%(obsid, '{:.5f}'.format(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
 
             self.INFO.setText(text)
 
@@ -387,7 +387,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
             text = ru(QCoreApplication.translate('Calibrlogger',
                                                  "Select the observation point with logger data to be adjusted."))
-            self.mainWindow.statusBar().showMessage(text, 0)
+            self.statusbar.showMessage(text, 0)
 
 
     @fn_timer
@@ -455,12 +455,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def update_plot(self):
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
-        self.mainWindow.statusBar().showMessage(ru(QCoreApplication.translate('Calibrlogger', "Updating plot...")), 0)
+        self.statusbar.showMessage(ru(QCoreApplication.translate('Calibrlogger', "Updating plot...")), 0)
         last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
         utils.start_waiting_cursor()
         if obsid == None:
-            self.mainWindow.statusBar().clearMessage()
+            self.statusbar.clearMessage()
             return
         self.axes.clear()
 
@@ -480,11 +480,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
         if self.level_masl_ts.size and self.contains_more_than_nan(self.level_masl_ts):
-            self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' adjusted logger')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
+            self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger water level')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked() and self.head_ts_for_plot.size and self.contains_more_than_nan(self.head_ts_for_plot):
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' original logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5, color='#c1c1c1ff')
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5, color='#c1c1c1ff')
 
         """ Finish plot """
         self.axes.grid(True)
@@ -504,7 +504,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.canvas.draw()
         #plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
-        self.mainWindow.statusBar().clearMessage()
+        self.statusbar.clearMessage()
 
         if last_used_obsid == self.obsid:
             self.mpltoolbar.forward()
@@ -584,7 +584,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.reset_cid()
         self.log_pos = None
         self.y_pos = None
-        self.mainWindow.statusBar().clearMessage()
+        self.statusbar.clearMessage()
 
     @fn_timer
     def reset_settings(self):
@@ -597,7 +597,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         last_calibration = self.getlastcalibration(self.obsid)
         try:
             if last_calibration[0][1] and last_calibration[0][0]:
-                self.LoggerPos.setText(str(last_calibration[0][1]))
+                self.LoggerPos.setText('{:.5f}'.format(last_calibration[0][1]))
                 self.FromDateTime.setDateTime(datestring_to_date(last_calibration[0][0]))
             else:
                 self.LoggerPos.setText('')
@@ -626,7 +626,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
 
         text = ru(QCoreApplication.translate('Calibrlogger', "Select a logger node."))
-        self.mainWindow.statusBar().showMessage(text, 0)
+        self.statusbar.showMessage(text, 0)
         self.cid.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))
 
     @fn_timer
@@ -635,12 +635,12 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         this part selects a y-position from the plot (normally user would select a manual measurement)."""
         if self.log_pos is not None:
             text = ru(QCoreApplication.translate('Calibrlogger', "Select a y position to move to."))
-            self.mainWindow.statusBar().showMessage(text, 0)
+            self.statusbar.showMessage(text, 0)
             self.cid.append(self.canvas.mpl_connect('button_press_event', self.set_y_pos_from_y_click))
-            self.mainWindow.statusBar().clearMessage()
+            self.statusbar.clearMessage()
         else:
             text = ru(QCoreApplication.translate('Calibrlogger', "Something wrong, click \"Current\" and try again."))
-            self.mainWindow.statusBar().showMessage(text, 0)
+            self.statusbar.showMessage(text, 0)
 
     @fn_timer
     def calculate_offset(self):
@@ -670,7 +670,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             if logger_value is None:
                 utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "No connection between level_masl dates and logger date could be made!\nTry again or choose a new logger line node!")))
             else:
-                self.Add2Levelmasl.setText(str(float(y_pos) - float(logger_value)))
+                self.Add2Levelmasl.setText('{:.5f}'.format(float(y_pos) - float(logger_value)))
 
                 utils.stop_waiting_cursor()
 
@@ -683,7 +683,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         text = ru(QCoreApplication.translate('Calibrlogger',
                                              "Logger node %s selected, click \"new\" and select new level.")
                   )%str(found_date)
-        self.mainWindow.statusBar().showMessage(text, 0)
+        self.statusbar.showMessage(text, 0)
         self.log_pos = found_date
         self.pushButtonMpos.setEnabled(True)
 
@@ -693,7 +693,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.y_pos = event.ydata
         self.calculate_offset()
         text = ru(QCoreApplication.translate('Calibrlogger', "Offset is calculated, now click \"add\"."))
-        self.mainWindow.statusBar().showMessage(text, 0)
+        self.statusbar.showMessage(text, 0)
         self.reset_cid()
 
     @fn_timer
@@ -892,7 +892,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.reset_plot_selects_and_calib_help()
         self.deactivate_pan_zoom()
         if help_msg:
-            self.mainWindow.statusBar().showMessage(help_msg, 0)
+            self.statusbar.showMessage(help_msg, 0)
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()
         self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, datetimeedit, from_node)))
@@ -907,7 +907,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def set_adjust_data_on_click(self, event, date_var, level_var):
-        getattr(self, level_var).setText(str(float(event.ydata)))
+        getattr(self, level_var).setText('{:.5f}'.format(event.ydata))
         getattr(self, date_var).setDateTime(num2date(float(event.xdata)))
         self.reset_cid()
 
