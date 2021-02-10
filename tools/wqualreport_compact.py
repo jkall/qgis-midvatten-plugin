@@ -304,10 +304,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         :return:
         """
 
-        sql = '''SELECT obsid, date_time, report, parameter, unit, %s FROM %s'''%(', '.join(columns), table)
+        sql = '''SELECT %s FROM %s'''%(', '.join(columns), table)
         if obsids:
             sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
-
         dbconnection = db_utils.DbConnectionManager()
         df = pd.read_sql(con=dbconnection.conn, sql=sql,
                          parse_dates=['date_time'])
