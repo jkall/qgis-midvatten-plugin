@@ -242,11 +242,11 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             try:
                 if counter < self.nr_header_rows:
                     rpt = "  <tr><th>"
-                    rpt += "    </th><th width =\"75\">".join([x if x is not None else '' for x in sublist])
+                    rpt += "    </th><th width =\"75\">".join([ru(x) if x is not None else '' for x in sublist])
                     rpt += "  </th></tr>\n"
                 else:
                     rpt = "  <tr><td>"
-                    rpt += "    </td><td align=\"right\">".join([x if x is not None else '' for x in sublist])
+                    rpt += "    </td><td align=\"right\">".join([ru(x) if x is not None else '' for x in sublist])
                     rpt += "  </td></tr>\n"
             except:
                 try:
