@@ -26,6 +26,7 @@ changelog=
         - Loggercalibration: Remade gui.
         - Compact water quality report: Fixes bug where "Data from selected obsids in sql table" didn't work.
         - Water quality report: Fixes bug where numeric sorting column couldn't be used.
+        - Midvsettingsdialog: Fixes margins.
         Version 1.6.5b5:
         - Sectionplot: Fixed bug where obsid was not visible when plotting hydro colors.
         - Sectionplot: Update for adjustment for new pandas version (water levels interactive mode).

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>433</width>
+    <width>474</width>
     <height>688</height>
    </rect>
   </property>
@@ -15,6 +15,18 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout_9">
+    <property name="leftMargin">
+     <number>6</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>6</number>
+    </property>
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
@@ -45,6 +57,18 @@
         <string>Database settings</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_db_main">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea_db">
           <property name="widgetResizable">
@@ -55,8 +79,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>591</height>
+             <width>454</width>
+             <height>602</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_db_scroll">
@@ -78,6 +102,18 @@
         <string>Time Series Plot</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_18">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea_2">
           <property name="widgetResizable">
@@ -88,11 +124,23 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>180</width>
-             <height>241</height>
+             <width>454</width>
+             <height>602</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
+            <property name="leftMargin">
+             <number>6</number>
+            </property>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <property name="rightMargin">
+             <number>6</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="0">
@@ -236,6 +284,18 @@
         <string>XY Scatter plot</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea">
           <property name="widgetResizable">
@@ -246,11 +306,23 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>178</width>
-             <height>430</height>
+             <width>454</width>
+             <height>602</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
+            <property name="leftMargin">
+             <number>6</number>
+            </property>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <property name="rightMargin">
+             <number>6</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_4">
               <item row="0" column="0">
@@ -471,6 +543,18 @@
         <string>W quality report</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_17">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea_3">
           <property name="widgetResizable">
@@ -481,11 +565,23 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>193</width>
-             <height>556</height>
+             <width>436</width>
+             <height>664</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
+            <property name="leftMargin">
+             <number>6</number>
+            </property>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <property name="rightMargin">
+             <number>6</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="label_19">
               <property name="sizePolicy">
@@ -708,6 +804,18 @@
         <string>Piper Diagram</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_25">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea_5">
           <property name="widgetResizable">
@@ -718,11 +826,23 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>377</width>
-             <height>650</height>
+             <width>436</width>
+             <height>914</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
+            <property name="leftMargin">
+             <number>6</number>
+            </property>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <property name="rightMargin">
+             <number>6</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="11" column="0">
