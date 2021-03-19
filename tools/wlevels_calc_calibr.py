@@ -340,7 +340,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             text = ru(QCoreApplication.translate('Calibrlogger', """There is no earlier known position for the logger in %s"""))%self.selected_obsid
             if self.lastcalibr:
                 if all([self.lastcalibr[0][0], self.lastcalibr[0][1] is not None, self.lastcalibr[0][1] != '']):
-                    text = ru(QCoreApplication.translate('Calibrlogger', "Last pos. for logger in %s was %s masl at %s"))%(obsid, '{:.5f}'.format(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
+                    text = ru(QCoreApplication.translate('Calibrlogger', "Last pos. for logger in %s was %s masl at %s"))%(obsid, '{:.3f}'.format(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
 
             self.INFO.setText(text)
 

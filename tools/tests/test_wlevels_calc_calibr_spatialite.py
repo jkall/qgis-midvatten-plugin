@@ -246,7 +246,8 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.update_plot()
         res = calibrlogger.getlastcalibration(calibrlogger.selected_obsid)
         test = utils_for_tests.create_test_string(calibrlogger.INFO.text())
-        ref = 'Last pos. for logger in rb1 was 99.5 masl at 2017-02-01 00:00'
+        ref = 'Last pos. for logger in rb1 was 99.500 masl at 2017-02-01 00:00'
+
         assert test == ref
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -261,7 +262,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.update_plot()
         res = calibrlogger.getlastcalibration(calibrlogger.selected_obsid)
         test = utils_for_tests.create_test_string(calibrlogger.INFO.text())
-        ref = 'Last pos. for logger in rb1 was 0.0 masl at 2017-02-01 00:00'
+        ref = 'Last pos. for logger in rb1 was 0.000 masl at 2017-02-01 00:00'
         assert test == ref
 
 

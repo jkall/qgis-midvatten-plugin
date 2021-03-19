@@ -142,6 +142,9 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , PRIMARY KEY(obsid, date_time, parameter, unit)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );
+CREATE UNIQUE INDEX w_qual_field_unit_unique_index_null ON w_qual_field /* Index to stop duplicate values where unit is null */ (
+obsid, date_time, parameter, COALESCE(unit, '<NULL>')
+);
 CREATE TABLE w_qual_lab /*Water quality from laboratory analysis*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
 , depth double --Depth (m below h_gs) from where sample is taken
