@@ -23,6 +23,8 @@ changelog=
         Version 1.6.5b7:
         - Database: Added constraint to w_qual_field to not get duplicates when unit is NULL.
         - Stratsymbology: Refatoring and splitting labels and symbols into separate layers. Added text description layer for layers.
+        - Stratsymbology: The else layer is deactivated by default in layers.
+        - Stratsymbology: Bedrock label as >X when drillstop not like '%bedrock%' or equivalent.
         - Plot symbol colors: Changed symbol color for till and clay from yellow to cyan and beige for qt-colors (affecting strat symbology and the old stratigraphy plot).
         - Added triangle symbol (obs_p_w_lvl_logger) for showing if there are loggerdata for an obsid.
         Version 1.6.5b6:

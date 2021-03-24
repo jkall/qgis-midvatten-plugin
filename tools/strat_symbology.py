@@ -205,8 +205,10 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
                 except:
                     utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
                 else:
-                    layers['Bedrock label'].labeling().rootRule().children()[0].setFilterExpression(
-                        '''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+                    _bedrock_label = '''LOWER("drillstop") LIKE '%{}%' '''
+                    for child in layers['Bedrock label'].labeling().rootRule().children():
+                        if not child.isElse():
+                            child.setFilterExpression(_bedrock_label.format(bedrock_geoshort))
 
             try:
                 add_bedrock_symbology(bedrock_group, layers[symbology], symbology_stylename[symbology],
@@ -388,7 +390,10 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
         if sl.subSymbol() is not None:
             ssl = sl.subSymbol().symbolLayer(0)
             ssl.setStrokeColor(color)
-        root.insertChild(1, rule)
+        root.insertChild(0, rule)
+
+    if for_cloning.isElse():
+        for_cloning.setActive(False)
 
 def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
     if xfactor is None and yfactor is None:
