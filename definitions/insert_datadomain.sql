@@ -61,7 +61,7 @@ insert into zz_strat(geoshort,strata) values('land fill','made ground');
 insert into zz_strat(geoshort,strata) values('unknown','unknown');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('peat','DarkGray','+','darkGray','NoBrush');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('made ground','white','+','white','DiagCrossPattern');
-insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('clay','yellow','-','yellow','HorPattern');
+insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('clay','yellow','-','#ffeca3','HorPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('silt','yellow','\\','yellow','BDiagPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('fine sand','DarkOrange','.','orange','Dense5Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('medium sand','green','.','green','Dense4Pattern');
@@ -71,7 +71,7 @@ insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('medium gravel','DarkGreen','o','darkGreen','Dense6Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('gravel','DarkGreen','O','darkGreen','Dense7Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('coarse gravel','DarkGreen','O','darkGreen','Dense7Pattern');
-insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('till','cyan','/','yellow','CrossPattern');
+insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('till','cyan','/','cyan','CrossPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('rock','red','x','red','DiagCrossPattern');
 insert into zz_capacity (capacity,explanation) values('','unknown');
 insert into zz_capacity (capacity,explanation) values(' ','unknown');

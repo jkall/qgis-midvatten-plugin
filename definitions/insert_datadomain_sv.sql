@@ -61,7 +61,7 @@ insert into zz_strat(geoshort,strata) values('mg','fyll');
 insert into zz_strat(geoshort,strata) values('land fill','fyll');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('torv','#d9bf9e','+','darkGray','NoBrush');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('fyll','white','+','white','DiagCrossPattern');
-insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('lera','#fff08c','-','yellow','HorPattern');
+insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('lera','#fff08c','-','#ffeca3','HorPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('silt','#fff08c','\\','yellow','BDiagPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('finsand','#ffa852','.','orange','Dense5Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('mellansand','#80ff26','.','green','Dense4Pattern');
@@ -71,7 +71,7 @@ insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('mellangrus','DarkGreen','o','darkGreen','Dense6Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('grus','DarkGreen','O','darkGreen','Dense7Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('grovgrus','DarkGreen','O','darkGreen','Dense7Pattern');
-insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('morän','cyan','/','yellow','CrossPattern');
+insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('morän','cyan','/','cyan','CrossPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('berg','red','x','red','DiagCrossPattern');
 insert into zz_capacity (capacity,explanation) values('','okant');
 insert into zz_capacity (capacity,explanation) values(' ','okant');

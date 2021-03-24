@@ -25,11 +25,10 @@ from qgis.PyQt.QtGui import QColor
 
 import db_utils
 import midvatten_utils as utils
-from builtins import object
 import traceback
 
 from definitions import midvatten_defs as defs
-from midvatten_utils import add_layers_to_list
+from midvatten_utils import add_layers_to_list, returnunicode as ru
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt import uic
 from qgis.core import QgsFeatureRequest, QgsExpression
@@ -96,97 +95,275 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
     root.insertChildNode(0, stratigraphy_group)
     stratigraphy_group.setIsMutuallyExclusive(True)
 
-    settings = {'bars': [plot_bars, bars_xfactor, bars_yfactor],
-                'static bars': [plot_static_bars, static_bars_xfactor, static_bars_yfactor],
-                'rings': [plot_rings, None, None]}
-    for name, stylename, wlvls_stylename, bedrock_stylename in (('Bars', 'bars_strat', 'bars_w_lvls_last_geom', 'bars_bedrock'),
-                                                                ('Static bars', 'bars_static_strat', 'bars_static_w_lvls_last_geom', 'bars_static_bedrock'),
-                                                                ('Rings', 'rings_strat', None, 'rings_bedrock')):
-        if not settings[name.lower()][0]:
-            continue
-        xfactor = settings[name.lower()][1]
-        yfactor = settings[name.lower()][2]
+    symbology_tables = {'Geology': 'bars_strat',
+                        'Hydro': 'bars_strat',
+                        'Bedrock': 'bedrock',
+                        'W levels': 'w_lvls_last_geom',
+                        'W levels label': 'w_lvls_last_geom',
+                        'Obsid label': 'bedrock',
+                        'Frame': 'bedrock',
+                        'Bedrock label': 'bedrock',
+                        'Shadow': 'bars_strat',
+                        'Layer texts': 'bars_strat'}
 
-        group = qgis.core.QgsLayerTreeGroup(name=name)
-        group.setExpanded(False)
-        stratigraphy_group.insertChildNode(0, group)
-        layers = []
-        add_layers_to_list(layers, ['bars_strat', 'bars_strat', 'w_lvls_last_geom', 'bedrock'], geometrycolumn='geometry', dbconnection=dbconnection, layernames=['Geology', 'Hydro', 'W levels', 'Bedrock'])
-        symbology_using_cloning(plot_types, geo_colors, layers[0], stylename, 'geoshort')
-        symbology_using_cloning({k: "= '{}'".format(k) for k in sorted(hydro_colors.keys())}, hydro_colors, layers[1], stylename, 'capacity')
-        scale_geometry_by_factor(layers[0], xfactor=xfactor, yfactor=yfactor)
-        scale_geometry_by_factor(layers[1], xfactor=xfactor, yfactor=yfactor)
-        QgsProject.instance().addMapLayers(layers[:2], False)
-        if wlvls_stylename is not None and 'h_tocags' in layers[2].fields().names():
-            apply_style(layers[2], wlvls_stylename)
-            scale_geometry_by_factor(layers[2], xfactor=xfactor, yfactor=yfactor)
-            QgsProject.instance().addMapLayer(layers[2], False)
-            group.addLayer(layers[2])
-            group.children()[-1].setExpanded(False)
+    all_layers = []
 
-        if bedrock_stylename is not None:
-            create_bedrock_symbology(layers[3], bedrock_stylename, bedrock_geoshort, group)
-            scale_geometry_by_factor(layers[3], xfactor=xfactor, yfactor=yfactor)
-        color_group = qgis.core.QgsLayerTreeGroup(name='Layers', checked=True)
-        color_group.setIsMutuallyExclusive(True)
-        group.insertChildNode(-1, color_group)
-        color_group.addLayer(layers[0])
-        color_group.addLayer(layers[1])
+    group_spec = {'Bars': {'symbology_stylename': {'Geology': 'bars_strat',
+                                               'Hydro': 'bars_strat',
+                                               'Bedrock': 'bars_bedrock',
+                                               'W levels': 'bars_w_lvls_last_geom',
+                                               'W levels label': 'bars_w_lvls_last_geom_label',
+                                               'Obsid label': 'bars_obsid_label',
+                                               'Frame': 'bars_frame',
+                                               'Bedrock label': 'bars_bedrock_label',
+                                               'Shadow': 'bars_shadow',
+                                               'Layer texts': 'bars_layer_texts'
+                                                },
+                           'xfactor': bars_xfactor, 'yfactor': bars_yfactor},
+                 'Static bars': {'symbology_stylename': {'Geology': 'static_bars_strat',
+                                               'Hydro': 'static_bars_strat',
+                                               'Bedrock': 'static_bars_bedrock',
+                                               'W levels': 'static_bars_w_lvls_last_geom',
+                                               'W levels label': 'static_bars_w_lvls_last_geom_label',
+                                               'Obsid label': 'static_bars_obsid_label',
+                                               'Frame': 'static_bars_frame',
+                                               'Bedrock label': 'static_bars_bedrock_label',
+                                               'Shadow': 'static_bars_shadow',
+                                               'Layer texts': 'static_bars_layer_texts'
+                                                },
+                                 'xfactor': static_bars_xfactor, 'yfactor': static_bars_yfactor,
+                                 },
+                 'Rings': {'symbology_stylename': {'Geology': 'rings_strat',
+                                               'Hydro': 'rings_strat',
+                                               'Bedrock': 'rings_bedrock',
+                                               }}}
 
-        if apply_obsid_filter:
-            selected_obsids = utils.getselectedobjectnames(column_name='obsid')
-            if selected_obsids:
-                filter_string = '''obsid IN ({})'''.format(utils.sql_unicode_list(selected_obsids))
-                for layer in layers:
-                    req = QgsFeatureRequest(QgsExpression(filter_string))
-                    layer.setSubsetString(req.filterExpression().expression())
+    if not plot_bars:
+        del group_spec['Bars']
+    if not plot_static_bars:
+        del group_spec['Static bars']
+    if not plot_rings:
+        del group_spec['Rings']
+
+    for groupname, spec in group_spec.items():
+        symbology_stylename = spec['symbology_stylename']
+        group = add_group(stratigraphy_group, groupname)
+        layers = create_layers(dbconnection,
+                               {k: symbology_tables[k] for k in symbology_stylename.keys()})
+
+        symbology = 'Obsid label'
+        if symbology in symbology_stylename:
+            try:
+                add_generic_symbology(group, layers[symbology], symbology_stylename[symbology])
+            except StyleNotFoundError as e:
+                utils.MessagebarAndLog.info(bar_msg=str(e))
+            except:
+                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+        symbology = 'Layer texts'
+        if symbology in symbology_stylename:
+            try:
+                add_generic_symbology(group, layers[symbology], symbology_stylename[symbology], checked=False)
+            except StyleNotFoundError as e:
+                utils.MessagebarAndLog.info(bar_msg=str(e))
+            except:
+                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+        symbology = 'W levels'
+        if symbology in symbology_stylename:
+            wlvls_layer = layers.get(symbology)
+            if 'h_tocags' in wlvls_layer.fields().names():
+                wlvls_group = add_group(group, symbology, checked=True)
+
+                wlvl_label = 'W levels label'
+                if wlvl_label in symbology_stylename:
+                    try:
+                        add_generic_symbology(wlvls_group, layers[wlvl_label],
+                                              symbology_stylename[wlvl_label],
+                                              checked=False)
+                    except StyleNotFoundError as e:
+                        utils.MessagebarAndLog.info(bar_msg=str(e))
+                    except:
+                        utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                try:
+                    add_wlvls_symbology(wlvls_group, wlvls_layer, symbology_stylename[symbology])
+                except StyleNotFoundError as e:
+                    utils.MessagebarAndLog.info(bar_msg=str(e))
+                except:
+                    utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+        symbology = 'Bedrock'
+        if symbology in symbology_stylename:
+            bedrock_group = add_group(group, symbology, checked=True)
+            bedrock_label = symbology_stylename.get('Bedrock label')
+            if bedrock_label:
+                try:
+                    add_generic_symbology(bedrock_group, layers['Bedrock label'],
+                                      symbology_stylename['Bedrock label'], checked=False)
+                except StyleNotFoundError as e:
+                    utils.MessagebarAndLog.info(bar_msg=str(e))
+                except:
+                    utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                else:
+                    layers['Bedrock label'].labeling().rootRule().children()[0].setFilterExpression(
+                        '''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+
+            try:
+                add_bedrock_symbology(bedrock_group, layers[symbology], symbology_stylename[symbology],
+                                      bedrock_geoshort)
+            except RuleDiscrepancyError:
+                del layers[symbology]
+            except StyleNotFoundError as e:
+                utils.MessagebarAndLog.info(bar_msg=str(e))
+            except:
+                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+
+        symbology = 'Frame'
+        if symbology in symbology_stylename:
+            try:
+                add_generic_symbology(group, layers[symbology], symbology_stylename[symbology])
+            except StyleNotFoundError as e:
+                utils.MessagebarAndLog.info(bar_msg=str(e))
+            except:
+                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+        layers_group = add_group(group, 'Layers', checked=True)
+        try:
+            add_layers_symbology(layers_group, plot_types, geo_colors, hydro_colors, layers['Geology'],
+                                 layers['Hydro'], symbology_stylename['Geology'])
+        except StyleNotFoundError as e:
+            utils.MessagebarAndLog.info(bar_msg=str(e))
+        except:
+            utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+        symbology = 'Shadow'
+        if symbology in symbology_stylename:
+            try:
+                add_generic_symbology(group, layers[symbology], symbology_stylename[symbology])
+            except StyleNotFoundError as e:
+                utils.MessagebarAndLog.info(bar_msg=str(e))
+            except:
+                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+
+
+        if any([spec.get('xfactor'), spec.get('yfactor')]):
+            for layer in layers.values():
+                scale_geometry_by_factor(layer, xfactor=spec['xfactor'], yfactor=spec['yfactor'])
+
+        all_layers.extend(layers.values())
+
+
+    QgsProject.instance().addMapLayers(all_layers, False)
+    if apply_obsid_filter:
+        apply_obsid_filter_to_layers(all_layers)
 
     for child in stratigraphy_group.children():
         if child.name() == previously_visible:
             child.setItemVisibilityChecked(True)
     iface.mapCanvas().refresh()
 
-def create_bedrock_symbology(bedrock_layer, bedrock_stylename, bedrock_geoshort, group):
+def create_layers(dbconnection, layers_names_tables):
+    layers = []
+    add_layers_to_list(layers, list(layers_names_tables.values()),
+                       geometrycolumn='geometry',
+                       dbconnection=dbconnection,
+                       layernames=list(layers_names_tables.keys()))
+    layers = {layer_name: layers[idx] for idx, layer_name in enumerate(layers_names_tables.keys())}
+    return layers
+
+def add_group(parent_group, name, checked=False):
+    group = qgis.core.QgsLayerTreeGroup(name=name, checked=checked)
+    group.setExpanded(False)
+    parent_group.insertChildNode(-1, group)
+    return group
+
+def apply_obsid_filter_to_layers(layers):
+    selected_obsids = utils.getselectedobjectnames(column_name='obsid')
+    if selected_obsids:
+        filter_string = '''obsid IN ({})'''.format(utils.sql_unicode_list(selected_obsids))
+        for layer in layers:
+            req = QgsFeatureRequest(QgsExpression(filter_string))
+            layer.setSubsetString(req.filterExpression().expression())
+
+def add_layers_symbology(layers_group, plot_types, geo_colors, hydro_colors, geo_layer, hydro_layer,
+                         layers_stylename):
+    symbology_using_cloning(plot_types, geo_colors, geo_layer, layers_stylename, 'geoshort')
+    symbology_using_cloning({k: "= '{}'".format(k) for k in sorted(hydro_colors.keys())}, hydro_colors,
+                            hydro_layer, layers_stylename, 'capacity')
+
+    for layer in [geo_layer, hydro_layer]:
+        layers_group.addLayer(layer)
+        layers_group.children()[-1].setExpanded(False)
+
+    layers_group.setIsMutuallyExclusive(True)
+
+def add_wlvls_symbology(wlvls_group, wlvls_layer, wlvls_stylename):
+    apply_style(wlvls_layer, wlvls_stylename)
+    # QgsProject.instance().addMapLayer(layers[2], False)
+    wlvls_group.addLayer(wlvls_layer)
+    wlvls_group.children()[-1].setExpanded(False)
+
+def add_generic_symbology(group, layer, stylename, checked=True):
+    apply_style(layer, stylename)
+    group.addLayer(layer)
+    group.children()[-1].setExpanded(False)
+    group.children()[-1].setItemVisibilityChecked(checked)
+
+def add_bedrock_symbology(bedrock_group, bedrock_layer, bedrock_stylename, bedrock_geoshort):
     apply_style(bedrock_layer, bedrock_stylename)
     bedrock_root_rule = bedrock_layer.renderer().rootRule()
     bedrock_rules = bedrock_root_rule.children()
 
-    if len(bedrock_rules) == 3:
-        # Bars with triangle, open and closed ending
-        bedrock_triangle, bedrock_closed_ending, bedrock_open_ending = bedrock_rules
+    if len(bedrock_rules) == 1:
+        # Bars with triangle
+        bedrock_triangle = bedrock_rules[0]
         bedrock_triangle.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
     elif len(bedrock_rules) == 2:
         # Rings with open and closed ending
         bedrock_closed_ending, bedrock_open_ending = bedrock_rules
+        bedrock_closed_ending.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+        bedrock_open_ending.setFilterExpression(
+            '''LOWER("drillstop") NOT LIKE '%{}%' OR "drillstop" IS NULL '''.format(bedrock_geoshort))
+    elif len(bedrock_rules) == 3:
+        # Bars with triangle, open and closed ending
+        bedrock_triangle, bedrock_closed_ending, bedrock_open_ending = bedrock_rules
+        bedrock_triangle.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+        bedrock_closed_ending.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
+        bedrock_open_ending.setFilterExpression(
+            '''LOWER("drillstop") NOT LIKE '%{}%' OR "drillstop" IS NULL '''.format(bedrock_geoshort))
     else:
         utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('strat_symbology',
                                                                           'Style and code discrepancy! The style %s has an unsupported number of rules!'))
-        return
+        raise RuleDiscrepancyError()
 
-    bedrock_closed_ending.setFilterExpression('''LOWER("drillstop") LIKE '%{}%' '''.format(bedrock_geoshort))
-    bedrock_open_ending.setFilterExpression(
-        '''LOWER("drillstop") NOT LIKE '%{}%' OR "drillstop" IS NULL '''.format(bedrock_geoshort))
-    QgsProject.instance().addMapLayer(bedrock_layer, False)
-    group.addLayer(bedrock_layer)
-    group.children()[-1].setExpanded(False)
+    bedrock_group.addLayer(bedrock_layer)
+    bedrock_group.children()[-1].setExpanded(False)
+    return bedrock_group
 
 def apply_style(layer, stylename):
     # now try to load the style file
-    stylefile_sv = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions","{}_sv.qml".format(stylename))
-    stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "{}.qml".format(stylename))
+    stylefile_sv = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "strat_symbology",
+                                "{}_sv.qml".format(stylename))
+    stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "strat_symbology",
+                             "{}.qml".format(stylename))
     if utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile(stylefile_sv):  # swedish forms are loaded only if locale settings indicate sweden
         try:
             layer.loadNamedStyle(stylefile_sv)
         except:
-            try:
+            if not os.path.isfile(stylefile):
+                raise StyleNotFoundError(ru(QCoreApplication.translate('strat_symbology',
+                                         ''''Missing stylefile %s''')) % ru(stylefile))
+            else:
                 layer.loadNamedStyle(stylefile)
-            except:
-                pass
+
     else:
-        try:
+        if not os.path.isfile(stylefile):
+            raise StyleNotFoundError(ru(QCoreApplication.translate('strat_symbology',
+                                     ''''Missing stylefile %s'''))%ru(stylefile))
+        else:
             layer.loadNamedStyle(stylefile)
-        except:
-            pass
+
 
 def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     apply_style(layer, stylename)
@@ -217,30 +394,38 @@ def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
     if xfactor is None and yfactor is None:
         return
     renderer = layer.renderer()
-    try:
-        root = renderer.rootRule()
-    except AttributeError:
-        symbols = [renderer.symbol()]
-    else:
-        symbols = [rule.symbol() for rule in root.children()]
+    if not isinstance(renderer, qgis.core.QgsNullSymbolRenderer):
+        try:
+            root = renderer.rootRule()
+        except AttributeError:
+            symbols = [renderer.symbol()]
+        else:
+            symbols = [rule.symbol() for rule in root.children()]
 
-    for symbol in symbols:
-        sl = symbol.symbolLayer(0)
-        if isinstance(sl, QgsGeometryGeneratorSymbolLayer):
-            geometry_expression = sl.geometryExpression()
-            if xfactor is not None:
-                geometry_expression = geometry_expression.replace('/**{xfactor}*/', '* ' + str(xfactor))
-            if yfactor is not None:
-                geometry_expression = geometry_expression.replace('/**{yfactor}*/', '* ' + str(yfactor))
-            sl.setGeometryExpression(geometry_expression)
-            # elif isinstance(rule, QgsMarkerSymbol):
-            #    if rule.dataDefinedSize() is not None:
-            #        rule.setDataDefinedSize('''coalesce(scale_linear("soildepth", 1, 54.3, 1, 10), 0)''')
+        for symbol in symbols:
+            sl = symbol.symbolLayer(0)
+            if isinstance(sl, QgsGeometryGeneratorSymbolLayer):
+                geometry_expression = sl.geometryExpression()
+                if xfactor is not None:
+                    geometry_expression = geometry_expression.replace('/**{xfactor}*/', '* ' + str(xfactor))
+                if yfactor is not None:
+                    geometry_expression = geometry_expression.replace('/**{yfactor}*/', '* ' + str(yfactor))
+                sl.setGeometryExpression(geometry_expression)
+                # elif isinstance(rule, QgsMarkerSymbol):
+                #    if rule.dataDefinedSize() is not None:
+                #        rule.setDataDefinedSize('''coalesce(scale_linear("soildepth", 1, 54.3, 1, 10), 0)''')
 
     labeling = layer.labeling()
     if labeling:
         if isinstance(labeling, QgsVectorLayerSimpleLabeling):
-            settings = labeling.settings()
+            labels = [labeling]
+        elif isinstance(labeling, qgis.core.QgsRuleBasedLabeling):
+            labels = labeling.rootRule().children()
+        else:
+            labels = []
+
+        for label in labels:
+            settings = label.settings()
             ddf = settings.dataDefinedProperties()
             if xfactor is not None:
                 #'PositionX' = index 9
@@ -344,3 +529,10 @@ CREATE VIEW {view_name} AS
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
 
     dbconnection.commit()
+
+class RuleDiscrepancyError(Exception):
+    pass
+
+
+class StyleNotFoundError(Exception):
+    pass
