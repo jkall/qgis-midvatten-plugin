@@ -26,6 +26,7 @@ from collections import OrderedDict
 from qgis.core import QgsField, QgsGeometry
 from PyQt5.QtCore import QVariant
 from qgis.PyQt.QtWidgets import QWidget
+from qgis.core import QgsProject
 
 import export_fieldlogger
 import mock
@@ -440,11 +441,12 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
         assert tuple(lines) == tuple(result_lines)
 
-    @staticmethod
+
+    #@staticmethod
     @mock.patch('export_fieldlogger.db_utils.tables_columns')
     @mock.patch('export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    def test_laton_from_vectorlayer(mock_tables_columns, mock_write_printlist_to_file, mock_MessagebarAndLog):
+    def test_laton_from_vectorlayer(self, mock_tables_columns, mock_write_printlist_to_file, mock_MessagebarAndLog):
         mock_ms = mock.MagicMock()
         mock_ms.settingsdict = {}
 
@@ -456,12 +458,12 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                       QgsGeometry.fromWkt('POINT(2000000.0 200000.0)'),
                       QgsGeometry.fromWkt('POINT(3000000.0 300000.0)')]
 
-        vlayer = create_vectorlayer(_fields, data, geometries=geometries, geomtype='Point', crs=3006)
-
-        mock_iface = QWidget()
-        mock_iface.legendInterface = mock.Mock()
-        mock_iface.legendInterface.return_value.layers.return_value = [vlayer]
-        exporttofieldlogger = ExportToFieldLogger(mock_iface, mock_ms)
+        self.vlayer = create_vectorlayer(_fields, data, geometries=geometries, geomtype='Point', crs=3006)
+        QgsProject.instance().addMapLayer(self.vlayer)
+        #mock_iface = QWidget()
+        #mock_iface.legendInterface = mock.Mock()
+        #mock_iface.legendInterface.return_value.layers.return_value = [vlayer]
+        exporttofieldlogger = ExportToFieldLogger(None, mock_ms)
 
         stored_settings = [(0, (('input_field_group_list', ['par1;type1;hint1']), ('sublocation_suffix', 'group'),
                                 ('location_suffix', 'proj'))),
@@ -473,13 +475,12 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         parameter_groups[1]._obsid_list.paste_data(['obsid3'])
         exporttofieldlogger.parameter_groups = parameter_groups
         exporttofieldlogger.obs_from_vlayer.setChecked(True)
-        exporttofieldlogger.export()
 
+        exporttofieldlogger.export()
 
         print("printlist" + str(mock_write_printlist_to_file.mock_calls))
 
         assert mock_write_printlist_to_file.mock_calls == [mock.call(['NAME;INPUTTYPE;HINT', 'par1;type1;hint1 ', 'par2;type2;hint2 ', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', 'obsid1.proj;obsid1.proj.group;0.9019366063889334;19.489297537299507;par1', 'obsid2.proj;obsid2.proj.group;1.7601631374427096;28.363010767336505;par1', 'obsid3.proj2;obsid3.proj2.group;2.5166567545976224;36.93072164080035;par2'])]
-
         #assert False
 
 

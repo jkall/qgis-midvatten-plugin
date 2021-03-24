@@ -35,6 +35,6 @@ class TestStratSymbology(utils_for_tests.MidvattenTestPostgisDbSv):
         _test(self)
         root = QgsProject.instance().layerTreeRoot()
         test = utils.anything_to_string_representation(utils_for_tests.recursive_children(root))
-        ref = '["", "", [["Midvatten strat symbology", "", [["Rings", "", [["Bedrock", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]], ["Static bars", "", [["W levels", True, []], ["Bedrock", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]], ["Bars", "", [["W levels", True, []], ["Bedrock", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]]]]]]'
+        ref = '["", "", [["Midvatten strat symbology", "", [["Bars", "", [["Obsid label", True, []], ["Layer texts", True, []], ["W levels", "", [["W levels label", True, []], ["W levels", True, []]]], ["Bedrock", "", [["Bedrock label", True, []], ["Bedrock", True, []]]], ["Frame", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]], ["Shadow", True, []]]], ["Static bars", "", [["Obsid label", True, []], ["Layer texts", True, []], ["W levels", "", [["W levels label", True, []], ["W levels", True, []]]], ["Bedrock", "", [["Bedrock label", True, []], ["Bedrock", True, []]]], ["Frame", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]], ["Shadow", True, []]]], ["Rings", "", [["Bedrock", "", [["Bedrock", True, []]]], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]]]]]]'
         assert test == ref
         assert mock_messagebar.mock_calls == []
