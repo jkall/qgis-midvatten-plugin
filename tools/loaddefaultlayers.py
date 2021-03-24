@@ -74,8 +74,6 @@ class LoadLayers(object):
             data_tables = defs.data_tables()
             add_layers_to_list(layer_list, data_tables, dbconnection=dbconnection)
 
-        w_lvls_last_geom = None
-
         #now loop over all the layers and set styles etc
         for layer in layer_list:
             # TODO: Made this a comment, but there might be some hidden feature thats still needed!
@@ -109,13 +107,8 @@ class LoadLayers(object):
             if layer.name() == 'obs_points':#zoom to obs_points extent
                 obsp_lyr = layer
                 canvas.setExtent(layer.extent())
-            elif layer.name() == 'w_lvls_last_geom':
-                w_lvls_last_geom = layer
-
-        if w_lvls_last_geom is not None:
-            midv = self.root.findGroup('Midvatten_OBS_DB')
-            w_lvls_last_geom = MyGroup.findLayer(w_lvls_last_geom)
-            w_lvls_last_geom.setItemVisibilityCheckedRecursive(False)
+            elif layer.name() in ('w_lvls_last_geom', 'obs_p_w_lvl_logger'):
+                MyGroup.findLayer(layer).setItemVisibilityCheckedRecursive(False)
 
         #finally refresh canvas
         dbconnection.closedb()

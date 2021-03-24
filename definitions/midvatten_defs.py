@@ -328,7 +328,7 @@ def get_subset_of_tables_fr_db(category='obs_points'):
     elif category == 'data_domains':
         return ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_stratigraphy_plots', 'zz_capacity', 'zz_capacity_plots', 'zz_interlab4_obsid_assignment']
     elif category == 'default_layers':
-        return ['obs_lines', 'obs_points', 'obs_p_w_qual_field', 'obs_p_w_qual_lab', 'obs_p_w_lvl', 'obs_p_w_strat', 'w_lvls_last_geom']
+        return ['obs_lines', 'obs_points', 'obs_p_w_qual_field', 'obs_p_w_qual_lab', 'obs_p_w_lvl', 'obs_p_w_lvl_logger', 'obs_p_w_strat', 'w_lvls_last_geom']
     elif category == 'default_nonspatlayers':
         return ['stratigraphy', 'w_levels', 'w_flow', 'w_qual_lab', 'w_qual_field','comments']
     elif category == 'default_layers_w_ui':
