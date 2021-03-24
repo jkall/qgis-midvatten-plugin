@@ -111,37 +111,28 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
     group_spec = {'Bars': {'symbology_stylename': {'Geology': 'bars_strat',
                                                'Hydro': 'bars_strat',
                                                'Bedrock': 'bars_bedrock',
-                                               'W levels': 'bars_w_lvls_last_geom',
-                                               'W levels label': 'bars_w_lvls_last_geom_label',
+                                               'W levels': 'bars_w_levels',
+                                               'W levels label': 'bars_w_levels_label',
                                                'Obsid label': 'bars_obsid_label',
                                                'Frame': 'bars_frame',
                                                'Bedrock label': 'bars_bedrock_label',
                                                'Shadow': 'bars_shadow',
                                                'Layer texts': 'bars_layer_texts'
                                                 },
-                           'xfactor': bars_xfactor, 'yfactor': bars_yfactor},
-                 'Static bars': {'symbology_stylename': {'Geology': 'static_bars_strat',
-                                               'Hydro': 'static_bars_strat',
-                                               'Bedrock': 'static_bars_bedrock',
-                                               'W levels': 'static_bars_w_lvls_last_geom',
-                                               'W levels label': 'static_bars_w_lvls_last_geom_label',
-                                               'Obsid label': 'static_bars_obsid_label',
-                                               'Frame': 'static_bars_frame',
-                                               'Bedrock label': 'static_bars_bedrock_label',
-                                               'Shadow': 'static_bars_shadow',
-                                               'Layer texts': 'static_bars_layer_texts'
-                                                },
-                                 'xfactor': static_bars_xfactor, 'yfactor': static_bars_yfactor,
-                                 },
+                           'xfactor': bars_xfactor, 'yfactor': bars_yfactor,
+                           'use_mapscale': True},
                  'Rings': {'symbology_stylename': {'Geology': 'rings_strat',
                                                'Hydro': 'rings_strat',
                                                'Bedrock': 'rings_bedrock',
                                                }}}
 
+    if plot_static_bars:
+        group_spec['Static bars'] = dict(group_spec['Bars'])
+        group_spec['Static bars']['use_mapscale'] = False
+        group_spec['Static bars']['xfactor'] = static_bars_xfactor
+        group_spec['Static bars']['yfactor'] = static_bars_yfactor
     if not plot_bars:
         del group_spec['Bars']
-    if not plot_static_bars:
-        del group_spec['Static bars']
     if not plot_rings:
         del group_spec['Rings']
 
@@ -248,10 +239,10 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
             except:
                 utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
-
-        if any([spec.get('xfactor'), spec.get('yfactor')]):
+        if any([spec.get('xfactor'), spec.get('yfactor'), spec.get('use_map_scale')]):
             for layer in layers.values():
-                scale_geometry_by_factor(layer, xfactor=spec['xfactor'], yfactor=spec['yfactor'])
+                scale_geometry_by_factor(layer, xfactor=spec.get('xfactor'), yfactor=spec.get('yfactor'),
+                                         use_map_scale=spec.get('use_map_scale'))
 
         all_layers.extend(layers.values())
 
@@ -395,8 +386,8 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     if for_cloning.isElse():
         for_cloning.setActive(False)
 
-def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
-    if xfactor is None and yfactor is None:
+def scale_geometry_by_factor(layer, xfactor=None, yfactor=None, use_map_scale=None):
+    if xfactor is None and yfactor is None and not use_map_scale:
         return
     renderer = layer.renderer()
     if not isinstance(renderer, qgis.core.QgsNullSymbolRenderer):
@@ -415,6 +406,8 @@ def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
                     geometry_expression = geometry_expression.replace('/**{xfactor}*/', '* ' + str(xfactor))
                 if yfactor is not None:
                     geometry_expression = geometry_expression.replace('/**{yfactor}*/', '* ' + str(yfactor))
+                if use_map_scale:
+                    geometry_expression = geometry_expression.replace('/**{map_scale}*/', '*0.001*@map_scale')
                 sl.setGeometryExpression(geometry_expression)
                 # elif isinstance(rule, QgsMarkerSymbol):
                 #    if rule.dataDefinedSize() is not None:
@@ -432,14 +425,19 @@ def scale_geometry_by_factor(layer, xfactor=None, yfactor=None):
         for label in labels:
             settings = label.settings()
             ddf = settings.dataDefinedProperties()
-            if xfactor is not None:
-                #'PositionX' = index 9
-                p = QgsProperty.fromExpression(ddf.property(9).expressionString().replace('/**{xfactor}*/', '* ' + str(xfactor)))
-                ddf.setProperty(9, p)
-            if yfactor is not None:
-                #'PositionY' = index 10
-                p = QgsProperty.fromExpression(ddf.property(10).asExpression().replace('/**{yfactor}*/', '* ' + str(yfactor)))
-                ddf.setProperty(10, p)
+
+
+            #'PositionX' = index 9
+            for propertyno, factor, factortext in [(9, xfactor, '/**{xfactor}*/'),
+                                                   (10, yfactor, '/**{yfactor}*/')]:
+                expr = ddf.property(propertyno).expressionString()
+                if factor is not None:
+                    expr = expr.replace(factortext, '* ' + str(xfactor))
+                if use_map_scale:
+                    expr = expr.replace('/**{map_scale}*/', '*0.001*@map_scale')
+                p = QgsProperty.fromExpression(expr)
+                ddf.setProperty(propertyno, p)
+
             settings.setDataDefinedProperties(ddf)
             labeling.setSettings(settings)
 

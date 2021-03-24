@@ -59,7 +59,7 @@
         <substitutions/>
       </text-style>
       <text-format wrapChar="" useMaxLineLengthForAutoWrap="1" placeDirectionSymbol="0" rightDirectionSymbol=">" leftDirectionSymbol="&lt;" addDirectionSymbol="0" multilineAlign="3" formatNumbers="0" decimals="3" autoWrapLength="0" reverseDirectionSymbol="0" plussign="0"/>
-      <placement lineAnchorType="0" offsetUnits="MM" rotationAngle="0" yOffset="0" offsetType="0" geometryGenerator="geom_from_wkt( format('POINT(%1 %2)', &#xa;X($geometry)+2*0.001*@map_scale /**{xfactor}*/, Y($geometry)))" priority="5" placement="1" placementFlags="10" fitInPolygonOnly="0" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="25" maxCurvedCharAngleOut="-25" geometryGeneratorType="PointGeometry" distUnits="MM" geometryGeneratorEnabled="0" distMapUnitScale="3x:0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" repeatDistance="0" repeatDistanceUnits="MM" centroidWhole="0" quadOffset="2" dist="0" overrunDistance="0" xOffset="0" overrunDistanceMapUnitScale="3x:0,0,0,0,0,0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" lineAnchorPercent="0.5" preserveRotation="1" polygonPlacementFlags="2" overrunDistanceUnit="MM" layerType="PointGeometry"/>
+      <placement lineAnchorType="0" offsetUnits="MM" rotationAngle="0" yOffset="0" offsetType="0" geometryGenerator="geom_from_wkt( format('POINT(%1 %2)', &#xa;X($geometry)+2/**{map_scale}*/ /**{xfactor}*/, Y($geometry)))" priority="5" placement="1" placementFlags="10" fitInPolygonOnly="0" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="25" maxCurvedCharAngleOut="-25" geometryGeneratorType="PointGeometry" distUnits="MM" geometryGeneratorEnabled="0" distMapUnitScale="3x:0,0,0,0,0,0" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" repeatDistance="0" repeatDistanceUnits="MM" centroidWhole="0" quadOffset="2" dist="0" overrunDistance="0" xOffset="0" overrunDistanceMapUnitScale="3x:0,0,0,0,0,0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" lineAnchorPercent="0.5" preserveRotation="1" polygonPlacementFlags="2" overrunDistanceUnit="MM" layerType="PointGeometry"/>
       <rendering obstacle="1" scaleVisibility="0" displayAll="1" upsidedownLabels="0" labelPerPart="0" obstacleFactor="1" drawLabels="1" mergeLines="0" fontMinPixelSize="3" fontMaxPixelSize="10000" maxNumLabels="2000" limitNumLabels="0" obstacleType="0" minFeatureSize="0" scaleMax="0" scaleMin="0" zIndex="0" fontLimitPixelSize="0"/>
       <dd_properties>
         <Option type="Map">
@@ -67,7 +67,7 @@
           <Option name="properties" type="Map">
             <Option name="PositionX" type="Map">
               <Option name="active" type="bool" value="true"/>
-              <Option name="expression" type="QString" value="X($geometry)+2*0.001*@map_scale /**{xfactor}*/"/>
+              <Option name="expression" type="QString" value="X($geometry)+2/**{map_scale}*/ /**{xfactor}*/"/>
               <Option name="type" type="int" value="3"/>
             </Option>
             <Option name="PositionY" type="Map">
