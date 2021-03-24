@@ -74,7 +74,7 @@
                 </Option>
                 <Option type="Map" name="PositionX">
                   <Option type="bool" name="active" value="true"/>
-                  <Option type="QString" name="expression" value="X($geometry)-2 /**{map_scale}*/ /**{xfactor}*/"/>
+                  <Option type="QString" name="expression" value="X($geometry)-1.5 /**{map_scale}*/ /**{xfactor}*/"/>
                   <Option type="int" name="type" value="3"/>
                 </Option>
                 <Option type="Map" name="PositionY">

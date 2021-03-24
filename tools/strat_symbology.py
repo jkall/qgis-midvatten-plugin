@@ -18,6 +18,7 @@
  ***************************************************************************/
 """
 import os
+import copy
 import qgis.utils
 from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer, QgsGeometryGeneratorSymbolLayer, QgsMarkerSymbol,\
     QgsVectorLayerSimpleLabeling, QgsProperty
@@ -120,15 +121,15 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
                                                'Layer texts': 'bars_layer_texts'
                                                 },
                            'xfactor': bars_xfactor, 'yfactor': bars_yfactor,
-                           'use_mapscale': True},
+                           'use_map_scale': True},
                  'Rings': {'symbology_stylename': {'Geology': 'rings_strat',
                                                'Hydro': 'rings_strat',
                                                'Bedrock': 'rings_bedrock',
                                                }}}
 
     if plot_static_bars:
-        group_spec['Static bars'] = dict(group_spec['Bars'])
-        group_spec['Static bars']['use_mapscale'] = False
+        group_spec['Static bars'] = copy.deepcopy(group_spec['Bars'])
+        group_spec['Static bars']['use_map_scale'] = False
         group_spec['Static bars']['xfactor'] = static_bars_xfactor
         group_spec['Static bars']['yfactor'] = static_bars_yfactor
     if not plot_bars:
@@ -211,7 +212,6 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
             except:
                 utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
-
         symbology = 'Frame'
         if symbology in symbology_stylename:
             try:
@@ -241,8 +241,8 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
 
         if any([spec.get('xfactor'), spec.get('yfactor'), spec.get('use_map_scale')]):
             for layer in layers.values():
-                scale_geometry_by_factor(layer, xfactor=spec.get('xfactor'), yfactor=spec.get('yfactor'),
-                                         use_map_scale=spec.get('use_map_scale'))
+                scale_geometry(layer, xfactor=spec.get('xfactor'), yfactor=spec.get('yfactor'),
+                               use_map_scale=spec.get('use_map_scale'))
 
         all_layers.extend(layers.values())
 
@@ -386,8 +386,8 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
     if for_cloning.isElse():
         for_cloning.setActive(False)
 
-def scale_geometry_by_factor(layer, xfactor=None, yfactor=None, use_map_scale=None):
-    if xfactor is None and yfactor is None and not use_map_scale:
+def scale_geometry(layer, xfactor=None, yfactor=None, use_map_scale=None):
+    if not any([xfactor, yfactor, use_map_scale]):
         return
     renderer = layer.renderer()
     if not isinstance(renderer, qgis.core.QgsNullSymbolRenderer):
@@ -426,13 +426,12 @@ def scale_geometry_by_factor(layer, xfactor=None, yfactor=None, use_map_scale=No
             settings = label.settings()
             ddf = settings.dataDefinedProperties()
 
-
             #'PositionX' = index 9
             for propertyno, factor, factortext in [(9, xfactor, '/**{xfactor}*/'),
                                                    (10, yfactor, '/**{yfactor}*/')]:
                 expr = ddf.property(propertyno).expressionString()
                 if factor is not None:
-                    expr = expr.replace(factortext, '* ' + str(xfactor))
+                    expr = expr.replace(factortext, '* ' + str(factor))
                 if use_map_scale:
                     expr = expr.replace('/**{map_scale}*/', '*0.001*@map_scale')
                 p = QgsProperty.fromExpression(expr)
