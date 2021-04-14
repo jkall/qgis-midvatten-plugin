@@ -74,6 +74,9 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
           <widget class="QWidget" name="scrollAreaWidgetContents_db">
            <property name="geometry">
             <rect>
@@ -84,6 +87,18 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_db_scroll">
+            <property name="leftMargin">
+             <number>6</number>
+            </property>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <property name="rightMargin">
+             <number>6</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_db"/>
             </item>

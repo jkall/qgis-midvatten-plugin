@@ -16,7 +16,7 @@ from builtins import object
 import qgis.PyQt
 import ast
 import os.path
-from qgis.PyQt import uic
+from qgis.PyQt import uic, QtCore
 from functools import partial  # only to get combobox signals to work
 
 import db_utils
@@ -526,6 +526,7 @@ class DatabaseSettings(object):
     def __init__(self, midvsettingsdialogdock, gridLayout_db):
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self.layout = gridLayout_db
+        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.db_settings_obj = None
         self.label_width = self.maximum_label_width()
 
@@ -544,7 +545,7 @@ class DatabaseSettings(object):
         self._dbtype_combobox.currentIndexChanged.connect(self.choose_dbtype)
 
 
-        self.layout.setRowStretch(self.layout.rowCount(), 1)
+        #self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     @property
     def dbtype_combobox(self):
@@ -558,7 +559,7 @@ class DatabaseSettings(object):
 
     def choose_dbtype(self):
         #Remove stretch
-        self.layout.setRowStretch(self.layout.rowCount(), 0)
+        #self.layout.setRowStretch(self.layout.rowCount(), 0)
         for widget in self.child_widgets:
             try:
                 widget.clear_widgets()
@@ -587,7 +588,7 @@ class DatabaseSettings(object):
         self.layout.addWidget(self.db_settings_obj.widget, self.layout.rowCount(), 0)
         self.child_widgets.append(self.db_settings_obj.widget)
 
-        self.layout.setRowStretch(self.layout.rowCount(), 1)
+        #self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     def update_settings(self, _db_settings):
         db_settings = None
