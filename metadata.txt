@@ -27,6 +27,7 @@ changelog=
         - Stratsymbology: Bedrock label as >X when drillstop not like '%bedrock%' or equivalent.
         - Plot symbol colors: Changed symbol color for till and clay from yellow to cyan and beige for qt-colors (affecting strat symbology and the old stratigraphy plot).
         - Added triangle symbol (obs_p_w_lvl_logger) for showing if there are loggerdata for an obsid.
+        - Fixes bug where a missing Postgis table caused a plugin-crash.
         Version 1.6.5b6:
         - CustomPlot: Fix to gui again.
         - Interlab4 import: Fixes bug when closing save metadata without selecting file.

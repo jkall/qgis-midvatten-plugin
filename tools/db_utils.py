@@ -480,7 +480,11 @@ def db_tables_columns_info(table=None, dbconnection=None):
     tables_dict = {}
 
     for tablename in tablenames:
-        columns = get_table_info(tablename, dbconnection=dbconnection)
+        try:
+            columns = get_table_info(tablename, dbconnection=dbconnection)
+        except:
+            columns = None
+
         if columns is None:
             utils.MessagebarAndLog.warning(log_msg=ru(
                 QCoreApplication.translate('db_tables_columns_info', 'Getting columns from table %s failed!')) % (tablename))
