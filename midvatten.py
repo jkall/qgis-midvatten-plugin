@@ -115,7 +115,7 @@ class Midvatten(object):
         self.action_import_hobologgerdata = QAction(QIcon(os.path.join(os.path.dirname(__file__), "icons", "load_wlevels_logger.png")), QCoreApplication.translate("Midvatten", "Import logger data using HOBO logger csv-format"), self.iface.mainWindow())
         self.action_import_hobologgerdata.triggered.connect(lambda x: self.import_hobologgerdata())
 
-        self.action_wlvlloggcalibrate = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calibr_level_logger_masl.png")), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
+        self.action_wlvlloggcalibrate = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calibr_level_logger_masl.png")), QCoreApplication.translate("Midvatten","Edit water level logger data"), self.iface.mainWindow())
         self.action_wlvlloggcalibrate.triggered.connect(lambda x: self.wlvlloggcalibrate())
 
         self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "import_wqual_lab.png")), QCoreApplication.translate("Midvatten","Import w quality from lab data using interlab4 format"), self.iface.mainWindow())

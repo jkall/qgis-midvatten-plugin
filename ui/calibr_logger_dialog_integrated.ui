@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1260</width>
-    <height>1028</height>
+    <height>943</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -303,7 +303,20 @@
            </font>
           </property>
           <property name="text">
-           <string>Period for adjustion/deletion </string>
+           <string>Select period</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="select_using_rectangle">
+          <property name="toolTip">
+           <string>Select water level nodes in plot using rectangle to calculate From and To date.</string>
+          </property>
+          <property name="text">
+           <string>Select using rectangle</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -682,7 +695,7 @@
              <number>9</number>
             </property>
             <property name="leftMargin">
-             <number>0</number>
+             <number>3</number>
             </property>
             <property name="rightMargin">
              <number>0</number>
@@ -691,503 +704,172 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QgsCollapsibleGroupBox" name="mGroupBox">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;HOWTO: &lt;/span&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;Water level is calculated from logger water head using &lt;/span&gt;&lt;span style=&quot; font-size:7pt; font-style:italic;&quot;&gt;Calculate&lt;/span&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;. It can be adjusted by moving selected nodes up or down, or by using&lt;/span&gt;&lt;span style=&quot; font-size:7pt; font-style:italic;&quot;&gt; Fit to measurements&lt;/span&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::RichText</enum>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_5">
               <property name="font">
                <font>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
-              <property name="title">
+              <property name="text">
                <string>Calculate from water column</string>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-              </property>
-              <property name="flat">
-               <bool>false</bool>
-              </property>
-              <property name="checkable">
-               <bool>false</bool>
-              </property>
-              <property name="collapsed">
-               <bool>false</bool>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_7">
-               <property name="leftMargin">
-                <number>6</number>
-               </property>
-               <property name="topMargin">
-                <number>13</number>
-               </property>
-               <property name="rightMargin">
-                <number>6</number>
-               </property>
-               <property name="bottomMargin">
-                <number>6</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_12">
-                 <property name="font">
-                  <font>
-                   <pointsize>7</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculate water level (&lt;span style=&quot; font-style:italic;&quot;&gt;level_masl&lt;/span&gt;) from water column above logger (&lt;span style=&quot; font-style:italic;&quot;&gt;head_cm&lt;/span&gt; / 100) + logger position (&lt;span style=&quot; font-style:italic;&quot;&gt;ref&lt;/span&gt;) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="textFormat">
-                  <enum>Qt::RichText</enum>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
-                 <item>
-                  <widget class="QLabel" name="label_7">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Noto Sans</family>
-                     <pointsize>8</pointsize>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Ref&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="LoggerPos">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>20</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Noto Sans</family>
-                     <pointsize>8</pointsize>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="inputMethodHints">
-                    <set>Qt::ImhPreferNumbers</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButtonSet">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Noto Sans</family>
-                     <pointsize>8</pointsize>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Calculate</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButtonCalcBestFit">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <family>Noto Sans</family>
-                   <pointsize>8</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Calculate using best fit (auto)</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
              </widget>
             </item>
             <item>
-             <widget class="QgsCollapsibleGroupBox" name="mGroupBox_2">
+             <widget class="QLabel" name="label_12">
               <property name="font">
                <font>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>7</pointsize>
                </font>
               </property>
-              <property name="title">
-               <string>Add offset to water level</string>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculate water level (&lt;span style=&quot; font-style:italic;&quot;&gt;level_masl&lt;/span&gt;) from water column above logger (&lt;span style=&quot; font-style:italic;&quot;&gt;head_cm&lt;/span&gt; / 100) + logger position (&lt;span style=&quot; font-style:italic;&quot;&gt;ref&lt;/span&gt;) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              <property name="textFormat">
+               <enum>Qt::RichText</enum>
               </property>
-              <property name="collapsed">
-               <bool>false</bool>
+              <property name="wordWrap">
+               <bool>true</bool>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_2">
-               <property name="leftMargin">
-                <number>6</number>
-               </property>
-               <property name="rightMargin">
-                <number>6</number>
-               </property>
-               <property name="bottomMargin">
-                <number>6</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_19">
-                 <property name="font">
-                  <font>
-                   <pointsize>7</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adjust water level (&lt;span style=&quot; font-style:italic;&quot;&gt;level_masl&lt;/span&gt;) by adding an offset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="textFormat">
-                  <enum>Qt::RichText</enum>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_5">
-                 <item>
-                  <widget class="QLabel" name="label_5">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Noto Sans</family>
-                     <pointsize>8</pointsize>
-                     <weight>50</weight>
-                     <italic>true</italic>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Offset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="Add2Levelmasl">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>20</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Noto Sans</family>
-                     <pointsize>8</pointsize>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButtonAdd">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Noto Sans</family>
-                     <pointsize>8</pointsize>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Add</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QFrame" name="frame">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>8</pointsize>
-                  </font>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::Box</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Sunken</enum>
-                 </property>
-                 <property name="midLineWidth">
-                  <number>0</number>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_2">
-                  <property name="leftMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>3</number>
-                  </property>
-                  <item row="1" column="0">
-                   <widget class="QPushButton" name="pushButtonLpos">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>Noto Sans</family>
-                      <pointsize>8</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Current</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QPushButton" name="pushButtonMpos">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>Noto Sans</family>
-                      <pointsize>8</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>New</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0" colspan="2">
-                   <widget class="QLabel" name="label_10">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>Noto Sans</family>
-                      <pointsize>8</pointsize>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Calculate offset from plot selection</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButtonCalcBestFit2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <family>Noto Sans</family>
-                   <pointsize>8</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Add offset using best fit (auto)</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Ref&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="LoggerPos">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="inputMethodHints">
+                 <set>Qt::ImhPreferNumbers</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonSet">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Calculate</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
-             <widget class="Line" name="line_5">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <family>Noto Sans</family>
-                <pointsize>8</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
+             <widget class="Line" name="line_2">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_14">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>40</height>
-               </size>
-              </property>
+             <widget class="QLabel" name="label_6">
               <property name="font">
                <font>
-                <family>Noto Sans</family>
-                <pointsize>9</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Best fit (auto) settings</string>
+               <string>Fit water level to measurements</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_19">
+              <property name="font">
+               <font>
+                <pointsize>7</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fit selected water level to measurements. Each water level is matched to measurements within its datetime +- &lt;span style=&quot; font-style:italic;&quot;&gt;search radius&lt;/span&gt;. Increase &lt;span style=&quot; font-style:italic;&quot;&gt;search radius&lt;/span&gt; if no match is found.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::RichText</enum>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -1249,6 +931,67 @@
               </item>
              </layout>
             </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonCalcBestFit2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Noto Sans</family>
+                <pointsize>8</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Fit to measurements</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="Line" name="line_5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <family>Noto Sans</family>
+                <pointsize>8</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="adjust_drift">
@@ -1272,16 +1015,16 @@
              <widget class="QWidget" name="widget" native="true">
               <layout class="QVBoxLayout" name="verticalLayout_10">
                <property name="leftMargin">
-                <number>0</number>
+                <number>3</number>
                </property>
                <property name="topMargin">
-                <number>0</number>
+                <number>3</number>
                </property>
                <property name="rightMargin">
-                <number>0</number>
+                <number>3</number>
                </property>
                <property name="bottomMargin">
-                <number>0</number>
+                <number>3</number>
                </property>
                <item>
                 <widget class="QScrollArea" name="scrollArea">
@@ -1296,8 +1039,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>322</width>
-                    <height>451</height>
+                    <width>316</width>
+                    <height>474</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1901,6 +1644,15 @@
             </property>
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_4">
+              <property name="topMargin">
+               <number>3</number>
+              </property>
+              <property name="rightMargin">
+               <number>3</number>
+              </property>
+              <property name="bottomMargin">
+               <number>3</number>
+              </property>
               <item>
                <widget class="QLabel" name="label">
                 <property name="sizePolicy">
@@ -1958,6 +1710,7 @@
        <zorder>line_11</zorder>
        <zorder>line_12</zorder>
        <zorder></zorder>
+       <zorder>select_using_rectangle</zorder>
       </widget>
       <widget class="QWidget" name="layoutWidget">
        <property name="font">
@@ -2196,14 +1949,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QgsCollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>qgscollapsiblegroupbox.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

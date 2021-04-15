@@ -32,7 +32,8 @@ import os
 from functools import partial
 from qgis.PyQt import uic
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.dates import datestr2num, num2date
+from matplotlib.dates import datestr2num, num2date, date2num
+from matplotlib.patches import Rectangle
 import numpy as np
 
 import qgis.PyQt
@@ -44,6 +45,9 @@ try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
+
+from matplotlib.widgets import RectangleSelector
+
 import datetime
 import midvatten_utils as utils
 from midvatten_utils import timer, fn_timer, returnunicode as ru
@@ -141,6 +145,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def __init__(self, parent, settingsdict1={}, obsid=''):
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
+        self.setupUi(self) # Required by Qt4 to initialize the UI
+        self.setWindowTitle(ru(QCoreApplication.translate('Calibrlogger',
+                                                          "Edit water level logger (w_levels_logger) data")))  # Set the title for the dialog
         utils.start_waiting_cursor()#show the user this may take a long time...
         self.obsid = obsid
         self.log_pos = None
@@ -150,12 +159,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.head_ts_for_plot = None
         self.level_masl_ts = None
         self.loggerpos_masl_or_offset_state = 1
+        self.selected_line = None
+        self.logger_artist = None
+        self.moving_idx = None
+
+        self.Add2Levelmasl = qgis.PyQt.QtWidgets.QLineEdit()
 
         self.settingsdict = settingsdict1
-        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
-        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
-        self.setupUi(self) # Required by Qt4 to initialize the UI
-        self.setWindowTitle(ru(QCoreApplication.translate('Calibrlogger', "Calculate water level from logger"))) # Set the title for the dialog
+
         text = ru(QCoreApplication.translate('Calibrlogger',
                                              "Select the observation point with logger data to be adjusted."))
         self.statusbar.showMessage(text, 0)
@@ -174,32 +185,46 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.cid =[]
 
         self.pushButtonSet.clicked.connect(lambda x: self.set_logger_pos())
-        self.pushButtonAdd.clicked.connect(lambda x: self.add_to_level_masl())
         self.pushButtonFrom.clicked.connect(lambda x: self.set_from_date_from_x())
         self.pushButtonTo.clicked.connect(lambda x: self.set_to_date_from_x())
         self.L1_button.clicked.connect(lambda x: self.set_adjust_data('L1_date', 'L1_level'))
         self.L2_button.clicked.connect(lambda x: self.set_adjust_data('L2_date', 'L2_level'))
         self.M1_button.clicked.connect(lambda x: self.set_adjust_data('M1_date', 'M1_level'))
         self.M2_button.clicked.connect(lambda x: self.set_adjust_data('M2_date', 'M2_level'))
-        self.pushButton_from_extent.clicked.connect(lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
-        self.pushButton_to_extent.clicked.connect(lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
+        self.pushButton_from_extent.clicked.connect(lambda: self.update_date_from_extent(self.FromDateTime, self.axes.get_xbound()[0]))
+        self.pushButton_to_extent.clicked.connect(lambda: self.update_date_from_extent(self.ToDateTime, self.axes.get_xbound()[1]))
         self.pushButtonupdateplot.clicked.connect(lambda x: self.update_plot())
-        self.pushButtonLpos.clicked.connect(lambda x: self.catch_old_level())
-        self.pushButtonMpos.clicked.connect(lambda x: self.catch_new_level())
-        self.pushButtonMpos.setEnabled(False)
-        self.pushButtonCalcBestFit.clicked.connect(lambda x: self.logger_pos_best_fit())
-        self.pushButtonCalcBestFit.setToolTip(ru(QCoreApplication.translate('Calibrlogger', 'This will calibrate all values inside the chosen period\nusing the mean difference between head_cm and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
         self.pushButtonCalcBestFit2.clicked.connect(lambda x: self.level_masl_best_fit())
         self.pushButtonCalcBestFit2.setToolTip(ru(QCoreApplication.translate('Calibrlogger', 'This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
         self.pushButton_delete_logger.clicked.connect(lambda: self.delete_selected_range('w_levels_logger'))
         self.adjust_trend_button.clicked.connect(lambda x: self.adjust_trend_func())
 
+        self.period_selector = RectangleSelector(self.axes, self.line_select_callback,
+                               drawtype='box', useblit=True, button=[1],
+                               minspanx=0, minspany=0, spancoords='data',
+                               interactive=False,
+                               #lineprops=dict(color="black", linestyle="-", linewidth=2, alpha=0.5),
+                               rectprops=dict(facecolor=None, edgecolor="black", alpha=0.5, fill=False))
+        self.period_selector.set_active(self.select_using_rectangle.isChecked())
+
+        #self.select_using_rectangle.clicked.connect(lambda: self.toggle_rectangle_selection())
+        self.select_using_rectangle.stateChanged.connect(lambda: self.toggle_rectangle_selection())
+        self.select_using_rectangle_stylesheet = self.select_using_rectangle.styleSheet()
+
+        #plt.connect('key_press_event', toggle_selector)
+
+
+        self.FromDateTime.dateTimeChanged.connect(lambda: self.plot_or_update_selected_line())
+        self.ToDateTime.dateTimeChanged.connect(lambda: self.plot_or_update_selected_line())
         self.get_search_radius()
 
         # Populate combobox with obsid from table w_levels_logger
         self.load_obsid_from_db()
-
         utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+
+
+    def update_date_from_extent(self, date_time_edit, xbound_min_or_max):
+        date_time_edit.setDateTime(num2date(xbound_min_or_max))
 
     @property
     def selected_obsid(self):
@@ -374,7 +399,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         if obsid is None:
             obsid = self.load_obsid_and_init()
 
-        if not obsid=='':
+        if not obsid =='':
             fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
             to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
@@ -388,7 +413,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             text = ru(QCoreApplication.translate('Calibrlogger',
                                                  "Select the observation point with logger data to be adjusted."))
             self.statusbar.showMessage(text, 0)
-
 
     @fn_timer
     def update_level_masl_from_level_masl(self, obsid, fr_d_t, to_d_t, newzref):
@@ -407,8 +431,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         sql += """' AND level_masl IS NOT NULL"""
         # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first.
         date_time_as_epoch = db_utils.cast_date_time_as_epoch()
-        sql += """ AND %s > %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
-        sql += """ AND %s < %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
+        sql += """ AND %s >= %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
+        sql += """ AND %s <= %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
         dummy = db_utils.sql_alter_db(sql)
         utils.stop_waiting_cursor()
 
@@ -429,8 +453,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         sql += """' AND head_cm IS NOT NULL"""
         # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first (but now we changed to > but kept .total_seconds())
         date_time_as_epoch = db_utils.cast_date_time_as_epoch()
-        sql += """ AND %s > %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
-        sql += """ AND %s < %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
+        sql += """ AND %s >= %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
+        sql += """ AND %s <= %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
         dummy = db_utils.sql_alter_db(sql)
         try:
             print(str(dummy))
@@ -462,29 +486,44 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         if obsid == None:
             self.statusbar.clearMessage()
             return
+        self.selected_line = None
         self.axes.clear()
 
         p=[None]*2 # List for plot objects
 
         # Load manual reading (full time series) for the obsid
         if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts):
-            self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')), 'o-', picker=5, zorder=15, color='#1f77b4ff')
+            self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')),
+                               style=dict(linestyle='-',
+                                          marker='o',
+                                          zorder=50,
+                                          color='#1f77b4ff',
+                                          markersize=10,
+                                          markerfacecolor="None",
+                                          markeredgecolor='#1f77b4ff',
+                                          markeredgewidth=1
+                                          ))
 
-        # Load Loggerlevels (full time series) for the obsid
+
         if self.loggerLineNodes.isChecked():
-            logger_line_style = '.-'
-            original_head_style = '--'
+            marker = 'o'
         else:
-            logger_line_style = '-'
-            original_head_style = '--'
+            marker = ''
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
         if self.level_masl_ts.size and self.contains_more_than_nan(self.level_masl_ts):
-            self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger water level')), logger_line_style, picker=5, time_list=logger_time_list, zorder=10, color='#ff7f0eff')
+            self.logger_artist = self.plot_recarray(self.axes, self.level_masl_ts,
+                                                    obsid + ru(QCoreApplication.translate('Calibrlogger',
+                                                                                          ' logger water level')),
+                                                    time_list=logger_time_list,
+                                                    style=dict(linestyle='-', picker=5, markersize=3, marker=marker,
+                                                    zorder=10, color='#ff7f0eff'))[0]
 
-        #Plot the original head_cm
         if self.plot_logger_head.isChecked() and self.head_ts_for_plot.size and self.contains_more_than_nan(self.head_ts_for_plot):
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger head')), original_head_style, picker=5, time_list=logger_time_list, zorder=5, color='#c1c1c1ff')
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger head')),
+                               style=dict(linestyle='--', zorder=5, color='#c1c1c1ff', marker=''), time_list=logger_time_list,)
+
+        self.plot_or_update_selected_line()
 
         """ Finish plot """
         self.axes.grid(True)
@@ -516,11 +555,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         utils.stop_waiting_cursor()
 
     @fn_timer
-    def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5, time_list=None, zorder=None, markersize=None, color=None):
+    def plot_recarray(self, axes, a_recarray, label, time_list=None, style=None):
         """ Plots a recarray to the supplied axes object """
         if time_list is None:
             time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(a_recarray))
-        self.plot_the_recarray(axes, time_list, a_recarray, lable, line_style, picker=picker, zorder=zorder, markersize=markersize, color=color)
+        return self.plot_the_recarray(axes, time_list, a_recarray, label, style=style)
 
     @fn_timer
     def a_recarray_to_timestring_list(self, a_recarray):
@@ -544,26 +583,22 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             return False
 
     @fn_timer
-    def plot_the_recarray(self, axes, time_list, a_recarray, lable, line_style, picker=5, zorder=None, markersize=None, color=None):
-        kwargs = {'label': lable, 'picker':picker}
-        if zorder is not None:
-            kwargs['zorder'] = zorder
-        if markersize is not None:
-            kwargs['markersize'] = markersize
-        if color is not None:
-            kwargs['color'] = color
-
-        axes.plot_date(time_list, a_recarray.values, line_style, **kwargs) #, xdate=True)
+    def plot_the_recarray(self, axes, time_list, a_recarray, label, style=None):
+        if style is None:
+            style = {}
+        return axes.plot_date(time_list, a_recarray.values, label=label, **style) #, xdate=True)
 
     @fn_timer
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.FromDateTime, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"from\"")))
+        self.set_date_from_x(self.FromDateTime, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"from\"")),
+                             from_node=False)
 
     @fn_timer
     def set_to_date_from_x(self):
         """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """
-        self.set_date_from_x(self.ToDateTime, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"to\"")))
+        self.set_date_from_x(self.ToDateTime, ru(QCoreApplication.translate('Calibrlogger', "Select a date to use as \"to\"")),
+                             from_node=False)
 
     @fn_timer
     def set_date_from_x_onclick(self, event, date_holder, from_node=False):
@@ -572,15 +607,17 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             date_holder: a QDateTimeEdit object.
         """
         if from_node:
-            found_date = self.get_node_date_from_click(event)
+            found_date = num2date(event.artist.get_xdata()[event.ind[0]])
         else:
-            found_date = num2date(event.mouseevent.xdata)
-        date_holder.setDateTime(found_date)
+            found_date = num2date(event.xdata)
+
         self.reset_plot_selects_and_calib_help()
+        date_holder.setDateTime(found_date)
 
     @fn_timer
     def reset_plot_selects_and_calib_help(self):
         """ Reset self.cid and self.calib_help """
+        #self.move_vertically.setStyleSheet(self.move_vertically_stylesheet)
         self.reset_cid()
         self.log_pos = None
         self.y_pos = None
@@ -598,7 +635,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         try:
             if last_calibration[0][1] and last_calibration[0][0]:
                 self.LoggerPos.setText('{:.5f}'.format(last_calibration[0][1]))
-                self.FromDateTime.setDateTime(datestring_to_date(last_calibration[0][0]))
+                self.FromDateTime.setDateTime(datestring_to_date(last_calibration[0][0]) + datetime.timedelta(milliseconds=1))
             else:
                 self.LoggerPos.setText('')
                 self.FromDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
@@ -613,93 +650,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         for x in self.cid:
             self.canvas.mpl_disconnect(x)
         self.cid = []
-
-    @fn_timer
-    def catch_old_level(self):
-        """Part of adjustment method 3. adjust level_masl by clicking in plot.
-        this part selects a line node and a y-position on the plot"""
-        #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.
-        self.load_obsid_and_init()
-        self.deactivate_pan_zoom()
-        self.canvas.setFocusPolicy(Qt.ClickFocus)
-        self.canvas.setFocus()
-
-
-        text = ru(QCoreApplication.translate('Calibrlogger', "Select a logger node."))
-        self.statusbar.showMessage(text, 0)
-        self.cid.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))
-
-    @fn_timer
-    def catch_new_level(self):
-        """ Part of adjustment method 3. adjust level_masl by clicking in plot.
-        this part selects a y-position from the plot (normally user would select a manual measurement)."""
-        if self.log_pos is not None:
-            text = ru(QCoreApplication.translate('Calibrlogger', "Select a y position to move to."))
-            self.statusbar.showMessage(text, 0)
-            self.cid.append(self.canvas.mpl_connect('button_press_event', self.set_y_pos_from_y_click))
-            self.statusbar.clearMessage()
-        else:
-            text = ru(QCoreApplication.translate('Calibrlogger', "Something wrong, click \"Current\" and try again."))
-            self.statusbar.showMessage(text, 0)
-
-    @fn_timer
-    def calculate_offset(self):
-        """ Part of adjustment method 3. adjust level_masl by clicking in plot.
-        this method extracts the head from head_ts with the same date as the line node.
-            4. Calculating y-position - head (or level_masl) and setting self.LoggerPos.
-            5. Run calibration.
-        """
-        if self.log_pos is not None and self.y_pos is not None:
-            utils.start_waiting_cursor()
-
-            logger_ts = self.level_masl_ts
-
-            y_pos = self.y_pos
-            log_pos = self.log_pos
-            self.y_pos = None
-            self.log_pos = None
-            log_pos_date = datestring_to_date(log_pos).replace(tzinfo=None)
-            logger_value = None
-
-            #Get the value for the selected node
-            for raw_date, logger_value in logger_ts:
-                date = datestring_to_date(raw_date).replace(tzinfo=None)
-                if date == log_pos_date:
-                    break
-
-            if logger_value is None:
-                utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "No connection between level_masl dates and logger date could be made!\nTry again or choose a new logger line node!")))
-            else:
-                self.Add2Levelmasl.setText('{:.5f}'.format(float(y_pos) - float(logger_value)))
-
-                utils.stop_waiting_cursor()
-
-        self.pushButtonMpos.setEnabled(False)
-
-    @fn_timer
-    def set_log_pos_from_node_date_click(self, event):
-        """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
-        found_date = self.get_node_date_from_click(event)
-        text = ru(QCoreApplication.translate('Calibrlogger',
-                                             "Logger node %s selected, click \"new\" and select new level.")
-                  )%str(found_date)
-        self.statusbar.showMessage(text, 0)
-        self.log_pos = found_date
-        self.pushButtonMpos.setEnabled(True)
-
-    @fn_timer
-    def set_y_pos_from_y_click(self, event):
-        """ Sets the self.y_pos variable to the y value of the click event """
-        self.y_pos = event.ydata
-        self.calculate_offset()
-        text = ru(QCoreApplication.translate('Calibrlogger', "Offset is calculated, now click \"add\"."))
-        self.statusbar.showMessage(text, 0)
-        self.reset_cid()
-
-    @fn_timer
-    def logger_pos_best_fit(self):
-        self.loggerpos_masl_or_offset_state = 1
-        self.calc_best_fit()
 
     @fn_timer
     def level_masl_best_fit(self):
@@ -867,10 +817,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         sql_list.append(r"""WHERE obsid = '%s' """%selected_obsid)
         # This %s is db formatting for seconds. It is not used as python formatting!
         sql_list.append(r"""AND CAST(strftime('%s', date_time) AS NUMERIC) """)
-        sql_list.append(r""" > '%s' """%fr_d_t)
+        sql_list.append(r""" >= '%s' """%fr_d_t)
         # This %s is db formatting for seconds. It is not used as python formatting!
         sql_list.append(r"""AND CAST(strftime('%s', date_time) AS NUMERIC) """)
-        sql_list.append(r""" < '%s' """%to_d_t)
+        sql_list.append(r""" <= '%s' """%to_d_t)
         sql = ''.join(sql_list)
 
         really_delete = utils.Askuser("YesNo", ru(QCoreApplication.translate('Calibrlogger', "Do you want to delete the period %s to %s for obsid %s from table %s?"))%(str(self.FromDateTime.dateTime().toPyDateTime()), str(self.ToDateTime.dateTime().toPyDateTime()), selected_obsid, table_name)).result
@@ -881,12 +831,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.update_plot()
 
     @fn_timer
-    def get_node_date_from_click(self, event):
-        found_date = utils.find_nearest_date_from_event(event)
-        self.reset_cid()
-        return found_date
-
-    @fn_timer
     def set_date_from_x(self, datetimeedit, help_msg=None, from_node=False):
         """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """
         self.reset_plot_selects_and_calib_help()
@@ -895,7 +839,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.statusbar.showMessage(help_msg, 0)
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()
-        self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, datetimeedit, from_node)))
+        if from_node:
+            event = 'pick_event'
+        else:
+            event = 'button_press_event'
+        self.cid.append(self.canvas.mpl_connect(event, lambda event: self.set_date_from_x_onclick(event, datetimeedit, from_node)))
 
     @fn_timer
     def set_adjust_data(self, date_holder, level_holder):
@@ -910,6 +858,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         getattr(self, level_var).setText('{:.5f}'.format(event.ydata))
         getattr(self, date_var).setDateTime(num2date(float(event.xdata)))
         self.reset_cid()
+        self.connect_selected_line_move()
 
     @fn_timer
     def adjust_trend_func(self):
@@ -932,8 +881,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 'date_as_numeric': db_utils.cast_date_time_as_epoch()}
 
         sql = """SELECT level_masl FROM w_levels_logger WHERE level_masl IS NOT NULL AND obsid = '{obsid}'
-                                                              AND date_time > '{adjust_start_date}'
-                                                              AND date_time < '{adjust_end_date}'""".format(**{
+                                                              AND date_time >= '{adjust_start_date}'
+                                                              AND date_time <= '{adjust_end_date}'""".format(**{
             'obsid': data['obsid'], 'adjust_start_date': data['adjust_start_date'],
                                                          'adjust_end_date': data['adjust_end_date']})
         res = db_utils.sql_load_fr_db(sql)[1]
@@ -949,9 +898,93 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                  - (({M1_level} - {M2_level}) / ({M1_date} - {M2_date})))
                   * ({date_as_numeric} - {L1_date})
                 )
-                WHERE obsid = '{obsid}' AND date_time > '{adjust_start_date}' AND date_time < '{adjust_end_date}'
+                WHERE obsid = '{obsid}' AND date_time >= '{adjust_start_date}' AND date_time <= '{adjust_end_date}'
             """.format(**data)
         utils.start_waiting_cursor()
         db_utils.sql_alter_db(sql)
         utils.stop_waiting_cursor()
         self.update_plot()
+
+    def plot_or_update_selected_line(self):
+        fr_d_t = self.FromDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
+        to_d_t = self.ToDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
+        xdata = self.logger_artist.get_xdata()
+        ydata = [y if fr_d_t <= num2date(xdata[idx]).replace(tzinfo=None) <= to_d_t else None for idx, y in
+                 enumerate(self.logger_artist.get_ydata())]
+
+        if self.selected_line is None:
+            self.selected_line = self.axes.plot(xdata, ydata, linestyle='none',
+                                            marker='o',
+                                            markerfacecolor="None",
+                                            markeredgecolor='black',
+                                            markeredgewidth=1,
+                                            markersize=7,
+                                            zorder=30,
+                                            label=ru(QCoreApplication.translate('Calibrlogger', "Selected nodes")))[0]
+        else:
+            self.selected_line.set_ydata(ydata)
+        self.connect_selected_line_move()
+        self.canvas.draw_idle()
+
+    def connect_selected_line_move(self):
+        self.cid.append(self.canvas.mpl_connect('pick_event', self.node_pressed))
+        self.cid.append(self.canvas.mpl_connect('motion_notify_event', self.node_moving))
+        self.cid.append(self.canvas.mpl_connect('button_release_event', self.node_released))
+
+    def node_pressed(self, event):
+        if self.logger_artist is not None and event.artist is self.logger_artist:
+            self.moving_idx = event.ind[0]
+            self.period_selector.set_active(False)
+
+    def node_moving(self, event):
+        if self.moving_idx is not None and self.selected_line is not None:
+            ydata = self.selected_line.get_ydata()
+            _y = ydata[self.moving_idx]
+            if _y is None:
+                return
+            diff = event.ydata - _y
+            new_ydata = [y+diff if y is not None else None for y in ydata]
+            self.selected_line.set_ydata(new_ydata)
+            self.canvas.draw_idle()
+
+    def node_released(self, event=None):
+        if self.moving_idx is not None:
+            logger_y = self.logger_artist.get_ydata()[self.moving_idx]
+            selected_y = self.selected_line.get_ydata()[self.moving_idx]
+            if logger_y is not None and selected_y is not None:
+                offset = self.selected_line.get_ydata()[self.moving_idx] - self.logger_artist.get_ydata()[self.moving_idx]
+                self.moving_idx = None
+                if offset:
+                    self.loggerpos_masl_or_offset_state = 1
+                    self.Add2Levelmasl.setText('{:.5f}'.format(offset))
+                    self.add_to_level_masl()
+            self.moving_idx = None
+        self.period_selector.set_active(self.select_using_rectangle.isChecked())
+
+    def line_select_callback(self, eclick, erelease):
+        """
+        https://matplotlib.org/stable/gallery/widgets/rectangle_selector.html
+        https://matplotlib.org/stable/gallery/widgets/rectangle_selector.html?highlight=rectangle%20selector
+
+        :param eclick:
+        :param erelease:
+        :return:
+        """
+        'eclick and erelease are the press and release events'
+        x1, y1 = eclick.xdata, eclick.ydata
+        x2, y2 = erelease.xdata, erelease.ydata
+
+        self.logger_artist.get_xdata()
+        y_idx = [idx for idx, y in enumerate(self.logger_artist.get_ydata()) if min(y1, y2) <= y <= max(y1, y2)]
+        x_idx = [idx for idx, x in enumerate(self.logger_artist.get_xdata()) if min(x1, x2) <= x <= max(x1, x2)]
+        found_idx = [idx for idx in x_idx if idx in y_idx]
+        if found_idx:
+            self.FromDateTime.setDateTime(num2date(self.logger_artist.get_xdata()[min(found_idx)]))
+            self.ToDateTime.setDateTime(num2date(self.logger_artist.get_xdata()[max(found_idx)]))
+
+        #self.select_using_rectangle.setStyleSheet(self.select_using_rectangle_stylesheet)
+
+    def toggle_rectangle_selection(self):
+        self.period_selector.set_active(self.select_using_rectangle.isChecked())
+
+

@@ -700,6 +700,8 @@ def find_nearest_date_from_event(event):
 
         The x-axis of the artist is assumed to be a date as float or int.
         The found date float is then converted into datetime and returned.
+        
+        // This way of getting the date is now replaced with the MUCH simpler event.artist.get_xdata()[event.ind[0]]
     """
     line_nodes = np.array(list(zip(event.artist.get_xdata(), event.artist.get_ydata())))
     xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
