@@ -128,10 +128,14 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
                                                }}}
 
     if plot_static_bars:
-        group_spec['Static bars'] = copy.deepcopy(group_spec['Bars'])
-        group_spec['Static bars']['use_map_scale'] = False
-        group_spec['Static bars']['xfactor'] = static_bars_xfactor
-        group_spec['Static bars']['yfactor'] = static_bars_yfactor
+        _group_spec = group_spec['Bars']
+        _group_spec['Static bars'] = copy.deepcopy(group_spec['Bars'])
+        _group_spec['Static bars']['use_map_scale'] = False
+        _group_spec['Static bars']['xfactor'] = static_bars_xfactor
+        _group_spec['Static bars']['yfactor'] = static_bars_yfactor
+        _group_spec.update({k: v for k, v in group_spec.items() if k not in _group_spec})
+        group_spec = _group_spec
+
     if not plot_bars:
         del group_spec['Bars']
     if not plot_rings:

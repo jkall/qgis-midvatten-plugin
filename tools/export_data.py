@@ -44,6 +44,7 @@ class ExportData(object):
         self.write_data(self.to_csv, None, defs.get_subset_of_tables_fr_db(category='data_domains'))
         self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'))
         self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'))
+        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='extra_data_tables'))
         self.source_dbconnection.closedb()
 
     def export_2_splite(self, target_db, dest_srid):
@@ -61,11 +62,17 @@ class ExportData(object):
 
         self.midv_data_importer = midv_data_importer()
 
-        self.write_data(self.to_sql, None, defs.get_subset_of_tables_fr_db(category='data_domains'), replace=True)
+        data_domains = defs.get_subset_of_tables_fr_db(category='data_domains')
+        self.write_data(self.to_sql, None, [x for x in data_domains if x != 'zz_interlab4_obsid_assignment'], replace=True)
         self.dest_dbconnection.commit()
         self.write_data(self.to_sql, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'))
         self.dest_dbconnection.commit()
+        if 'zz_interlab4_obsid_assignment' in data_domains:
+            self.write_data(self.to_sql, None, ['zz_interlab4_obsid_assignment'], replace=True)
+            self.dest_dbconnection.commit()
         self.write_data(self.to_sql, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'))
+        self.dest_dbconnection.commit()
+        self.write_data(self.to_sql, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='extra_data_tables'))
         self.dest_dbconnection.commit()
 
         db_utils.delete_srids(self.dest_dbconnection.cursor, dest_srid)
@@ -141,13 +148,6 @@ class ExportData(object):
             dest_data = self.get_table_data(tname, obsids, self.dest_dbconnection, file_data_srid)
             if dest_data:
                 self.dest_dbconnection.execute('''DELETE FROM {}'''.format(tname))
-
-        def set_east_north_to_null(row, header, geometry):
-            res = list(row)
-            if res[header.index(geometry)]:
-                res[header.index('east')] = None
-                res[header.index('north')] = None
-            return res
 
         if tname == 'obs_points':
             geom_column = list(db_utils.get_geometry_types(self.source_dbconnection, tname).keys())[0]
@@ -233,3 +233,11 @@ class ExportData(object):
 
         printable_msg = '\n'.join(['{0:40}{1:15}{2:15}'.format(result_row[0], result_row[1], result_row[2]) for result_row in printable_results])
         return printable_msg
+
+
+def set_east_north_to_null(row, header, geometry):
+    res = list(row)
+    if res[header.index(geometry)]:
+        res[header.index('east')] = None
+        res[header.index('north')] = None
+    return res

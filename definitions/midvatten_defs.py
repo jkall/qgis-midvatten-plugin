@@ -335,6 +335,9 @@ def get_subset_of_tables_fr_db(category='obs_points'):
         return ['obs_lines', 'obs_points', 'w_lvls_last_geom']
     elif category == 'stratitable':#not yet in use
         return ['stratigraphy']
+    elif category == 'extra_data_tables':
+        # Extra non-essential tables created using create_db_extra_data_tables.sql
+        return ['s_qual_lab', 'w_qual_logger']
     else:
         return []
 

@@ -805,8 +805,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                             self.z_id.append(recs[0][1])
                         elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
                             self.z_id.append(recs[0][0])
+                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot',
+                                    "Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (
+                                    obs, str(recs[0][1]), 'h_toc'))
                         else:
                             self.z_id.append(0)
+                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot',
+                                "Obsid %s: using h_gs %s or h_toc %s failed, using 0 instead.")) % (
+                                                                       obs, str(recs[0][1]), str(recs[0][0])))
+
                         if utils.isfloat(str(recs[0][2])):
                             self.barlengths.append(recs[0][2])
                         else:

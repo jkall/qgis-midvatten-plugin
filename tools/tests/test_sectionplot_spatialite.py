@@ -22,6 +22,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
+import re
 
 from qgis.core import QgsProject, QgsVectorLayer
 
@@ -500,3 +501,54 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert str(self.myplot.obsid_annotation) == '''{'P1': (0.0, 50.0), 'P3': (3.0, 90.0), 'P2': (1.0, 183.0)}'''
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_plot_section_h_gs_h_toc_failed(self, mock_messagebar):
+        db_utils.sql_alter_db(
+            '''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(
+            '''INSERT INTO obs_points (obsid, h_gs, h_toc, geometry, length) VALUES ('P1', NULL, 123, ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db(
+            '''INSERT INTO obs_points (obsid, h_gs, h_toc, geometry, length) VALUES ('P2', NULL, NULL, ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
+        db_utils.sql_alter_db(
+            '''INSERT INTO obs_points (obsid, h_gs, h_toc, geometry, length) VALUES ('P3', 456, 789, ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db(
+            '''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 1, 0, 1, 'sand')''')
+        db_utils.sql_alter_db(
+            '''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 2, 1, 2, 'gravel')''')
+
+        self.create_and_select_vlayer()
+
+        @mock.patch('midvatten_utils.find_layer')
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, mock_iface, mock_getselectedobjectnames, mock_findlayer):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_findlayer.return_value.isEditable.return_value = False
+            mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            self.midvatten.plot_section()
+            self.myplot = self.midvatten.myplot
+            self.myplot.Stratigraphy_radioButton.setChecked(True)
+            self.myplot.Legend_checkBox.setChecked(True)
+            self.myplot.draw_plot()
+
+        _test(self)
+
+        print(str(mock_messagebar.mock_calls))
+        print(str(self.myplot.p))
+        print(str(self.myplot.labels))
+
+        pattern_obsids = {'''Obsid {}: using h_gs '[0-9None]+' failed, using 'h_toc' instead.''': ['P1'],
+                          '''Obsid {}: using h_gs None or h_toc None failed, using 0 instead.''': ['P2']}
+        for p in ['P1', 'P2', 'P3']:
+            for pattern, obsids in pattern_obsids.items():
+                patt = pattern.format(p)
+                m = re.findall(patt, str(mock_messagebar.mock_calls))
+                print(str(m))
+                print(patt)
+                if p in obsids:
+                    assert m
+                else:
+                    assert not m
