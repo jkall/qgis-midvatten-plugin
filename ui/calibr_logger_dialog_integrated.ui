@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1260</width>
-    <height>1006</height>
+    <height>1028</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -989,13 +989,6 @@
                   </widget>
                  </item>
                 </layout>
-               </item>
-               <item>
-                <widget class="QPushButton" name="move_vertically">
-                 <property name="text">
-                  <string>Move logger line vertically</string>
-                 </property>
-                </widget>
                </item>
                <item>
                 <widget class="QFrame" name="frame">
