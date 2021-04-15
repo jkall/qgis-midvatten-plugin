@@ -238,12 +238,15 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def get_uncalibrated_obsids(self, obsid=None):
-        return [row[0] for row in db_utils.sql_load_fr_db("""SELECT DISTINCT obsid 
-                                                      FROM w_levels_logger 
-                                                      WHERE level_masl IS NULL AND head_cm IS NOT NULL 
-                                                      {}
-                                                      ORDER BY obsid""".format('' if obsid is None
-                                                                                  else " AND obsid = '{}' ".format(obsid)))[1]]
+        return [row[0] for row in db_utils.sql_load_fr_db("""
+                                                      SELECT obsid FROM obs_points a 
+                                                      WHERE {}
+                                                      EXISTS (SELECT obsid FROM w_levels_logger b 
+                                                                    WHERE b.obsid = a.obsid AND
+                                                                    level_masl IS NULL AND head_cm IS NOT NULL 
+                                                                    LIMIT 1)
+                                                      ORDER BY a.obsid""".format('' if obsid is None
+                                                                                  else " obsid = '{}' AND ".format(obsid)))[1]]
 
     @fn_timer
     def load_obsid_from_db(self):

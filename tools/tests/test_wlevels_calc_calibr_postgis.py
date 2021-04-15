@@ -33,7 +33,7 @@ from wlevels_calc_calibr import Calibrlogger
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -242,4 +242,17 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         res = calibrlogger.getlastcalibration(calibrlogger.selected_obsid)
         test = utils_for_tests.create_test_string(calibrlogger.INFO.text())
         ref = 'Last pos. for logger in rb1 was 0.000 masl at 2017-02-01 00:00'
+        assert test == ref
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_calibrlogger_calibrinfolast_calibration(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb2')")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 50, 100)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-03-01 00:00', 100, NULL)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-03-01 00:00', 200, 300)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        test = utils_for_tests.create_test_string(calibrlogger.get_uncalibrated_obsids())
+        ref = '[rb1]'
+        print(test)
         assert test == ref

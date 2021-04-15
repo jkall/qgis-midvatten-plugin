@@ -570,6 +570,10 @@ class DatabaseSettings(object):
             except:
                 pass
             try:
+                widget.deleteLater()
+            except:
+                pass
+            try:
                 widget.close()
             except:
                 pass
@@ -647,6 +651,8 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
         self._dbpath = qgis.PyQt.QtWidgets.QLineEdit('')
+        self._dbpath.textChanged.connect(lambda: self.database_chosen())
+        self._dbpath.editingFinished.connect(self.database_chosen)
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
@@ -665,13 +671,20 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         dbpath, __ = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
         if dbpath:  # Only get new db name if not cancelling the FileDialog
             self.dbpath = dbpath
-            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}})
-            self.midvsettingsdialogdock.ms.save_settings('database')
-            self.midvsettingsdialogdock.load_plot_settings()
-            warn_about_old_database()
+
         else:  # debug
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SpatialiteSettings', "DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
 
+    def database_chosen(self):
+        if self._dbpath.hasFocus():
+            return
+
+        dbpath = self.dbpath
+        self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation(
+            {'spatialite': {'dbpath': dbpath}})
+        self.midvsettingsdialogdock.ms.save_settings('database')
+        self.midvsettingsdialogdock.load_plot_settings()
+        warn_about_old_database()
 
 class PostgisSettings(gui_utils.RowEntryGrid):
     """Using a guide from http://gis.stackexchange.com/questions/180427/retrieve-available-postgis-connections-in-pyqgis"""
