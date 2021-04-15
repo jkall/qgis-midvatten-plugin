@@ -21,7 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.5b8:
-        - LoggerCalibration: Major overhaul of the gui. Period range (now Seleted period) is now inclusive. Renamed to "Edit water logger data".
+        - LoggerCalibration:  Major overhaul of the gui. Period range (now Seleted period) is now inclusive. Renamed to "Edit water logger data".
         Version 1.6.5b7:
         - Database: Added constraint to w_qual_field to not get duplicates when unit is NULL.
         - Stratsymbology: Refatoring and splitting labels and symbols into separate layers. Added text description layer for layers.
