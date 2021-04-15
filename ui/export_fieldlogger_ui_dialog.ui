@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1013</width>
+    <width>1027</width>
     <height>476</height>
    </rect>
   </property>
@@ -15,6 +15,18 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_main">
+    <property name="leftMargin">
+     <number>3</number>
+    </property>
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
+     <number>3</number>
+    </property>
     <item row="0" column="0" rowspan="3">
      <widget class="QWidget" name="widget" native="true">
       <property name="sizePolicy">
@@ -30,6 +42,18 @@
        </size>
       </property>
       <layout class="QGridLayout" name="gridLayout_buttons">
+       <property name="leftMargin">
+        <number>3</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>3</number>
+       </property>
+       <property name="bottomMargin">
+        <number>3</number>
+       </property>
        <item row="0" column="0">
         <widget class="QPushButton" name="pushButtonExport">
          <property name="sizePolicy">
@@ -114,8 +138,8 @@ wells file</string>
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>898</width>
-         <height>456</height>
+         <width>905</width>
+         <height>466</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -134,8 +158,17 @@ wells file</string>
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
         <property name="topMargin">
          <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>3</number>
+        </property>
+        <property name="bottomMargin">
+         <number>3</number>
         </property>
         <item>
          <widget class="QWidget" name="gridWidget_selections" native="true">
@@ -157,6 +190,18 @@ wells file</string>
           <layout class="QGridLayout" name="gridLayout_selections" columnminimumwidth="0">
            <property name="sizeConstraint">
             <enum>QLayout::SetMinimumSize</enum>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
            </property>
            <property name="verticalSpacing">
             <number>5</number>

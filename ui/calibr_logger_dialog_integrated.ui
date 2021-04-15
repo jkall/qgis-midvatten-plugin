@@ -991,7 +991,14 @@
                 </layout>
                </item>
                <item>
-                <widget class="QFrame" name="">
+                <widget class="QPushButton" name="move_vertically">
+                 <property name="text">
+                  <string>Move logger line vertically</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="frame">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>

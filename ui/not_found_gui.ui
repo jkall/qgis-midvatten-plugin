@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>502</width>
-    <height>255</height>
+    <height>319</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -26,6 +26,18 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="leftMargin">
+    <number>3</number>
+   </property>
+   <property name="topMargin">
+    <number>3</number>
+   </property>
+   <property name="rightMargin">
+    <number>3</number>
+   </property>
+   <property name="bottomMargin">
+    <number>3</number>
+   </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -56,8 +68,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>469</width>
-          <height>158</height>
+          <width>494</width>
+          <height>186</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -73,6 +85,18 @@
          </size>
         </property>
         <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>3</number>
+         </property>
          <item row="0" column="0">
           <widget class="QLabel" name="label">
            <property name="sizePolicy">
