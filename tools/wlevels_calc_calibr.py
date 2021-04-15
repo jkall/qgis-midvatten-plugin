@@ -158,6 +158,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.head_ts = None
         self.head_ts_for_plot = None
         self.level_masl_ts = None
+        self.logger_artist = None
         self.loggerpos_masl_or_offset_state = 1
         self.selected_line = None
         self.logger_artist = None
@@ -906,6 +907,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.update_plot()
 
     def plot_or_update_selected_line(self):
+        if self.logger_artist is None:
+            return
         fr_d_t = self.FromDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
         to_d_t = self.ToDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
         xdata = self.logger_artist.get_xdata()

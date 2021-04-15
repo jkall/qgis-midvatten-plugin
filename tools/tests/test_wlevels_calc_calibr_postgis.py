@@ -49,14 +49,13 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = '[(2017-02-01 00:00, 99.5)]'
         assert test == ref
 
-
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_calibrlogger_set_log_pos(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2017-02-01 00:00', 100)")
-
         calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+
         calibrlogger.update_plot()
 
         calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2000-01-01 00:00:00'))
@@ -64,12 +63,10 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
 
         calibrlogger.set_logger_pos()
-        print(str(mock_messagebar.mock_calls))
+
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 00:00, 100.0, None, None, 3.0, None)])'
-        print(test)
         assert test == ref
-
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_calibrlogger_add_to_level_masl(self, mock_messagebar):
@@ -92,44 +89,22 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_calibrlogger_calc_best_fit_log_pos_out_of_radius(self, mock_messagebar, skip_popup):
+    def test_calibrlogger_calc_best_fit_add_out_of_radius(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
-        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2017-03-01 00:00', 50)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-03-01 00:00', 50)")
         calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
 
         calibrlogger.update_plot()
 
-        calibrlogger.loggerpos_masl_or_offset_state = 1
+        calibrlogger.loggerpos_masl_or_offset_state = 2
         calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2000-01-01 00:00:00'))
         gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
 
         calibrlogger.calc_best_fit()
 
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
-        ref = '(True, [(rb1, 2017-03-01 00:00, 50.0, None, None, None, None)])'
-        print(test)
-        assert test == ref
-
-    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_calibrlogger_calc_best_fit_log_pos(self, mock_messagebar, skip_popup):
-        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
-        db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
-        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2017-02-01 01:00', 50)")
-        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
-
-        calibrlogger.update_plot()
-
-        calibrlogger.loggerpos_masl_or_offset_state = 1
-        calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2000-01-01 00:00:00'))
-        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
-        calibrlogger.bestFitSearchRadius.setText('2 hours')
-
-        calibrlogger.calc_best_fit()
-
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
-        ref = '(True, [(rb1, 2017-02-01 01:00, 50.0, None, None, 100.0, None)])'
+        ref = '(True, [(rb1, 2017-03-01 00:00, None, None, None, 50.0, None)])'
         print(test)
         assert test == ref
 
@@ -157,7 +132,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_calibrlogger_calc_best_fit_add_no_matches_same_from_date(self, mock_messagebar, skip_popup):
+    def test_calibrlogger_calc_best_fit_add_matches_same_from_date(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 01:00', 50)")
@@ -173,13 +148,14 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         calibrlogger.calc_best_fit()
 
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
-        ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 50.0, None)])'
+        ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
+        print(ref)
         assert test == ref
 
     @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_calibrlogger_calc_best_fit_add_no_matches_same_to_date(self, mock_messagebar, skip_popup):
+    def test_calibrlogger_calc_best_fit_add_matches_same_to_date(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 01:00', 50)")
@@ -196,7 +172,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         calibrlogger.calc_best_fit()
 
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
-        ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 50.0, None)])'
+        ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         assert test == ref
 
@@ -250,6 +226,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         res = calibrlogger.getlastcalibration(calibrlogger.selected_obsid)
         test = utils_for_tests.create_test_string(calibrlogger.INFO.text())
         ref = 'Last pos. for logger in rb1 was 99.500 masl at 2017-02-01 00:00'
+
         assert test == ref
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
