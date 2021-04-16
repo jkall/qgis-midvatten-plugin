@@ -128,7 +128,7 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
                                                }}}
 
     if plot_static_bars:
-        _group_spec = group_spec['Bars']
+        _group_spec = {'Bars': group_spec['Bars']}
         _group_spec['Static bars'] = copy.deepcopy(group_spec['Bars'])
         _group_spec['Static bars']['use_map_scale'] = False
         _group_spec['Static bars']['xfactor'] = static_bars_xfactor
