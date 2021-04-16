@@ -15,6 +15,7 @@
         <file>icons/import_stratigraphy.png</file>
         <file>icons/import_wqual_field.png</file>
         <file>icons/import_wqual_lab.png</file>
+        <file>icons/listofvalues.png</file>
         <file>icons/load_seismics.png</file>
         <file>icons/load_vlf.png</file>
         <file>icons/load_wflow.png</file>
@@ -32,6 +33,7 @@
         <file>icons/PlotXY.png</file>
         <file>icons/qgis2threejs.png</file>
         <file>icons/ResetSettings.png</file>
+        <file>icons/stratsymbology.png</file>
         <file>icons/updatecoordfrpos.png</file>
         <file>icons/updateposfrcoord.png</file>
         <file>icons/vacuum.png</file>

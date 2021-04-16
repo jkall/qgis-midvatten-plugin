@@ -189,7 +189,7 @@ class Midvatten(object):
         self.actionloaddatatables.setWhatsThis(QCoreApplication.translate("Midvatten", "Load the remaining data tables from the database"))
         self.actionloaddatatables.triggered.connect(lambda x: self.load_data_tables())
         
-        self.actionloadstratsymbology = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddatadomains.png")), QCoreApplication.translate("Midvatten","Load stratigraphy symbology to qgis"), self.iface.mainWindow())
+        self.actionloadstratsymbology = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "stratsymbology.png")), QCoreApplication.translate("Midvatten","Load stratigraphy symbology to qgis"), self.iface.mainWindow())
         self.actionloadstratsymbology.setWhatsThis(QCoreApplication.translate("Midvatten","Load stratiraphy symbology from database"))
         self.actionloadstratsymbology.triggered.connect(lambda x: self.load_strat_symbology())
 
@@ -221,7 +221,7 @@ class Midvatten(object):
         self.action_calculate_db_table_rows.setWhatsThis(self.calculate_db_table_rows.__doc__)
         self.action_calculate_db_table_rows.triggered.connect(lambda x: self.calculate_db_table_rows())
 
-        self.action_list_of_obsids_from_selected_features = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "calc_statistics.png")), QCoreApplication.translate("Midvatten","List of values from selected features"), self.iface.mainWindow())
+        self.action_list_of_obsids_from_selected_features = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "listofvalues.png")), QCoreApplication.translate("Midvatten","List of values from selected features"), self.iface.mainWindow())
         self.action_list_of_obsids_from_selected_features.setWhatsThis(self.list_of_values_from_selected_features.__doc__)
         self.action_list_of_obsids_from_selected_features.triggered.connect(lambda x: self.list_of_values_from_selected_features())
 
@@ -243,6 +243,9 @@ class Midvatten(object):
         self.toolBar.addAction(self.actionPlotPiper)
         self.toolBar.addAction(self.actiondrillreport)
         self.toolBar.addAction(self.actionwqualreport)
+        self.toolBar.addAction(self.actionloadstratsymbology)
+        self.toolBar.addAction(self.action_list_of_obsids_from_selected_features)
+
         #self.toolBar.addAction(self.actionChartMaker)
         
         # Add plugins menu items
