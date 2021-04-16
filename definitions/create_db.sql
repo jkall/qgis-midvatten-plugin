@@ -251,3 +251,6 @@ CREATE VIEW w_flow_accvol AS SELECT obsid AS obsid,instrumentid AS instrumentid,
 CREATE INDEX idx_wquallab_odtp ON w_qual_lab(obsid, date_time, parameter);
 CREATE INDEX idx_wquallab_odtpu ON w_qual_lab(obsid, date_time, parameter, unit);
 CREATE INDEX idx_wqualfield_odtpu ON w_qual_field(obsid, date_time, parameter, unit);
+CREATE INDEX idx_wlvllogger_o ON w_levels_logger(obsid);
+CREATE INDEX idx_wflow_oif ON w_flow(obsid, instrumentid, flowtype);
+CREATE INDEX idx_wflow_ofi ON w_flow(obsid, flowtype, instrumentid);
