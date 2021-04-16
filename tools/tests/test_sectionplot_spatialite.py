@@ -59,13 +59,14 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
 
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), 3)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006), 4)''')
 
         self.create_and_select_vlayer()
         print(str(self.vlayer.selectedFeatureCount()))
@@ -121,9 +122,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_plot_section_with_string_obsid(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash with string obsid """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 1)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006), 3)''')
 
         self.create_and_select_vlayer()
         print(str(self.vlayer.selectedFeatureCount()))
@@ -152,9 +153,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section_with_depth(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2, 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1', 3)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL, 4)''')
 
         self.create_and_select_vlayer()
 
@@ -180,9 +181,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section_with_w_levels(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2, 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1', 3)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL, 4)''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
 
@@ -211,9 +212,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section_with_w_levels_duplicate_label(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2, 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1', 3)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL, 4)''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
 
@@ -251,9 +252,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         """For now, the test only initiates the plot. Check that it does not crash """
 
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(2 0, 10 10)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(3 0)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 0)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006), 1)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P2', ST_GeomFromText('POINT(3 0)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P3', ST_GeomFromText('POINT(5 0)', 3006), 3)''')
 
         self.create_and_select_vlayer()
         @mock.patch('midvatten_utils.find_layer')
@@ -283,9 +284,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_plot_section_length_along(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(3 5)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 10)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006), 2)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P2', ST_GeomFromText('POINT(3 5)', 3006), 3)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, h_gs) VALUES ('P3', ST_GeomFromText('POINT(5 10)', 3006), 4)''')
 
         self.create_and_select_vlayer()
         @mock.patch('midvatten_utils.find_layer')
@@ -432,9 +433,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_plot_section_with_w_levels_animation(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
-        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2, 21)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1', 22)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length, h_gs) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL, 23)''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-02 00:00:00', '15', '200', '185')''')
@@ -499,7 +500,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.obsid_annotation))
         assert str(self.myplot.obsid_annotation) == '''{'P1': (0.0, 50.0), 'P3': (3.0, 90.0), 'P2': (1.0, 183.0)}'''
-        assert not mock_messagebar.warning.called
+        assert mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
