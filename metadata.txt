@@ -21,7 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.5b10:
-        - LoggerEditor: Fixes bugs.
+        - LoggerEditor: Fixes bugs..
         - LoggerEditor: Changed default search radius to 60 minutes.
         Version 1.6.5b9:
         - Fixes new bug in strat symbology.
