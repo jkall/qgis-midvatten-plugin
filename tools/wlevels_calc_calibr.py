@@ -28,6 +28,7 @@ from builtins import range
 import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+from matplotlib.backend_bases import MouseButton, PickEvent
 import os
 from functools import partial
 from qgis.PyQt import uic
@@ -938,9 +939,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.cid.append(self.canvas.mpl_connect('button_release_event', self.node_released))
 
     def node_pressed(self, event):
-        if self.logger_artist is not None and event.artist is self.logger_artist:
-            self.moving_idx = event.ind[0]
-            self.period_selector.set_active(False)
+
+        if isinstance(event, PickEvent) and event.mouseevent.button is MouseButton.LEFT:
+            if self.logger_artist is not None and event.artist is self.logger_artist:
+                self.moving_idx = event.ind[0]
+                self.period_selector.set_active(False)
 
     def node_moving(self, event):
         if self.moving_idx is not None and self.selected_line is not None:
