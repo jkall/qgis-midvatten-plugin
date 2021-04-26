@@ -633,7 +633,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.ToDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
         self.Add2Levelmasl.setText('')
-        self.bestFitSearchRadius.setText('10 minutes')
+        self.bestFitSearchRadius.setText('60 minutes')
         #self.mpltoolbar.home()
 
         last_calibration = self.getlastcalibration(self.obsid)
@@ -718,7 +718,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         """
         coupled_vals = []
 
-        #Get the search radius, default to 10 minutes
+        #Get the search radius, default to 60 minutes
         search_radius = int(search_radius_tuple[0])
         search_radius_period = search_radius_tuple[1]
 
@@ -778,16 +778,16 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def get_search_radius(self):
-        """ Get the period search radius, default to 10 minutes """
+        """ Get the period search radius, default to 60 minutes """
         if not self.bestFitSearchRadius.text():
-            search_radius = '10 minutes'
+            search_radius = '60 minutes'
             self.bestFitSearchRadius.setText(search_radius)
         else:
             search_radius = self.bestFitSearchRadius.text()
 
         search_radius_splitted = ru(search_radius).split()
         if len(search_radius_splitted) != 2:
-            utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "Must write time resolution also, ex. %s"))%'10 minutes')
+            utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "Must write time resolution also, ex. %s"))%'60 minutes')
         return tuple(search_radius_splitted)
 
     @fn_timer
