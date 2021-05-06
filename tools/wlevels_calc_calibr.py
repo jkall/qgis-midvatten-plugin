@@ -924,7 +924,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                             markerfacecolor="None",
                                             markeredgecolor='black',
                                             markeredgewidth=1,
-                                            markersize=7,
+                                            markersize=4,
                                             zorder=30,
                                             label=ru(QCoreApplication.translate('Calibrlogger', "Selected nodes")))[0]
         else:
