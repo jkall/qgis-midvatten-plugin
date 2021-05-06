@@ -59,7 +59,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.update_plot()
 
         calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2000-01-01 00:00:00'))
-        calibrlogger.LoggerPos.setText('2')
+        calibrlogger.logger_elevation.setText('2')
         gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
 
         calibrlogger.set_logger_pos()
@@ -77,7 +77,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.update_plot()
 
         calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2000-01-01 00:00:00'))
-        calibrlogger.Add2Levelmasl.setText('50')
+        calibrlogger.offset.setText('50')
         gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
 
         calibrlogger.add_to_level_masl()

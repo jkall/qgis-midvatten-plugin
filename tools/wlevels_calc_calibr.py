@@ -54,6 +54,8 @@ import midvatten_utils as utils
 from midvatten_utils import timer, fn_timer, returnunicode as ru
 from date_utils import dateshift, datestring_to_date, long_dateformat
 import db_utils
+from qgis.PyQt import QtWidgets
+from gui_utils import add_action_to_navigation_toolbar
 
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
@@ -153,8 +155,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                                           "Edit water level logger (w_levels_logger) data")))  # Set the title for the dialog
         utils.start_waiting_cursor()#show the user this may take a long time...
         self.obsid = obsid
-        self.log_pos = None
-        self.y_pos = None
         self.meas_ts = None
         self.head_ts = None
         self.head_ts_for_plot = None
@@ -164,8 +164,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.selected_line = None
         self.logger_artist = None
         self.moving_idx = None
-
-        self.Add2Levelmasl = qgis.PyQt.QtWidgets.QLineEdit()
 
         self.settingsdict = settingsdict1
 
@@ -186,7 +184,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         self.cid =[]
 
-        self.pushButtonSet.clicked.connect(lambda x: self.set_logger_pos())
+        self.button_calculate.clicked.connect(lambda x: self.set_logger_pos())
+        self.button_add_offset.clicked.connect(lambda x: self.add_to_level_masl())
         self.pushButtonFrom.clicked.connect(lambda x: self.set_from_date_from_x())
         self.pushButtonTo.clicked.connect(lambda x: self.set_to_date_from_x())
         self.L1_button.clicked.connect(lambda x: self.set_adjust_data('L1_date', 'L1_level'))
@@ -196,8 +195,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.pushButton_from_extent.clicked.connect(lambda: self.update_date_from_extent(self.FromDateTime, self.axes.get_xbound()[0]))
         self.pushButton_to_extent.clicked.connect(lambda: self.update_date_from_extent(self.ToDateTime, self.axes.get_xbound()[1]))
         self.pushButtonupdateplot.clicked.connect(lambda x: self.update_plot())
-        self.pushButtonCalcBestFit2.clicked.connect(lambda x: self.level_masl_best_fit())
-        self.pushButtonCalcBestFit2.setToolTip(ru(QCoreApplication.translate('Calibrlogger', 'This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
+        self.button_auto_calculate.clicked.connect(lambda x: self.logger_pos_best_fit())
+        self.button_auto_fit.clicked.connect(lambda x: self.level_masl_best_fit())
         self.pushButton_delete_logger.clicked.connect(lambda: self.delete_selected_range('w_levels_logger'))
         self.adjust_trend_button.clicked.connect(lambda x: self.adjust_trend_func())
 
@@ -207,14 +206,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                interactive=False,
                                #lineprops=dict(color="black", linestyle="-", linewidth=2, alpha=0.5),
                                rectprops=dict(facecolor=None, edgecolor="black", alpha=0.5, fill=False))
-        self.period_selector.set_active(self.select_using_rectangle.isChecked())
+        self.period_selector.set_active(False)
 
-        #self.select_using_rectangle.clicked.connect(lambda: self.toggle_rectangle_selection())
-        self.select_using_rectangle.stateChanged.connect(lambda: self.toggle_rectangle_selection())
-        self.select_using_rectangle_stylesheet = self.select_using_rectangle.styleSheet()
-
-        #plt.connect('key_press_event', toggle_selector)
-
+        self.select_nodes_button = SelectNodesButton(self, self.calibrplotfigure)
+        self.move_nodes_button = MoveNodesButton(self, self.calibrplotfigure)
 
         self.FromDateTime.dateTimeChanged.connect(lambda: self.plot_or_update_selected_line())
         self.ToDateTime.dateTimeChanged.connect(lambda: self.plot_or_update_selected_line())
@@ -385,7 +380,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.loggerpos_masl_or_offset_state = 1
         if obsid is None:
             obsid = self.load_obsid_and_init()
-        if not self.LoggerPos.text() == '':
+        if not self.logger_elevation.text() == '':
             self.calibrate(obsid)
             self.update_plot()
 
@@ -394,7 +389,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.loggerpos_masl_or_offset_state = 0
         if obsid is None:
             obsid = self.load_obsid_and_init()
-        if not self.Add2Levelmasl.text() == '':
+        if not self.offset.text() == '':
             self.calibrate(obsid)
         self.update_plot()
 
@@ -409,9 +404,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
             if self.loggerpos_masl_or_offset_state == 1:
-                self.update_level_masl_from_head(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
+                self.update_level_masl_from_head(obsid, fr_d_t, to_d_t, self.logger_elevation.text())
             else:
-                self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.Add2Levelmasl.text())
+                self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.offset.text())
 
         else:
 
@@ -506,7 +501,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                           markersize=10,
                                           markerfacecolor="None",
                                           markeredgecolor='#1f77b4ff',
-                                          markeredgewidth=1
+                                          markeredgewidth=3
                                           ))
 
 
@@ -558,6 +553,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.mpltoolbar.update()
 
         utils.stop_waiting_cursor()
+
+        self.toggle_move_nodes(self.move_nodes_button.button().isChecked())
+        self.toggle_select_nodes(self.select_nodes_button.button().isChecked())
 
     @fn_timer
     def plot_recarray(self, axes, a_recarray, label, time_list=None, style=None):
@@ -622,31 +620,28 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     @fn_timer
     def reset_plot_selects_and_calib_help(self):
         """ Reset self.cid and self.calib_help """
-        #self.move_vertically.setStyleSheet(self.move_vertically_stylesheet)
         self.reset_cid()
-        self.log_pos = None
-        self.y_pos = None
         self.statusbar.clearMessage()
 
     @fn_timer
     def reset_settings(self):
 
         self.ToDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
-        self.Add2Levelmasl.setText('')
+        self.offset.setText('')
         self.bestFitSearchRadius.setText('60 minutes')
         #self.mpltoolbar.home()
 
         last_calibration = self.getlastcalibration(self.obsid)
         try:
             if last_calibration[0][1] and last_calibration[0][0]:
-                self.LoggerPos.setText('{:.5f}'.format(last_calibration[0][1]))
+                self.logger_elevation.setText('{:.5f}'.format(last_calibration[0][1]))
                 self.FromDateTime.setDateTime(datestring_to_date(last_calibration[0][0]) + datetime.timedelta(milliseconds=1))
             else:
-                self.LoggerPos.setText('')
+                self.logger_elevation.setText('')
                 self.FromDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
         except Exception as e:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Calibrlogger', 'Getting last calibration failed for obsid %s, msg: %s'))%(self.obsid, str(e)))
-            self.LoggerPos.setText('')
+            self.logger_elevation.setText('')
             self.FromDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
 
     @fn_timer
@@ -657,13 +652,18 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.cid = []
 
     @fn_timer
+    def logger_pos_best_fit(self):
+        self.loggerpos_masl_or_offset_state = 1
+        self.calc_best_fit()
+
+    @fn_timer
     def level_masl_best_fit(self):
         self.loggerpos_masl_or_offset_state = 0
         self.calc_best_fit()
 
     @fn_timer
     def calc_best_fit(self):
-        """ Calculates the self.LoggerPos from self.meas_ts and self.head_ts
+        """ Calculates the self.logger_elevation from self.meas_ts and self.head_ts
 
             First matches measurements from self.meas_ts to logger values from
             self.head_ts. This is done by making a mean of all logger values inside
@@ -672,7 +672,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             inside the search_radius instead)
             (search_radius is gotten from self.get_search_radius())
 
-            Then calculates the mean of all matches and set to self.LoggerPos.
+            Then calculates the mean of all matches and set to self.logger_elevation.
         """
         obsid = self.load_obsid_and_init()
         utils.start_waiting_cursor()
@@ -680,11 +680,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         search_radius = self.get_search_radius()
         if self.loggerpos_masl_or_offset_state == 1:# UPDATE TO RELEVANT TEXT
             logger_ts = self.head_ts
-            text_field = self.LoggerPos
+            text_field = self.logger_elevation
             calib_func = self.set_logger_pos
         else:# UPDATE TO RELEVANT TEXT
             logger_ts = self.level_masl_ts
-            text_field = self.Add2Levelmasl
+            text_field = self.offset
             calib_func = self.add_to_level_masl
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, search_radius)
@@ -863,7 +863,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         getattr(self, level_var).setText('{:.5f}'.format(event.ydata))
         getattr(self, date_var).setDateTime(num2date(float(event.xdata)))
         self.reset_cid()
-        self.connect_selected_line_move()
 
     @fn_timer
     def adjust_trend_func(self):
@@ -930,7 +929,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                             label=ru(QCoreApplication.translate('Calibrlogger', "Selected nodes")))[0]
         else:
             self.selected_line.set_ydata(ydata)
-        self.connect_selected_line_move()
         self.canvas.draw_idle()
 
     def connect_selected_line_move(self):
@@ -939,11 +937,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.cid.append(self.canvas.mpl_connect('button_release_event', self.node_released))
 
     def node_pressed(self, event):
-
         if isinstance(event, PickEvent) and event.mouseevent.button is MouseButton.LEFT:
             if self.logger_artist is not None and event.artist is self.logger_artist:
                 self.moving_idx = event.ind[0]
-                self.period_selector.set_active(False)
 
     def node_moving(self, event):
         if self.moving_idx is not None and self.selected_line is not None:
@@ -965,10 +961,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 self.moving_idx = None
                 if offset:
                     self.loggerpos_masl_or_offset_state = 1
-                    self.Add2Levelmasl.setText('{:.5f}'.format(offset))
+                    self.offset.setText('{:.5f}'.format(offset))
                     self.add_to_level_masl()
             self.moving_idx = None
-        self.period_selector.set_active(self.select_using_rectangle.isChecked())
 
     def line_select_callback(self, eclick, erelease):
         """
@@ -991,9 +986,76 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.FromDateTime.setDateTime(num2date(self.logger_artist.get_xdata()[min(found_idx)]))
             self.ToDateTime.setDateTime(num2date(self.logger_artist.get_xdata()[max(found_idx)]))
 
-        #self.select_using_rectangle.setStyleSheet(self.select_using_rectangle_stylesheet)
+    def toggle_move_nodes(self, on):
+        if on:
+            self.reset_cid()
+            self.deactivate_pan_zoom()
+            self.period_selector.set_active(False)
+            self.select_nodes_button.uncheck()
+            self.connect_selected_line_move()
 
-    def toggle_rectangle_selection(self):
-        self.period_selector.set_active(self.select_using_rectangle.isChecked())
+    def toggle_select_nodes(self, on):
+        if on:
+            self.reset_cid()
+            self.deactivate_pan_zoom()
+            self.move_nodes_button.uncheck()
+        self.period_selector.set_active(on)
+
+
+class NavigationButton(QtWidgets.QWidget):
+    def __init__(self, parent, fig):
+        super().__init__(parent)
+        self.parent = parent
+        self.fig = fig
+        self.actions = {}
+
+    def connect_toolbar(self):
+        self.canvas = self.fig.canvas
+        self.mpltoolbar = self.canvas.toolbar
+        self._add_buttons_to_toolbar()
+
+    def uncheck(self):
+        for v in self.actions.values():
+            v.setChecked(False)
+
+    def _add_buttons_to_toolbar(self):
+        self.actions = {}
+        for text, callback, tooltip_text, icon in self._button_setup:
+            self.actions[text] = add_action_to_navigation_toolbar(self.mpltoolbar, text, callback, tooltip_text, icon,
+                                                                  set_checkable=True)
+
+
+class SelectNodesButton(NavigationButton):
+    def __init__(self, parent, fig):
+        super().__init__(parent, fig)
+        self._button_setup = [("select nodes", self.clicked, "Select nodes",
+                               os.path.join(os.path.dirname(__file__), '..', 'icons', 'select_nodes.png'))]
+        self.connect_toolbar()
+
+    def button(self):
+        return list(self.actions.values())[0]
+
+    def clicked(self):
+        if not self.button().isChecked():
+            self.parent.reset_cid()
+        self.parent.toggle_select_nodes(self.button().isChecked())
+
+
+class MoveNodesButton(NavigationButton):
+    def __init__(self, parent, fig):
+        super().__init__(parent, fig)
+        self._button_setup = [("move nodes", self.clicked, "Move nodes",
+                               os.path.join(os.path.dirname(__file__), '..', 'icons', 'move_nodes.png'))]
+        self.connect_toolbar()
+
+    def button(self):
+        return list(self.actions.values())[0]
+
+    def clicked(self):
+        if not self.button().isChecked():
+            self.parent.reset_cid()
+        self.parent.toggle_move_nodes(self.button().isChecked())
+
+
 
 

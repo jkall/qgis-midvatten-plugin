@@ -24,6 +24,7 @@ from builtins import object
 import qgis.PyQt
 import copy
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QIcon
 
 from date_utils import datestring_to_date
 import midvatten_utils as utils
@@ -260,3 +261,20 @@ def set_groupbox_children_visibility(groupbox_widget):
     children = groupbox_widget.findChildren(qgis.PyQt.QtWidgets.QWidget)
     for child in children:
         child.setVisible(groupbox_widget.isChecked())
+
+
+def add_action_to_navigation_toolbar(toolbar, text, callback, tooltip_text, icon, set_checkable=True):
+    background_color = toolbar.palette().color(toolbar.backgroundRole())
+    foreground_color = toolbar.palette().color(toolbar.foregroundRole())
+    icon_color = (foreground_color if background_color.value() < 128 else None)
+
+    _text, _tooltip_text, _image_file, _callback = toolbar.toolitems[0]
+
+    #icon toolbar._icon(_image_file + '.png', icon_color)
+
+    a = toolbar.addAction(QIcon(icon), text, callback)
+    toolbar._actions[callback] = a
+    a.setCheckable(set_checkable)
+    if tooltip_text is not None:
+        a.setToolTip(tooltip_text)
+    return a
