@@ -21,6 +21,12 @@ $ cd ~/pythoncode/qgis_plugins/midvatten/ui && pyuic4 -xo myui.py myui.ui
 
 # ----------- Translations -------------
 cd path/to/midvatten/plugin/
+
+Update pro with pythonfiles:
+find tools -maxdepth 1 -iname "*.py" | sort | sed 's:^:./:g' | sed 's:$: \\:g'
+And ui-files:
+find ui -maxdepth 1 -iname "*.ui" | sort | sed 's:^:./:g' | sed 's:$: \\:g'
+
 pylupdate5 -verbose midvatten.pro
 # Translate strings using QtLinguist.
 lrelease i18n/midvatten_*.ts

@@ -29,6 +29,7 @@ SOURCES = \
 ./tools/sampledem.py \
 ./tools/sectionplot.py \
 ./tools/stratigraphy.py \
+./tools/strat_symbology.py \
 ./tools/tsplot.py \
 ./tools/util_translate.py \
 ./tools/w_flow_calc_aveflow.py \
@@ -56,11 +57,13 @@ FORMS = \
 ./ui/obs_lines.ui \
 ./ui/obs_points_en.ui \
 ./ui/obs_points.ui \
+./ui/old_calibr.ui \
 ./ui/secplotdockwidget.ui \
 ./ui/selected_features.ui \
 ./ui/simpleplotdialog.ui \
 ./ui/stratigraphy_en.ui \
 ./ui/stratigraphy.ui \
+./ui/strat_symbology_dialog.ui \
 ./ui/w_flow_en.ui \
 ./ui/w_flow.ui \
 ./ui/w_levels_en.ui \
