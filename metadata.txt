@@ -37,7 +37,7 @@ changelog=
             * Separated labels and symbols into separate layers.
             * Added layer "Layer texts" for displaying stratigraphy labels on map.
             * The else layer is deactivated by default in layers.
-            * Bedrock label as >X when drillstop not like '%bedrock%' or equivalent.
+            * Bedrock label as >X when drillstop not like bedrock or equivalent.
             * Added option to filter selected obsids.
             * Reduced shadow opacity to 40% from 70%.
         - Bug fixes:
