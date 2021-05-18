@@ -39,7 +39,7 @@ changelog=
             * The else layer is deactivated by default in layers.
             * Bedrock label as >X when drillstop not like bedrock or equivalent.
             * Added option to filter selected obsids.
-            * Reduced shadow opacity to 40% from 70%.
+            * Reduced shadow opacity to 40 from 70.
         - Bug fixes:
             * Fixed bug where a missing Postgis table caused a plugin-crash.
         - Gui fixes: Fixed margins for several features after new QGIS versions changed them.
@@ -55,6 +55,6 @@ changelog=
             * Fixed better error messages when dems are omitted.
         - List of values from selected features: Added checkbox to copy to clipboard.
         - Calculate Aveflow function: Added a pandas variant which keeps the comments.
-        - Finddateformat: Added dateformat '%Y%m%d %H:%M'.
+        - Finddateformat: Added dateformat 'Ymd H:M'.
 
         For changes until ver 1.6.5, see separate document changelog_history
