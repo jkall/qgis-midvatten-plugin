@@ -5,7 +5,7 @@ name=Midvatten
 qgisMinimumVersion=3.4.5
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
-version=Version 1.6.5b11
+version=Version 1.6.5
 author=Josef Källgården, Henrik Spångmyr
 email=midvattenplugin@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
@@ -20,159 +20,41 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
-        Version 1.6.5b11:
-        - LoggerEditor: Added the old offset adjustment. Added Move/Select nodes buttons to navigation toolbar.
-        Version 1.6.5b10:
-        - LoggerEditor: Fixes bugs..
-        - LoggerEditor: Changed default search radius to 60 minutes.
-        Version 1.6.5b9:
-        - Fixes new bug in strat symbology.
-        Version 1.6.5b8:
-        - LoggerCalibration:  Major overhaul of the gui. Period range (now Seleted period) is now inclusive. Renamed to "Edit water logger data".
-        - Fixes several bugs.
-        - Added index to w_levels_logger and w_flow for perhaps increased read performance.
-        - Fixed icons for list of values and stratsymbology.
-        Version 1.6.5b7:
-        - Database: Added constraint to w_qual_field to not get duplicates when unit is NULL.
-        - Stratsymbology: Refatoring and splitting labels and symbols into separate layers. Added text description layer for layers.
-        - Stratsymbology: The else layer is deactivated by default in layers.
-        - Stratsymbology: Bedrock label as >X when drillstop not like '%bedrock%' or equivalent.
-        - Plot symbol colors: Changed symbol color for till and clay from yellow to cyan and beige for qt-colors (affecting strat symbology and the old stratigraphy plot).
-        - Added triangle symbol (obs_p_w_lvl_logger) for showing if there are loggerdata for an obsid.
-        - Fixes bug where a missing Postgis table caused a plugin-crash.
-        Version 1.6.5b6:
-        - CustomPlot: Fix to gui again.
-        - Interlab4 import: Fixes bug when closing save metadata without selecting file.
-        - Loggercalibration: Remade gui.
+        Version 1.6.5
+        - Database:
+            * Added index to w_levels_logger and w_flow for perhaps increased read performance.
+            * Added constraint to w_qual_field to not get duplicates when unit is NULL.
+            * Plot symbol colors: Changed symbol color for till and clay from yellow to cyan and beige for qt-colors (affecting strat symbology and the old stratigraphy plot).
+            * Added support for non-essential data tables s_qual_lab and w_qual_logger. Sql for creating them is in definitions\create_db_extra_data_tables.sql
+        - Layer symbology:
+            * Added triangle symbol (obs_p_w_lvl_logger) for displaying the existance of logger data for an obsid.
+        - LoggerEditor:
+            * The features "Calculate logger w level from logger water head" renamed to "Edit water level logger data".
+            * New feature to select nodes and altering time series by moving nodes up and down.
+            * Changed default search radius to 60 minutes.
+            * Period range (now Seleted period) is now inclusive (and nodes inside selected period are marked to visualize this).
+        - Stratigraphy symbology:
+            * Separated labels and symbols into separate layers.
+            * Added layer "Layer texts" for displaying stratigraphy labels on map.
+            * The else layer is deactivated by default in layers.
+            * Bedrock label as >X when drillstop not like '%bedrock%' or equivalent.
+            * Added option to filter selected obsids.
+            * Reduced shadow opacity to 40% from 70%.
+        - Bug fixes:
+            * Fixed bug where a missing Postgis table caused a plugin-crash.
+        - Gui fixes: Fixed margins for several features after new QGIS versions changed them.
+        - Interlab4 import:
+            * Fixed bug when closing save metadata without selecting file.
+            * Fixed bug when number contained space.
         - Compact water quality report: Fixes bug where "Data from selected obsids in sql table" didn't work.
         - Water quality report: Fixes bug where numeric sorting column couldn't be used.
-        - Midvsettingsdialog: Fixes margins.
-        Version 1.6.5b5:
-        - Sectionplot: Fixed bug where obsid was not visible when plotting hydro colors.
-        - Sectionplot: Update for adjustment for new pandas version (water levels interactive mode).
-        - Sectionplot: Fixed margins.
-        - CustomPlot: Fixed margins.
-        - List of values from selected features: Fixed margins.
-        Version 1.6.5b4:
-        - Stratigraphy symbology: Added option to filter selected obsids.
-        - Sectionplot: Fixed better error messages when dems are omitted.
-        - List of values from selected features: Fixed size error. Added checkbox to copy to clipboard.
-        Version 1.6.5b3:
-        - Sectionplot: Fixes bug where obsid label was not written but the bar was plotted.
-        Version 1.6.5b2:
-        - Calculate Aveflow function: Added a pandas variant which keeps the comment.
-        - Finddateformat: Added dateformat '%Y%m%d %H:%M'.
-        - db_utils.placeholder_sign: No longer requires a premade dbconnection.
-        Version 1.6.5b1:
-        - Interlab4: Fixes bug when number contained space.
-        - Stratigraphy symbology: Changed to lower(<column name>) instead of just <column name>.
-        - Stratigraphy symbology: Reduced shadow opacity to 40% from 70%.
-        Version 1.6.4:
-        - Database structure:
-            * Added a new table "zz_interlab4_obsid_assignment" to assign obsid automatically during interlab4 import..
-        - New features:
-            * New QGIS-symbology to visualize stratigraphy on the map: Utilities / Load stratigraphy symbology to qgis.
-            * Utilities / Load data tables to qgis. Loads w_levels_logger, meteo, vlf_data and seismic_data to qgis.
-        - Fieldlogger export:
-            * Now supports exporting directly from a vector layer.
-        - Interlab4 import:
-            * Added support for the new table "zz_interlab4_obsid_assignment" to assign obsid automatically during interlab4 import by checking the new box "Assign obsid using table"
-            * Greatly improves the row filtering performance.
-            * Fixes bug where values were NaN.
-            * Changed logic for duplicate parameters. The smallest unit is now used as the main parameter (ng/l < µg/l < mg/l).
-        - db_utils:
-            * Fixes postgis connection after changes in QGIS >=3.10.
         - Sectionplot:
-            * Added interactive mode for water levels.
-            * Adjustment for new pandas version.
-            * Fixes obsidlabel positioning.
-            * Fixes bug with water level plot labels.
-            * Added support for more linetypes for the profile line when plotting vlf or seismic data.
-            * Updates for seismic data: Added feature to plot groundwater. Changed symbology to marker='+' and now plot connected lines.
-            * Added error message when there was more than one layer named obs_points.
-        - ExportData:
-            * Now supports exporting from PostgreSQL+PostGIS to SQLite+Spatialite.
-        - GeneralCsvImport:
-            * Changed parser to csv.reader to support '"' as quotechar.
-            * Bug fixes.
-        - Loggercalibration:
-            * Fix to hopefully reduce initialization time (The feature had very long load time in Windows under certain circumstances).
-        - Piperplot:
-            * Added a new version of piperplot that follows the more common triangle/diamond layout.
-            * Fixes +-markers that appeared more than once due to bordercolor black.
-            * Added marker edge to default style.
-            * Moved some axis labels and changed label fontsize.
-        - Diveroffice/HOBO-logger/Levelogger import:
-            * Added export csv button.
-        - Diveroffice Import:
-            * Added support for more conductivity headers.
-        - Customplot:
-            * Removed midv_*-settings from the matplotlib style to stop constant error messages. They are now hard coded in midvatten_defs instead.
-        - List of values from selected features:
-            * Now supports int and float columns as well.
-        - Compact water quality report:
-            * Added feature to print parameter+unit and date_time as rows.
-        Version 1.6.3:
-        - Recalled version.
-        Version 1.6.2:
-        - Customplot: New feature: line-label as annotation when clicking on plots.
-        - List of values from selected features: Added filter checkbox.
-        - Added more supported date formats.
-        - Fieldlogger import: Fixed bug where h_toc was empty string.
-        - NotFoundQuestion: Added ignore checkbox.
-        - Compact water quality report: Bug fixes. Added options for column sorting and row sorting.
-        - Sectionplot: New ui for sectionplot. Settings in separate tab but can be floatable to separate window.
-        - Sectionplot: Plot and settings now separated in two tabs.
-        - Sectionplot: If no section line is selected, Sectionplot now plots like the Stratigraphyplot. (Thanks to Simon O'Connor!)
-        - Sectionplot: Capacity colors can now be used in the same way as Stratigraphyplot. (Thanks to Simon O'Connor!)
-        - Sectionplot: Hydroexplanation (capacity explanation) can now be used as text for layers. (Thanks to Simon O'Connor!)
-        - Sectionplot: Sectionplot can now be maximized. (Thanks to Simon O'Connor!)
-        - Sectionplot: Plotsize now set in template in inches in "rcParams": {"figure.figsize": [6.4, 4.8]} and by checking radiobutton Plotsize: "Fixed".
-        - Sectionplot: Sectionplot can now be used with one obsid. No longer limited to more than one.
-        - Sectionplot: Sectionplot can now be used with only a selected line layer (for plotting DEMS and seismic).
-        - Sectionplot: Bug fixes..
-        - Sectionplot: Settings tab can now be redocked by closing the window.
-        - Sectionplot: Removed redraw button. Legend updates automatically when clicking NavigationToolbar Apply button.
-        - Csv import: Added checkbox to ignore not null restrictions. Useful for Postgres importes with serial primary key columns.
-        Version 1.6.1:
-        - Bug fix for translation support when the overridden locale was not the same as system locale.
-        - Water quality report: Fixed error when parameter had "'" in the name.
-        - Loggercalibration: Added error message.
-        - Loggercalibration: Fix for when logger ts contained nan-values.
-        - ContinuousColorCycle: Fix for different numpy versions.
-        - Loggercalibration: Fixes bug with adjust trend buttons.
-        - Loggercalibration: Adjusted "adjust trend" so that it selects x and y values from canvas instead of from database.
-                             This makes it possible to adjust trend without measurements.
-        - Fieldlogger import: Fixes python error bug when trying to load stored settings (second try)..
-        - Customplot: Fix for customplot when colors run out.
-        - Sectionplot: Fixes bug where bars where put in legend and one symbol was skipped.
-        - Customplot: Added 'legend.midv_ncol' to matplotlib rcparams.
-        - Fieldlogger import: Fixes python error bug when trying to load stored settings.
-        Version 1.6.0:
-        - First public release.
-        - Added function to add view_obs_points and view_obs_lines.
-        - Introduced messagebar info if view_obs_points/lines is missing.
-        - Sectionplot: Printing x and y limits in bottom right corner.
-        - Compact water quality report: Bug fixes.
-        - Customplot: Bug fix for discontinous plots (#312)
-        - Import csv gui: Importing geometries from vectorlayers supported. If a feature has a geometry, a "geometry" column will be added to loaded file data.
-        - Fieldlogger import: Bug fix where w_qual_lab parameter was not filled in automatically from stored settings.
-        - Fieldlogger import: Instrument and unit are filled automatically based on last entry for current staff.
-        - Customplot: Added pandas.DataFrame.Rolling instead of rolling_mean for pandas version >=0.18.0. Changed center to checkbox instead of lineedit.
-        - A messagebar message is issued if the database is old.
-        - qgis3-branch moved to master branch. The old master branch for qgis2 is now the qgis2-branch.
-        - Fieldlogger export: Adjustments to new locations file format.
-        - Interlab4: Fix so that the highest resolution parameter (the one with lowest value) is imported as the original parameter name. Duplicates are given a duplicate suffix.
-        - Customplot: Fixes #293. Added checkbox "Regular xaxis interval".
-        - Customplot: Fixed tab widget resizing bugs. Restructured settings.
-        - Interlab4: Fix so that the highest resolution parameter is imported if there are duplicates.
-        - Waterqualityreport: Bug fixes for #294.
-        - Stratigraphy: Hidden feature: If selected layer is missing in table stratigraphy but has "length" column, it will be plottet as a layer with no geology.
-        - Updated translation files.
-        - Sectionplot: Methods for producing graded dems (issue #254) but not implemented in gui yet.
-        - Interlab4: feature to dump tables to csv.
-        - Improved utility to get values from selected features.
-        - Update for QGIS3.
-        For changes until ver 1.6, see separate document changelog_history
+            * Fixed bug where obsid was not visible when plotting hydro colors.
+            * Fixes bug where obsid label was not written but the bar was plotted.
+            * Adjustment for new pandas version (water levels interactive mode).
+            * Fixed better error messages when dems are omitted.
+        - List of values from selected features: Added checkbox to copy to clipboard.
+        - Calculate Aveflow function: Added a pandas variant which keeps the comments.
+        - Finddateformat: Added dateformat '%Y%m%d %H:%M'.
 
-
+        For changes until ver 1.6.5, see separate document changelog_history
