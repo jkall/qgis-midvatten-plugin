@@ -3630,177 +3630,177 @@ arquivo de poços </translation>
     <message>
         <location filename="../ui/old_calibr.ui" line="15"/>
         <source>Calculate water levels from logger</source>
-        <translation type="unfinished">Calcular nível d&apos;água pelo logger</translation>
+        <translation type="obsolete">Calcular nível d&apos;água pelo logger</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="98"/>
         <source>obsid</source>
-        <translation type="unfinished">Id ponto</translation>
+        <translation type="obsolete">Id ponto</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="143"/>
         <source>see the link to wiki</source>
-        <translation type="unfinished">veja o link da wiki</translation>
+        <translation type="obsolete">veja o link da wiki</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="161"/>
         <source>Set interval for adjustion/deletion </source>
-        <translation type="unfinished">Selecione o intervalo para ajuste/exclusão</translation>
+        <translation type="obsolete">Selecione o intervalo para ajuste/exclusão</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="176"/>
         <source>from</source>
-        <translation type="unfinished">de</translation>
+        <translation type="obsolete">de</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1322"/>
         <source>select in plot</source>
-        <translation type="unfinished">selecionar no gráf.</translation>
+        <translation type="obsolete">selecionar no gráf.</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="282"/>
         <source>to</source>
-        <translation type="unfinished">até</translation>
+        <translation type="obsolete">até</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="380"/>
         <source>Set from-date to current view extent</source>
-        <translation type="unfinished">Selecionar pela data para extensão de visualização</translation>
+        <translation type="obsolete">Selecionar pela data para extensão de visualização</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="411"/>
         <source>from current extent</source>
-        <translation type="unfinished">pela extensão atual</translation>
+        <translation type="obsolete">pela extensão atual</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="408"/>
         <source>Set to-date to current view extent</source>
-        <translation type="unfinished">Selecione data para visualização pela extensão atual</translation>
+        <translation type="obsolete">Selecione data para visualização pela extensão atual</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="456"/>
         <source>Adjust water level</source>
-        <translation type="unfinished">Ajuste de nível d&apos;água</translation>
+        <translation type="obsolete">Ajuste de nível d&apos;água</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="540"/>
         <source>Manual methods 1-2</source>
-        <translation type="unfinished">Métodos manuais 1-2</translation>
+        <translation type="obsolete">Métodos manuais 1-2</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="567"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;1. set logger_pos&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;1. selecione pos_logger&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;1. selecione pos_logger&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="620"/>
         <source>set</source>
-        <translation type="unfinished">selec.</translation>
+        <translation type="obsolete">selec.</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="650"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2. add offset to level_masl&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2. adic. desloc. para nivel_manm&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2. adic. desloc. para nivel_manm&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="691"/>
         <source>add</source>
-        <translation type="unfinished">adic.</translation>
+        <translation type="obsolete">adic.</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="713"/>
         <source>calculate offset from plot selection</source>
-        <translation type="unfinished">calcular deslocamento por seleção no gráfico</translation>
+        <translation type="obsolete">calcular deslocamento por seleção no gráfico</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="740"/>
         <source>current</source>
-        <translation type="unfinished">atual</translation>
+        <translation type="obsolete">atual</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="768"/>
         <source>new</source>
-        <translation type="unfinished">novo</translation>
+        <translation type="obsolete">novo</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="795"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(click &amp;quot;current&amp;quot; to start calculating offset)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(clique &amp;quot;atual&amp;quot; para começar a calcular desloc,)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(clique &amp;quot;atual&amp;quot; para começar a calcular desloc,)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="825"/>
         <source>Best fit (auto) methods 3-4</source>
-        <translation type="unfinished">Best fit (auto) métodos 3-4</translation>
+        <translation type="obsolete">Best fit (auto) métodos 3-4</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="841"/>
         <source>Search radius</source>
-        <translation type="unfinished">Procurar raio</translation>
+        <translation type="obsolete">Procurar raio</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="888"/>
         <source>4. set logger_pos by best fit</source>
-        <translation type="unfinished">4. selec. pos_logger por best fit</translation>
+        <translation type="obsolete">4. selec. pos_logger por best fit</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="913"/>
         <source>auto set</source>
-        <translation type="unfinished">autom.</translation>
+        <translation type="obsolete">autom.</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="935"/>
         <source>5.  adjust level_masl by best fit </source>
-        <translation type="unfinished">5. ajuste nivel_manm por best fit</translation>
+        <translation type="obsolete">5. ajuste nivel_manm por best fit</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="960"/>
         <source>auto adjust</source>
-        <translation type="unfinished">autom.</translation>
+        <translation type="obsolete">autom.</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1509"/>
         <source>Delete data</source>
-        <translation type="unfinished">Excluir dados</translation>
+        <translation type="obsolete">Excluir dados</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1529"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In this tab you may remove erroneous data from the database. &lt;/p&gt;&lt;p&gt;Deletion is done of water level logger data (database table w_levels_logger). &lt;/p&gt;&lt;p&gt;Set interval for deletion above (from/to) and then select to delete logger data below. (You will be asked to confirm the deletion.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nesta aba você pode remover dados da base de dados &lt;/p&gt;&lt;p&gt;A exclusão é feita nos dados de nível d&apos;água do logger (tabela nivel_agua_logger) . &lt;/p&gt;&lt;p&gt;Selecione o intervalo de exclusão acima (de/para) e então selecione excluir dados do logger abaixo. (Confirme a exclusão.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nesta aba você pode remover dados da base de dados &lt;/p&gt;&lt;p&gt;A exclusão é feita nos dados de nível d&apos;água do logger (tabela nivel_agua_logger) . &lt;/p&gt;&lt;p&gt;Selecione o intervalo de exclusão acima (de/para) e então selecione excluir dados do logger abaixo. (Confirme a exclusão.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1552"/>
         <source>Delete logger data</source>
-        <translation type="unfinished">Excluir dados do logger</translation>
+        <translation type="obsolete">Excluir dados do logger</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1644"/>
         <source>Circle nodes for logger line</source>
-        <translation type="unfinished">Nós circulares para a linha do logger</translation>
+        <translation type="obsolete">Nós circulares para a linha do logger</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1670"/>
         <source>Plot the column head_cm.</source>
-        <translation type="unfinished">Plotar a coluna alt_cm.</translation>
+        <translation type="obsolete">Plotar a coluna alt_cm.</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1673"/>
         <source>Plot logger head (water column)</source>
-        <translation type="unfinished">Plotar coluna d&apos;água do logger</translation>
+        <translation type="obsolete">Plotar coluna d&apos;água do logger</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1685"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The difference between head_cm mean value and level_masl mean value is removed when plotting logger head (nothing in the database is changed).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">A diferença entre a alt_cm média e o nivel_manm médio é removido quando plotada a altura do logger (nada é modificado na base de dados)</translation>
+        <translation type="obsolete">A diferença entre a alt_cm média e o nivel_manm médio é removido quando plotada a altura do logger (nada é modificado na base de dados)</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1688"/>
         <source>Normalize head to logger line</source>
-        <translation type="unfinished">Normalizar altura pela linha do logger</translation>
+        <translation type="obsolete">Normalizar altura pela linha do logger</translation>
     </message>
     <message>
         <location filename="../ui/old_calibr.ui" line="1716"/>
         <source>Update plot</source>
-        <translation type="unfinished">Atualizar gráfico</translation>
+        <translation type="obsolete">Atualizar gráfico</translation>
     </message>
     <message>
         <location filename="../ui/customplotdialog.ui" line="2641"/>
@@ -4241,167 +4241,7 @@ arquivo de poços </translation>
     <message>
         <location filename="../ui/old_calibr.ui" line="34"/>
         <source>TextLabel</source>
-        <translation type="unfinished">RótuloTexto</translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="128"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obsid ends with &amp;quot;(uncalibrated)&amp;quot; if the column level_masl in table w_levels_logger contains NULL-values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1413"/>
-        <source>yyyy-MM-dd HH:mm:ss</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="266"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select from-date in plot&lt;/p&gt;&lt;p&gt;(must select close to the logger line).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="358"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select to-date in plot&lt;/p&gt;&lt;p&gt;(must select close to the logger line).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="473"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Water level (level_masl) is calculated from water column (head_cm) by equation:&lt;/p&gt;&lt;p&gt;level_masl = logger_pos + head_cm/100&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1449"/>
-        <source>Adjust trend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="985"/>
-        <source>x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="992"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;y2 in the equation old_trend = (y2-y1) / (x2-x1)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1345"/>
-        <source>1.0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1002"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;y4 in the equation new_trend = (y4-y3) / (x4-x3)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1018"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Logger node used as *1 in the equation a_L = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1021"/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1028"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the first logger node that represents the old trend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1044"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Logger node used as *2 in the equation a_L = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1047"/>
-        <source>2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1073"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;x2 in the equation old_trend = (y2-y1) / (x2-x1)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1125"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the last logger node that represents the old trend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1141"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Measurement node used as *1 in the equation a_M = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1144"/>
-        <source>3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1170"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;x3 in the equation new_trend = (y4-y3) / (x4-x3)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1222"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the start point for the new trend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1238"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Measurement node used as *2 in the equation a_M = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1241"/>
-        <source>4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1267"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;x4 in the equation new_trend = (y4-y3) / (x4-x3)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1319"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the end point for the new trend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1329"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;y1 in the equation old_trend = (y2-y1) / (x2-x1)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1342"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;y3 in the equation new_trend = (y4-y3) / (x4-x3)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1371"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;x1 in the equation old_trend = (y2-y1) / (x2-x1)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1423"/>
-        <source>y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1433"/>
-        <source>Old trend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1440"/>
-        <source>New trend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/old_calibr.ui" line="1491"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adjust logger level_masl by giving it a new trend.&lt;/p&gt;&lt;p&gt;The new trend is calculated by subtracting the old trend with a new trend.&lt;/p&gt;&lt;p&gt;L = L - (old_trend - new_trend) * (d - x1)&lt;/p&gt;&lt;p&gt;where:&lt;/p&gt;&lt;p&gt;L = logger level_masl&lt;br/&gt;old_trend = (y2-y1) / (x2-x1)&lt;br/&gt;new_trend = (y4-y3) / (x4-x3)&lt;br/&gt;d = date_time for each logger timestep&lt;br/&gt;x1, y1 = The datetime and level_masl for the old trend&lt;br/&gt;x2, y2 = The datetime and level_masl for the old trend end point.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">RótuloTexto</translation>
     </message>
 </context>
 <context>

@@ -57,7 +57,6 @@ FORMS = \
 ./ui/obs_lines.ui \
 ./ui/obs_points_en.ui \
 ./ui/obs_points.ui \
-./ui/old_calibr.ui \
 ./ui/secplotdockwidget.ui \
 ./ui/selected_features.ui \
 ./ui/simpleplotdialog.ui \
