@@ -264,7 +264,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             df = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), data_columns)
 
         if date_time_as_columns:
-            columns = ['obsid', 'date_time', 'report']
+            columns = ['obsid', 'date_time']
+            if 'report' in df.columns.values.tolist():
+                columns.append('report')
             rows = ['parunit']
             values = [data_column]
             report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
@@ -303,11 +305,18 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         :param dbconnection:
         :return:
         """
+        dbconnection = db_utils.DbConnectionManager()
+        fieldnames = db_utils.tables_columns(table, dbconnection)[table]
+        missing = [column not in fieldnames for column in columns if column != 'report']
+        columns = [column for column in columns if column in fieldnames]
+        if any(missing):
+                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen table must contain columns %s'))%str(columns))
+
 
         sql = '''SELECT %s FROM %s'''%(', '.join(columns), table)
         if obsids:
             sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
-        dbconnection = db_utils.DbConnectionManager()
+
         df = pd.read_sql(con=dbconnection.conn, sql=sql,
                          parse_dates=['date_time'])
         dbconnection.closedb()
@@ -319,9 +328,13 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         """
         fields = w_qual_lab_layer.fields()
         fieldnames = [field.name() for field in fields]
+        missing = [column not in fieldnames for column in columns if column != 'report']
+        columns = [column for column in columns if column in fieldnames]
 
-        if any([column not in fieldnames for column in columns]):
+        if any(missing):
                 raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain columns %s'))%str(columns))
+
+        columns = [column for column in columns if column in fieldnames]
 
         indexes = {column: fields.indexFromName(column) for column in columns}
         features = [f for f in w_qual_lab_layer.getFeatures('True') if f.id() in w_qual_lab_layer.selectedFeatureIds()]
@@ -353,11 +366,13 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         df = pd.pivot_table(df, values=values, index=rows, columns=columns,
                             aggfunc=method)
 
-        if len(columns) == 3:
+        if len(columns) >= 2:
             if sort_by_obsid:
-                    order = ['obsid', 'date_time', 'report']
+                    order = ['obsid', 'date_time']
             else:
-                    order = ['date_time', 'obsid', 'report']
+                    order = ['date_time', 'obsid']
+            if 'report' in columns:
+                order.append('report')
         else:
             order = ['obsid']
         df = df.sort_index(axis=1, level=order)
