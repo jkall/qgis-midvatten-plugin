@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>518</width>
+    <width>633</width>
     <height>971</height>
    </rect>
   </property>
@@ -117,7 +117,7 @@
     <item>
      <widget class="QGroupBox" name="groupBox_5">
       <property name="title">
-       <string>Aggregation (only with Date_time layout as rows)</string>
+       <string>Aggregation</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <property name="leftMargin">
@@ -295,7 +295,7 @@
        <item>
         <widget class="QRadioButton" name="sort_by_obsid">
          <property name="text">
-          <string>by obsid, date_time, report</string>
+          <string>by obsid, date_time (, report if exists)</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -305,7 +305,7 @@
        <item>
         <widget class="QRadioButton" name="sort_by_date_time">
          <property name="text">
-          <string>by date_time, obsid, report</string>
+          <string>by date_time, obsid (, report if exists)</string>
          </property>
         </widget>
        </item>
@@ -377,7 +377,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>518</width>
+     <width>633</width>
      <height>36</height>
     </rect>
    </property>

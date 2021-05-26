@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.6b1:
         - Compact w-qual report: Made the column report optional to allow reports from w_qual_field.
+        - Compact w-qual report: Fixes bug when using aggregation other than concat.
         Version 1.6.5
         - Database:
             * Added index to w_levels_logger and w_flow for perhaps increased read performance.

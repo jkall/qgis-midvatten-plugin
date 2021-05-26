@@ -70,7 +70,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                     'avg': lambda x: round(sum([float(y) for y in x.values]) / float(len(x.values)), num_decimals(x.values)) if all([floatable(y) for y in x.values]) else ', '.join([ru(y) for y in x.values]),
                     'sum': lambda x: round(sum([float(y) for y in x]), num_decimals(x)) if all([floatable(y) for y in x.values]) else ', '.join(x.values),
                     'min': lambda x: min(x.values),
-                    'max': lambda x: min(x.values)}
+                    'max': lambda x: max(x.values)}
 
         self.date_time_format.addItems(self.date_time_formats.keys())
         self.method.addItems(self.methods.keys())
@@ -473,7 +473,7 @@ def floatable(anything):
 
 def num_decimals(alist):
     try:
-        [float(x.replace(',', '.')) for x in alist]
+        [float(x.replace(',', '.')) if isinstance(x, str) else float(x) for x in alist]
     except (TypeError, ValueError):
         return 0
 
