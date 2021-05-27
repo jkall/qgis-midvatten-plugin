@@ -27,6 +27,7 @@ import qgis.utils
 import shutil
 import sys
 import io
+import traceback
 # Import the PyQt and QGIS libraries
 from qgis.core import Qgis, QgsApplication
 import qgis.PyQt
@@ -969,8 +970,14 @@ class Midvatten(object):
     def setup(self):
         try:
             self.midvsettingsdialog.activateWindow()
-        except:
+        except AttributeError:
+            #utils.MessagebarAndLog.info(log_msg=traceback.format_exc())
             self.midvsettingsdialog = midvsettingsdialog.midvsettingsdialogdock(self.iface.mainWindow(),self.iface, self.ms)#self.iface as arg?
+            self.midvsettingsdialog.destroyed.connect(self._del_dialog)
+            #self.midvsettingsdialog.closed.connect(lambda: self.del_dialog())
+
+    def _del_dialog(self):
+        del self.midvsettingsdialog
 
     def vacuum_db(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
