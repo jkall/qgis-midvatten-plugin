@@ -19,17 +19,18 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
+
 import codecs
 import os
+from builtins import object
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
 
+from midvatten.tools.calculate_statistics import get_statistics_for_single_obsid
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-from midvatten.tools.calculate_statistics import get_statistics_for_single_obsid
 
 
 class Drillreport(object):        # general observation point info for the selected object

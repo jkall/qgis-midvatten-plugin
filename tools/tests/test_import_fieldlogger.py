@@ -1,23 +1,22 @@
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
+from __future__ import print_function
+
 from builtins import object
-from operator import itemgetter
+from builtins import str
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
-import ast
+from operator import itemgetter
 
-import import_fieldlogger
-import midvatten_utils as utils
 import mock
-from date_utils import datestring_to_date
-from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from mock import MagicMock, call
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
-from .utils_for_tests import create_test_string
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.tests.utils_for_tests import create_test_string
+from midvatten.tools.utils.date_utils import datestring_to_date
+from midvatten.tools.import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
+from midvatten.tools import import_fieldlogger
 
 
 @attr(status='on')

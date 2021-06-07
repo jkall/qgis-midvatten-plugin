@@ -17,21 +17,21 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os
 import copy
+import os
 import traceback
+
 import qgis.utils
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsDataSourceUri, QgsProject, QgsGeometryGeneratorSymbolLayer, QgsVectorLayerSimpleLabeling, \
     QgsProperty, QgsFeatureRequest, QgsExpression
-from qgis.PyQt.QtGui import QColor
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt import uic
 
-from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
 from midvatten.definitions import midvatten_defs as defs
-from midvatten.tools.utils.midvatten_utils import add_layers_to_list
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-
+from midvatten.tools.utils.midvatten_utils import add_layers_to_list
 
 strat_symbology_dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'strat_symbology_dialog.ui'))[0]
 
@@ -277,7 +277,7 @@ def add_group(parent_group, name, checked=False):
 def apply_obsid_filter_to_layers(layers):
     selected_obsids = common_utils.getselectedobjectnames(column_name='obsid')
     if selected_obsids:
-        filter_string = '''obsid IN ({})'''.format(tools.utils.common_utils.sql_unicode_list(selected_obsids))
+        filter_string = '''obsid IN ({})'''.format(common_utils.sql_unicode_list(selected_obsids))
         for layer in layers:
             req = QgsFeatureRequest(QgsExpression(filter_string))
             layer.setSubsetString(req.filterExpression().expression())

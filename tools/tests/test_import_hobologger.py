@@ -24,15 +24,14 @@
 
 import os
 
-import midvatten_utils as utils
 import mock
-from date_utils import datestring_to_date
-from import_hobologger import HobologgerImport, TzConverter, get_tz_string
+
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
-from mocks_for_tests import MockReturnUsingDictIn
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.import_hobologger import HobologgerImport, TzConverter
+
 
 @attr(status='on')
 class TestParseHobologgerFile(object):

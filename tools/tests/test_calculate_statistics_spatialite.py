@@ -19,21 +19,21 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
+
 from builtins import str
-
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
-import mock
-from mock import call
-from mock import MagicMock
 from collections import OrderedDict
-import piper
-from nose.plugins.attrib import attr
-import calculate_statistics
 
-import utils_for_tests
+import mock
+from mock import MagicMock
+from mock import call
+from nose.plugins.attrib import attr
+
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools import calculate_statistics
+
 
 @attr(status='on')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestSpatialiteDbSv):

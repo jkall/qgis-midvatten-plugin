@@ -2,15 +2,13 @@
 
 from builtins import str
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
-import qgis
-
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
 from nose.plugins.attrib import attr
 from qgis.core import QgsProject
+
+from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
 
 
 @attr(status='on')

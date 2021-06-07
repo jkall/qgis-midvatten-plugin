@@ -21,19 +21,19 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-#
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
-import mock
-from import_interlab4 import Interlab4Import
-from nose.plugins.attrib import attr
-import gui_utils
 import uuid
 
-import mocks_for_tests
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
+import mock
+
+from nose.plugins.attrib import attr
+
+from midvatten.tools.utils import common_utils, gui_utils, db_utils
+from midvatten.tools.tests import mocks_for_tests, utils_for_tests
+from midvatten.tools.import_interlab4 import Interlab4Import
+
+
+#
 
 
 @attr(status='on')

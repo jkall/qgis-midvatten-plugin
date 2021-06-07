@@ -20,23 +20,23 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import range
-from builtins import object
 
-import qgis.PyQt
 import ast
 import io
 import os
+from builtins import object
+from builtins import range
 
 import mock
-import midvatten_utils as utils
-from midvatten_utils import PlotTemplates
+import qgis.PyQt
+
 from mock import call
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests import utils_for_tests
 from midvatten.definitions import midvatten_defs as defs
+from midvatten.tools.utils.midvatten_utils import PlotTemplates
 
 
 @attr(status='on')

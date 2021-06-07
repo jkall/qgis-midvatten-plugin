@@ -19,34 +19,30 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
-import qgis.core
-import qgis.PyQt
+from __future__ import print_function
+
 import io
 import os
-from operator import itemgetter
-from qgis.PyQt import QtCore
-from collections import OrderedDict
-from qgis.core import QgsApplication
-from qgis.PyQt.QtWidgets import QWidget, QDialog
+from builtins import object
+from builtins import str
+
 import matplotlib.pyplot as plt
-from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields, QgsGeometry
-import unittest
-import qgis
-
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
-from midvatten.tools.import_data_to_db import midv_data_importer
-from midvatten_plugin.midvatten import Midvatten
+import qgis
+import qgis.PyQt
+import qgis.core
+from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtWidgets import QWidget, QDialog
+from qgis.core import QgsApplication
+from qgis.core import QgsProject, QgsVectorLayer, QgsFeature, QgsFields
 
-import midvatten.tools.utils.common_utils as common_utils
+from midvatten.midvatten_plugin import Midvatten
+from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import db_utils
+from midvatten.tools.import_data_to_db import midv_data_importer
 from mocks_for_tests import DummyInterface2
-
 
 
 class test_qapplication_is_running(object):

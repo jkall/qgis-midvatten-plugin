@@ -20,22 +20,23 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import next
-from builtins import str
-from builtins import range
+from __future__ import print_function
+
 import math
+import os
+from builtins import next
+from builtins import range
+from builtins import str
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+import numpy as np
+import qgis.PyQt
 from matplotlib.backend_bases import MouseButton, PickEvent
-import os
-from qgis.PyQt import uic, QtWidgets
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num, num2date
-import numpy as np
-
-import qgis.PyQt
+from qgis.PyQt import uic, QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 
 try:#assume matplotlib >=1.5.1
@@ -47,7 +48,7 @@ from matplotlib.widgets import RectangleSelector
 
 import datetime
 
-from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer
 from midvatten.tools.utils.date_utils import dateshift, datestring_to_date, long_dateformat
 from midvatten.tools.utils.gui_utils import add_action_to_navigation_toolbar
@@ -126,7 +127,7 @@ class Calclvl(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
 
     @fn_timer
     def calcselected(self):
-        obsids = ru(tools.utils.common_utils.getselectedobjectnames(self.layer), keep_containers=True)
+        obsids = ru(common_utils.getselectedobjectnames(self.layer), keep_containers=True)
         if not obsids:
             common_utils.pop_up_info(ru(QCoreApplication.translate('Calclvl',
                                                             'Adjustment aborted! No obsids selected.')),
@@ -687,7 +688,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         if not coupled_vals:
             common_utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "There was no match found between measurements and logger values inside the chosen period.\n Try to increase the search radius or adjust the period!")))
         else:
-            calculated_diff = str(tools.utils.common_utils.calc_mean_diff(coupled_vals))
+            calculated_diff = str(common_utils.calc_mean_diff(coupled_vals))
             if not calculated_diff or calculated_diff.lower() == 'nan':
                 common_utils.pop_up_info(ru(QCoreApplication.translate('Calibrlogger', "There was no matched measurements or logger values inside the chosen period.\n Try to increase the search radius!")))
                 common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Calibrlogger', "Calculated water level from logger: midvatten_utils.calc_mean_diff(coupled_vals) didn't return a useable value.")))

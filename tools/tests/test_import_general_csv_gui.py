@@ -21,15 +21,14 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
-#
 
-import midvatten_utils as utils
-from import_general_csv_gui import GeneralCsvImportGui
+from builtins import object
+
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.import_general_csv_gui import GeneralCsvImportGui
 
 
 @attr(status='on')

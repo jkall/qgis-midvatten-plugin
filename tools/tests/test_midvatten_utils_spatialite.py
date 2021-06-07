@@ -23,14 +23,13 @@ from __future__ import absolute_import
 
 from builtins import str
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
-import utils_for_tests
 from mock import call
 from nose.plugins.attrib import attr
 
-from utils_for_tests import create_test_string
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.tests.utils_for_tests import create_test_string
 
 
 @attr(status='on')

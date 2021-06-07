@@ -20,14 +20,16 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
-import qgis.PyQt
+
 import copy
+from builtins import object
+
+import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 
-from midvatten.tools.utils.date_utils import datestring_to_date
 from midvatten.tools.utils.common_utils import returnunicode as ru, MessagebarAndLog, sql_failed_msg
+from midvatten.tools.utils.date_utils import datestring_to_date
 from midvatten.tools.utils.db_utils import sql_load_fr_db
 
 

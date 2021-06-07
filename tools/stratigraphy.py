@@ -38,19 +38,19 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
+from __future__ import print_function
 
 import unicodedata  # To normalize some special national characters to regular international characters
+from builtins import object
+from builtins import str
 from functools import partial  # only to get combobox signals to work
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-from midvatten.tools.utils import common_utils, db_utils
 from midvatten.definitions import midvatten_defs as defs
+from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 

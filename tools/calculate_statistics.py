@@ -18,12 +18,13 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
+
 import os
+
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils import common_utils, gui_utils, db_utils
-
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 calculate_statistics_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calculate_statistics_ui.ui'))[0]

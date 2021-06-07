@@ -19,19 +19,20 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
+
 from builtins import str
 
-from qgis.PyQt import QtGui, QtWidgets
-
-import midvatten.tools.utils.db_utils as db_utils
 import mock
-from date_utils import datestring_to_date
-from nose.plugins.attrib import attr
-from wlevels_calc_calibr import Calclvl
 
-import utils_for_tests
+from nose.plugins.attrib import attr
+from qgis.PyQt import QtWidgets
+
+from midvatten.tools.wlevels_calc_calibr import Calclvl
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.utils.date_utils import datestring_to_date
 
 
 @attr(status='on')

@@ -18,16 +18,16 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
+
 import os
+
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.core import QgsVectorLayer
 
-
-from midvatten.tools.utils import common_utils, gui_utils, midvatten_utils
+from midvatten.tools.utils import common_utils, gui_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-
 
 selected_features_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'selected_features.ui'))[0]
 

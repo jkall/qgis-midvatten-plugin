@@ -19,21 +19,22 @@ __modified_date__ = "Nov 2013"
     Development date: 8/5/2011
 ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import range
-from builtins import object
+from __future__ import print_function
 
 import datetime
 import itertools
-from operator import sub
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import numpy as np
 import math
+from builtins import object
+from builtins import range
+from operator import sub
 
-from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
 from midvatten.definitions.midvatten_defs import piperplot_style, piperplot2_style
+from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 

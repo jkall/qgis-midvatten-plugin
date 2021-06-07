@@ -20,24 +20,23 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
 
 from collections import OrderedDict
-from qgis.core import QgsField, QgsGeometry
-from PyQt5.QtCore import QVariant
-from qgis.PyQt.QtWidgets import QWidget
-from qgis.core import QgsProject
 
-import export_fieldlogger
+
 import mock
-from export_fieldlogger import ExportToFieldLogger
+from PyQt5.QtCore import QVariant
+
 from mock import MagicMock
 from nose.plugins.attrib import attr
-import midvatten_utils as utils
+from qgis.PyQt.QtWidgets import QWidget
+from qgis.core import QgsField, QgsGeometry
+from qgis.core import QgsProject
 
-import midvatten.tools.utils.common_utils as common_utils
-from .utils_for_tests import create_test_string, create_vectorlayer, MidvattenTestBase
-
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests.utils_for_tests import create_test_string, create_vectorlayer, MidvattenTestBase
+from midvatten.tools.export_fieldlogger import ExportToFieldLogger
+from midvatten.tools import export_fieldlogger
 
 @attr(status='on')
 class TestExportFieldloggerNoDb(MidvattenTestBase):

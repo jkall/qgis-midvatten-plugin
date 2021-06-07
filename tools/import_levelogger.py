@@ -22,14 +22,16 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
+
 import io
 import os
+from builtins import str
+
 from qgis.PyQt.QtCore import QCoreApplication
 
-from midvatten.tools.utils import common_utils, date_utils, midvatten_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools import import_diveroffice
+from midvatten.tools.utils import common_utils, date_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class LeveloggerImport(import_diveroffice.DiverofficeImport):
@@ -165,11 +167,11 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
         filedata.extend([[date_utils.long_dateformat(' '.join([row[date_colnr], row[time_colnr]]), date_format),
                           str(float(row[level_colnr].replace(',', '.')) * level_unit_factor_to_cm) if (
                               common_utils.to_float_or_none(row[level_colnr]) is not None if level_colnr is not None else None) else None,
-                          str(float(row[temp_colnr].replace(',', '.'))) if (tools.utils.common_utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else None,
+                          str(float(row[temp_colnr].replace(',', '.'))) if (common_utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else None,
                           str(float(row[spec_cond_colnr].replace(',', '.')) * spec_cond_factor_to_mScm) if (
                               common_utils.to_float_or_none(row[spec_cond_colnr]) if spec_cond_colnr is not None else None) else None]
                          for row in rows[data_header_idx + 1:]
-                         if all([isinstance(tools.utils.common_utils.to_float_or_none(row[level_colnr]), float) if skip_rows_without_water_level else True,
+                         if all([isinstance(common_utils.to_float_or_none(row[level_colnr]), float) if skip_rows_without_water_level else True,
                                  date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) >= begindate if begindate is not None else True,
                                  date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) <= enddate if enddate is not None else True])])
 

@@ -20,19 +20,20 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
+
 from builtins import str
 from collections import OrderedDict
 
-import midvatten.tools.utils.db_utils as db_utils
 import mock
 import nose
-from import_data_to_db import MidvDataImporterError
 from mock import call
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.import_data_to_db import MidvDataImporterError
 
 
 @attr(status='on')

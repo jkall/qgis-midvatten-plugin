@@ -20,16 +20,14 @@
  ***************************************************************************/
 """
 
-from qgis.core import QgsProject, QgsVectorLayer
-
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
-from stratigraphy import Stratigraphy
+from qgis.core import QgsProject, QgsVectorLayer
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
+from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.stratigraphy import Stratigraphy
 
 
 @attr(status='on')

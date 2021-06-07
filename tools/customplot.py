@@ -22,21 +22,22 @@ The PlotSQLite application version 0.2.6 was merged into Midvatten plugin at 201
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import zip
-from builtins import str
-from builtins import range
-from builtins import object
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+
 import os
-import qgis.PyQt
-from qgis.PyQt import QtGui, QtCore, uic, QtWidgets  # , QtSql
-from qgis.PyQt.QtCore import QCoreApplication
+from builtins import object
+from builtins import range
+from builtins import str
+from builtins import zip
 from functools import partial  # only to get combobox signals to work
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import qgis.PyQt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
-
-import numpy as np
+from qgis.PyQt import QtGui, QtCore, uic, QtWidgets  # , QtSql
+from qgis.PyQt.QtCore import QCoreApplication
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar

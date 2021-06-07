@@ -21,24 +21,25 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
+
 import copy
+import csv
 import io
 import os
-import csv
-from datetime import datetime
 import re
+from builtins import range
+from builtins import str
+from datetime import datetime
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, QItemSelectionModel
 
-from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools import import_data_to_db
-from midvatten.tools.utils.date_utils import datestring_to_date
-from midvatten.tools.utils.gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit, get_line
+from midvatten.tools.utils import common_utils, midvatten_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, Cancel
+from midvatten.tools.utils.date_utils import datestring_to_date
 from midvatten.tools.utils.db_utils import tables_columns, sql_load_fr_db, sql_alter_db
+from midvatten.tools.utils.gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit, get_line
 
 import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 

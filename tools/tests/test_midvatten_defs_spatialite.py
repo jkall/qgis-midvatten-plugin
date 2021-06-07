@@ -20,15 +20,14 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-import midvatten_utils as utils
-import mock
+
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.db_utils as db_utils
-
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
+from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
 from midvatten.definitions import midvatten_defs
+
 
 @attr(status='on')
 class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):

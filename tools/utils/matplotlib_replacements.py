@@ -18,8 +18,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-import six
 import matplotlib as mpl
+import six
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar

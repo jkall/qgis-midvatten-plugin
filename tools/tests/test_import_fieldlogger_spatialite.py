@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
+
 import copy
 from collections import OrderedDict
 
-import midvatten.tools.utils.db_utils as db_utils
-import import_fieldlogger
-import midvatten_utils as utils
 import mock
-from import_fieldlogger import FieldloggerImport, DateTimeFilter
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, mock_answer
-from .utils_for_tests import create_test_string
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests.mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, mock_answer
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.tests.utils_for_tests import create_test_string
+from midvatten.tools.import_fieldlogger import FieldloggerImport, DateTimeFilter
+from midvatten.tools import import_fieldlogger
 
 
 @attr(status='on')

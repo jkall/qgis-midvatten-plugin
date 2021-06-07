@@ -19,18 +19,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-import date_utils
-import midvatten.tools.utils.db_utils as db_utils
-import gui_utils
-import mock
-from nose.plugins.attrib import attr
-from wlevels_calc_calibr import Calibrlogger
+from __future__ import print_function
+
 from decimal import Decimal
 
-import utils_for_tests
+import mock
+from nose.plugins.attrib import attr
+
+from midvatten.tools.wlevels_calc_calibr import Calibrlogger
+from midvatten.tools.utils import db_utils, date_utils, gui_utils
+from midvatten.tools.tests import utils_for_tests
 
 
 @attr(status='on')

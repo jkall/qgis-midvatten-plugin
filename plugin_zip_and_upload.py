@@ -12,15 +12,16 @@ python plugin_zip.py
 
 """
 from __future__ import print_function
+
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import input
 
-import sys
 import os
 import getpass
 import xmlrpc.client
-import zipfile, zlib
+import zipfile
 from optparse import OptionParser
 
 # Configuration

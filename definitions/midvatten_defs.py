@@ -18,13 +18,13 @@
  ***************************************************************************/
 """
 from __future__ import print_function
-from builtins import str
 
-from collections import OrderedDict
-import os
 import io
-from cycler import cycler
+import os
+from builtins import str
+from collections import OrderedDict
 
+from cycler import cycler
 from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils.common_utils import returnunicode as ru, MessagebarAndLog, rstrip, \

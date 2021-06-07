@@ -31,7 +31,6 @@ import numpy as np
 import pandas as pd
 import qgis
 import qgis.PyQt
-
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
@@ -39,7 +38,6 @@ from qgis.PyQt.QtWidgets import QApplication
 
 from midvatten.tools.utils import common_utils, db_utils, gui_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, general_exception_handler
-
 
 custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'compact_w_qual_report.ui'))[0]
 

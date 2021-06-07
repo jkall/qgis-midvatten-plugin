@@ -21,20 +21,21 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
-#
 
 import os
+from builtins import object
 
-import midvatten_utils as utils
 import mock
-from date_utils import datestring_to_date
-from import_diveroffice import DiverofficeImport
+from midvatten.tools.utils.date_utils import datestring_to_date
 from nose.plugins.attrib import attr
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
-from mocks_for_tests import MockReturnUsingDictIn
+from midvatten.tools.utils import common_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.tests.mocks_for_tests import MockReturnUsingDictIn
+from midvatten.tools.import_diveroffice import DiverofficeImport
+
+
+#
 
 
 @attr(status='on')

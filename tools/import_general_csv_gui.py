@@ -20,24 +20,25 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
-from builtins import object
+from __future__ import print_function
+
 import copy
-import os
 import csv
+import os
+from builtins import object
+from builtins import range
+from builtins import str
 from operator import itemgetter
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, date_utils
-from midvatten.tools import import_data_to_db
 import midvatten.definitions.midvatten_defs as defs
-from midvatten.tools.utils.gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid, DistinctValuesBrowser
+from midvatten.tools import import_data_to_db
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, date_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid, DistinctValuesBrowser
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -119,7 +120,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         charset = midvatten_utils.ask_for_charset()
         if not charset:
             raise common_utils.UserInterruptError()
-        filename = tools.utils.midvatten_utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate('GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s")) % ('(*.csv)', '(*.txt)', '(*.*)'))
+        filename = midvatten_utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate('GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s")) % ('(*.csv)', '(*.txt)', '(*.*)'))
         if isinstance(filename, (list, tuple)):
             filename = filename[0]
 
@@ -264,7 +265,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             file_data = self.multiply_by_factor(file_data, columns_factors)
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
         if foreign_key_obsid_table and foreign_key_obsid_table != dest_table and 'obsid' in file_data[0]:
-            file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', tools.utils.db_utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
+            file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', db_utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
 
         file_data = self.reformat_date_time(file_data)
 
@@ -357,7 +358,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
     @staticmethod
     def remove_preceding_trailing_spaces_tabs(file_data):
-        file_data = [[tools.utils.common_utils.rstrip() if all([rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        file_data = [[common_utils.rstrip() if all([rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
         return file_data
 
 

@@ -11,17 +11,18 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
-from builtins import str
-from builtins import object
-import qgis.PyQt
 import ast
 import os.path
-from qgis.PyQt import uic, QtCore
+from builtins import object
+from builtins import str
 from functools import partial  # only to get combobox signals to work
+
+import qgis.PyQt
+from qgis.PyQt import uic, QtCore
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QComboBox, QDockWidget, QFileDialog
 
-from midvatten.tools.utils import common_utils, gui_utils, db_utils, midvatten_utils
+from midvatten.tools.utils import common_utils, gui_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools.utils.midvatten_utils import warn_about_old_database
 
@@ -553,7 +554,7 @@ class DatabaseSettings(object):
 
     @dbtype_combobox.setter
     def dbtype_combobox(self, value):
-        index = self._dbtype_combobox.findText(tools.utils.common_utils.returnunicode(value))
+        index = self._dbtype_combobox.findText(common_utils.returnunicode(value))
         if index != -1:
             self._dbtype_combobox.setCurrentIndex(index)
 
@@ -664,7 +665,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
 
     @dbpath.setter
     def dbpath(self, value):
-        self._dbpath.setText(tools.utils.common_utils.returnunicode(value))
+        self._dbpath.setText(common_utils.returnunicode(value))
 
     def select_file(self):
         """ Open a dialog to locate the sqlite file and some more..."""
@@ -712,7 +713,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
     @connection.setter
     def connection(self, value):
-        index = self._connection.findText(tools.utils.common_utils.returnunicode(value))
+        index = self._connection.findText(common_utils.returnunicode(value))
         if index != -1:
             self._connection.setCurrentIndex(index)
 

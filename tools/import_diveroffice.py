@@ -21,21 +21,21 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
 
 import io
 import os
+from builtins import str
 from collections import OrderedDict
 from datetime import datetime
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools import import_data_to_db
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools.utils.date_utils import find_date_format, datestring_to_date
 from midvatten.tools.utils.gui_utils import VRowEntry, get_line, DateTimeFilter
-from midvatten.tools.utils.common_utils import returnunicode as ru
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 

@@ -19,15 +19,16 @@
 
 """
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
+
 import datetime
+from builtins import object
+from builtins import str
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+import numpy as np
 # plt.ion() #interactive mode immediately to prevent pyplot plots from blocking application
 from matplotlib.dates import datestr2num
-
-import numpy as np
 from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils import common_utils, db_utils

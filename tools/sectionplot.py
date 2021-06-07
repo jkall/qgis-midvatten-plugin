@@ -13,11 +13,14 @@
 from __future__ import absolute_import
 
 import copy
-import traceback
 import os
+import sqlite3 as sqlite  # needed since spatialite-specific sql will be used during polyline layer import
+import traceback
+import types
 from builtins import range
 from builtins import str
 from builtins import zip
+from operator import itemgetter
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -26,24 +29,20 @@ import numpy as np
 import qgis.PyQt
 from matplotlib import container, patches
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from qgis.core import QgsProject
-
-#try:#assume matplotlib >=1.5.1
-#    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-#except:
-#    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
-
-import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QCoreApplication, Qt
-from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
-from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
-from operator import itemgetter
-from midvatten.tools.utils.gui_utils import set_combobox
-import types
-
-#from ui.secplotdockwidget_ui import Ui_SecPlotDock
+# from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
+from qgis.core import QgsProject
+from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
+
+from midvatten.tools.utils.gui_utils import set_combobox
+
+# try:#assume matplotlib >=1.5.1
+#    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+# except:
+#    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget.ui'))[0]
 
 from matplotlib.widgets import Slider
@@ -846,11 +845,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                             #lists for plotting annotation
                             self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                             self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
-                            self.geology_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][2])))
-                            self.geoshort_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][3])))
-                            self.capacity_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][4])))
-                            self.development_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][5])))
-                            self.comment_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][6])))
+                            self.geology_txt.append(common_utils.null_2_empty_string(ru(recs[j][2])))
+                            self.geoshort_txt.append(common_utils.null_2_empty_string(ru(recs[j][3])))
+                            self.capacity_txt.append(common_utils.null_2_empty_string(ru(recs[j][4])))
+                            self.development_txt.append(common_utils.null_2_empty_string(ru(recs[j][5])))
+                            self.comment_txt.append(common_utils.null_2_empty_string(ru(recs[j][6])))
                             # print obs + " " + Typ + " " + self.geology_txt[l] + " "
                             # + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " "
                             # + self.development_txt[l] + " " + self.comment_txt[l]  # debug
@@ -1024,7 +1023,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                             self.z_txt.append(Bottom[i] + recs[j][0] / 2)  # Z-value for text
 
-                            self.capacity_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][2])))
+                            self.capacity_txt.append(common_utils.null_2_empty_string(ru(recs[j][2])))
 
                             self.hydro_explanation_txt = []
 

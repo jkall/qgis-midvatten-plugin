@@ -20,28 +20,28 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
-import qgis.PyQt
+from __future__ import print_function
+
 import datetime
 import timeit
+from builtins import range
+from builtins import str
 from collections import OrderedDict
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
-from date_utils import datestring_to_date
-from import_general_csv_gui import GeneralCsvImportGui
+import qgis.PyQt
+
 from mock import MagicMock
 from nose.plugins.attrib import attr
-
 from qgis.core import QgsProject, QgsVectorLayer
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue
+from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.tests.mocks_for_tests import MockUsingReturnValue
+from midvatten.tools.utils.date_utils import datestring_to_date
+from midvatten.tools.import_general_csv_gui import GeneralCsvImportGui
 
 
 @attr(status='on')

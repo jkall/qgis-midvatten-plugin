@@ -21,17 +21,16 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-#
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
-import piper
 from nose.plugins.attrib import attr
-from decimal import Decimal
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
+from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools import piper
+
+#
 
 
 @attr(status='on')

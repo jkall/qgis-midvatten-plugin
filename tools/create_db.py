@@ -17,20 +17,21 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
+from __future__ import print_function
+
 import datetime
 import locale
 import os
 import re
-from qgis.core import Qgis
+from builtins import object
+from builtins import str
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import Qgis
 
-from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename
 from midvatten.tools.utils.midvatten_utils import execute_sqlfile
 

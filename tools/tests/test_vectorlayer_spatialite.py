@@ -17,19 +17,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from qgis.core import QgsProject, QgsVectorLayer
+from __future__ import print_function
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
+import string
+from builtins import str
+
 import mock
 from nose.plugins.attrib import attr
-from stratigraphy import Stratigraphy
-import string
+from qgis.core import QgsProject, QgsVectorLayer
 
-import utils_for_tests
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
 
 
 @attr(status='on')

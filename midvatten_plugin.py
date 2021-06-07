@@ -19,64 +19,63 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
+
+import io
 # Import some general python modules
 import os.path
-import qgis.utils
 import shutil
 import sys
-import io
-import traceback
-# Import the PyQt and QGIS libraries
-from qgis.core import Qgis, QgsApplication, QgsWkbTypes, QgsVectorLayer
-from qgis.PyQt.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt
+from builtins import object
+from builtins import str
+
+import qgis.utils
+from qgis.PyQt.QtCore import QCoreApplication, QDir, QSettings, QUrl, Qt
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMenu
-from qgis.PyQt.QtGui import QCursor, QIcon
-
-#add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
-#sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-#sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
-
-# Add translate
-from midvatten.tools.utils.util_translate import getTranslate
-
-from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
+# Import the PyQt and QGIS libraries
+from qgis.core import QgsApplication, QgsWkbTypes, QgsVectorLayer
 
 # Import Midvatten tools and modules
 import midvatten.midvsettingsdialog as midvsettingsdialog
-from midvatten.tools.utils import matplotlib_replacements
-
-from midvatten.tools.customplot import plotsqlitewindow
-from midvatten.tools.tsplot import TimeSeriesPlot
-from midvatten.tools.stratigraphy import Stratigraphy
-from midvatten.tools.xyplot import XYPlot
-from midvatten.tools.wqualreport import Wqualreport
-from midvatten.tools.wqualreport_compact import CompactWqualReportUi
-from midvatten.tools.column_values_from_selected_features import ValuesFromSelectedFeaturesGui
+from midvatten.definitions import midvatten_defs
 from midvatten.tools.calculate_statistics import CalculateStatisticsGui
-from midvatten.tools.loaddefaultlayers import LoadLayers
-from midvatten.tools.prepareforqgis2threejs import PrepareForQgis2Threejs
-from midvatten.tools.sectionplot import SectionPlot
-from midvatten.tools.midvsettings import midvsettings
-from midvatten.tools.piper import PiperPlot
-from midvatten.tools.export_data import ExportData
-from midvatten.tools.strat_symbology import StratSymbology
-from midvatten.tools.drillreport import Drillreport
-from midvatten.tools.w_flow_calc_aveflow import Calcave
+from midvatten.tools.column_values_from_selected_features import ValuesFromSelectedFeaturesGui
+from midvatten.tools.create_db import NewDb
 from midvatten.tools.custom_drillreport import DrillreportUi
+from midvatten.tools.customplot import plotsqlitewindow
+from midvatten.tools.drillreport import Drillreport
+from midvatten.tools.export_data import ExportData
 from midvatten.tools.export_fieldlogger import ExportToFieldLogger
+from midvatten.tools.import_diveroffice import DiverofficeImport
 from midvatten.tools.import_fieldlogger import FieldloggerImport
 from midvatten.tools.import_general_csv_gui import GeneralCsvImportGui
-from midvatten.tools.import_interlab4 import Interlab4Import
-from midvatten.tools.import_diveroffice import DiverofficeImport
-from midvatten.tools.import_levelogger import LeveloggerImport
 from midvatten.tools.import_hobologger import HobologgerImport
-from midvatten.tools.create_db import NewDb
+from midvatten.tools.import_interlab4 import Interlab4Import
+from midvatten.tools.import_levelogger import LeveloggerImport
+from midvatten.tools.loaddefaultlayers import LoadLayers
+from midvatten.tools.midvsettings import midvsettings
+from midvatten.tools.piper import PiperPlot
+from midvatten.tools.prepareforqgis2threejs import PrepareForQgis2Threejs
+from midvatten.tools.sectionplot import SectionPlot
+from midvatten.tools.strat_symbology import StratSymbology
+from midvatten.tools.stratigraphy import Stratigraphy
+from midvatten.tools.tsplot import TimeSeriesPlot
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.tools.utils import matplotlib_replacements
+from midvatten.tools.utils.common_utils import returnunicode as ru
+# Add translate
+from midvatten.tools.utils.util_translate import getTranslate
+from midvatten.tools.w_flow_calc_aveflow import Calcave
 from midvatten.tools.wlevels_calc_calibr import Calclvl
 from midvatten.tools.wlevels_calc_calibr import Calibrlogger
-from midvatten.definitions import midvatten_defs
+from midvatten.tools.wqualreport import Wqualreport
+from midvatten.tools.wqualreport_compact import CompactWqualReportUi
+from midvatten.tools.xyplot import XYPlot
+
+
+# add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
 
 
 class Midvatten(object):

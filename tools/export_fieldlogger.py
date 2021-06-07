@@ -18,23 +18,26 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
-from builtins import object
-import qgis.PyQt
+
 import ast
 import copy
 import os.path
-import qgis.gui
+from builtins import object
+from builtins import range
+from builtins import str
 from collections import OrderedDict
-#from qgis._core import QgsProject
-from qgis.core import QgsProject, QgsWkbTypes, QgsGeometry, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, QgsCoordinateReferenceSystem
-from qgis.PyQt.QtCore import QCoreApplication
 
-from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, gui_utils
+import qgis.PyQt
+import qgis.gui
+from qgis.PyQt.QtCore import QCoreApplication
+# from qgis._core import QgsProject
+from qgis.core import QgsProject, QgsWkbTypes, QgsGeometry, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, \
+    QgsCoordinateReferenceSystem
+
 import midvatten.definitions.midvatten_defs as defs
-from midvatten.tools.utils.gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, gui_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
 
 export_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]

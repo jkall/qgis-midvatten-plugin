@@ -19,24 +19,22 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
-from qgis.PyQt.QtCore import QUrl, QDir
-from qgis.PyQt.QtGui import QDesktopServices
-import qgis.PyQt
-import ast
 
+import ast
+import codecs
 import os
+from builtins import object
+from builtins import str
 from collections import OrderedDict
 
-import codecs
 import qgis
-
+import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QUrl, QDir
+from qgis.PyQt.QtGui import QDesktopServices
 
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-
 
 custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'custom_drillreport.ui'))[0]
 

@@ -15,7 +15,6 @@ from operator import itemgetter
 
 import matplotlib as mpl
 import numpy as np
-
 import qgis.utils
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWebKitWidgets import QWebView

@@ -25,10 +25,12 @@ For create file 'qm'
 4) Create 'qm': lrelease PLUGIN_NAME_LOCALE.ts (Ex.: _pt_BR)
 
 """
+import glob
 import os
+
 from qgis.PyQt.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication
 from qgis.core import QgsApplication, Qgis
-import glob
+
 
 def getTranslate(namePlugin, nameDir=None):
     if nameDir is None:

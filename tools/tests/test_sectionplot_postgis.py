@@ -20,18 +20,19 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
+
 import re
+from builtins import str
 
-from qgis.core import QgsProject, QgsVectorLayer
-
-import midvatten.tools.utils.db_utils as db_utils
-import gui_utils
 import mock
+
 from mock import call
 from nose.plugins.attrib import attr
-from midvatten_utils import returnunicode as ru, anything_to_string_representation
-import utils_for_tests
+from qgis.core import QgsProject, QgsVectorLayer
+
+from midvatten.tools.utils import db_utils, gui_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.utils.midvatten_utils import anything_to_string_representation
 
 
 @attr(status='on')

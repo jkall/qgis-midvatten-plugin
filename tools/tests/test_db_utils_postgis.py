@@ -20,13 +20,13 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
+
 from builtins import object
 
-import midvatten.tools.utils.db_utils as db_utils
-import mock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from midvatten.tools.utils import db_utils
+from midvatten.tools.tests import utils_for_tests
 
 
 @attr(status='on')

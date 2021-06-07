@@ -18,12 +18,15 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
+
 import datetime
 import re
+from builtins import str
+
 from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils.common_utils import returnunicode as ru, MessagebarAndLog
+
 
 def find_date_format(datestring, suppress_error_msg=False):
     """

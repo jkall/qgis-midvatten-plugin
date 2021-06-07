@@ -9,16 +9,17 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
+from __future__ import print_function
+
 from builtins import object
-from qgis.core import QgsProject
+from builtins import str
 
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import QgsProject
 
-from midvatten.tools.utils.common_utils import MessagebarAndLog
 from midvatten.definitions import midvatten_defs
+from midvatten.tools.utils.common_utils import MessagebarAndLog
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 

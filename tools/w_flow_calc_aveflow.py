@@ -19,21 +19,22 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
+
 import datetime
 import os
-import numpy as np
-from matplotlib.dates import datestr2num
+from builtins import str
 
+import numpy as np
 import qgis.PyQt
 import qgis.utils
-#from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
+from matplotlib.dates import datestr2num
+# from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication
 
+from midvatten.tools import import_data_to_db
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-from midvatten.tools import import_data_to_db
 
 try:
     import pandas as pd

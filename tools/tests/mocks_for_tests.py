@@ -19,13 +19,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
 from builtins import object
-import  qgis.core
-from qgis.PyQt import QtGui, QtWidgets
-from qgis.core import QgsProject
+from builtins import str
 
 import mock
+from qgis.PyQt import QtWidgets
+from qgis.core import QgsProject
+
 
 class MockUsingReturnValue(object):
     def __init__(self, v=None):

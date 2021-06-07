@@ -19,21 +19,15 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
-from qgis.PyQt import QtGui
 
 import mock
-import w_flow_calc_aveflow
+
 from nose.plugins.attrib import attr
 from qgis.PyQt import QtWidgets
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
-import date_utils
 
-import midvatten.tools.utils.common_utils as common_utils
-from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
-from tools.tests.mocks_for_tests import DummyInterface
-import utils_for_tests
+from midvatten.tools.utils import common_utils, date_utils, db_utils
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools import w_flow_calc_aveflow
 
 
 @attr(status='on')

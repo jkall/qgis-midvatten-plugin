@@ -21,18 +21,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os
 import csv
-import re
 import datetime
+import os
+import re
 from functools import partial
 
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication
 
+from midvatten.tools import import_diveroffice
 from midvatten.tools.utils import common_utils, date_utils, gui_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-from midvatten.tools import import_diveroffice
 
 
 class HobologgerImport(import_diveroffice.DiverofficeImport):
