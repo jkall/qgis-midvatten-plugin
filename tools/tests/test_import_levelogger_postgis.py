@@ -108,9 +108,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+                    @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -203,7 +203,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -291,7 +291,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -381,7 +381,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -468,7 +468,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
             @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -528,7 +528,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
             @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -627,7 +627,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -725,7 +725,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     filenames = [f1, f2, f3]
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -819,7 +819,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
 
 
                 @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                @mock.patch('import_data_to_db.utils.Askuser')
+                @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                 @mock.patch('qgis.utils.iface', autospec=True)
                 @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                 @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -914,7 +914,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
                     @mock.patch("midvatten_utils.MessagebarAndLog")
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1018,9 +1018,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+                    @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-                    @mock.patch('import_data_to_db.utils.Askuser')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1080,9 +1080,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
             @mock.patch('import_data_to_db.utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)

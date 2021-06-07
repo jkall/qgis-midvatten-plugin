@@ -66,7 +66,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -109,7 +109,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -166,7 +166,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -223,7 +223,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -279,7 +279,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -332,7 +332,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -379,7 +379,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -426,7 +426,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -472,7 +472,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         patterns = ['ABCDE']
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
@@ -528,7 +528,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         #print(str(patterns))
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
-            @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')

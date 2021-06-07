@@ -12,6 +12,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
+import traceback
 
 import matplotlib as mpl
 import numpy as np
@@ -1111,6 +1112,7 @@ def general_exception_handler(func):
                                           duration=30)
         except:
             stop_waiting_cursor()
+            #traceback.print_exc()
             raise
         else:
             return result

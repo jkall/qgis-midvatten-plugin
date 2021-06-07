@@ -46,9 +46,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test_staff_not_given(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
@@ -91,9 +91,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -170,9 +170,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -249,9 +249,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -329,9 +329,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -409,9 +409,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -493,9 +493,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -596,9 +596,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -701,9 +701,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -777,9 +777,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_askuser):
                 mock_charset.return_value = ('utf-8', True)
@@ -856,9 +856,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
@@ -932,9 +932,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1

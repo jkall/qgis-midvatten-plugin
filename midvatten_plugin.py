@@ -73,11 +73,6 @@ from midvatten.tools.wqualreport_compact import CompactWqualReportUi
 from midvatten.tools.xyplot import XYPlot
 
 
-# add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-# sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
-
-
 class Midvatten(object):
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
         matplotlib_replacements.perform_all_replacements()
@@ -379,7 +374,6 @@ class Midvatten(object):
         self.iface.unregisterMainWindowAction(self.actionPlotStratigraphy)
         self.iface.unregisterMainWindowAction(self.actiondrillreport)
         self.iface.unregisterMainWindowAction(self.actionwqualreport)
-        sys.path.remove(os.path.dirname(os.path.abspath(__file__))) #Clean up python environment
 
     def about(self):
         getTranslate('midvatten')

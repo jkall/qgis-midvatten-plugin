@@ -92,7 +92,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         #reference_list = ['1', '2']
         assert test == reference
 
-    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
@@ -132,7 +132,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print("Test:\n" + str(test))
         assert test == reference
 
-    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')

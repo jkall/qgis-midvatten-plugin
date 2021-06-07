@@ -15,7 +15,7 @@ class ATestClass():
 
 #Mock answers from import_data_to_db.utils.Askuser:
 #----------------------------
-@mock.patch('import_data_to_db.utils.Askuser')
+@mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
 def x(mock_askuser):
     def side_effect(*args, **kwargs):
         mock_result = mock.MagicMock()

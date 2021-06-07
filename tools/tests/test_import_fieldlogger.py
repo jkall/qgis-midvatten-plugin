@@ -134,9 +134,9 @@ class TestFieldLoggerImporterNoDb(object):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
                 mock_savefilename.return_value = [[filename]]
@@ -169,9 +169,9 @@ class TestFieldLoggerImporterNoDb(object):
             ]
 
         with common_utils.tempinput(''.join(f), charset='cp1252') as filename:
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
                 mock_savefilename.return_value = [[filename]]
@@ -206,9 +206,9 @@ class TestFieldLoggerImporterNoDb(object):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
                 mock_savefilename.return_value = [[filename]]
@@ -242,9 +242,9 @@ class TestFieldLoggerImporterNoDb(object):
 
         with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.ask_for_delimiter')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_delimiter_question):
                 mock_delimiter_question.return_value = (',', True)
                 mock_charset.return_value = ('utf-8', True)
@@ -364,7 +364,7 @@ class TestObsidFilter(object):
         assert test_string == reference_string
 
 @attr(status='on')
-@mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+@mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
 @mock.patch('import_fieldlogger.defs.w_qual_field_parameter_units')
 def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
     mock_w_qual_field_parameter_units.retun_value = {}

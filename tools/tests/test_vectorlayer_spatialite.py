@@ -64,7 +64,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
             print("4. QgsVectorLayer.getSelectedFeatures: " + str([x.id() for x in self.vlayer.getSelectedFeatures()]))
 
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.stratigraphy.common_utils.pop_up_info', autospec=True)
     def test_vlayer(self, mock_skippopup, mock_messagebar):
         """
 
@@ -89,7 +89,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.stratigraphy.common_utils.pop_up_info', autospec=True)
     def test_vlayer_other_ints_ids(self, mock_skippopup, mock_messagebar):
         """
 
@@ -114,7 +114,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.stratigraphy.common_utils.pop_up_info', autospec=True)
     def test_vlayer_strings(self, mock_skippopup, mock_messagebar):
         """
 
@@ -139,7 +139,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.stratigraphy.common_utils.pop_up_info', autospec=True)
     def test_vlayer_1000_features(self, mock_skippopup, mock_messagebar):
         """
 
@@ -176,7 +176,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.stratigraphy.common_utils.pop_up_info', autospec=True)
     def test_vlayer_2000_ints(self, mock_skippopup, mock_messagebar):
         """
 
@@ -212,7 +212,7 @@ class TestVectorlayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert tuple(sorted([x.id() for x in self.vlayer.getFeatures(feature_ids)])) == reference_ids
 
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.stratigraphy.common_utils.pop_up_info', autospec=True)
     def test_vlayer_2000_strings(self, mock_skippopup, mock_messagebar):
         """
 
