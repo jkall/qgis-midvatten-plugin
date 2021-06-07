@@ -521,6 +521,8 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
     elif str(type(anything)) in ("<class 'PyQt4.QtCore.QPyNullVariant'>", "<class 'PyQt5.QtCore.QPyNullVariant'>"):
         decoded = ''
+    elif str(type(anything)) in ("<class 'PyQt5.QtCore.QDateTime'>", ):
+        decoded = returnunicode(anything.toString())
     else:
         decoded = str(anything)
 
