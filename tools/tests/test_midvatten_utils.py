@@ -42,7 +42,7 @@ from midvatten.tools.utils.matplotlib_replacements import perform_all_replacemen
 @attr(status='on')
 class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = 'ok'
             mock_notfound.return_value.value = 10
@@ -58,7 +58,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = 'cancel'
             mock_notfound.return_value.value = 10
@@ -70,7 +70,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
                                      common_utils.filter_nonexisting_values_and_ask, file_data, 'obsid', existing_obsids)
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = 'skip'
             mock_notfound.return_value.value = 10
@@ -83,7 +83,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = 'skip'
             mock_notfound.return_value.value = 10
@@ -96,7 +96,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_header_not_found(self, mock_notfound, mock_iface):
         """If a asked for header column is not found, it's added to the end of the rows."""
         mock_notfound.return_value.answer = 'ok'
@@ -121,7 +121,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = 'ok'
             mock_notfound.return_value.value = 10
@@ -140,7 +140,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 4
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = 'skip'
             mock_notfound.return_value.value = 10
@@ -192,7 +192,7 @@ class TestSqlToParametersUnitsTuple(object):
 @attr(status='on')
 class TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
-    @mock.patch('midvatten_utils.get_locale_from_db')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.get_locale_from_db')
     def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
         mock_get_locale.return_value = 'a_lang'
         mock_default_locale.return_value = [None, 'an_enc']
@@ -208,7 +208,7 @@ class TestGetDelimiter(object):
                  'rb1']
 
         with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.ask_for_delimiter')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (';', True)
@@ -221,7 +221,7 @@ class TestGetDelimiter(object):
                  'rb1;1,2']
 
         with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.ask_for_delimiter')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (',', True)
@@ -234,7 +234,7 @@ class TestGetDelimiter(object):
                  'rb1;1;2']
 
         with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.ask_for_delimiter')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (';', True)
@@ -247,7 +247,7 @@ class TestGetDelimiter(object):
                  'rb1,1,2']
 
         with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.ask_for_delimiter')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (',', True)
@@ -367,8 +367,8 @@ class TestContinuousColorCycle(object):
                        (('color', 'r'), ('linestyle', '-')),
                        (('color', 'b'), ('linestyle', '-'), ('marker', 'o')),
                        (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.np.random.rand')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.np.random.rand')
     def test_continous_color_cycle_ran_out(self, mock_np_random_rand, mock_messagebar):
         """Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler"""
         color_cycler = (cycler('color', ['r', 'g']))

@@ -195,7 +195,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+                    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -270,7 +270,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+                    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -482,7 +482,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('midvatten_utils.get_selected_features_as_tuple')
+                    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple')
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -554,7 +554,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('midvatten_utils.get_selected_features_as_tuple')
+                    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple')
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -1027,7 +1027,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.MessagebarAndLog')
+                    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')

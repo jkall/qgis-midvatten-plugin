@@ -33,7 +33,7 @@ from qgis.core import Qgis
 
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename
-from midvatten.tools.utils.midvatten_utils import execute_sqlfile
+from midvatten.tools.utils.db_utils import execute_sqlfile
 
 
 class NewDb(object):
@@ -228,7 +228,7 @@ class NewDb(object):
                         pass
                     raise
                 else:
-                    _sql = common_utils.lstrip()
+                    _sql = sql.lstrip('\r').lstrip('\n').lstrip()
                     if _sql.startswith('CREATE TABLE'):
                         tablename = ' '.join(_sql.split()).split()[2]
                         created_tables_sqls[tablename] = sql
@@ -324,7 +324,7 @@ class NewDb(object):
             except IndexError:
                 table_descr = None
             else:
-                table_descr = common_utils.rstrip('\r').replace("'", "''")
+                table_descr = table_descr.rstrip('\r').replace("'", "''")
 
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
@@ -352,7 +352,7 @@ class NewDb(object):
                     _foreign_keys = '%s(%s)'%(foreign_keys_dict[colname])
                 column_descr = columns_descr.get(colname, None)
                 if column_descr:
-                    column_descr = common_utils.rstrip('\r').replace("'", "''")
+                    column_descr = column_descr.rstrip('\r').replace("'", "''")
                 sql = 'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
                 sql += '({});'.format(', '.join(["""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
                 try:

@@ -39,7 +39,7 @@ class TestParseHobologgerFile(object):
     def setUp(self):
         pass
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_parse_hobologger_file_utf8(self, mock_messagelog):
 
         f = ('﻿"Plot Title: temp"',
@@ -65,7 +65,7 @@ class TestParseHobologgerFile(object):
         assert os.path.basename(path) == file_data[1]
         assert file_data[2] == 'Rb1'
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_parse_hobologger_file_convert_tz(self, mock_messagelog):
 
         f = ('﻿"Plot Title: temp"',
@@ -113,7 +113,7 @@ class TestParseHobologgerFile(object):
         assert os.path.basename(path) == file_data[1]
         assert file_data[2] == 'Rb1'
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_parse_hobologger_file_other_dateformat(self, mock_messagelog):
 
         f = ('﻿"Plot Title: temp"',

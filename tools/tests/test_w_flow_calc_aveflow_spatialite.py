@@ -34,7 +34,7 @@ from midvatten.tools import w_flow_calc_aveflow
 class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calcall(self, mock_messagebar):
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('1')''')
@@ -62,8 +62,8 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test == reference
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calselected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         mock_getselectedobjectnames.return_value = ['1']
 
@@ -94,8 +94,8 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calselected_pandas_one_selected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         """
         Pandas removes the
@@ -134,8 +134,8 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calselected_pandas_two_selected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         mock_getselectedobjectnames.return_value = ['1', '2']
 

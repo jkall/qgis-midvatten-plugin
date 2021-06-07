@@ -299,7 +299,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
     def test_interlab4_to_table_duplicate_kalium(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -329,7 +329,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         print(result_string)
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
     def test_interlab4_to_table_duplicate_kalium_between_1_and_2_5(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -359,7 +359,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         print(result_string)
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
     def test_interlab4_to_table_duplicate_kalium_largest_value_most_high_resolution(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -389,7 +389,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         print(result_string)
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
     def test_interlab4_to_table_duplicate_kalium_2(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -419,7 +419,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         print(result_string)
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
     def test_interlab4_to_table_kalium_using_resolution_same_resolution_use_smallest_value(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -501,7 +501,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         reference_string = '[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
     def test_interlab4_to_table_duplicate_parameters_mg_l_pt(self, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -535,8 +535,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         print(str(result_string))
         assert result_string == reference_string
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_interlab4_to_table_duplicate_parameters_mg_l_en(self, mock_messagebar, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -571,8 +571,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('2.5', 'mg/l') and ('1.5', 'µg/l').") in mock_messagebar.mock_calls
         assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('35000', 'ng/l') was saved as primary parameter out of ('1.5', 'µg/l') and ('35000', 'ng/l').")  in mock_messagebar.mock_calls
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_interlab4_to_table_duplicate_parameters_mg_l_sv(self, mock_messagebar, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -609,8 +609,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('2.5', 'mg/l') and ('1.5', 'µg/l').") in mock_messagebar.mock_calls
         assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('35000', 'ng/l') was saved as primary parameter out of ('1.5', 'µg/l') and ('35000', 'ng/l').")  in mock_messagebar.mock_calls
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_interlab4_to_table_duplicate_parameters_mg_l_sv_with_color(self, mock_messagebar, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',
@@ -648,8 +648,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('1.5', 'µg/l') was saved as primary parameter out of ('2.5', 'mg/l') and ('1.5', 'µg/l').") in mock_messagebar.mock_calls
         assert call.warning(log_msg="Duplicate parameter 'Iron' found! Value and unit ('35000', 'ng/l') was saved as primary parameter out of ('1.5', 'µg/l') and ('35000', 'ng/l').")  in mock_messagebar.mock_calls
 
-    @mock.patch('midvatten_utils.getcurrentlocale')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.getcurrentlocale')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_interlab4_to_table_duplicate_parameters_mg_l_sv_no_float(self, mock_messagebar, mock_getcurrentlocale):
         interlab4_lines = (
             '#Interlab',

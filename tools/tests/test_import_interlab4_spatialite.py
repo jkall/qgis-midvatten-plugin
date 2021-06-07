@@ -62,7 +62,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 )
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -107,7 +107,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 )
 
         with common_utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -166,7 +166,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 )
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -223,7 +223,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 )
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -279,7 +279,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 )
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -332,7 +332,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         patterns = ['DM-990908-2773']
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -379,7 +379,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         patterns = ['DM-990908-1000']
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -426,7 +426,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         patterns = ['DM-990908-2773', 'DM-990908-1000']
 
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -472,7 +472,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         patterns = ['ABCDE']
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -496,7 +496,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not lablitteras
 
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_interlab4_filter_many_filters(self, mock_messagebar):
 
         admheader = 'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;'
@@ -528,7 +528,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         patterns = uuids[:1000]
         #print(str(patterns))
         with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion')
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)

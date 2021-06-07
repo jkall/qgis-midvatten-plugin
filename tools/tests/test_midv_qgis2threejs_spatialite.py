@@ -38,7 +38,7 @@ from midvatten.tools.tests import utils_for_tests
 class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ This test has conflicts with sectionplot, so its off!
     """
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_prepare_qgis2threejs(self, mock_iface, mock_messagebar):
         dbconnection = db_utils.DbConnectionManager()

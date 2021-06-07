@@ -267,7 +267,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             location = None
             for rawrow in f:
                 rawrow = ru(rawrow)
-                row = common_utils.lstrip()
+                row = rawrow.rstrip('\n').rstrip('\r').lstrip()
 
                 #Try to get location
                 if row.startswith('Location'):

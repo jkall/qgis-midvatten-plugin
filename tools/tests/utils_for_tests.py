@@ -42,7 +42,7 @@ from midvatten.midvatten_plugin import Midvatten
 from midvatten.tools.utils import common_utils
 from midvatten.tools.utils import db_utils
 from midvatten.tools.import_data_to_db import midv_data_importer
-from mocks_for_tests import DummyInterface2
+from midvatten.tools.tests.mocks_for_tests import DummyInterface2
 
 
 class test_qapplication_is_running(object):
@@ -169,9 +169,9 @@ class MidvattenTestSpatialiteNotCreated(MidvattenTestBase):
 
 
 class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale):
         super().setUp()
@@ -184,9 +184,9 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
 
 
 class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale):
         super().setUp()
@@ -208,7 +208,7 @@ class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
 
 
 class MidvattenTestPostgisNotCreated(MidvattenTestBase):
-    ALL_POSTGIS_SETTINGS = {'nosetests': {'estimatedMetadata': 'false', 'username': 'henrik3', 'publicOnly': 'false', 'service': '', 'database': 'nosetests', 'dontResolveType': 'false', 'saveUsername': 'true', 'sslmode': '1', 'host': '127.0.0.1', 'authcfg': '', 'geometryColumnsOnly': 'false', 'allowGeometrylessTables': 'false', 'password': '0000', 'savePassword': 'false', 'port': '5432'}}
+    ALL_POSTGIS_SETTINGS = {'nosetests': {'estimatedMetadata': 'false', 'publicOnly': 'false', 'service': '', 'database': 'nosetests', 'dontResolveType': 'false', 'saveUsername': 'true', 'sslmode': '1', 'host': '127.0.0.1', 'authcfg': '', 'geometryColumnsOnly': 'false', 'allowGeometrylessTables': 'false', 'savePassword': 'false', 'port': '5432'}}
     TEMP_DB_SETTINGS = {'postgis': {'connection': 'nosetests/127.0.0.1:5432/nosetests'}}
 
     def __init__(self):
@@ -226,7 +226,7 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
             db_utils.sql_alter_db('CREATE SCHEMA public;')
         except Exception as e:
             print("Failure resetting db: " + str(e))
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def tearDown(self, mock_messagebar):
         #Clear the database
         try:
@@ -239,9 +239,9 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
 
 
 class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def setUp(self, mock_crs_question, mock_answer_yes, mock_locale):
         super().setUp()
         mock_locale.return_value.answer = 'ok'
@@ -252,9 +252,9 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
 
 
 class MidvattenTestPostgisDbEn(MidvattenTestPostgisNotCreated):
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def setUp(self, mock_crs_question, mock_answer_yes, mock_locale):
         super().setUp()
         mock_locale.return_value.answer = 'ok'

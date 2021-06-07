@@ -50,7 +50,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv']]
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_export_csv(self, mock_iface, mock_savepath):
@@ -117,7 +117,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(reference_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_export_csv_no_selection(self, mock_iface, mock_savepath):
@@ -186,14 +186,14 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(reference_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QInputDialog.getText')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
@@ -276,14 +276,14 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(str(test_string))
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
-    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QInputDialog.getText')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite_no_selected(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
@@ -365,14 +365,14 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(str(mock_messagebar.mock_calls))
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple')
-    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QInputDialog.getText')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite_with_umlauts(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_selection, mock_locale, mock_createdb_crs_question, mock_messagebar):
@@ -422,14 +422,14 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(test_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QInputDialog.getText')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite_transform_coordinates(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
@@ -539,14 +539,14 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print("Ref\n" + reference_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QInputDialog.getText')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite_zz_tables(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):

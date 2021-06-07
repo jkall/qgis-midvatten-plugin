@@ -212,19 +212,19 @@ def parse_timezone_to_timedelta(tz_string):
     :return:
 
     >>> parse_timezone_to_timedelta('GMT+02:00')
-    datetime.timedelta(0, 7200)
+    datetime.timedelta(seconds=7200)
     >>> parse_timezone_to_timedelta('GMT')
     datetime.timedelta(0)
     >>> parse_timezone_to_timedelta('GMT00:00')
     datetime.timedelta(0)
     >>> parse_timezone_to_timedelta('GMT-11:00')
-    datetime.timedelta(-1, 46800)
+    datetime.timedelta(days=-1, seconds=46800)
     >>> parse_timezone_to_timedelta('GMT+14:00')
-    datetime.timedelta(0, 50400)
+    datetime.timedelta(seconds=50400)
     >>> parse_timezone_to_timedelta('GMT+2')
-    datetime.timedelta(0, 7200)
+    datetime.timedelta(seconds=7200)
     >>> parse_timezone_to_timedelta('GMT+02:35')
-    datetime.timedelta(0, 9300)
+    datetime.timedelta(seconds=9300)
 
     """
     tz_string = ru(tz_string)

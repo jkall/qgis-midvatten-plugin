@@ -41,7 +41,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_general_import_wlvllogg(self, mock_messagebar):
         file = [('obsid','date_time','head_cm'),
@@ -58,7 +58,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         print(test_string)
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_general_import_wlvllogg_missing_not_null_column(self, mock_iface, mock_messagebar):
@@ -169,7 +169,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_general_import_import_null(self, mock_messagebar):
         file = [('obsid','date_time','head_cm'),
@@ -230,7 +230,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvImp
 
     
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_import_obs_points_duplicates(self, mock_messagebar):
         f = [['obsid', 'name', 'place', 'type', 'length', 'drillstop', 'diam', 'material', 'screen', 'capacity', 'drilldate', 'wmeas_yn', 'wlogg_yn', 'east', 'north', 'ne_accur', 'ne_source', 'h_toc', 'h_tocags', 'h_gs', 'h_accur', 'h_syst', 'h_source', 'source', 'com_onerow', 'com_html'],
          ['rb1', 'rb1', 'a', 'pipe', '1', '1', '1', '1', '1', '1', '1', '1', '1', '421484', '6542696', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
@@ -422,7 +422,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
     
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_w_qual_field_no_parameter(self, mock_messagebar):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
         f = [['obsid', 'staff', 'date_time', 'instrument',
@@ -443,7 +443,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
     
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_w_qual_field_parameter_empty_string(self, mock_messagebar):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
         f = [['obsid', 'staff', 'date_time', 'instrument', 'parameter', 'reading_num', 'reading_txt', 'unit', 'depth', 'comment'],
@@ -465,7 +465,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
     
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_w_qual_field_staff_null(self, mock_messagebar):
         self.importinstance.charsetchoosen = ['utf-8']
 
@@ -723,7 +723,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         reference_string = '''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_vlf_import_from_csvlayer_no_obs_line(self, mock_messagebar):
         f = [['obsid', 'length', 'real_comp', 'imag_comp', 'comment'],
@@ -744,7 +744,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
 class TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_obs_lines_import_from_csvlayer(self, mock_messagebar):
         f = [['obsid', 'name', 'place', 'type', 'source'],
              ['obsid1', 'aname', 'aplace', 'atype', 'asource']]

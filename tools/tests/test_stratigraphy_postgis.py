@@ -57,7 +57,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         print("6. QgsVectorLayer.getFeature() type: " + str([str(type(self.vlayer.getFeature(x))) for x in feature_ids]))
         print("7. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_stratigraphy(self, mock_skippopup, mock_messagebar):
         """
@@ -93,7 +93,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         print("test_strata: " + test_strata)
         assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_stratigraphy_with_other_obsid_numbers(self, mock_skippopup, mock_messagebar):
         """
@@ -125,7 +125,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         print("Test strata " + test_strata)
         assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_stratigraphy_with_string_obsid(self, mock_skippopup, mock_messagebar):
         """
@@ -160,7 +160,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_survey == '''"SURVEY('P1', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''
         assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '3', 'morän', 'moran', 1.000000-4.500000)"]'''
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_stratigraphy_gap(self, mock_skippopup, mock_messagebar):
         """
@@ -194,7 +194,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_survey == '''"SURVEY('1', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''
         assert test_strata == '''["strata(1, '3', 'sand', 'sand', 0.000000-1.000000)", "strata(2, '', '', '', 1.000000-2.000000)", "strata(3, '3', 'morän', 'moran', 2.000000-4.500000)"]'''
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     def test_stratigraphy_missing_h_gs(self, mock_skippopup, mock_messagebar):
         """

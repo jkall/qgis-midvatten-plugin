@@ -8,7 +8,7 @@ Mocking QgsProjectInstance:
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): ['sv_SE']}[(x, y)]
 
 class ATestClass():
-    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.QgsProject.instance')
     def atest(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 

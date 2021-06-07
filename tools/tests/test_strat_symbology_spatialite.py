@@ -14,7 +14,7 @@ from midvatten.tools.tests import utils_for_tests
 @attr(status='on')
 class TestStratSymbology(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_strat_symbology(self, mock_messagebar):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('1', 5, ST_GeomFromText('POINT(1 2)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('1', 1, 0, 1, 'sand', 'sand', '3', 'j')''')

@@ -36,9 +36,9 @@ from midvatten.tools import calculate_statistics
 @attr(status='on')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestPostgisDbSv):
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.get_selected_features_as_tuple', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.get_selected_features_as_tuple', autospec=True)
     def test_calculate_statistics(self, mock_selected_features, mock_iface, mock_messagebar):
         dbconnection = db_utils.DbConnectionManager()
         db_utils.sql_alter_db("""INSERT INTO obs_points(obsid) VALUES('1')""")

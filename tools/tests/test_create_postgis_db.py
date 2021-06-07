@@ -28,7 +28,7 @@ from builtins import str
 import mock
 from nose.plugins.attrib import attr
 
-from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import common_utils, midvatten_utils
 from midvatten.tools.utils import db_utils
 from midvatten.tools.tests import utils_for_tests
 from midvatten.definitions import midvatten_defs as defs
@@ -36,11 +36,11 @@ from midvatten.definitions import midvatten_defs as defs
 
 @attr(status='on')
 class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def test_create_db_locale_sv(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mocked_messagebar):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
@@ -58,9 +58,9 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert len(mocked_messagebar.mock_calls) == 0
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def test_create_db_locale_en(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'en_US'
@@ -76,9 +76,9 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert current_locale == 'en_US'
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def test_create_db_setup_string(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         """
         This test fails every time anything other than comments are changed in create_db
@@ -98,9 +98,9 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def test_about_db_creation(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         """
         Check that about_db is written correctly
@@ -129,9 +129,9 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert test_string == reference
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def test_about_db_creation_version_string(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         """
         Check that version string in about_db is written correctly
@@ -157,7 +157,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
 @attr(status='on')
 class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def setUp(self, mock_messagebar):
         super(TestObsPointsTriggers, self).setUp()
         db_utils.sql_alter_db("""DROP TRIGGER IF EXISTS trigger_after_insert_obs_points_geom_fr_coords ON obs_points;""")
@@ -171,7 +171,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         mock_calls = str(mock_messagebar.mock_calls)
         if mock_calls != '[]':
             print(mock_calls)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_add_triggers_not_change_existing(self, mock_messagebar):
         """ Adding triggers should not automatically change the db """
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
@@ -461,7 +461,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
 @attr(status='on')
 class TestSqls(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_import_null_as_double(self, mock_messagebar):
         """ Adding triggers should not automatically change the db """
         sql = '''INSERT INTO obs_points (obsid, length) VALUES ('rb1', CASE WHEN NULL IS NULL THEN %s END)'''%db_utils.cast_null('double precision')

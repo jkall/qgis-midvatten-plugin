@@ -358,7 +358,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
     @staticmethod
     def remove_preceding_trailing_spaces_tabs(file_data):
-        file_data = [[common_utils.rstrip() if all([rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        file_data = [[col.lstrip().rstrip() if all([rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
         return file_data
 
 

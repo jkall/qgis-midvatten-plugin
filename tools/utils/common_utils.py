@@ -399,7 +399,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     >>> returnunicode(['a', 'b'])
     "['a', 'b']"
     >>> returnunicode(['ä', 'ö'])
-    "['\\xe4', '\\xf6']"
+    "['ä', 'ö']"
     >>> returnunicode(float(1))
     '1.0'
     >>> returnunicode(None)
@@ -569,42 +569,6 @@ def tempinput(data, charset='UTF-8'):
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
 
 
-def find_nearest_date_from_event(event):
-    """ Returns the nearest date from a picked list event artist from mouse click
-
-        The x-axis of the artist is assumed to be a date as float or int.
-        The found date float is then converted into datetime and returned.
-
-        // This way of getting the date is now replaced with the MUCH simpler event.artist.get_xdata()[event.ind[0]]
-    """
-    line_nodes = np.array(list(zip(event.artist.get_xdata(), event.artist.get_ydata())))
-    xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
-    nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)
-    nearest_date = num2date(nearest_xy[0])
-    return nearest_date
-
-
-def find_nearest_using_pythagoras(xy_point, xy_array):
-    """ Finds the point in xy_array that is nearest xy_point
-
-        xy_point: tuple with two floats representing x and y
-        xy_array: list of tuples with floats representing x and y points
-
-        The search is using pythagoras theorem.
-        If the search becomes very slow when the xy_array gets long,
-        it could probably we rewritten using numpy methods.
-
-        >>> find_nearest_using_pythagoras((1, 2), ((4, 5), (3, 5), (-1, 1)))
-        (-1, 1)
-        >>> find_nearest_using_pythagoras((1, None), (1, 2), ((4, 5), (3, 5), (-1, 1)))
-        (-1, 1)
-    """
-    xy_array = xy_array[~np.isnan(xy_array).any(axis=1)]
-    distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in range(len(xy_array))]
-    min_index = distances.index(min(distances))
-    return xy_array[min_index]
-
-
 def ts_gen(ts):
     """ A generator that supplies one tuple from a list of tuples at a time
 
@@ -614,7 +578,7 @@ def ts_gen(ts):
         a = ts_gen(ts)
         b = next(a)
 
-        >>> for x in ts_gen(((1, 2), ('a', 'b'))): print x
+        >>> for x in ts_gen(((1, 2), ('a', 'b'))): print(x)
         (1, 2)
         ('a', 'b')
     """
@@ -946,7 +910,7 @@ def anything_to_string_representation(anything, itemjoiner=', ', pad='', dictfor
      >>> anything_to_string_representation({('123'): 4.5, "a": '7'})
      '{"123": 4.5, "a": "7"}'
      >>> anything_to_string_representation({('123', ): 4.5, "a": '7'})
-     '{"a": "7", ("123", ): 4.5}'
+     '{("123", ): 4.5, "a": "7"}'
      >>> anything_to_string_representation(['1', '2', 3])
      '["1", "2", 3]'
      >>> anything_to_string_representation({'123': 4.5, "a": '7'}, ',\n', '    ')
@@ -961,7 +925,7 @@ def anything_to_string_representation(anything, itemjoiner=', ', pad='', dictfor
                                                                     anything_to_string_representation(v, itemjoiner,  pad + pad,
                                                                                                       dictformatter,
                                                                                                       listformatter,
-                                                                                                      tupleformatter)]) for k, v in sorted(anything.items())])
+                                                                                                      tupleformatter)]) for k, v in sorted(anything.items(), key=lambda k_v: str(k_v[0]))])
     elif isinstance(anything, list):
         aunicode = listformatter%itemjoiner.join([pad + anything_to_string_representation(x, itemjoiner, pad + pad,
                                                                                           dictformatter,

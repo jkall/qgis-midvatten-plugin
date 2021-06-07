@@ -54,7 +54,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         self.template_folder = os.path.join(os.path.split(os.path.split(os.path.dirname(__file__))[0])[0], 'definitions', 'secplot_templates')
 
         self.sectionplot = mock.MagicMock()
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.common_utils.MessagebarAndLog')
     def test_load_from_msettings(self, mock_messagebar):
         test_str = '''{"test": 1}'''
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = test_str
@@ -64,7 +64,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                                                self.save_as_button, self.import_button, self.remove_button,
                                                self.template_folder, 'secplot_templates', 'secplot_loaded_template',
                                                defs.secplot_default_template(), self.midvatten.ms)
-
+        print(str(mock_messagebar.mock_calls))
         assert call.info(log_msg='Loaded template from midvatten settings secplot_loaded_template.') in mock_messagebar.mock_calls
         assert common_utils.anything_to_string_representation(secplottemplates.loaded_template) == test_str
 
@@ -76,7 +76,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with common_utils.tempinput(default_file, 'utf-8') as f1:
 
-            @mock.patch('midvatten_utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
             def _test(self, filename, mock_join, mock_messagebar):
                 mock_join.return_value = filename
@@ -102,8 +102,8 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with common_utils.tempinput(afile, 'utf-8') as f1:
 
-            @mock.patch('midvatten_utils.select_files')
-            @mock.patch('midvatten_utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.select_files')
+            @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
             def _test(self, filename, mock_join, mock_messagebar, mock_select_files):
                 mock_join.return_value = ''
@@ -138,7 +138,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with common_utils.tempinput(default_file, 'utf-8') as f1:
 
-            @mock.patch('midvatten_utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
             def _test(self, filename, mock_join, mock_messagebar):
                 mock_join.return_value = filename
@@ -169,8 +169,8 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         with common_utils.tempinput('', 'utf-8') as save_file:
             with common_utils.tempinput(afile, 'utf-8') as f1:
                 @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-                @mock.patch('midvatten_utils.select_files')
-                @mock.patch('midvatten_utils.MessagebarAndLog')
+                @mock.patch('midvatten.tools.utils.midvatten_utils.select_files')
+                @mock.patch('midvatten.tools.utils.midvatten_utils.common_utils.MessagebarAndLog')
                 @mock.patch('os.path.join')
                 def _test(self, filename, save_file, mock_join, mock_messagebar, mock_select_files, mock_save_filename):
                     mock_join.return_value = ''
@@ -201,7 +201,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
     @mock.patch('sectionplot.defs.secplot_default_template')
     @mock.patch('os.path.join')
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.common_utils.MessagebarAndLog')
     def test_load_hard_coded_settings(self, mock_messagebar, mock_join, mock_hardcoded_template):
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
         self.midvatten.ms.settingsdict['secplot_templates'] = ''

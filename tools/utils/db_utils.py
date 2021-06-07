@@ -449,7 +449,7 @@ def sql_alter_db(sql, dbconnection=None, all_args=None):
             bar_msg=ru(QCoreApplication.translate('sql_alter_db', 'Some sql failure, see log for additional info.')),
             log_msg=textstring, duration=4)
 
-def execute_sqlfile(sqlfilename, function=sql_alter_db):
+def execute_sqlfile_using_func(sqlfilename, function=sql_alter_db):
     with open(sqlfilename, 'r') as f:
         f.readline()  # first line is encoding info....
         for line in f:
@@ -458,6 +458,23 @@ def execute_sqlfile(sqlfilename, function=sql_alter_db):
             if line.startswith("#"):
                 continue
             function(line)
+
+def execute_sqlfile(sqlfilename, dbconnection, merge_newlines=False):
+    with open(sqlfilename, 'r') as f:
+        lines = [line.rstrip('\n') for rownr, line in enumerate(f) if rownr > 0]
+    lines = [line for line in lines if all([line.strip(), not line.strip().startswith("#")])]
+
+    if merge_newlines:
+        lines = ['{};'.format(line) for line in ' '.join(lines).split(';') if line.strip()]
+
+    for line in lines:
+        if line:
+            try:
+                dbconnection.execute(line)
+            except Exception as e:
+                MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=ru(QCoreApplication.translate('NewDb', 'sql failed:\n%s\nerror msg:\n%s\n')) % (
+                ru(line), str(e)))
+
 
 
 def tables_columns(table=None, dbconnection=None):

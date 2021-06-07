@@ -123,7 +123,7 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
             dt = first_data_row[date_colnr]
             date_format = date_utils.find_date_format(dt, suppress_error_msg=True)
             if date_format is None:
-                dt = common_utils.rstrip()
+                dt = first_data_row[date_colnr][:-2].rstrip()
                 date_format = date_utils.find_date_format(dt)
                 if date_format is None:
                     common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
@@ -146,7 +146,7 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
 
 def fix_date(date_time, filename, tz_converter=None):
     try:
-        dt = datetime.datetime.strptime(common_utils.rstrip(), '%m/%d/%y %I:%M:%S')
+        dt = datetime.datetime.strptime(date_time[:-2].rstrip(), '%m/%d/%y %I:%M:%S')
     except ValueError:
         dt = date_utils.datestring_to_date(date_time)
         if dt is None:

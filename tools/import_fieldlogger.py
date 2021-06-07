@@ -195,7 +195,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         observations = []
         for rownr, rawrow in enumerate(f):
             observation = {}
-            row = common_utils.rstrip('\n')
+            row = rawrow.rstrip('\n')
             if not row:
                 continue
             cols = row.split(delimiter)

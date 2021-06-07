@@ -36,7 +36,7 @@ from midvatten.tools.tests import utils_for_tests
 class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_last_calibration(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 50, 100)")
@@ -48,7 +48,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = '[(2017-02-01 00:00, 99.5)]'
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_set_log_pos(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -67,7 +67,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = '(True, [(rb1, 2017-02-01 00:00, 100.0, None, None, 3.0, None)])'
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_add_to_level_masl(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -86,8 +86,8 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         print(test)
         assert test == ref
 
-    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.wlevels_calc_calibr.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_calc_best_fit_add_out_of_radius(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -107,8 +107,8 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         print(test)
         assert test == ref
 
-    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.wlevels_calc_calibr.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_calc_best_fit_add(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -129,8 +129,8 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         print(test)
         assert test == ref
 
-    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.wlevels_calc_calibr.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_calc_best_fit_add_matches_same_from_date(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -152,8 +152,8 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         print(ref)
         assert test == ref
 
-    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.wlevels_calc_calibr.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_calc_best_fit_add_matches_same_to_date(self, mock_messagebar, skip_popup):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -175,7 +175,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         print(test)
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_adjust_trend(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
@@ -212,7 +212,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         print(test)
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_set_last_calibration(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 50, 100)")
@@ -228,7 +228,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_set_last_calibration_zero(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100, 1)")
@@ -243,7 +243,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = 'Last pos. for logger in rb1 was 0.000 masl at 2017-02-01 00:00'
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calibrlogger_calibrinfolast_calibration(self, mock_messagebar):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb2')")

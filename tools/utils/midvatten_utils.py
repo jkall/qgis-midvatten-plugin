@@ -209,7 +209,7 @@ def add_triggers_to_obs_points(filename):
     END;
     :return:
     """
-    db_utils.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "../..", "definitions", filename),
+    db_utils.execute_sqlfile_using_func(os.path.join(os.sep, os.path.dirname(__file__), "../..", "definitions", filename),
                              db_utils.sql_alter_db)
 
 
@@ -388,23 +388,6 @@ def warn_about_old_database():
         MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.''')), duration=60)
 
 
-def execute_sqlfile(sqlfilename, dbconnection, merge_newlines=False):
-    with open(sqlfilename, 'r') as f:
-        lines = [rstrip('\n') for rownr, line in enumerate(f) if rownr > 0]
-    lines = [line for line in lines if all([line.strip(), not line.strip().startswith("#")])]
-
-    if merge_newlines:
-        lines = ['{};'.format(line) for line in ''.join(lines).split(';') if line.strip()]
-
-    for line in lines:
-        if line:
-            try:
-                dbconnection.execute(line)
-            except Exception as e:
-                MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=ru(QCoreApplication.translate('NewDb', 'sql failed:\n%s\nerror msg:\n%s\n')) % (
-                ru(line), str(e)))
-
-
 def add_view_obs_points_obs_lines():
     dbconnection = db_utils.DbConnectionManager()
     if dbconnection.dbtype != 'spatialite':
@@ -416,7 +399,7 @@ def add_view_obs_points_obs_lines():
         dbconnection.execute('''DROP VIEW IF EXISTS view_obs_points;''')
         dbconnection.execute('''DROP VIEW IF EXISTS view_obs_lines;''')
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name IN ('view_obs_points', 'view_obs_lines');''')
-        execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
+        db_utils.execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
         dbconnection.commit_and_closedb()
         MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten",
                                                                            'Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").'))

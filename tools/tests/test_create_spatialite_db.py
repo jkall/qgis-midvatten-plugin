@@ -28,7 +28,7 @@ from builtins import str
 import mock
 from nose.plugins.attrib import attr
 
-from midvatten.tools.utils import common_utils
+from midvatten.tools.utils import common_utils, midvatten_utils
 from midvatten.tools.utils import db_utils
 from midvatten.tools.tests import utils_for_tests
 from midvatten.definitions import midvatten_defs as defs
@@ -37,10 +37,10 @@ from midvatten.definitions import midvatten_defs as defs
 @attr(status='on')
 class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def test_memory_db(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
@@ -52,12 +52,12 @@ class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
 @attr(status='on')
 class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def test_create_db_locale_sv(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mock_messagebar):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
@@ -75,10 +75,10 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert current_locale == 'sv_SE'
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def test_create_db_locale_en(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'en_US'
@@ -95,10 +95,10 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert current_locale == 'en_US'
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def test_create_db_setup_string(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
 
         """
@@ -128,10 +128,10 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert test_string == reference_string_with_view_obs_points_obs_lines
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def test_about_db_creation(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         """
         Check that about_db is written correctly
@@ -160,12 +160,12 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         #print(test_string)
         assert test_string == reference
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    @mock.patch('create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
+    @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     def test_about_db_creation_version_string(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mock_messagebar):
         """
         Check that version string in about_db is written correctly
@@ -489,7 +489,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
 @attr(status='on')
 class TestSqls(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_import_null_as_double(self, mock_messagebar):
         """ Adding triggers should not automatically change the db """
         sql = '''INSERT INTO obs_points (obsid, length) VALUES ('rb1', CASE WHEN NULL IS NULL THEN %s END)'''%db_utils.cast_null('double precision')

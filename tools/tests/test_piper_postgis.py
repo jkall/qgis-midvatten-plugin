@@ -75,8 +75,8 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = '''["parameter = 'cl'", "parameter = 'hco3'", "parameter = 'so4'", "parameter = 'na'", "parameter = 'k'", "parameter = 'ca'", "parameter = 'mg'"]'''
         assert test == ref
 
-    @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.getselectedobjectnames')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames')
     @mock.patch('matplotlib.pyplot.Figure.show')
     def test_piper_plot_get_data(self, mock_showplot, mock_selected, mock_messagebar):
 
