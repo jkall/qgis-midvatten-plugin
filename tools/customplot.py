@@ -52,8 +52,7 @@ from qgis.PyQt.QtWidgets import QApplication
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.definitions import midvatten_defs as defs
-
-from tools.utils.gui_utils import set_groupbox_children_visibility
+from midvatten.tools.utils.gui_utils import set_groupbox_children_visibility
 
 try:
     import pandas as pd

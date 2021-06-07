@@ -32,7 +32,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename
-from tools.utils.midvatten_utils import execute_sqlfile
+from midvatten.tools.utils.midvatten_utils import execute_sqlfile
 
 
 class NewDb(object):

@@ -46,7 +46,7 @@ from midvatten.tools.utils.common_utils import returnunicode as ru
 
 # Import Midvatten tools and modules
 import midvatten.midvsettingsdialog as midvsettingsdialog
-import midvatten.tools.matplotlib_replacements as matplotlib_replacements
+from midvatten.tools.utils import matplotlib_replacements
 
 from midvatten.tools.customplot import plotsqlitewindow
 from midvatten.tools.tsplot import TimeSeriesPlot

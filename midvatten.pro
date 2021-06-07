@@ -1,18 +1,15 @@
 SOURCES = \
 ./definitions/midvatten_defs.py \
-./midvatten.py \
+./midvatten_plugin.py \
 ./midvsettingsdialog.py \
 ./tools/calculate_statistics.py \
 ./tools/column_values_from_selected_features.py \
 ./tools/create_db.py \
 ./tools/custom_drillreport.py \
 ./tools/customplot.py \
-./tools/date_utils.py \
-./tools/db_utils.py \
 ./tools/drillreport.py \
 ./tools/export_data.py \
 ./tools/export_fieldlogger.py \
-./tools/gui_utils.py \
 ./tools/import_data_to_db.py \
 ./tools/import_diveroffice.py \
 ./tools/import_fieldlogger.py \
@@ -22,7 +19,6 @@ SOURCES = \
 ./tools/import_levelogger.py \
 ./tools/loaddefaultlayers.py \
 ./tools/matplotlib_replacements.py \
-./tools/midvatten_utils.py \
 ./tools/midvsettings.py \
 ./tools/piper.py \
 ./tools/prepareforqgis2threejs.py \
@@ -31,12 +27,16 @@ SOURCES = \
 ./tools/stratigraphy.py \
 ./tools/strat_symbology.py \
 ./tools/tsplot.py \
-./tools/util_translate.py \
 ./tools/w_flow_calc_aveflow.py \
 ./tools/wlevels_calc_calibr.py \
 ./tools/wqualreport_compact.py \
 ./tools/wqualreport.py \
 ./tools/xyplot.py \
+./tools/utils/midvatten_utils.py \
+./tools/utils/gui_utils.py \
+./tools/utils/date_utils.py \
+./tools/utils/db_utils.py \
+./tools/utils/util_translate.py \
 ./ui/simpleplotdialog.py \
 
 FORMS = \

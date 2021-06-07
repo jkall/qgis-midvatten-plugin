@@ -39,25 +39,25 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
 from operator import itemgetter
-from tools.utils.gui_utils import set_combobox
+from midvatten.tools.utils.gui_utils import set_combobox
 import types
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from qgis.PyQt import uic
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget.ui'))[0]
 
-from sampledem import qchain, sampling
 from matplotlib.widgets import Slider
 from matplotlib.gridspec import GridSpec
 import datetime
 import matplotlib.dates as mdates
 
-from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools.utils.midvatten_utils import PlotTemplates
-from midvatten.tools.matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
+from midvatten.tools.utils.matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
 import midvatten.definitions.midvatten_defs as defs
-from midvatten.tools import matplotlib_replacements
+from midvatten.tools.utils import matplotlib_replacements
+from midvatten.tools.utils.sampledem import qchain, sampling
 
 try:
     import pandas as pd

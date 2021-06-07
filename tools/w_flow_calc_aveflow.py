@@ -33,7 +33,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-import import_data_to_db
+from midvatten.tools import import_data_to_db
 
 try:
     import pandas as pd

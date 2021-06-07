@@ -25,11 +25,11 @@ from __future__ import absolute_import
 from builtins import str
 import io
 import os
-import import_diveroffice
 from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils import common_utils, date_utils, midvatten_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools import import_diveroffice
 
 
 class LeveloggerImport(import_diveroffice.DiverofficeImport):

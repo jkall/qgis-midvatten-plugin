@@ -24,21 +24,19 @@ from builtins import str
 from builtins import object
 import io
 from cycler import cycler
-from matplotlib_replacements import perform_all_replacements
 
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten_utils as utils
 import mock
 import nose
 from mock import call
 from nose.plugins.attrib import attr
 import numpy as np
 
-import midvatten.tools.utils.common_utils as common_utils
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue
-from .utils_for_tests import create_test_string
-from midvatten_utils import dict_to_tuple
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.tools.utils.matplotlib_replacements import perform_all_replacements
+from midvatten.tools.tests import utils_for_tests
+from midvatten.tools.tests.mocks_for_tests import MockUsingReturnValue
+from midvatten.tools.tests.utils_for_tests import create_test_string
+from midvatten.tools.utils.common_utils import dict_to_tuple
 
 @attr(status='on')
 class TestFilterNonexistingObsidsAndAsk(object):
@@ -67,7 +65,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            nose.tools.assert_raises(tools.utils.common_utils.UserInterruptError,
+            nose.tools.assert_raises(common_utils.UserInterruptError,
                                      common_utils.filter_nonexisting_values_and_ask, file_data, 'obsid', existing_obsids)
 
     @mock.patch('qgis.utils.iface', autospec=True)
@@ -186,7 +184,7 @@ class TestSqlToParametersUnitsTuple(object):
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [('par1', 'un1'), ('par2', 'un2')])
 
-        test_string = create_test_string(utils.sql_to_parameters_units_tuple('sql'))
+        test_string = create_test_string(midvatten_utils.sql_to_parameters_units_tuple('sql'))
         reference_string = '''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
@@ -198,7 +196,7 @@ class TestGetCurrentLocale(object):
         mock_get_locale.return_value = 'a_lang'
         mock_default_locale.return_value = [None, 'an_enc']
 
-        test_string = create_test_string(utils.getcurrentlocale())
+        test_string = create_test_string(midvatten_utils.getcurrentlocale())
         reference_string = '[a_lang, an_enc]'
         assert test_string == reference_string
         

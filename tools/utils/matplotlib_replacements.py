@@ -20,7 +20,6 @@
 """
 import six
 import matplotlib as mpl
-import definitions.midvatten_defs as defs
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -33,6 +32,7 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSignal, QObject
 import types
 
 from midvatten.tools.utils.common_utils import returnunicode as ru
+import midvatten.definitions.midvatten_defs as defs
 
 
 def replace_matplotlib_style_core_update_nested_dict():

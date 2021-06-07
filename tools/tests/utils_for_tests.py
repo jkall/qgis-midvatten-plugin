@@ -40,7 +40,7 @@ import qgis
 import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
-from import_data_to_db import midv_data_importer
+from midvatten.tools.import_data_to_db import midv_data_importer
 from midvatten_plugin.midvatten import Midvatten
 from qgis.PyQt.QtCore import QSettings
 
@@ -79,7 +79,7 @@ def dict_to_sorted_list(adict):
         for k in adict:
             result_list.extend(dict_to_sorted_list(k))
     else:
-        result_list.append(tools.utils.common_utils.returnunicode(adict)) #.encode('utf-8'))
+        result_list.append(common_utils.returnunicode(adict)) #.encode('utf-8'))
     return result_list
 
 def create_test_string(anything=None):

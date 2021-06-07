@@ -33,7 +33,7 @@ import numpy as np
 import math
 
 from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
-from definitions.midvatten_defs import piperplot_style, piperplot2_style
+from midvatten.definitions.midvatten_defs import piperplot_style, piperplot2_style
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
