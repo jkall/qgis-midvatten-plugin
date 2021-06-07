@@ -27,20 +27,20 @@ import os
 import time  # for debugging
 
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtCore import QUrl, Qt, QDir
-from qgis.PyQt.QtGui import QDesktopServices, QCursor
-from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtCore import QUrl, QDir
+from qgis.PyQt.QtGui import QDesktopServices
 
-import db_utils
 # midvatten modules
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+import midvatten.tools.utils.common_utils as common_utils
+import midvatten.tools.utils.midvatten_utils as midvatten_utils
+import midvatten.tools.utils.db_utils as db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
         #show the user this may take a long time...
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
 
         self.settingsdict = settingsdict
         provider = layer.dataProvider()  # OGR provider
@@ -88,7 +88,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         f.write("\n</body></html>")        
         f.close()
 
-        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+        common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
         if ReportData:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
@@ -107,7 +107,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         sql += r"""' ORDER BY """ + self.settingsdict['wqual_paramcolumn']
         connection_ok, parameters = db_utils.sql_load_fr_db(sql, dbconnection)
         if not parameters:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', 'Debug, something is wrong, no parameters are found in table w_qual_lab for %s'))%obsid)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', 'Debug, something is wrong, no parameters are found in table w_qual_lab for %s')) % obsid)
             return False
         try:
             print('parameters for ' + obsid + ' is loaded at time: ' + str(time.time()))#debug
@@ -141,11 +141,11 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         except:
             pass
         if not date_times:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Debug, Something is wrong, no parameters are found in table w_qual_lab for %s"))%obsid)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Debug, Something is wrong, no parameters are found in table w_qual_lab for %s")) % obsid)
             return
         else:
             if any([x[1] is None for x in date_times]):
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Warning: Found rows with datetime = NULL. Column without date_time might be aggregated from multiple reports!")))
+                common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Warning: Found rows with datetime = NULL. Column without date_time might be aggregated from multiple reports!")))
 
         if self.settingsdict['wqual_sortingcolumn']:
             self.nr_header_rows = 3
@@ -224,7 +224,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                         ReportTable[parametercounter][datecounter] = ru(recs[0][0])
                     except:
                         ReportTable[parametercounter][datecounter]=''
-                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Note!, the value for %s [%s] at %s, %s was not readable. Check your data!"))%(p,u,sorting,date_time))
+                        common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Wqualreport', "Note!, the value for %s [%s] at %s, %s was not readable. Check your data!")) % (p, u, sorting, date_time))
                 else: 
                     ReportTable[parametercounter][datecounter] =' '
 

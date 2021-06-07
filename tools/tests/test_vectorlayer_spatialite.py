@@ -22,7 +22,7 @@ from __future__ import absolute_import
 from builtins import str
 from qgis.core import QgsProject, QgsVectorLayer
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr

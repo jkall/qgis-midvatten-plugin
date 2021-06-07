@@ -29,43 +29,57 @@ import sys
 import io
 import traceback
 # Import the PyQt and QGIS libraries
-from qgis.core import Qgis, QgsApplication
-import qgis.PyQt
+from qgis.core import Qgis, QgsApplication, QgsWkbTypes, QgsVectorLayer
 from qgis.PyQt.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt
 from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMenu
 from qgis.PyQt.QtGui import QCursor, QIcon
 
 #add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
+#sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+#sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
 
 # Add translate
-import util_translate
+from midvatten.tools.utils.util_translate import getTranslate
+
+import midvatten.tools.utils.common_utils as common_utils
+import midvatten.tools.utils.db_utils as db_utils
+import midvatten.tools.utils.midvatten_utils as midvatten_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 # Import Midvatten tools and modules
-from tsplot import TimeSeriesPlot
-from stratigraphy import Stratigraphy
-from xyplot import XYPlot
-from wqualreport import Wqualreport
-from wqualreport_compact import CompactWqualReportUi
-from column_values_from_selected_features import ValuesFromSelectedFeaturesGui
-from calculate_statistics import CalculateStatisticsGui
-from loaddefaultlayers import LoadLayers
-from prepareforqgis2threejs import PrepareForQgis2Threejs
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from definitions import midvatten_defs
-from sectionplot import SectionPlot
-import customplot
-from midvsettings import midvsettings
-import midvsettingsdialog
-from piper import PiperPlot
-from export_data import ExportData
-import db_utils
-from qgis.core import QgsWkbTypes, QgsVectorLayer
-import matplotlib_replacements
-from strat_symbology import StratSymbology
-#import profilefromdem
+import midvatten.midvsettingsdialog as midvsettingsdialog
+import midvatten.tools.matplotlib_replacements as matplotlib_replacements
+
+from midvatten.tools.customplot import plotsqlitewindow
+from midvatten.tools.tsplot import TimeSeriesPlot
+from midvatten.tools.stratigraphy import Stratigraphy
+from midvatten.tools.xyplot import XYPlot
+from midvatten.tools.wqualreport import Wqualreport
+from midvatten.tools.wqualreport_compact import CompactWqualReportUi
+from midvatten.tools.column_values_from_selected_features import ValuesFromSelectedFeaturesGui
+from midvatten.tools.calculate_statistics import CalculateStatisticsGui
+from midvatten.tools.loaddefaultlayers import LoadLayers
+from midvatten.tools.prepareforqgis2threejs import PrepareForQgis2Threejs
+from midvatten.tools.sectionplot import SectionPlot
+from midvatten.tools.midvsettings import midvsettings
+from midvatten.tools.piper import PiperPlot
+from midvatten.tools.export_data import ExportData
+from midvatten.tools.strat_symbology import StratSymbology
+from midvatten.tools.drillreport import Drillreport
+from midvatten.tools.w_flow_calc_aveflow import Calcave
+from midvatten.tools.custom_drillreport import DrillreportUi
+from midvatten.tools.export_fieldlogger import ExportToFieldLogger
+from midvatten.tools.import_fieldlogger import FieldloggerImport
+from midvatten.tools.import_general_csv_gui import GeneralCsvImportGui
+from midvatten.tools.import_interlab4 import Interlab4Import
+from midvatten.tools.import_diveroffice import DiverofficeImport
+from midvatten.tools.import_levelogger import LeveloggerImport
+from midvatten.tools.import_hobologger import HobologgerImport
+from midvatten.tools.create_db import NewDb
+from midvatten.tools.wlevels_calc_calibr import Calclvl
+from midvatten.tools.wlevels_calc_calibr import Calibrlogger
+
+from midvatten.definitions import midvatten_defs
 
 
 class Midvatten(object):
@@ -74,8 +88,7 @@ class Midvatten(object):
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
-        import util_translate
-        self.translator = util_translate.getTranslate( 'midvatten' )
+        self.translator = getTranslate( 'midvatten' )
 
     def initGui(self):
         # Create actions that will start plugin configuration
@@ -344,7 +357,7 @@ class Midvatten(object):
         #Connect message log to logfile.
         #Log file name must be set as env. variable QGIS_LOG_FILE in
         # settings > options > system > environment.
-        QgsApplication.messageLog().messageReceived.connect(utils.write_qgs_log_to_file)
+        QgsApplication.messageLog().messageReceived.connect(common_utils.write_qgs_log_to_file)
 
     def unload(self):    
         try:
@@ -373,7 +386,7 @@ class Midvatten(object):
         sys.path.remove(os.path.dirname(os.path.abspath(__file__))) #Clean up python environment
 
     def about(self):
-        util_translate.getTranslate('midvatten')
+        getTranslate('midvatten')
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt")
         iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
         verno = iniText.value('version')
@@ -393,119 +406,115 @@ class Midvatten(object):
                     for row in infile]
         with io.open(ABOUT_outputfile, 'w', encoding='cp1252') as outfile:
             outfile.write('\n'.join(rows))
-        dlg = utils.HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
+        dlg = common_utils.HtmlDialog("About Midvatten plugin for QGIS", QUrl.fromLocalFile(ABOUT_outputfile))
         dlg.exec_()
 
     def aveflowcalculate(self):
         allcritical_layers = ('obs_points', 'w_flow') #none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
-        if err_flag == 0:     
-            from w_flow_calc_aveflow import Calcave
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
+        if err_flag == 0:
             dlg = Calcave(self.iface.mainWindow())
             dlg.exec_()
 
     def drillreport(self):
         allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
         if err_flag == 0:
-            obsids = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
-            from drillreport import Drillreport
+            obsids = common_utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
             Drillreport(obsids,self.ms.settingsdict)
 
     def custom_drillreport(self):
         allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
-            from custom_drillreport import DrillreportUi
             DrillreportUi(self.iface.mainWindow(), self.ms)
 
     def export_csv(self):
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:     
-            utils.start_waiting_cursor()#show the user this may take a long time...
+            common_utils.start_waiting_cursor()#show the user this may take a long time...
             
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines           
-            OBSID_P = utils.get_selected_features_as_tuple('obs_points')
-            OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
+            OBSID_P = common_utils.get_selected_features_as_tuple('obs_points')
+            OBSID_L = common_utils.get_selected_features_as_tuple('obs_lines')
 
-            #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+            #sanity = midvatten_utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             #exportfolder =    QtWidgets.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtWidgets.QFileDialog.ShowDirsOnly)
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
-            utils.start_waiting_cursor()
+            common_utils.start_waiting_cursor()
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
                 
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def export_spatialite(self):
         #, *args, **kwargs
         #print("export args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
 
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
-            utils.start_waiting_cursor()  # show the user this may take a long time..
+            common_utils.start_waiting_cursor()  # show the user this may take a long time..
 
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
-            OBSID_P = utils.get_selected_features_as_tuple('obs_points')
-            OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
+            OBSID_P = common_utils.get_selected_features_as_tuple('obs_points')
+            OBSID_L = common_utils.get_selected_features_as_tuple('obs_lines')
             try:
                 print(str(OBSID_P))
                 print(str(OBSID_L))
             except:
                 pass
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
 
             selected_all = ru(QCoreApplication.translate("Midvatten", 'selected')) if any([OBSID_P, OBSID_L]) else ru(QCoreApplication.translate("Midvatten", 'all'))
 
-            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from %s obs_points and obs_lines.\n\nContinue?"""))%(selected_all), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+            sanity = common_utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from %s obs_points and obs_lines.\n\nContinue?""")) % (selected_all), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             if sanity.result == 1:
-                utils.start_waiting_cursor()#show the user this may take a long time...
+                common_utils.start_waiting_cursor()#show the user this may take a long time...
                 source_srid = db_utils.sql_load_fr_db('''SELECT srid FROM geometry_columns WHERE f_table_name = 'obs_points';''')[1][0][0]
 
                 #Let the user chose an EPSG-code for the exported database
-                utils.stop_waiting_cursor()
-                user_chosen_EPSG_code = utils.ask_for_export_crs(source_srid)
-                utils.start_waiting_cursor()
+                common_utils.stop_waiting_cursor()
+                user_chosen_EPSG_code = common_utils.ask_for_export_crs(source_srid)
+                common_utils.start_waiting_cursor()
 
                 if not user_chosen_EPSG_code:
-                    utils.stop_waiting_cursor()
+                    common_utils.stop_waiting_cursor()
                     return None
 
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version'))
-                from create_db import NewDb
+
                 newdbinstance = NewDb()
                 newdbinstance.create_new_spatialite_db(verno,user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False)
-                utils.start_waiting_cursor()
+                common_utils.start_waiting_cursor()
                 if newdbinstance.db_settings:
                     new_dbpath = db_utils.get_spatialite_db_path_from_dbsettings_string(newdbinstance.db_settings)
                     if not new_dbpath:
-                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite failed, see log message panel')),
-                                                        button=True)
-                        utils.stop_waiting_cursor()
+                        common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite failed, see log message panel')),
+                                                                           button=True)
+                        common_utils.stop_waiting_cursor()
                         return
                     exportinstance = ExportData(OBSID_P, OBSID_L)
                     exportinstance.export_2_splite(new_dbpath, user_chosen_EPSG_code)
             
-                utils.stop_waiting_cursor()
+                common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def export_fieldlogger(self):
         """
         Exports data to FieldLogger android app format
         :return: None 
         """
-        from export_fieldlogger import ExportToFieldLogger
         if hasattr(self, 'export_to_field_logger'):
             try:
                 self.export_to_field_logger.activateWindow()
@@ -514,24 +523,23 @@ class Midvatten(object):
         else:
             self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def import_fieldlogger(self):
         """
         Imports data from FieldLogger android app format.
         :return: Writes to db.
         """
         allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow', 'comments')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
                 longmessage = ru(QCoreApplication.translate("Midvatten", "You are about to import water head data, water flow or water quality from FieldLogger format."))
-                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+                sanity = common_utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
-                    from import_fieldlogger import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
                     importinstance.parse_observations_and_populate_gui()
                     if not importinstance.status == 'True' and not importinstance.status:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -539,10 +547,10 @@ class Midvatten(object):
                         except:
                             pass
             else:
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        utils.stop_waiting_cursor()
+                common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def import_csv(self):
         """
         Imports data from a csv file
@@ -550,14 +558,13 @@ class Midvatten(object):
         """
         #TODO: Add all layers here
         allcritical_layers = ('obs_points', 'obs_lines', 'zz_flowtype', 'zz_staff') #Editing mode is checked when selecting table
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
-                from import_general_csv_gui import GeneralCsvImportGui
                 importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
                 importinstance.load_gui()
                 if not importinstance.status == 'True' and not importinstance.status:
-                    utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                    common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                 else:
                     try:
                         self.midvsettingsdialog.ClearEverything()
@@ -565,31 +572,30 @@ class Midvatten(object):
                     except:
                         pass
             else:
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        utils.stop_waiting_cursor()
+                common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def import_wqual_lab_from_interlab4(self):
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+            sanity = common_utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             if sanity.result == 1:
-                from import_interlab4 import Interlab4Import
                 importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
                 importinstance.init_gui()
                 if importinstance.status=='True':      #
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database")) % str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def import_diverofficedata(self): 
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:   
             if not (self.ms.settingsdict['database'] == ''):
                 longmessage = ru(QCoreApplication.translate("Midvatten",
@@ -602,14 +608,13 @@ class Midvatten(object):
                                """The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
                                """The charset is usually cp1252!\n\n"""
                                """Continue?"""))
-                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+                sanity = common_utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
-                    from import_diveroffice import DiverofficeImport
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
                     importinstance.select_files_and_load_gui()
 
                     if not importinstance.status:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -617,13 +622,13 @@ class Midvatten(object):
                         except:
                             pass
             else: 
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        utils.stop_waiting_cursor()
+                common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        common_utils.stop_waiting_cursor()
         
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def import_leveloggerdata(self): 
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:   
             if not (self.ms.settingsdict['database'] == ''):
                 longmessage = ru(QCoreApplication.translate("Midvatten",
@@ -638,14 +643,13 @@ class Midvatten(object):
                                """The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
                                """The charset is usually cp1252!\n\n"""
                                """Continue?"""))
-                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+                sanity = common_utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
-                    from import_levelogger import LeveloggerImport
                     importinstance = LeveloggerImport(self.iface.mainWindow(), self.ms)
                     importinstance.select_files_and_load_gui()
 
                     if not importinstance.status:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -653,13 +657,13 @@ class Midvatten(object):
                         except:
                             pass
             else: 
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        utils.stop_waiting_cursor()
+                common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def import_hobologgerdata(self):
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
                 longmessage = ru(QCoreApplication.translate("Midvatten",
@@ -671,14 +675,13 @@ class Midvatten(object):
                                """The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
                                """The charset is usually utf8!\n\n"""
                                """Continue?"""))
-                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+                sanity = common_utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
-                    from import_hobologger import HobologgerImport
                     importinstance = HobologgerImport(self.iface.mainWindow(), self.ms)
                     importinstance.select_files_and_load_gui()
 
                     if not importinstance.status:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -686,53 +689,53 @@ class Midvatten(object):
                         except:
                             pass
             else:
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        utils.stop_waiting_cursor()
+                common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
         #return
-        utils.start_waiting_cursor()
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_domains err_flag: %s'))%str(err_flag))
+        common_utils.start_waiting_cursor()
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_domains err_flag: %s')) % str(err_flag))
         if err_flag == 0:
             LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def load_data_tables(self):
-        utils.start_waiting_cursor()
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_tables err_flag: %s'))%str(err_flag))
+        common_utils.start_waiting_cursor()
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_tables err_flag: %s')) % str(err_flag))
         if err_flag == 0:
             LoadLayers(qgis.utils.iface, self.ms.settingsdict, 'Midvatten_data_tables')
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def load_strat_symbology(self):
-        utils.start_waiting_cursor()
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        common_utils.start_waiting_cursor()
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         if err_flag:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s'))%str(err_flag))
+            common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_strat_symbology err_flag: %s')) % str(err_flag))
         else:
             self.strat_symbology = StratSymbology(qgis.utils.iface, self.iface.mainWindow())
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def loadthelayers(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""")), ru(QCoreApplication.translate("Midvatten", 'Warning!')))
+            sanity = common_utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""")), ru(QCoreApplication.translate("Midvatten", 'Warning!')))
             if sanity.result == 1:
                 #show the user this may take a long time...
-                utils.start_waiting_cursor()
+                common_utils.start_waiting_cursor()
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
-                utils.stop_waiting_cursor()
+                common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def new_db(self, *args):
-        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
+        sanity = common_utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -741,7 +744,6 @@ class Midvatten(object):
                 verno = _verno.toString()
             else:
                 verno = str(_verno)
-            from create_db import NewDb
             newdbinstance = NewDb()
             newdbinstance.create_new_spatialite_db(verno)
 
@@ -756,18 +758,17 @@ class Midvatten(object):
             #about_db = db_utils.sql_load_fr_db('select * from about_db')
 
             #The markdown table is for gitlab. Run the rows below when there is a change in create_db
-            #markdowntable = utils.create_markdown_table_from_table('about_db', transposed=False, only_description=True)
+            #markdowntable = midvatten_utils.create_markdown_table_from_table('about_db', transposed=False, only_description=True)
             #print(markdowntable)
 
     @db_utils.if_connection_ok
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def new_postgis_db(self):
-        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will update the selected postgis database to a \nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  'Are you sure?')))
+        sanity = common_utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will update the selected postgis database to a \nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version'))
-            from create_db import NewDb
             newdbinstance = NewDb()
             newdbinstance.populate_postgis_db(verno)
             if newdbinstance.db_settings:
@@ -779,64 +780,64 @@ class Midvatten(object):
                     pass
 
             #The markdown table is for gitlab. Run the rows below when there is a change in create_db
-            #markdowntable = utils.create_markdown_table_from_table('about_db', transposed=False, only_description=True)
+            #markdowntable = midvatten_utils.create_markdown_table_from_table('about_db', transposed=False, only_description=True)
             #print(markdowntable)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_piper(self):
         allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that some features are selected
         if err_flag == 0:
             self.piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer(), version=1)
             self.piperplot.get_data_and_make_plot()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_piper2(self):
         allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that some features are selected
         if err_flag == 0:
             self.piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer(), version=2)
             self.piperplot.get_data_and_make_plot()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_timeseries(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that some features are selected
         if (self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set time series table and column in Midvatten settings."), duration =15)
+            common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set time series table and column in Midvatten settings."), duration =15)
         if err_flag == 0:
             dlg = TimeSeriesPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_stratigraphy(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that some features are selected
         #TODO: remove all "settingsdict['stratigraphytable']" in version 1.4
         """
         if self.ms.settingsdict['stratigraphytable']=='':
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set stratigraphy table in Midvatten settings."), duration =15)
+            midvatten_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set stratigraphy table in Midvatten settings."), duration =15)
         """
-        if err_flag == 0 and utils.strat_selection_check(qgis.utils.iface.activeLayer()) == 'ok':
+        if err_flag == 0 and common_utils.strat_selection_check(qgis.utils.iface.activeLayer()) == 'ok':
             dlg = Stratigraphy(self.iface, qgis.utils.iface.activeLayer(), self.ms.settingsdict)
             dlg.showSurvey()
             self.dlg = dlg# only to prevent the Qdialog from closing.
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_section(self):
         selected_layer = qgis.utils.iface.mapCanvas().currentLayer() #MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         if not selected_layer:
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one layer and one feature!'), duration=10)
-            raise utils.UsageError()
+            common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one layer and one feature!'), duration=10)
+            raise common_utils.UsageError()
 
         nrofselected = selected_layer.selectedFeatureCount()
         if not isinstance(selected_layer, QgsVectorLayer):
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
-                                            log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(selected_layer)))
-            raise utils.UsageError()
+            common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'),
+                                                               log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(selected_layer)))
+            raise common_utils.UsageError()
         selected_obspoints = None
         for feat in selected_layer.getFeatures():
             geom = feat.geometry()
@@ -849,45 +850,45 @@ class Midvatten(object):
                                   QgsWkbTypes.LineStringZM, 3002,
                                   QgsWkbTypes.MultiLineStringZM, 3005):
                 if nrofselected != 1:
-                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select only one line feature that defines the section'))
-                    raise utils.UsageError()
+                    common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select only one line feature that defines the section'))
+                    raise common_utils.UsageError()
                 else:
                     try:
-                        obs_points_layer = utils.find_layer('obs_points')
-                    except utils.UsageError:
-                        utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
+                        obs_points_layer = common_utils.find_layer('obs_points')
+                    except common_utils.UsageError:
+                        common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
                         break
                     else:
                         if obs_points_layer.isEditable():
-                            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is in editing mode! Plotting without observations!"))
+                            common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is in editing mode! Plotting without observations!"))
                             break
                         else:
-                            selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
+                            selected_obspoints = common_utils.getselectedobjectnames(obs_points_layer)
             else:
                 selected_layer = None
                 #utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", 'Reverting to simple stratigraphy plot. For section plot, you must activate the vector line layer and select exactly one feature that defines the section'))
                 # Then verify that at least two feature is selected in obs_points layer,
                 # and get a list (selected_obspoints) of selected obs_points
-                selected_obspoints = utils.getselectedobjectnames()  # Finding obsid from currently selected layer
+                selected_obspoints = common_utils.getselectedobjectnames()  # Finding obsid from currently selected layer
                 if not selected_obspoints:
-                    utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "The current layer had no selected obsids. Trying to plot from layer obs_points!"))
+                    common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "The current layer had no selected obsids. Trying to plot from layer obs_points!"))
                     try:
-                        obs_points_layer = utils.find_layer('obs_points')
-                    except utils.UsageError:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
+                        obs_points_layer = common_utils.find_layer('obs_points')
+                    except common_utils.UsageError:
+                        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
                         break
                     else:
                         if obs_points_layer.isEditable():
-                            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is in editing mode! Plotting without observations!"))
+                            common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is in editing mode! Plotting without observations!"))
                             break
                         else:
-                            selected_obspoints = utils.getselectedobjectnames(obs_points_layer)
+                            selected_obspoints = common_utils.getselectedobjectnames(obs_points_layer)
 
         if not selected_layer and not selected_obspoints:
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one feature!'), duration=10)
-            raise utils.UsageError()
+            common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must select at least one feature!'), duration=10)
+            raise common_utils.UsageError()
         elif not selected_layer:
-            utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten", 'No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.'), duration=10)
+            common_utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten", 'No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.'), duration=10)
 
         if selected_obspoints is not None and len(selected_obspoints) > 0:
             selected_obspoints = ru(selected_obspoints, keep_containers=True)
@@ -899,8 +900,8 @@ class Midvatten(object):
         #    # Made into tuple because module sectionplot depends on obsid being a tuple
         #    selected_obspoints = ru(selected_obspoints, keep_containers=True)
         #else:
-        #    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer')))
-        #    raise utils.UsageError()
+        #    midvatten_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer')))
+        #    raise midvatten_utils.UsageError()
 
         try:
             self.myplot.do_it(self.ms,selected_obspoints,selected_layer)
@@ -908,41 +909,41 @@ class Midvatten(object):
             self.myplot = SectionPlot(self.iface.mainWindow(), self.iface)
             self.myplot.do_it(self.ms,selected_obspoints,selected_layer)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_xy(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = common_utils.verify_layer_selection(err_flag, 0)#verify the selected layer has attribute "obsid" and that some features are selected
         if (self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set xy series table and columns in Midvatten settings."), duration =15)
+            common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set xy series table and columns in Midvatten settings."), duration =15)
         if err_flag == 0:
             dlg = XYPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def plot_sqlite(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if not(err_flag == 0):
             return
         try:
             self.customplot.activateWindow()
         except:
-            self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
+            self.customplot = plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def prepare_layers_for_qgis2threejs(self):
         allcritical_layers = ('obs_points', 'stratigraphy')
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
         if err_flag == 0:
             dbconnection = db_utils.DbConnectionManager()
             dbtype = dbconnection.dbtype
             dbconnection.closedb()
             if dbtype != 'spatialite':
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('prepare_layers_for_qgis2threejs', 'Only supported for spatialite.')))
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('prepare_layers_for_qgis2threejs', 'Only supported for spatialite.')))
                 return
 
-            utils.start_waiting_cursor()#show the user this may take a long time...
+            common_utils.start_waiting_cursor()#show the user this may take a long time...
             PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
 
     def project_created(self):
         self.reset_settings()
@@ -956,7 +957,7 @@ class Midvatten(object):
             self.midvsettingsdialog.LoadAndSelectLastSettings()
         except:
             pass
-        utils.warn_about_old_database()
+        midvatten_utils.warn_about_old_database()
 
     def reset_settings(self):
         self.ms.reset_settings()
@@ -980,66 +981,64 @@ class Midvatten(object):
         del self.midvsettingsdialog
 
     def vacuum_db(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
             QApplication.setOverrideCursor(Qt.WaitCursor)
             db_utils.sql_alter_db('vacuum')
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def waterqualityreport(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
-        err_flag = utils.verify_layer_selection(err_flag)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = common_utils.verify_layer_selection(err_flag)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
         if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
+            common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
         if err_flag == 0:
             fail = 0
-            for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
+            for k in common_utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
                 if not db_utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'], str(k)))[1]:#if there is a selected object without water quality data
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "No water quality data for %s")) % str(k))
+                    common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "No water quality data for %s")) % str(k))
                     fail = 1
             if not fail == 1:#only if all objects has data
                 Wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def waterqualityreportcompact(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
             CompactWqualReportUi(self.iface.mainWindow(), self.ms)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
         layername='obs_points'
-        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag,layername)#verify selected layername and not in edit mode
+        err_flag = common_utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)#verify selected layername and not in edit mode
         if err_flag == 0:
-            from wlevels_calc_calibr import Calclvl
             dlg = Calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
             dlg.exec_()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def wlvlloggcalibrate(self):
         allcritical_layers = ('w_levels_logger', 'w_levels')
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
         if err_flag == 0:
-            from wlevels_calc_calibr import Calibrlogger
             try:
                 self.calibrplot.activateWindow()
             except:
                 self.calibrplot = Calibrlogger(self.iface.mainWindow(), self.ms.settingsdict)#,obsid)
 
-    @utils.waiting_cursor
+    @common_utils.waiting_cursor
     def zip_db(self):
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
             dbconnection = db_utils.DbConnectionManager()
             connection_ok = dbconnection.connect2db()
             if connection_ok:
                 db_utils.backup_db(dbconnection)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def calculate_statistics_for_selected_obsids(self):
         """ Calculates min, median, nr of values and max for all obsids and writes to file
 
@@ -1047,14 +1046,14 @@ class Midvatten(object):
         """
         stats_gui = CalculateStatisticsGui(self.iface.mainWindow(), self.ms)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def calculate_db_table_rows(self):
         """ Counts the number of rows for all tables in the database """
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        utils.calculate_db_table_rows()
-        utils.stop_waiting_cursor()
+        midvatten_utils.calculate_db_table_rows()
+        common_utils.stop_waiting_cursor()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def list_of_values_from_selected_features(self):
         """ Writes a concatted list of values from selected column from selected features
             The list could be used in other layer filters or selections.
@@ -1062,6 +1061,6 @@ class Midvatten(object):
 
         ValuesFromSelectedFeaturesGui(self.iface.mainWindow())
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def add_view_obs_points_lines(self):
-        utils.add_view_obs_points_obs_lines()
+        midvatten_utils.add_view_obs_points_obs_lines()

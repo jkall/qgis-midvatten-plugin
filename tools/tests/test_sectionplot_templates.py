@@ -34,8 +34,9 @@ from midvatten_utils import PlotTemplates
 from mock import call
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
-from definitions import midvatten_defs as defs
+from midvatten.definitions import midvatten_defs as defs
 
 
 @attr(status='on')
@@ -65,7 +66,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                                                defs.secplot_default_template(), self.midvatten.ms)
 
         assert call.info(log_msg='Loaded template from midvatten settings secplot_loaded_template.') in mock_messagebar.mock_calls
-        assert utils.anything_to_string_representation(secplottemplates.loaded_template) == test_str
+        assert common_utils.anything_to_string_representation(secplottemplates.loaded_template) == test_str
 
     def test_load_default_file(self):
         default_file = '''{'Axes_set_ylabel': {'fontsize': 10}, 'wlevels_Axes_plot': {'DEFAULT': {'marker': 'v', 'markersize': 6, 'linewidth': 1, 'linestyle': '-'}}, 'geology_Axes_bar': {'edgecolor': 'black'}, 'obsid_Axes_bar': {'edgecolor': 'black', 'linewidth': 0.5, 'fill': False}, 'dems_Axes_plot': {'DEFAULT': {'marker': 'None', 'linewidth': 1, 'linestyle': '-'}}, 'Axes_set_xlabel': {'fontsize': 10}, 'Axes_set_ylim': None, 'plot_width': None, 'grid_Axes_grid': {'color': '0.65', 'b': True, 'linestyle': '-', 'which': 'both'}, 'legend_Axes_legend': {'loc': 0, 'framealpha': 1, 'fontsize': 10}, 'legend_Frame_set_fill': False, 'plot_height': None, 'layer_Axes_annotate': {'va': 'center', 'xytext': (5, 0), 'fontsize': 9, 'bbox': {'alpha': 0.6, 'fc': 'white', 'boxstyle': 'square,pad=0.05', 'edgecolor': 'white'}, 'ha': 'left', 'textcoords': 'offset points'}, 'ticklabels_Text_set_fontsize': {'fontsize': 10}, 'legend_Text_set_fontsize': 10, 'Figure_subplots_adjust': {}, 'Axes_set_xlim': None, 'obsid_Axes_annotate': {'va': 'top', 'xytext': (0, 10), 'fontsize': 9, 'bbox': {'alpha': 0.4, 'fc': 'white', 'boxstyle': 'square,pad=0.05', 'edgecolor': 'white'}, 'rotation': 0, 'ha': 'center', 'textcoords': 'offset points'}, 'drillstop_Axes_plot': {'color': 'black', 'marker': '^', 'markersize': 8, 'linestyle': ''}, 'legend_Frame_set_facecolor': '1'}'''
@@ -73,7 +74,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
 
-        with utils.tempinput(default_file, 'utf-8') as f1:
+        with common_utils.tempinput(default_file, 'utf-8') as f1:
 
             @mock.patch('midvatten_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
@@ -91,7 +92,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             secplottemplates, mock_messagebar = _test(self, f1)
 
         assert call.info(log_msg='Loaded template from default template file.') in mock_messagebar.mock_calls
-        assert utils.anything_to_string_representation(secplottemplates.loaded_template) == utils.anything_to_string_representation(as_dict)
+        assert common_utils.anything_to_string_representation(secplottemplates.loaded_template) == common_utils.anything_to_string_representation(as_dict)
 
     def test_import_files_load(self):
         afile = '''{"loaded_file": 2}'''
@@ -99,7 +100,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
 
-        with utils.tempinput(afile, 'utf-8') as f1:
+        with common_utils.tempinput(afile, 'utf-8') as f1:
 
             @mock.patch('midvatten_utils.select_files')
             @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -126,8 +127,8 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         filename = items[0].filename
         assert filename == reference_filename
 
-        test = utils.anything_to_string_representation(secplottemplates.loaded_template)
-        reference = utils.anything_to_string_representation(as_dict)
+        test = common_utils.anything_to_string_representation(secplottemplates.loaded_template)
+        reference = common_utils.anything_to_string_representation(as_dict)
         assert test == reference
 
     def test_remove(self):
@@ -135,7 +136,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
 
-        with utils.tempinput(default_file, 'utf-8') as f1:
+        with common_utils.tempinput(default_file, 'utf-8') as f1:
 
             @mock.patch('midvatten_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
@@ -165,8 +166,8 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
 
-        with utils.tempinput('', 'utf-8') as save_file:
-            with utils.tempinput(afile, 'utf-8') as f1:
+        with common_utils.tempinput('', 'utf-8') as save_file:
+            with common_utils.tempinput(afile, 'utf-8') as f1:
                 @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
                 @mock.patch('midvatten_utils.select_files')
                 @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -213,8 +214,8 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                                          self.save_as_button, self.import_button, self.remove_button,
                                          self.template_folder, 'secplot_templates', 'secplot_loaded_template',
                                          defs.secplot_default_template(), self.midvatten.ms)
-        test = utils.anything_to_string_representation(secplottemplates.loaded_template)
-        reference = utils.anything_to_string_representation(test_dict)
+        test = common_utils.anything_to_string_representation(secplottemplates.loaded_template)
+        reference = common_utils.anything_to_string_representation(test_dict)
 
         assert call.warning(bar_msg='Default template not found, loading hard coded default template.') in mock_messagebar.mock_calls
         assert call.info(log_msg='Loaded template from default hard coded template.') in mock_messagebar.mock_calls

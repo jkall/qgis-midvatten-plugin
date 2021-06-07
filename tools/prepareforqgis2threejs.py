@@ -23,17 +23,16 @@ from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
 from builtins import object
-import db_utils
 import matplotlib as mpl
 import os
-from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsSymbol, QgsVectorLayer
+from qgis.core import QgsProject
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QColor
 
-import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.definitions import midvatten_defs as defs
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class PrepareForQgis2Threejs(object):        
@@ -45,11 +44,11 @@ class PrepareForQgis2Threejs(object):
         self.strat_layers_dict =  defs.PlotTypesDict('english') 
         self.symbolcolors_dict = defs.PlotColorDict() # This is not used yet
         for key, v in list(self.strat_layers_dict.items()):#make all the keys only ascii and only lower case and also add 'strat_' as prefix
-            newkey = 'strat_' + utils.return_lower_ascii_string(key)
+            newkey = 'strat_' + common_utils.return_lower_ascii_string(key)
             self.strat_layers_dict[newkey] = self.strat_layers_dict[key]
             del self.strat_layers_dict[key]
         for key, v in list(self.symbolcolors_dict.items()):#THIS IS NOT USED YET make all the keys only ascii and only lower case and also add 'strat_' as prefix
-            newkey = 'strat_' + utils.return_lower_ascii_string(key)
+            newkey = 'strat_' + common_utils.return_lower_ascii_string(key)
             self.symbolcolors_dict[newkey] = self.symbolcolors_dict[key] 
             del self.symbolcolors_dict[key]
         self.iface = iface
@@ -76,7 +75,7 @@ class PrepareForQgis2Threejs(object):
         colors = []
 
         layer_list = []
-        utils.add_layers_to_list(layer_list, list_with_all_strat_layer, geometrycolumn='geometry',
+        midvatten_utils.add_layers_to_list(layer_list, list_with_all_strat_layer, geometrycolumn='geometry',
                            dbconnection=self.dbconnection)
 
         for strat_layer_view in list_with_all_strat_layer:
@@ -95,7 +94,7 @@ class PrepareForQgis2Threejs(object):
                         color = converter.to_rgb(supplied_color)
                         color = [x * 255 for x in color]
                     except Exception as e:
-                        utils.MessagebarAndLog.warning(
+                        common_utils.MessagebarAndLog.warning(
                             bar_msg=ru(QCoreApplication.translate('PrepareForQgis2Threejs', 'Setting color from dict failed')),
                             log_msg=ru(QCoreApplication.translate('PrepareForQgis2Threejs', 'Error msg %s'))%str(e))
                         color = None

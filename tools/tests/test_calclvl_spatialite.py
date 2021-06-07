@@ -25,7 +25,7 @@ from builtins import str
 
 from qgis.PyQt import QtGui, QtWidgets
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import mock
 from date_utils import datestring_to_date
 from nose.plugins.attrib import attr

@@ -24,9 +24,11 @@ import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
+
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
-from definitions import midvatten_defs
+from midvatten.definitions import midvatten_defs
 
 @attr(status='on')
 class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
@@ -52,7 +54,7 @@ class TestGeocolorsymbols(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO zz_strat(geoshort, strata) VALUES('moran', 'morän')""")
         db_utils.sql_alter_db("""INSERT INTO zz_stratigraphy_plots(strata, color_mplot, hatch_mplot, color_qt, brush_qt) VALUES('morän', 'theMPcolor', '/', 'theQTcolor', 'thePattern')""")
 
-        test_string = utils.anything_to_string_representation(midvatten_defs.geocolorsymbols())
+        test_string = common_utils.anything_to_string_representation(midvatten_defs.geocolorsymbols())
         reference_string = '''{"moran": ("thePattern", "theQTcolor", ), "morän": ("thePattern", "theQTcolor", )}'''
         assert test_string == reference_string
 
@@ -63,6 +65,6 @@ class TestGeocolorsymbols(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO zz_strat(geoshort, strata) VALUES('nostrata', 'noshort')""")
         db_utils.sql_alter_db("""INSERT INTO zz_stratigraphy_plots(strata, color_mplot, hatch_mplot, color_qt, brush_qt) VALUES('moran', 'theMPcolor', '/', 'theQTcolor', 'thePattern')""")
 
-        test_string = utils.anything_to_string_representation(midvatten_defs.geocolorsymbols())
+        test_string = common_utils.anything_to_string_representation(midvatten_defs.geocolorsymbols())
         reference_string = '''{"nostrata": ("NoBrush", "white", )}'''
         assert test_string == reference_string

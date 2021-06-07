@@ -40,7 +40,6 @@
 """
 from __future__ import print_function
 from __future__ import absolute_import
-from past.builtins import cmp
 from builtins import str
 from builtins import object
 
@@ -50,10 +49,9 @@ from functools import partial  # only to get combobox signals to work
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils import common_utils, db_utils
+from midvatten.definitions import midvatten_defs as defs
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class Stratigraphy(object):
@@ -82,24 +80,24 @@ class Stratigraphy(object):
         lyr = self.layer
         ids = lyr.selectedFeatureIds()
         if len(ids) == 0:
-            utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "No selection")), ru(QCoreApplication.translate(' Stratigraphy', "No features are selected")))
+            common_utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "No selection")), ru(QCoreApplication.translate(' Stratigraphy', "No features are selected")))
             return
         # initiate the datastore if not yet done   
         self.initStore()   
-        utils.start_waiting_cursor()  # Sets the mouse cursor to wait symbol
+        common_utils.start_waiting_cursor()  # Sets the mouse cursor to wait symbol
         try:  # return from store.getData is stored in data only if no object belonging to DataSanityError class is created
             self.data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("DataSanityError %s"%str(e))
-            utils.stop_waiting_cursor()
-            utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
+            common_utils.stop_waiting_cursor()
+            common_utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
             return
         except Exception as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("exception : %s"%str(e))
-            utils.stop_waiting_cursor()
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(' Stratigraphy', "The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
+            common_utils.stop_waiting_cursor()
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(' Stratigraphy', "The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
             return
-        utils.stop_waiting_cursor()  # Restores the mouse cursor to normal symbol
+        common_utils.stop_waiting_cursor()  # Restores the mouse cursor to normal symbol
         # show widget
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
@@ -198,12 +196,12 @@ class SurveyStore(object):
                         else:
                             using = 'h_toc'
 
-                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Stratigraphy', "Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (obsid, h_gs, using),
-                                                       log_msg=ru(QCoreApplication.translate('Stratigraphy', '%s'))%error_msg,
-                                                       duration=90)
+                        common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Stratigraphy', "Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (obsid, h_gs, using),
+                                                                          log_msg=ru(QCoreApplication.translate('Stratigraphy', '%s'))%error_msg,
+                                                                          duration=90)
 
                         if self.warning_popup:
-                            utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', 'Warning, h_gs is missing. See messagebar.')))
+                            common_utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', 'Warning, h_gs is missing. See messagebar.')))
                             self.warning_popup = False
                     toplvl_list[i] = level_val
                     coord_list[i]= feature.geometry().asPoint()
@@ -220,7 +218,7 @@ class SurveyStore(object):
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i], length=length)
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
+            common_utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
         return surveys
 
     def _getDataStep2(self, surveys):
@@ -239,7 +237,7 @@ class SurveyStore(object):
             # parse attributes
             prev_depthbot = 0
             for record in recs:
-                if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
+                if common_utils.isinteger(record[0]) and common_utils.isfloat(record[1]) and common_utils.isfloat(record[2]):
                     stratigaphy_id = record[0]  # Stratigraphy layer no
                     depthtotop = record[1]  # depth to top of stratrigraphy layer
                     depthtobot = record[2]  # depth to bottom of stratrigraphy layer

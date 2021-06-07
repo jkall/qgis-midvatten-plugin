@@ -3,7 +3,7 @@
 """
 /***************************************************************************
  This is where a section plot is created 
- NOTE - if using this file, it has to be imported by midvatten.py
+ NOTE - if using this file, it has to be imported by midvatten_plugin.py
                              -------------------
         begin                : 2013-11-27
         copyright            : (C) 2011 by joskal
@@ -19,7 +19,6 @@ from builtins import range
 from builtins import str
 from builtins import zip
 
-import db_utils
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
@@ -34,35 +33,31 @@ from qgis.core import QgsProject
 #except:
 #    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
 
-from matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
-
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import PlotTemplates
-
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSlot, QObject
+from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
-import matplotlib_replacements
 from operator import itemgetter
-from gui_utils import set_combobox
+from tools.utils.gui_utils import set_combobox
 import types
-
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from qgis.PyQt import uic
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget.ui'))[0]
 
-import definitions.midvatten_defs as defs
 from sampledem import qchain, sampling
-from gui_utils import set_groupbox_children_visibility
 from matplotlib.widgets import Slider
 from matplotlib.gridspec import GridSpec
 import datetime
 import matplotlib.dates as mdates
-import pytz
+
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.midvatten_utils import PlotTemplates
+from midvatten.tools.matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
+import midvatten.definitions.midvatten_defs as defs
+from midvatten.tools import matplotlib_replacements
 
 try:
     import pandas as pd
@@ -166,19 +161,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             matplotlib_replacements.replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_xylimits(
                 self.mpltoolbar)
         except Exception as e:
-            utils.MessagebarAndLog.info(log_msg=ru(
+            common_utils.MessagebarAndLog.info(log_msg=ru(
                 QCoreApplication.translate('SectionPlot', 'Could not alter NavigationToolbar, msg: %s')) % str(e))
 
         try:
             self.mpltoolbar.edit_parameters_used.connect(self.update_legend)
         except Exception as e:
-            utils.MessagebarAndLog.info(log_msg=ru(
+            common_utils.MessagebarAndLog.info(log_msg=ru(
                 QCoreApplication.translate('SectionPlot', 'Could not connect to edit_parameters_used signal, msg: %s')) % str(e))
 
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
-        pick_annotator = utils.PickAnnotator(self.figure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
+        pick_annotator = common_utils.PickAnnotator(self.figure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()
@@ -259,7 +254,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.obsid_annotation = {}
 
         #show the user this may take a long time...
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
 
@@ -308,10 +303,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.length_along = length_along_table.length
 
                 # hidden feature, printout to python console
-                utils.MessagebarAndLog.info(log_msg=ru(
+                common_utils.MessagebarAndLog.info(log_msg=ru(
                     QCoreApplication.translate('SectionPlot',
-                                               'Hidden features, obsids and length along section:\n%s\%s'))%
-                                                    (';'.join(self.selected_obsids),
+                                               'Hidden features, obsids and length along section:\n%s\%s')) %
+                                                                       (';'.join(self.selected_obsids),
                                                      ';'.join([str(x) for x in self.length_along])))
             else:
                 self.selected_obsids = []
@@ -320,7 +315,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         else:
             self.selected_obsids = selected_obspoints
 
-            res = self.dbconnection.execute_and_fetchall('''SELECT obsid, east, north FROM obs_points WHERE obsid IN ({})'''.format(utils.sql_unicode_list(self.selected_obsids)))
+            res = self.dbconnection.execute_and_fetchall('''SELECT obsid, east, north FROM obs_points WHERE obsid IN ({})'''.format(
+                common_utils.sql_unicode_list(self.selected_obsids)))
             xs = [float(row[1]) for row in res]
             ys = [float(row[2]) for row in res]
             if (max(xs) - min(xs)) > (max(ys) - min(ys)):
@@ -335,7 +331,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.length_along = range(0, 10 * len(self.selected_obsids), 10)
             self.fill_dem_list()
 
-        utils.stop_waiting_cursor() #now this long process is done and the cursor is back as normal
+        common_utils.stop_waiting_cursor() #now this long process is done and the cursor is back as normal
         
         # get PlotData
         self.get_plot_data_geo()
@@ -347,7 +343,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.draw_plot()
 
     def get_plot_data_seismic(self):
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
         # Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any
         My_format = [('obsline_x', float), ('obsline_y1', float), ('obsline_y2', float), ('obsline_y3', float)]
         obsline_x=[]
@@ -360,13 +356,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.y3_column='gw_table'
         table='seismic_data'
         if self.sectionlinelayer and self.sectionlinelayer.name()=='obs_lines':
-            obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
+            obsline_id = common_utils.getselectedobjectnames(self.sectionlinelayer)[0]
             sql = r"""select %s as x, %s as y1, %s as y2, %s as y3 from %s where obsid='%s'"""%(x, self.y1_column,self.y2_column, self.y3_column,table,obsline_id)
             conn_OK, recs = db_utils.sql_load_fr_db(sql, self.dbconnection)
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
     def get_missing_obsid_labels(self):
         for idx, obs in enumerate(self.selected_obsids):
@@ -384,11 +380,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             try:
                 mpl.rcParams[k] = v
             except KeyError:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', "rcParams key %s didn't exist"))%ru(k))
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', "rcParams key %s didn't exist")) % ru(k))
 
 
         try:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', 'Plotting using settings:\n%s'))%self.secplot_templates.readable_output())
+            common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SectionPlot', 'Plotting using settings:\n%s')) % self.secplot_templates.readable_output())
         except:
             pass
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
@@ -397,7 +393,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.init_figure()
 
         try:
-            utils.start_waiting_cursor()#show the user this may take a long time...
+            common_utils.start_waiting_cursor()#show the user this may take a long time...
             try:
                 self.annotationtext.remove()
             except:
@@ -500,24 +496,24 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.dbconnection.closedb()
             self.dbconnection = None
         except KeyError as e:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'Section plot optional settings error, press "Restore defaults"')),
-                                            log_msg=ru(QCoreApplication.translate('SectionPlot', 'Error msg: %s'))%str(traceback.format_exc()))
-            utils.stop_waiting_cursor()
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'Section plot optional settings error, press "Restore defaults"')),
+                                                               log_msg=ru(QCoreApplication.translate('SectionPlot', 'Error msg: %s'))%str(traceback.format_exc()))
+            common_utils.stop_waiting_cursor()
             self.dbconnection.closedb()
             self.dbconnection = None
 
         except:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'An error occured, see log message panel!')),
-                                            log_msg=ru(
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'An error occured, see log message panel!')),
+                                                               log_msg=ru(
                                                 QCoreApplication.translate('SectionPlot', 'Error msg:\n %s')) % str(
                                                 traceback.format_exc()))
 
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             self.dbconnection.closedb()
             self.dbconnection = None
             raise
         else:
-            utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+            common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
         """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
@@ -535,7 +531,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.dbconnection.commit()
         except sqlite.OperationalError as Msg:
             self.dbconnection.rollback()
-            utils.pop_up_info(ru(QCoreApplication.translate('SectionPlot', "The SQL query\n %s\n seems to be invalid.\n\n%s")) %(query,Msg), 'Error', None)
+            common_utils.pop_up_info(ru(QCoreApplication.translate('SectionPlot', "The SQL query\n %s\n seems to be invalid.\n\n%s")) % (query, Msg), 'Error', None)
             self.queryPb=True #Indicates pb with current query
             
         return header,data
@@ -625,7 +621,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     if item.text() in self.ms.settingsdict['secplotselectedDEMs']:
                         item.setSelected(True)
         if msg:
-            utils.MessagebarAndLog.warning(
+            common_utils.MessagebarAndLog.warning(
                 bar_msg=QCoreApplication.translate('SectionPlot', "One or more layers were omitted due to unfulfilled requirements, see log message panel."),
                 log_msg='\n'.join(msg),
                 duration=30
@@ -638,8 +634,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.wlvltableComboBox.clear()
         skip_views = True if not include_views else False
         tabeller = [x for x in db_utils.get_tables(dbconnection=self.dbconnection, skip_views=skip_views)
-                           if not x.startswith('zz_') and x not in
-                                                        ['comments',
+                    if not x.startswith('zz_') and x not in
+                    ['comments',
                                                          'obs_points',
                                                         'obs_lines',
                                                         'obs_p_w_lvl',
@@ -754,7 +750,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         data = self.dbconnection.execute_and_fetchall(sql)
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
-        #data = utils.sql_load_fr_db(sql)[1]
+        #data = midvatten_utils.sql_load_fr_db(sql)[1]
         My_format = [('obs_id', np.unicode_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
         npdata = np.array(data, dtype=My_format)  #NDARRAY
         LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
@@ -762,7 +758,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         return LengthAlongTable
 
     def get_plot_data_geo(self):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
-        utils.start_waiting_cursor()#show the user this may take a long time...
+        common_utils.start_waiting_cursor()#show the user this may take a long time...
         if len(self.selected_obsids) > 0:
             self.plotx = {}
             self.plotbottom = {}
@@ -801,20 +797,20 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         self.x_id.append(float(self.length_along[q]))
                         sql = "SELECT h_toc, h_gs, length FROM obs_points WHERE obsid = '%s'"%obs
                         recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
-                        if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
+                        if common_utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
                             self.z_id.append(recs[0][1])
-                        elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
+                        elif common_utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
                             self.z_id.append(recs[0][0])
-                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot',
+                            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot',
                                     "Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (
                                     obs, str(recs[0][1]), 'h_toc'))
                         else:
                             self.z_id.append(0)
-                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot',
+                            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot',
                                 "Obsid %s: using h_gs %s or h_toc %s failed, using 0 instead.")) % (
                                                                        obs, str(recs[0][1]), str(recs[0][0])))
 
-                        if utils.isfloat(str(recs[0][2])):
+                        if common_utils.isfloat(str(recs[0][2])):
                             self.barlengths.append(recs[0][2])
                         else:
                             self.barlengths.append(0)
@@ -839,22 +835,22 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                             # print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
                             # print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
 
-                            if utils.isfloat(str(sql01_result)) and sql01_result >-999:
+                            if common_utils.isfloat(str(sql01_result)) and sql01_result >-999:
                                 z_gs.append(float(str(sql01_result)))
-                            elif utils.isfloat(str(sql02_result)) and sql02_result>-999:
+                            elif common_utils.isfloat(str(sql02_result)) and sql02_result>-999:
                                 z_gs.append(float(str(sql02_result)))
                             else:
                                 z_gs.append(0)
                             Bottom.append(z_gs[i] - float(str((
-                                                              db_utils.sql_load_fr_db("""SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND lower(geoshort) %s"""%(obs, str(recs[j][1]), self.PlotTypes[Typ]), self.dbconnection)[1])[0][0])))
+                                                              db_utils.sql_load_fr_db("""SELECT depthbot FROM stratigraphy WHERE obsid = '%s' AND stratid = %s AND lower(geoshort) %s""" % (obs, str(recs[j][1]), self.PlotTypes[Typ]), self.dbconnection)[1])[0][0])))
                             #lists for plotting annotation
                             self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                             self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
-                            self.geology_txt.append(utils.null_2_empty_string(ru(recs[j][2])))
-                            self.geoshort_txt.append(utils.null_2_empty_string(ru(recs[j][3])))
-                            self.capacity_txt.append(utils.null_2_empty_string(ru(recs[j][4])))
-                            self.development_txt.append(utils.null_2_empty_string(ru(recs[j][5])))
-                            self.comment_txt.append(utils.null_2_empty_string(ru(recs[j][6])))
+                            self.geology_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][2])))
+                            self.geoshort_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][3])))
+                            self.capacity_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][4])))
+                            self.development_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][5])))
+                            self.comment_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][6])))
                             # print obs + " " + Typ + " " + self.geology_txt[l] + " "
                             # + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " "
                             # + self.development_txt[l] + " " + self.comment_txt[l]  # debug
@@ -878,7 +874,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     self.plotbottom[Typ] = Bottom
                     self.plotbarlength[Typ] = BarLength
 
-        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+        common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def get_plot_data_2(self):
         self.obsid_wlid = []  # if no stratigr plot, obsid will be plotted close to water level instead of toc or gs
@@ -909,7 +905,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 #print(query)#debug
                 worked, recs = db_utils.sql_load_fr_db(query, self.dbconnection)
                 if worked and recs:
-                    if utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
+                    if common_utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
                         labellevel = recs[0][0]
                 del recs
 
@@ -943,7 +939,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             q += 1
 
     def get_plot_data_hydro(self):  # called when class is instantiated collecting data for profile line layer & obs_points
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
 
         if len(self.selected_obsids) > 0:
             self.plotx_h = {}
@@ -991,9 +987,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                             # print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
 
-                            if utils.isfloat(str(sql01_result)) and sql01_result > -999:
+                            if common_utils.isfloat(str(sql01_result)) and sql01_result > -999:
                                 z = float(str(sql01_result))
-                            elif utils.isfloat(str(sql02_result)) and sql02_result > -999:
+                            elif common_utils.isfloat(str(sql02_result)) and sql02_result > -999:
                                 z = float(str(sql02_result))
                             else:
                                 z = 0
@@ -1028,7 +1024,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                             self.z_txt.append(Bottom[i] + recs[j][0] / 2)  # Z-value for text
 
-                            self.capacity_txt.append(utils.null_2_empty_string(ru(recs[j][2])))
+                            self.capacity_txt.append(tools.utils.common_utils.null_2_empty_string(ru(recs[j][2])))
 
                             self.hydro_explanation_txt = []
 
@@ -1061,7 +1057,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                     self.plotbarlength_h[capacity] = BarLength
 
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
     def get_selected_dems_params(self, dialog):
         selected_dems = []
@@ -1116,11 +1112,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 pass
 
     def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, poly_layer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
-        poly_layer = utils.find_layer(poly_layer_name)
+        poly_layer = common_utils.find_layer(poly_layer_name)
         points_srid = temp_memorylayer.crs().authid()
         poly_layer_srid = poly_layer.crs().authid()
         if points_srid != poly_layer_srid:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'."))%(poly_layer_name, str(poly_layer_srid), str(points_srid)))
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'.")) % (poly_layer_name, str(poly_layer_srid), str(points_srid)))
             return None
         polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)
 
@@ -1240,8 +1236,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             try:
                 self.p.append(self.axes.bar(plotx_hleftbarcorner, self.plotbarlength_h[capacity_txt], bottom=self.plotbottom_h[capacity_txt], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             except Exception as e:
-                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Sectionplot', 'Capacity %s color %s could not be plotted. Default to white!. See message log'))%(str(capacity_txt), settings['color']),
-                                            log_msg=str(e))
+                common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Sectionplot', 'Capacity %s color %s could not be plotted. Default to white!. See message log')) % (str(capacity_txt), settings['color']),
+                                                               log_msg=str(e))
                 settings['color'] = 'white'
                 self.p.append(self.axes.bar(plotx_hleftbarcorner, self.plotbarlength_h[capacity_txt], bottom=self.plotbottom_h[capacity_txt], align='edge', **settings))  # matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
 
@@ -1283,7 +1279,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.plot_water_level_interactive()
 
     def plot_water_level_interactive(self):
-        sql = '''SELECT date_time, level_masl, obsid FROM {} WHERE obsid IN ({})'''.format(self.ms.settingsdict['secplotwlvltab'], utils.sql_unicode_list(self.selected_obsids))
+        sql = '''SELECT date_time, level_masl, obsid FROM {} WHERE obsid IN ({})'''.format(self.ms.settingsdict['secplotwlvltab'], common_utils.sql_unicode_list(self.selected_obsids))
         self.df = pd.read_sql(sql,
                          self.dbconnection.conn, index_col='date_time', coerce_float=True, params=None, parse_dates=['date_time'],
                          columns=None,
@@ -1352,7 +1348,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 try:
                     _col = col.encode('utf8').decode('utf8')
                 except Exception as e:
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Sectionplot: Encoding string failed for %s"))%ru(col))
+                    common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Sectionplot: Encoding string failed for %s")) % ru(col))
                     continue
                 else:
                     try:
@@ -1467,7 +1463,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)
         loaded_template["Axes_set_xlim"] = None
         loaded_template["Axes_set_ylim"] = None
-        utils.save_stored_settings(self.ms, loaded_template, 'secplot_loaded_template')
+        common_utils.save_stored_settings(self.ms, loaded_template, 'secplot_loaded_template')
         self.ms.save_settings('secplot_templates')
         
     def set_location(self):#not ready
@@ -1482,7 +1478,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         selected_features = [f for f in layer.getSelectedFeatures()]
         if len(selected_features) != 1:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Must select only one feature in qgis layer: %s)"))%layer.name())
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Must select only one feature in qgis layer: %s)")) % layer.name())
             return False
 
         """
@@ -1495,10 +1491,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         """
         try:
             if layer.geometryType() != 1:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry type MULTILINESTRING, had %s")) % (layer.name(), str(layer.geometryType())))
                 return False
         except:
-            utils.MessagebarAndLog.critical(
+            common_utils.MessagebarAndLog.critical(
                 bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is not MultiLineString geometry")) % layer.name())
             return False
 

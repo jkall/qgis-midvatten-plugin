@@ -25,7 +25,7 @@ from __future__ import absolute_import
 from builtins import str
 from collections import OrderedDict
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import mock
 import nose
 from import_data_to_db import MidvDataImporterError

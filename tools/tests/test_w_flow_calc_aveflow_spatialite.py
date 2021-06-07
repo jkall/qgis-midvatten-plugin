@@ -26,10 +26,11 @@ import mock
 import w_flow_calc_aveflow
 from nose.plugins.attrib import attr
 from qgis.PyQt import QtWidgets
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import date_utils
 
+import midvatten.tools.utils.common_utils as common_utils
 from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
 from tools.tests.mocks_for_tests import DummyInterface
 import utils_for_tests
@@ -56,7 +57,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         #insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')
         res = db_utils.sql_load_fr_db('''SELECT obsid, instrumentid, flowtype, date_time, ROUND(reading, 4), unit FROM w_flow ORDER BY obsid, flowtype, date_time''')[1]
-        test = utils.anything_to_string_representation(res)
+        test = common_utils.anything_to_string_representation(res)
 
 
 
@@ -88,7 +89,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         #insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')
         res = db_utils.sql_load_fr_db('''SELECT obsid, instrumentid, flowtype, date_time, ROUND(reading, 4), unit FROM w_flow ORDER BY obsid, flowtype, date_time''')[1]
-        test = utils.anything_to_string_representation(res)
+        test = common_utils.anything_to_string_representation(res)
 
 
         print(test)
@@ -127,7 +128,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         #insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')
         res = db_utils.sql_load_fr_db('''SELECT obsid, instrumentid, flowtype, date_time, ROUND(reading, 4), unit FROM w_flow ORDER BY obsid, flowtype, date_time''')[1]
-        test = utils.anything_to_string_representation(res)
+        test = common_utils.anything_to_string_representation(res)
 
 
         reference = '[("1", "inst1", "Accvol", "2019-02-01 00:00", 1.0, "m3", ), ("1", "inst1", "Accvol", "2019-02-02 00:00", 2.0, "m3", ), ("1", "inst1", "Accvol", "2019-02-03 00:00", 5.0, "m3", ), ("1", "inst1", "Accvol", "2019-02-04 00:00", 10.0, "m3", ), ("1", "inst1", "Aveflow", "2019-02-02", 0.0116, "l/s", ), ("1", "inst1", "Aveflow", "2019-02-03", 0.0347, "l/s", ), ("1", "inst1", "Aveflow", "2019-02-04", 0.0579, "l/s", ), ("2", "inst2", "Accvol", "2019-02-03 00:00", 5.0, "m3", ), ("2", "inst2", "Accvol", "2019-02-04 00:00", 10.0, "m3", )]'
@@ -160,7 +161,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         #insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')
         res = db_utils.sql_load_fr_db('''SELECT obsid, instrumentid, flowtype, date_time, ROUND(reading, 4), unit FROM w_flow ORDER BY obsid, flowtype, date_time''')[1]
-        test = utils.anything_to_string_representation(res)
+        test = common_utils.anything_to_string_representation(res)
 
 
         #print(test)

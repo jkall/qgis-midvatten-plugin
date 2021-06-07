@@ -26,6 +26,8 @@ import ast
 import os
 import zipfile
 import qgis.PyQt
+from PyQt5.QtCore import QCoreApplication
+
 try:
     import zlib
     compression = zipfile.ZIP_DEFLATED
@@ -43,13 +45,12 @@ import  qgis.core
 from qgis.PyQt.QtCore import QCoreApplication, QSettings
 
 from qgis.utils import spatialite_connect
-from qgis._core import QgsProject, QgsDataSourceUri, QgsCredentials
-import db_manager.db_plugins.postgis.connector as postgis_connector
+from qgis.core import QgsProject, QgsDataSourceUri, QgsCredentials
 import db_manager.db_plugins.connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import MessagebarAndLog, returnunicode as ru, UsageError, UserInterruptError, \
+    sql_failed_msg, write_printlist_to_file
 
 
 class PostGisDBConnectorMod(db_manager.db_plugins.postgis.connector.PostGisDBConnector):
@@ -130,12 +131,12 @@ class DbConnectionManager(object):
                 db_settings = {'spatialite': {'dbpath': db_settings}}
             else:
                 if not db_settings:
-                    raise utils.UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database setting was empty. Check DB tab in Midvatten settings.' )))
+                    raise UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database setting was empty. Check DB tab in Midvatten settings.')))
                 else:
                     try:
                         db_settings = ast.literal_eval(db_settings)
                     except:
-                        raise utils.UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database could not be set. Check DB tab in Midvatten settings.')))
+                        raise UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database could not be set. Check DB tab in Midvatten settings.')))
 
         elif isinstance(db_settings, dict):
             # Assume it the dict is a valid db_settings dict.
@@ -156,7 +157,7 @@ class DbConnectionManager(object):
             self.dbpath = ru(self.connection_settings['dbpath'])
 
             if not os.path.isfile(self.dbpath):
-                raise utils.UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database error! File "%s" not found! Check db tab in Midvatten settings!'))%self.dbpath)
+                raise UsageError(ru(QCoreApplication.translate('DbConnectionManager', 'Database error! File "%s" not found! Check db tab in Midvatten settings!')) % self.dbpath)
 
             self.check_db_is_locked()
 
@@ -167,8 +168,8 @@ class DbConnectionManager(object):
                 self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
             except Exception as e:
 
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.')) % self.dbpath,
-                                                log_msg=ru(QCoreApplication.translate('DbConnectionManager', 'msg %s'))%str(e))
+                MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.')) % self.dbpath,
+                                                                   log_msg=ru(QCoreApplication.translate('DbConnectionManager', 'msg %s'))%str(e))
                 raise
 
         elif self.dbtype == 'postgis':
@@ -179,8 +180,8 @@ class DbConnectionManager(object):
                 self.connector = PostGisDBConnectorMod(self.uri)
             except Exception as e:
                 if 'no password supplied' in str(e):
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'No password supplied for postgis connection')))
-                    raise utils.UserInterruptError()
+                    MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'No password supplied for postgis connection')))
+                    raise UserInterruptError()
                 else:
                     raise
 
@@ -211,8 +212,8 @@ class DbConnectionManager(object):
                     self.cursor.execute(line)
                 except Exception as e:
                     textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(line), ru(str(e)))
-                    utils.MessagebarAndLog.warning(
-                        bar_msg=utils.sql_failed_msg(),
+                    MessagebarAndLog.warning(
+                        bar_msg=sql_failed_msg(),
                         log_msg=textstring)
                     raise
             elif isinstance(all_args, (list, tuple)):
@@ -221,8 +222,8 @@ class DbConnectionManager(object):
                     self.cursor.execute(line, args)
                 except Exception as e:
                     textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nusing args %s\nMsg:\n%s""")) % (ru(line), ru(args), ru(str(e)))
-                    utils.MessagebarAndLog.warning(
-                        bar_msg=utils.sql_failed_msg(),
+                    MessagebarAndLog.warning(
+                        bar_msg=sql_failed_msg(),
                         log_msg=textstring)
                     raise
             else:
@@ -235,8 +236,8 @@ class DbConnectionManager(object):
             textstring = ru(QCoreApplication.translate('sql_load_fr_db',
                                                                         """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
                          ru(sql), ru(str(e)))
-            utils.MessagebarAndLog.warning(
-                bar_msg=utils.sql_failed_msg(),
+            MessagebarAndLog.warning(
+                bar_msg=sql_failed_msg(),
                 log_msg=textstring)
             raise
 
@@ -289,7 +290,7 @@ class DbConnectionManager(object):
             if reponse == qgis.PyQt.QtWidgets.QMessageBox.Yes:
                 self.temptable_name = '%s_2' % self.temptable_name
             else:
-                raise utils.UserInterruptError()
+                raise UserInterruptError()
 
         if self.dbtype == 'spatialite':
             temptable_name = 'mem.' + temptable_name
@@ -342,7 +343,7 @@ class DbConnectionManager(object):
             filename = os.path.join(tempfile.gettempdir(), '{}.csv'.format(table_name))
             printlist = [header]
             printlist.extend(rows)
-            utils.write_printlist_to_file(filename, printlist)
+            write_printlist_to_file(filename, printlist)
 
     def get_srid(self, table_name, geometry_column='geometry'):
         srid = None
@@ -378,8 +379,8 @@ def check_connection_ok(write_error_msg=True):
         dbconnection.closedb()
     except Exception as e:
         if write_error_msg:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('check_connection_ok', 'Could not connect to db: %s'))%str(e),
-                                            duration=30)
+            MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('check_connection_ok', 'Could not connect to db: %s')) % str(e),
+                                                               duration=30)
         connection_ok = False
     return connection_ok
 
@@ -422,8 +423,8 @@ def sql_load_fr_db(sql, dbconnection=None, print_error_message_in_bar=True):
     except Exception as e:
         textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(sql), ru(str(e)))
         if print_error_message_in_bar:
-            utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), duration=4)
-        utils.MessagebarAndLog.warning(log_msg=textstring)
+            MessagebarAndLog.warning(bar_msg=sql_failed_msg(), duration=4)
+        MessagebarAndLog.warning(log_msg=textstring)
         return False, []
     else:
         return True, result
@@ -442,7 +443,7 @@ def sql_alter_db(sql, dbconnection=None, all_args=None):
     except Exception as e:
         textstring = ru(QCoreApplication.translate('sql_alter_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
         ru(sql), ru(str(e)))
-        utils.MessagebarAndLog.warning(
+        MessagebarAndLog.warning(
             bar_msg=ru(QCoreApplication.translate('sql_alter_db', 'Some sql failure, see log for additional info.')),
             log_msg=textstring, duration=4)
 
@@ -486,7 +487,7 @@ def db_tables_columns_info(table=None, dbconnection=None):
             columns = None
 
         if columns is None:
-            utils.MessagebarAndLog.warning(log_msg=ru(
+            MessagebarAndLog.warning(log_msg=ru(
                 QCoreApplication.translate('db_tables_columns_info', 'Getting columns from table %s failed!')) % (tablename))
             continue
         tables_dict[tablename] = columns
@@ -525,7 +526,7 @@ def get_table_info(tablename, dbconnection=None):
         try:
             columns = dbconnection.execute_and_fetchall(columns_sql)
         except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), log_msg=ru(
+            MessagebarAndLog.warning(bar_msg=sql_failed_msg(), log_msg=ru(
                 QCoreApplication.translate('get_table_info', 'Sql failed: %s\msg:%s')) % (columns_sql, str(e)))
             return None
 
@@ -782,11 +783,11 @@ def backup_db(dbconnection=None):
                  compress_type=compression)  # compression will depend on if zlib is found or not
         zf.close()
         dbconnection.conn.rollback()
-        utils.MessagebarAndLog.info(
+        MessagebarAndLog.info(
             bar_msg=ru(QCoreApplication.translate("backup_db", "Database backup was written to %s ")) % bkupname,
             duration=15)
     else:
-        utils.MessagebarAndLog.info(
+        MessagebarAndLog.info(
             bar_msg=ru(
                 QCoreApplication.translate("backup_db", "Backup of PostGIS database not supported yet!")),
             duration=15)
@@ -907,9 +908,9 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
         try:
             median_value = median_value[0][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
+            MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Median calculation error, see log message panel')),
-                                           log_msg=ru(QCoreApplication.translate('calculate_median_value',
+                                                              log_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Sql failed: %s')) % sql)
             median_value = None
 
@@ -920,9 +921,9 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
         try:
             median_value = median_value[0][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
+            MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Median calculation error, see log message panel')),
-                                           log_msg=ru(QCoreApplication.translate('calculate_median_value',
+                                                              log_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Sql failed: %s')) % sql)
             median_value = None
     return median_value
@@ -952,7 +953,7 @@ def delete_srids(execute_able_object, keep_epsg_code):
     try:
         execute_able_object.execute(delete_srid_sql)
     except:
-        utils.MessagebarAndLog.info(
+        MessagebarAndLog.info(
             log_msg=ru(QCoreApplication.translate('delete_srids', 'Removing srids failed using: %s')) % str(
                 delete_srid_sql))
 
@@ -970,7 +971,7 @@ def get_spatialite_db_path_from_dbsettings_string(db_settings):
                     msg = str(e)
                 except:
                     msg = ru(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', 'Error message failed! Could not be converted to string!'))
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', '%s error msg from db_settings string "%s": %s')) % ('get_spatialite_db_path_from_dbsettings_string', db_settings, msg))
+                MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', '%s error msg from db_settings string "%s": %s')) % ('get_spatialite_db_path_from_dbsettings_string', db_settings, msg))
                 return ''
             else:
                 return db_settings.get('spatialite', {}).get('dbpath', '')
@@ -990,3 +991,28 @@ def nonplot_tables(as_tuple=False):
     if not as_tuple:
         tables = "({})".format(', '.join(["'{}'".format(x) for x in tables]))
     return tables
+
+
+def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
+    sqlstring = r"""select %s, %s from %s"""%(params)
+    connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
+
+    if not connection_ok:
+        textstring = ru(QCoreApplication.translate('create_dict_from_db_2_cols', """Cannot create dictionary from columns %s and %s in table %s!"""))%(params)#col1,col2,table)
+        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('create_dict_from_db_2_cols', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
+        return False, {'':''}
+
+    adict = dict([(k, v) for k, v in list_of_tuples])
+    return True, adict
+
+
+def get_all_obsids(table='obs_points'):
+    """ Returns all obsids from obs_points
+    :return: All obsids from obs_points
+    """
+    obsids = []
+    connection_ok, result = sql_load_fr_db('''SELECT DISTINCT obsid FROM %s ORDER BY OBSID''' % table)
+    if connection_ok:
+        obsids = [row[0] for row in result]
+    return obsids

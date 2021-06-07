@@ -27,13 +27,14 @@ from builtins import str
 
 from collections import OrderedDict
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from import_levelogger import LeveloggerImport
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 
@@ -98,9 +99,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -194,9 +195,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -282,9 +283,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -372,9 +373,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -460,7 +461,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
             filenames = [f1]
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
@@ -521,7 +522,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
             filenames = [f1]
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
@@ -620,9 +621,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -718,9 +719,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -812,8 +813,8 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
 
                 filenames = [f1, f2]
 
@@ -904,9 +905,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -1010,9 +1011,9 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), LeveloggerImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), LeveloggerImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -1073,7 +1074,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
 
         LeveloggerImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
+        with common_utils.tempinput('\n'.join(files[0]), LeveloggerImport.charsetchoosen) as f1:
 
 
             filenames = [f1]

@@ -21,9 +21,9 @@ from __future__ import absolute_import
 from builtins import str
 import datetime
 import re
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
 from qgis.PyQt.QtCore import QCoreApplication
+
+from midvatten.tools.utils.common_utils import returnunicode as ru, MessagebarAndLog
 
 def find_date_format(datestring, suppress_error_msg=False):
     """
@@ -65,7 +65,7 @@ def find_date_format(datestring, suppress_error_msg=False):
 
     if found_format is None:
         if not suppress_error_msg:
-            utils.MessagebarAndLog.critical(
+            MessagebarAndLog.critical(
                 bar_msg=QCoreApplication.translate('find_date_format', 'Date parsing failed, see log message panel'),
                 log_msg=ru(QCoreApplication.translate('find_date_format', 'Could not find the date format for string "%s"\nSupported date formats:\n%s'))%(ru(datestring), '\n'.join(date_formats_to_try)))
 

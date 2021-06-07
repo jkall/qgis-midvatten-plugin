@@ -21,7 +21,7 @@
 """
 from __future__ import absolute_import
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from mock import call

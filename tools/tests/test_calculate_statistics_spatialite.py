@@ -23,7 +23,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from mock import call

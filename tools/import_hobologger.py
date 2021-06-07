@@ -21,23 +21,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-import io
 import os
 import csv
 import re
 import datetime
 from functools import partial
-from collections import OrderedDict
 import import_diveroffice
 
-from qgis.PyQt import QtGui, QtWidgets
+from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication
 
-import midvatten_utils as utils
-import date_utils
-import gui_utils
-from midvatten_utils import returnunicode as ru
-
+from midvatten.tools.utils import common_utils, date_utils, gui_utils, midvatten_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class HobologgerImport(import_diveroffice.DiverofficeImport):
@@ -86,8 +81,8 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
         try:
             data_header_idx = [rownr for rownr, row in enumerate(rows) if 'Date Time' in '_'.join(row)][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Hobologger import',
-                                                                                 '''File %s could not be parsed.'''))%filename)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Hobologger import',
+                                                                                 '''File %s could not be parsed.''')) % filename)
             return [], filename, location
 
         date_colnr = [idx for idx, col in enumerate(rows[1]) if 'Date Time' in col]
@@ -99,7 +94,7 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
         if tz_converter:
             tz_string = get_tz_string(rows[1][date_colnr])
             if tz_string is None:
-                utils.MessagebarAndLog.warning(
+                common_utils.MessagebarAndLog.warning(
                     bar_msg=ru(QCoreApplication.translate('Hobologger import', 'Timezone not found in %s')) % filename)
             tz_converter.source_tz = tz_string
 
@@ -121,24 +116,24 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
         try:
             first_data_row = rows[data_header_idx + 1]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
-                                                                                 '''No data in file %s.'''))%filename)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
+                                                                                 '''No data in file %s.''')) % filename)
             return [], filename, location
         else:
             dt = first_data_row[date_colnr]
             date_format = date_utils.find_date_format(dt, suppress_error_msg=True)
             if date_format is None:
-                dt = first_data_row[date_colnr][:-2].rstrip()
+                dt = common_utils.rstrip()
                 date_format = date_utils.find_date_format(dt)
                 if date_format is None:
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
+                    common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
                                                                                          '''Dateformat in file %s could not be parsed.''')) % filename)
                     return [], filename, location
 
         filedata.extend([[date_utils.long_dateformat(fix_date(row[date_colnr], filename, tz_converter)),
                               '',
-                              str(float(row[temp_colnr].replace(',', '.'))) if (
-                              utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else '',
+                          str(float(row[temp_colnr].replace(',', '.'))) if (
+                              common_utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else '',
                               '']
                         for row in rows[data_header_idx + 1:]
                         if all([fix_date(row[date_colnr], filename, tz_converter) >= begindate if begindate is not None else True,
@@ -151,7 +146,7 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
 
 def fix_date(date_time, filename, tz_converter=None):
     try:
-        dt = datetime.datetime.strptime(date_time[:-2].rstrip(), '%m/%d/%y %I:%M:%S')
+        dt = datetime.datetime.strptime(common_utils.rstrip(), '%m/%d/%y %I:%M:%S')
     except ValueError:
         dt = date_utils.datestring_to_date(date_time)
         if dt is None:

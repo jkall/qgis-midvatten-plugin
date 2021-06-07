@@ -24,9 +24,11 @@ from __future__ import print_function
 
 from builtins import str
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
+
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mock import MagicMock
 from nose.plugins.attrib import attr
@@ -76,7 +78,7 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 view_contents.append(db_utils.sql_load_fr_db('''SELECT rowid, obsid, z_coord, height, ST_AsText(geometry) FROM {};'''.format(l))[1])
         view_contents.append(
             db_utils.sql_load_fr_db('''SELECT rowid, obsid, ST_AsText(geometry) FROM {};'''.format('strat_obs_p_for_qgsi2threejs'))[1])
-        test = utils.anything_to_string_representation(view_contents)
+        test = common_utils.anything_to_string_representation(view_contents)
         print(str(test))
         ref = '''[[(1, "1", 1.0, -1.0, "POINT(1 1)", )], [(2, "1", 0.0, -1.0, "POINT(1 1)", )], [], [], [], [], [], [], [], [], [], [], [], [], [(1, "1", "POINT(1 1)", )]]'''
         assert test == ref

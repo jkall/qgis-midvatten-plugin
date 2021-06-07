@@ -19,16 +19,14 @@
 """
 from __future__ import absolute_import
 
+from builtins import object
 import os
 import qgis.utils
 from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer
 
-import db_utils
-import midvatten_utils as utils
-from builtins import object
-
-from definitions import midvatten_defs as defs
-from midvatten_utils import add_layers_to_list
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.definitions import midvatten_defs as defs
+from midvatten.tools.utils.midvatten_utils import add_layers_to_list
 
 
 class LoadLayers(object):
@@ -90,7 +88,7 @@ class LoadLayers(object):
             #now try to load the style file
             stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
             stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
-            if  utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
                 try:
                     layer.loadNamedStyle(stylefile_sv)
                 except:
@@ -132,7 +130,7 @@ class LoadLayers(object):
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
             layer = QgsVectorLayer(firststring,self.dbtype)   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
-                utils.MessagebarAndLog.critical(bar_msg='Error, Failed to load layer %s!'%tablename)
+                common_utils.MessagebarAndLog.critical(bar_msg='Error, Failed to load layer %s!' % tablename)
             else:
                 QgsProject.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')
@@ -141,7 +139,7 @@ class LoadLayers(object):
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
-                    if  utils.getcurrentlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+                    if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:
                         filename = tablename + "_en.ui"
@@ -157,13 +155,13 @@ class LoadLayers(object):
             uri.setDataSource('',tablename, 'Geometry')
             layer = QgsVectorLayer(uri.uri(), self.dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             if not layer.isValid():
-                utils.MessagebarAndLog.critical(bar_msg='Error, Failed to load layer %s!' % tablename)
+                common_utils.MessagebarAndLog.critical(bar_msg='Error, Failed to load layer %s!' % tablename)
             else:
                 filename = tablename + ".qml"
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
                 if tablename in defs.get_subset_of_tables_fr_db(category='default_layers_w_ui'):        #=   THE ONES WITH CUSTOM UI FORMS
-                    if utils.getcurrentlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+                    if midvatten_utils.getcurrentlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:
                         filename = tablename + "_en.ui"
@@ -188,7 +186,7 @@ class LoadLayers(object):
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""
         result = db_utils.sql_load_fr_db(sql)[1]
         if len(result)==0:#if it is an old database w/o styles
-            update_db = utils.Askuser("YesNo", """Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""", 'Update database with layer styles?')
+            update_db = common_utils.Askuser("YesNo", """Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""", 'Update database with layer styles?')
             if update_db.result == 1:
                 from .create_db import AddLayerStyles
                 AddLayerStyles()

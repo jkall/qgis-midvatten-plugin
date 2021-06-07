@@ -27,13 +27,14 @@ from builtins import str
 
 from collections import OrderedDict
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from import_diveroffice import DiverofficeImport
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 
@@ -62,9 +63,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -117,9 +118,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -169,9 +170,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -223,9 +224,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -267,7 +268,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
             filenames = [f1]
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
@@ -314,7 +315,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
             filenames = [f1]
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
@@ -374,9 +375,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -434,9 +435,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -494,8 +495,8 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
 
                 filenames = [f1, f2]
 
@@ -549,9 +550,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
 
         DiverofficeImport.charsetchoosen = 'utf-8'
-        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)

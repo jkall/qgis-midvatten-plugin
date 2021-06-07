@@ -26,7 +26,7 @@ import re
 
 from qgis.core import QgsProject, QgsVectorLayer
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import gui_utils
 import mock
 from mock import call, MagicMock

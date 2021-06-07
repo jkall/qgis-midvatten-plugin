@@ -25,12 +25,11 @@ from __future__ import absolute_import
 from builtins import str
 import io
 import os
-from collections import OrderedDict
 import import_diveroffice
 from qgis.PyQt.QtCore import QCoreApplication
-import midvatten_utils as utils
-import date_utils
-from midvatten_utils import returnunicode as ru
+
+from midvatten.tools.utils import common_utils, date_utils, midvatten_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class LeveloggerImport(import_diveroffice.DiverofficeImport):
@@ -80,11 +79,11 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
         try:
             data_header_idx = [rownr for rownr, row in enumerate(rows_unsplit) if row.startswith('Date')][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
-                                                                                 '''File %s could not be parsed.'''))%filename)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                 '''File %s could not be parsed.''')) % filename)
             return [], filename, location
 
-        delimiter = utils.get_delimiter_from_file_rows(rows_unsplit[data_header_idx:], filename=filename, delimiters=[';', ','], num_fields=None)
+        delimiter = common_utils.get_delimiter_from_file_rows(rows_unsplit[data_header_idx:], filename=filename, delimiters=[';', ','], num_fields=None)
 
         if delimiter is None:
             return [], filename, location
@@ -120,7 +119,7 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
                     level_unit_factor_to_cm = 100
                 else:
                     level_unit_factor_to_cm = 100
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport', '''The unit for level wasn't m or cm, a factor of %s was used. Check the imported data.'''))%str(level_unit_factor_to_cm))
+                    common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport', '''The unit for level wasn't m or cm, a factor of %s was used. Check the imported data.''')) % str(level_unit_factor_to_cm))
 
         file_header = rows[data_header_idx]
 
@@ -152,25 +151,27 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
         try:
             first_data_row = rows[data_header_idx + 1]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
-                                                                                 '''No data in file %s.'''))%filename)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                 '''No data in file %s.''')) % filename)
             return [], filename, location
         else:
             date_str = ' '.join([first_data_row[date_colnr], first_data_row[time_colnr]])
             date_format = date_utils.datestring_to_date(date_str)
             if date_format is None:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
                                                                                      '''Dateformat in file %s could not be parsed.''')) % filename)
                 return [], filename, location
 
         filedata.extend([[date_utils.long_dateformat(' '.join([row[date_colnr], row[time_colnr]]), date_format),
-                          str(float(row[level_colnr].replace(',', '.')) * level_unit_factor_to_cm) if (utils.to_float_or_none(row[level_colnr]) is not None if level_colnr is not None else None) else None,
-                          str(float(row[temp_colnr].replace(',', '.'))) if (utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else None,
-                          str(float(row[spec_cond_colnr].replace(',', '.')) * spec_cond_factor_to_mScm) if (utils.to_float_or_none(row[spec_cond_colnr]) if spec_cond_colnr is not None else None) else None]
-                        for row in rows[data_header_idx + 1:]
-                        if all([isinstance(utils.to_float_or_none(row[level_colnr]), float) if skip_rows_without_water_level else True,
-                                date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) >= begindate if begindate is not None else True,
-                                date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) <= enddate if enddate is not None else True])])
+                          str(float(row[level_colnr].replace(',', '.')) * level_unit_factor_to_cm) if (
+                              common_utils.to_float_or_none(row[level_colnr]) is not None if level_colnr is not None else None) else None,
+                          str(float(row[temp_colnr].replace(',', '.'))) if (tools.utils.common_utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else None,
+                          str(float(row[spec_cond_colnr].replace(',', '.')) * spec_cond_factor_to_mScm) if (
+                              common_utils.to_float_or_none(row[spec_cond_colnr]) if spec_cond_colnr is not None else None) else None]
+                         for row in rows[data_header_idx + 1:]
+                         if all([isinstance(tools.utils.common_utils.to_float_or_none(row[level_colnr]), float) if skip_rows_without_water_level else True,
+                                 date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) >= begindate if begindate is not None else True,
+                                 date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) <= enddate if enddate is not None else True])])
 
 
         filedata = [row for row in filedata if any(row[1:])]

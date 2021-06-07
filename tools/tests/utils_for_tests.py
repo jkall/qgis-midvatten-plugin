@@ -37,13 +37,14 @@ from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsField
 import unittest
 import qgis
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer
-from midvatten.midvatten import Midvatten
+from midvatten_plugin.midvatten import Midvatten
 from qgis.PyQt.QtCore import QSettings
 
+import midvatten.tools.utils.common_utils as common_utils
 from mocks_for_tests import DummyInterface2
 
 
@@ -78,7 +79,7 @@ def dict_to_sorted_list(adict):
         for k in adict:
             result_list.extend(dict_to_sorted_list(k))
     else:
-        result_list.append(utils.returnunicode(adict)) #.encode('utf-8'))
+        result_list.append(tools.utils.common_utils.returnunicode(adict)) #.encode('utf-8'))
     return result_list
 
 def create_test_string(anything=None):
@@ -99,12 +100,12 @@ def create_test_string(anything=None):
     elif isinstance(anything, tuple):
         aunicode = ''.join(['(', ', '.join([create_test_string(x) for x in anything]), ')'])
     elif isinstance(anything, (str, float, int)):
-        aunicode = utils.returnunicode(anything)
+        aunicode = common_utils.returnunicode(anything)
     elif isinstance(anything, qgis.PyQt.QtCore.QVariant):
         print("Was variant")
-        aunicode = utils.returnunicode(anything.toString().data())
+        aunicode = common_utils.returnunicode(anything.toString().data())
     else:
-        aunicode = utils.returnunicode(str(anything))
+        aunicode = common_utils.returnunicode(str(anything))
     return aunicode
 
 
@@ -219,7 +220,7 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
 
     def setUp(self):
         super().setUp()
-        QgsProject.instance().writeEntry("Midvatten", 'database', utils.anything_to_string_representation(MidvattenTestPostgisNotCreated.TEMP_DB_SETTINGS))
+        QgsProject.instance().writeEntry("Midvatten", 'database', common_utils.anything_to_string_representation(MidvattenTestPostgisNotCreated.TEMP_DB_SETTINGS))
         qs = QSettings()
         for k, v in MidvattenTestPostgisNotCreated.ALL_POSTGIS_SETTINGS['nosetests'].items():
             qs.setValue('PostgreSQL/connections/{}/{}'.format('nosetests', k), v)

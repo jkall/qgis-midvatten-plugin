@@ -29,13 +29,12 @@ from builtins import object
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
-import db_utils
+import qgis.PyQt
 from qgis.PyQt import QtGui, QtCore, uic, QtWidgets  # , QtSql
 from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
-import locale
 
 import numpy as np
 
@@ -49,11 +48,12 @@ import datetime
 import matplotlib.ticker as tick
 
 from qgis.PyQt.QtWidgets import QApplication
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from definitions import midvatten_defs as defs
-import qgis.PyQt
-from gui_utils import set_groupbox_children_visibility
+
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.definitions import midvatten_defs as defs
+
+from tools.utils.gui_utils import set_groupbox_children_visibility
 
 try:
     import pandas as pd
@@ -62,7 +62,7 @@ except:
 else:
     pandas_on = True
 
-utils.MessagebarAndLog.info(log_msg="Python pandas: " + str(pandas_on))
+common_utils.MessagebarAndLog.info(log_msg="Python pandas: " + str(pandas_on))
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..', 'ui', 'customplotdialog.ui'))[0]
 
 
@@ -132,15 +132,15 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.Redraw_pushButton.clicked.connect(lambda x: self.redraw())
 
         self.custplot_last_used_style_settingskey = 'custplot_last_used_template'
-        self.styles = utils.MatplotlibStyles(self,
-                                             self.template_list,
-                                             self.import_button,
-                                             self.open_folder_button,
-                                             self.available_settings_button,
-                                             self.save_as_button,
-                                             self.custplot_last_used_style_settingskey,
-                                             defs.custplot_default_style(),
-                                             msettings=self.ms)
+        self.styles = midvatten_utils.MatplotlibStyles(self,
+                                                                   self.template_list,
+                                                                   self.import_button,
+                                                                   self.open_folder_button,
+                                                                   self.available_settings_button,
+                                                                   self.save_as_button,
+                                                                   self.custplot_last_used_style_settingskey,
+                                                                   defs.custplot_default_style(),
+                                                                   msettings=self.ms)
         self.styles.select_style_in_list(defs.custplot_default_style()[1])
 
         #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
@@ -202,7 +202,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.canvas = FigureCanvas(self.custplotfigure)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
-        utils.PickAnnotator(self.custplotfigure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
+        common_utils.PickAnnotator(self.custplotfigure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
@@ -224,9 +224,9 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def drawplot_with_styles(self):
         self.styles.load(self.drawPlot_all, (self, 'mpltoolbar'))
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def drawPlot_all(self):
-        utils.start_waiting_cursor()  # show the user this may take a long time...
+        common_utils.start_waiting_cursor()  # show the user this may take a long time...
 
         continous_color = True
         if continous_color:
@@ -234,11 +234,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             color_cycler = mpl.rcParams['axes.prop_cycle']
             color_cycle_len = len(color_cycler)
             color_cycle = color_cycler()
-            self.line_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_line_cycle'], self.used_style_color_combo)
-            self.marker_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_marker_cycle'], self.used_style_color_combo)
-            self.line_and_marker_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len,
-                                                                    mpl.rcParams['axes.midv_marker_cycle'] * mpl.rcParams['axes.midv_line_cycle'],
-                                                                    self.used_style_color_combo)
+            self.line_cycler = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_line_cycle'], self.used_style_color_combo)
+            self.marker_cycler = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, mpl.rcParams['axes.midv_marker_cycle'], self.used_style_color_combo)
+            self.line_and_marker_cycler = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len,
+                                                                                        mpl.rcParams['axes.midv_marker_cycle'] * mpl.rcParams['axes.midv_line_cycle'],
+                                                                                        self.used_style_color_combo)
         else:
             ccycler = mpl.rcParams['axes.prop_cycle']
             self.line_cycler = (mpl.rcParams['axes.midv_line_cycle'] * ccycler)()
@@ -271,20 +271,20 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         nop, i = self.drawPlot(dbconnection, nop, i, My_format, self.table_ComboBox_2, self.xcol_ComboBox_2, self.ycol_ComboBox_2, self.Filter1_ComboBox_2, self.Filter1_QListWidget_2, self.Filter2_ComboBox_2, self.Filter2_QListWidget_2, self.PlotType_comboBox_2, self.pandas_calc_2, self.checkBox_remove_mean2, self.LineEditFactor2, self.LineEditOffset2)
         nop, i = self.drawPlot(dbconnection, nop, i, My_format, self.table_ComboBox_3, self.xcol_ComboBox_3, self.ycol_ComboBox_3, self.Filter1_ComboBox_3, self.Filter1_QListWidget_3, self.Filter2_ComboBox_3, self.Filter2_QListWidget_3, self.PlotType_comboBox_3, self.pandas_calc_3, self.checkBox_remove_mean3, self.LineEditFactor3, self.LineEditOffset3)
         if not self.p:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'Plot not updated.')))
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'Plot not updated.')))
             return None
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
 
         try:
             self.xaxis_formatters[1].__dict__['intervald'][3] = [1, 2, 4, 8, 16]  # Fix to not have the date ticks overlap at month end/start
         except Exception as e:
-            utils.MessagebarAndLog.warning(log_msg=ru(
+            common_utils.MessagebarAndLog.warning(log_msg=ru(
                 QCoreApplication.translate('Customplot', 'Setting intervald failed! msg:\n%s ')) % str(e))
 
         self.drawn = True
 
         self.refreshPlot()
-        utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
+        common_utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
     def drawPlot(self, dbconnection, nop, i, My_format, table_ComboBox, xcol_ComboBox, ycol_ComboBox, Filter1_ComboBox, Filter1_QListWidget, Filter2_ComboBox, Filter2_QListWidget, PlotType_comboBox, pandas_calc, checkBox_remove_mean, LineEditFactor, LineEditOffset):
                 
@@ -336,7 +336,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                             recs = dbconnection.execute_and_fetchall(sql)
                             label = str(item1.text()) + """, """ + str(item2.text())
                             if not recs:
-                                utils.MessagebarAndLog.info(log_msg=ru(
+                                common_utils.MessagebarAndLog.info(log_msg=ru(
                                     QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
                                 i += 1
                                 continue
@@ -354,7 +354,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                                 recs = dbconnection.execute_and_fetchall(sql)
                                 label = str(item.text())
                                 if not recs:
-                                    utils.MessagebarAndLog.warning(log_msg=ru(
+                                    common_utils.MessagebarAndLog.warning(log_msg=ru(
                                         QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
                                     i += 1
                                     continue
@@ -374,8 +374,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
         except Exception as e:
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', 'Plotting date_time failed, msg: %s'))%str(e))
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
+            common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', 'Plotting date_time failed, msg: %s')) % str(e))
+            common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Customplot, transforming to recarray with date_time as x-axis failed, msg: %s")) % ru(str(e)))
             My_format = [('numx', float), ('values', float)]
             table = np.array(recs, dtype=My_format)  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
@@ -388,7 +388,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.used_format = FlagTimeXY
         else:
             if self.used_format != FlagTimeXY:
-                raise utils.UsageError(ru(QCoreApplication.translate('CustomPlot', "Plotting both xy and time plot at the same time doesn't work! Check the x-y axix settings in all tabs!")))
+                raise common_utils.UsageError(ru(QCoreApplication.translate('CustomPlot', "Plotting both xy and time plot at the same time doesn't work! Check the x-y axix settings in all tabs!")))
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
@@ -416,18 +416,18 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         if FlagTimeXY == "time" and plottype == "frequency":
             if len(table2) < 2:
-                utils.MessagebarAndLog.warning(bar_msg=ru(
+                common_utils.MessagebarAndLog.warning(bar_msg=ru(
                     QCoreApplication.translate('plotsqlitewindow', 'Frequency plot failed for %s. The timeseries must be longer than 1 value!')) % ru(self.plabels[i]),
-                                                duration=30)
+                                                                  duration=30)
                 table2.values[:] = [None] * len(table2)
             else:
                 table2.values[:] = self.calc_frequency(table2)[:]
 
         if remove_mean:
-            table2.values[:] = utils.remove_mean_from_nparray(table2.values)[:]
+            table2.values[:] = common_utils.remove_mean_from_nparray(table2.values)[:]
 
         if any([factor != 1 and factor, offset,]):
-            table2.values[:] = utils.scale_nparray(table2.values, factor, offset)[:]
+            table2.values[:] = common_utils.scale_nparray(table2.values, factor, offset)[:]
 
         if pandas_calc and FlagTimeXY == "time":
             if pandas_calc.use_pandas():
@@ -440,12 +440,12 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     try:
                         table = np.array(list(zip(df.index, df['values'])), dtype=My_format)
                     except TypeError:
-                        utils.MessagebarAndLog.info(log_msg=str(df))
+                        common_utils.MessagebarAndLog.info(log_msg=str(df))
                         raise
                     table2 = table.view(np.recarray)  # RECARRAY transform the 2 cols into callable objects
                     numtime = table2.date_time
                 else:
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Pandas calculate failed.")))
+                    common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Pandas calculate failed.")))
 
         if FlagTimeXY == "time":
             plotfunc = self.axes.plot_date
@@ -691,14 +691,14 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             item = QtWidgets.QListWidgetItem(str(post[0]))
             getattr(self, QListWidgetname).addItem(item)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def redraw(self):
         self.styles.load(self.refreshPlot, (self, 'mpltoolbar'))
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def refreshPlot( self):
         #If the user has not pressed "draw" before, do nothing
-        utils.MessagebarAndLog.info(
+        common_utils.MessagebarAndLog.info(
             log_msg=ru(QCoreApplication.translate('Customplot', 'Loaded style:\n%s ')) % (
             self.styles.rcparams()))
 
@@ -728,7 +728,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 else:
                     self.xaxis_formatters[1].__dict__['interval_multiples'] = True
             except Exception as e:
-                utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('Customplot', 'Setting regular xaxis interval failed! msg:\n%s '))%str(e))
+                common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('Customplot', 'Setting regular xaxis interval failed! msg:\n%s ')) % str(e))
 
         self.axes.grid(self.Grid_checkBox.isChecked()) # grid
 
@@ -834,7 +834,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         current_column = ru(filter_combobox.currentText())
         if not current_column:
             return
-        selected_values = utils.getselectedobjectnames(column_name=current_column)
+        selected_values = common_utils.getselectedobjectnames(column_name=current_column)
         [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
 
     def uncheck_settings(self, current_index):
@@ -954,7 +954,7 @@ class PandasCalculations(object):
             try:
                 base = int(base)
             except ValueError:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Resample base must be an integer')))
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Resample base must be an integer')))
             else:
                 if pd.__version__ > '0.18.0':
                     # new api for pandas >=0.18
@@ -968,7 +968,7 @@ class PandasCalculations(object):
             try:
                 window = int(window)
             except ValueError:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Rolling mean window must be an integer')))
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Rolling mean window must be an integer')))
             else:
                 try:
                     # Pandas version >= '0.18.0'

@@ -26,7 +26,7 @@ import io
 from cycler import cycler
 from matplotlib_replacements import perform_all_replacements
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 import nose
@@ -34,6 +34,7 @@ from mock import call
 from nose.plugins.attrib import attr
 import numpy as np
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 from .utils_for_tests import create_test_string
@@ -53,7 +54,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
+            filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
             reference_list = [['obsid', 'ae'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['10', 'b'], ['10', 'h']]
             assert filtered_file_data == reference_list
 
@@ -66,7 +67,8 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            nose.tools.assert_raises(utils.UserInterruptError, utils.filter_nonexisting_values_and_ask, file_data, 'obsid', existing_obsids)
+            nose.tools.assert_raises(tools.utils.common_utils.UserInterruptError,
+                                     common_utils.filter_nonexisting_values_and_ask, file_data, 'obsid', existing_obsids)
 
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -77,7 +79,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
+            filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
             reference_list = [['obsid', 'ae'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g']]
             assert filtered_file_data == reference_list
 
@@ -90,7 +92,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], [None, 'h']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
+            filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
             reference_list = [['obsid', 'ae'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g']]
             assert filtered_file_data == reference_list
 
@@ -107,7 +109,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
         
         file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h']]
         existing_obsids = ['2', '3', '10', '1_g', '1 a']
-        filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'header_that_should_not_exist', existing_obsids)
+        filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'header_that_should_not_exist', existing_obsids)
         reference_list = [['obsid', 'ae', 'header_that_should_not_exist'], ['1', 'b', '10'], ['2', 'c', '10'], ['3', 'd', '10'], ['10', 'e', '10'], ['1_g', 'f', '10'], ['1 a', 'g', '10'], ['21', 'h', '10']]
         assert filtered_file_data == reference_list
 
@@ -115,7 +117,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_header_capitalize(self, mock_iface):
             file_data = [['obsid', 'ae'], ['a', 'b'], ['2', 'c']]
             existing_obsids = ['A', '2']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data=file_data, header_value='obsid', existing_values=existing_obsids, try_capitalize=True, always_ask_user=False)
+            filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data=file_data, header_value='obsid', existing_values=existing_obsids, try_capitalize=True, always_ask_user=False)
             reference_list = [['obsid', 'ae'], ['A', 'b'], ['2', 'c']]
             assert filtered_file_data == reference_list
 
@@ -131,7 +133,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h'], ['1', 'i']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
+            filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
             reference_list = [['obsid', 'ae'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['10', 'b'], ['10', 'h'], ['10', 'i']]
             assert filtered_file_data == reference_list
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
@@ -147,7 +149,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             
             file_data = [['obsid', 'ae'], ['1', 'b'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g'], ['21', 'h'], ['1', 'i']]
             existing_obsids = ['2', '3', '10', '1_g', '1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
+            filtered_file_data = common_utils.filter_nonexisting_values_and_ask(file_data, 'obsid', existing_obsids)
             reference_list = [['obsid', 'ae'], ['2', 'c'], ['3', 'd'], ['10', 'e'], ['1_g', 'f'], ['1 a', 'g']]
             assert filtered_file_data == reference_list
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
@@ -157,7 +159,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
 class TestTempinput(object):
     def test_tempinput(self):
         rows = '543\n21'
-        with utils.tempinput(rows) as filename:
+        with common_utils.tempinput(rows) as filename:
             with io.open(filename, 'r', encoding='utf-8') as f:
                 res = f.readlines()
         reference_list = ['543\n', '21']
@@ -170,12 +172,12 @@ class TestAskUser(object):
 
     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText', qgis_PyQt_QtGui_QInputDialog_getText.get_v)
     def test_askuser_dateshift(self):
-        question = utils.Askuser('DateShift')
+        question = common_utils.Askuser('DateShift')
         assert question.result == ['-1', 'hours']
 
     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText', cancel.get_v)
     def test_askuser_dateshift_cancel(self):
-        question = utils.Askuser('DateShift')
+        question = common_utils.Askuser('DateShift')
         assert question.result == 'cancel'
 
 @attr(status='on')
@@ -206,12 +208,12 @@ class TestGetDelimiter(object):
         file = ['obsid',
                  'rb1']
 
-        with utils.tempinput('\n'.join(file), 'utf-8') as filename:
+        with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
             @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (';', True)
-                delimiter = utils.get_delimiter(filename, 'utf-8')
+                delimiter = common_utils.get_delimiter(filename, 'utf-8')
                 assert delimiter == ';'
             _test(filename)
 
@@ -219,12 +221,12 @@ class TestGetDelimiter(object):
         file = ['obsid;acol,acol2',
                  'rb1;1,2']
 
-        with utils.tempinput('\n'.join(file), 'utf-8') as filename:
+        with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
             @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (',', True)
-                delimiter = utils.get_delimiter(filename, 'utf-8')
+                delimiter = common_utils.get_delimiter(filename, 'utf-8')
                 assert delimiter == ','
             _test(filename)
 
@@ -232,12 +234,12 @@ class TestGetDelimiter(object):
         file = ['obsid;acol;acol2',
                  'rb1;1;2']
 
-        with utils.tempinput('\n'.join(file), 'utf-8') as filename:
+        with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
             @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (';', True)
-                delimiter = utils.get_delimiter(filename, 'utf-8')
+                delimiter = common_utils.get_delimiter(filename, 'utf-8')
                 assert delimiter == ';'
             _test(filename)
 
@@ -245,25 +247,25 @@ class TestGetDelimiter(object):
         file = ['obsid,acol,acol2',
                  'rb1,1,2']
 
-        with utils.tempinput('\n'.join(file), 'utf-8') as filename:
+        with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
             @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (',', True)
-                delimiter = utils.get_delimiter(filename, 'utf-8')
+                delimiter = common_utils.get_delimiter(filename, 'utf-8')
                 assert delimiter == ','
             _test(filename)
 
 @attr(status='on')
 class TestGeneralExceptionHandler(object):
     def test_no_args_no_kwargs(self):
-        @utils.general_exception_handler
+        @common_utils.general_exception_handler
         def no_args_no_kwargs():
             return True
         assert no_args_no_kwargs()
 
     def test_only_args(self):
-        @utils.general_exception_handler
+        @common_utils.general_exception_handler
         def only_args(*args):
             return args
         assert only_args(True)[0]
@@ -271,7 +273,7 @@ class TestGeneralExceptionHandler(object):
         assert not only_args(True, False)[1]
 
     def test_only_kwargs(self):
-        @utils.general_exception_handler
+        @common_utils.general_exception_handler
         def only_kwargs(**kwargs):
             return kwargs
 
@@ -283,7 +285,7 @@ class TestGeneralExceptionHandler(object):
         assert len(only_kwargs(true=True, false=False)) == 2
 
     def test_one_arg(self):
-        @utils.general_exception_handler
+        @common_utils.general_exception_handler
         def one_arg(t):
             return t
         assert one_arg(True)
@@ -291,7 +293,7 @@ class TestGeneralExceptionHandler(object):
         assert one_arg('a') == 'a'
 
     def test_args_kwargs(self):
-        @utils.general_exception_handler
+        @common_utils.general_exception_handler
         def args_kwargs(*args, **kwargs):
             return args, kwargs
 
@@ -300,7 +302,7 @@ class TestGeneralExceptionHandler(object):
         assert len(args_kwargs()) == 2
 
     def test_one_arg_args_kwargs(self):
-        @utils.general_exception_handler
+        @common_utils.general_exception_handler
         def one_arg_args_kwargs(t, *args, **kwargs):
             return t, args, kwargs
         assert one_arg_args_kwargs('a')[0] == 'a'
@@ -321,8 +323,8 @@ class TestContinuousColorCycle(object):
         color_cycle = color_cycler()
 
         used_style_color_combo = set()
-        color_line_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
-        color_marker_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, marker_cycler, used_style_color_combo)
+        color_line_cycle = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_marker_cycle = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, marker_cycler, used_style_color_combo)
 
 
         res = []
@@ -346,10 +348,10 @@ class TestContinuousColorCycle(object):
         color_cycle = color_cycler()
 
         used_style_color_combo = set()
-        color_style_cycler = utils.ContinuousColorCycle(color_cycle, color_cycle_len, style_cycler, used_style_color_combo)
-        color_line_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
-        color_marker_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, marker_cycler,
-                                                       used_style_color_combo)
+        color_style_cycler = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, style_cycler, used_style_color_combo)
+        color_line_cycle = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_marker_cycle = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, marker_cycler,
+                                                                           used_style_color_combo)
 
         res = []
         res.append(dict_to_tuple(next(color_style_cycler)))
@@ -380,7 +382,7 @@ class TestContinuousColorCycle(object):
 
         used_style_color_combo = set()
 
-        color_line_cycle = utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
+        color_line_cycle = common_utils.ContinuousColorCycle(color_cycle, color_cycle_len, line_cycler, used_style_color_combo)
 
         res = []
         res.append(dict_to_tuple(next(color_line_cycle)))

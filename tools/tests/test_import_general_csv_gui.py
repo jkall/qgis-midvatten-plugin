@@ -28,6 +28,7 @@ import midvatten_utils as utils
 from import_general_csv_gui import GeneralCsvImportGui
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 
 
@@ -49,7 +50,7 @@ class TestStaticMethods(object):
 
         #(6, 'comment', 'text', 0, None, 0)
         tables_columns = ((0, 'obsid', 'text', 0, None, 0), (1, 'reading', 'double', 0, None, 0))
-        test_string = utils.anything_to_string_representation(GeneralCsvImportGui.convert_comma_to_points_for_double_columns(file_data, tables_columns))
+        test_string = common_utils.anything_to_string_representation(GeneralCsvImportGui.convert_comma_to_points_for_double_columns(file_data, tables_columns))
         reference = '[["obsid", "date_time", "reading"], ["obs1,1", "2017-04-12 11:03", "123.456"]]'
         assert test_string == reference
 

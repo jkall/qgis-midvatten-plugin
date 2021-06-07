@@ -30,9 +30,8 @@ from matplotlib.dates import datestr2num
 import numpy as np
 from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils import common_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class TimeSeriesPlot(object):
@@ -122,6 +121,6 @@ class TimeSeriesPlot(object):
                 #plt.close(fig)
                 #plt.draw()
             else:
-                utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select at least one point with time series data")))
+                common_utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select at least one point with time series data")))
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select a layer with time series observation points")))
+            common_utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select a layer with time series observation points")))

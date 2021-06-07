@@ -19,20 +19,19 @@
 """
 import os
 import copy
-import qgis.utils
-from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer, QgsGeometryGeneratorSymbolLayer, QgsMarkerSymbol,\
-    QgsVectorLayerSimpleLabeling, QgsProperty
-from qgis.PyQt.QtGui import QColor
-
-import db_utils
-import midvatten_utils as utils
 import traceback
-
-from definitions import midvatten_defs as defs
-from midvatten_utils import add_layers_to_list, returnunicode as ru
+import qgis.utils
+from qgis.core import QgsDataSourceUri, QgsProject, QgsGeometryGeneratorSymbolLayer, QgsVectorLayerSimpleLabeling, \
+    QgsProperty, QgsFeatureRequest, QgsExpression
+from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt import uic
-from qgis.core import QgsFeatureRequest, QgsExpression
+
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
+from midvatten.definitions import midvatten_defs as defs
+from midvatten.tools.utils.midvatten_utils import add_layers_to_list
+from midvatten.tools.utils.common_utils import returnunicode as ru
+
 
 strat_symbology_dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'strat_symbology_dialog.ui'))[0]
 
@@ -77,8 +76,8 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
     try:
         add_views_to_db(dbconnection, bedrock_types)
     except:
-        utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('strat_symbology', '''Creating database views failed, see log message panel'''),
-                                        log_msg=QCoreApplication.translate('strat_symbology', '''%s''')%str(traceback.format_exc()))
+        common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('strat_symbology', '''Creating database views failed, see log message panel'''),
+                                                           log_msg=QCoreApplication.translate('strat_symbology', '''%s''')%str(traceback.format_exc()))
         dbconnection.closedb()
         return
 
@@ -152,18 +151,18 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
             try:
                 add_generic_symbology(group, layers[symbology], symbology_stylename[symbology])
             except StyleNotFoundError as e:
-                utils.MessagebarAndLog.info(bar_msg=str(e))
+                common_utils.MessagebarAndLog.info(bar_msg=str(e))
             except:
-                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         symbology = 'Layer texts'
         if symbology in symbology_stylename:
             try:
                 add_generic_symbology(group, layers[symbology], symbology_stylename[symbology], checked=False)
             except StyleNotFoundError as e:
-                utils.MessagebarAndLog.info(bar_msg=str(e))
+                common_utils.MessagebarAndLog.info(bar_msg=str(e))
             except:
-                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         symbology = 'W levels'
         if symbology in symbology_stylename:
@@ -178,15 +177,15 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
                                               symbology_stylename[wlvl_label],
                                               checked=False)
                     except StyleNotFoundError as e:
-                        utils.MessagebarAndLog.info(bar_msg=str(e))
+                        common_utils.MessagebarAndLog.info(bar_msg=str(e))
                     except:
-                        utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                        common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
                 try:
                     add_wlvls_symbology(wlvls_group, wlvls_layer, symbology_stylename[symbology])
                 except StyleNotFoundError as e:
-                    utils.MessagebarAndLog.info(bar_msg=str(e))
+                    common_utils.MessagebarAndLog.info(bar_msg=str(e))
                 except:
-                    utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                    common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         symbology = 'Bedrock'
         if symbology in symbology_stylename:
@@ -197,9 +196,9 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
                     add_generic_symbology(bedrock_group, layers['Bedrock label'],
                                       symbology_stylename['Bedrock label'], checked=False)
                 except StyleNotFoundError as e:
-                    utils.MessagebarAndLog.info(bar_msg=str(e))
+                    common_utils.MessagebarAndLog.info(bar_msg=str(e))
                 except:
-                    utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                    common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
                 else:
                     _bedrock_label = '''LOWER("drillstop") LIKE '%{}%' '''
                     for child in layers['Bedrock label'].labeling().rootRule().children():
@@ -212,36 +211,36 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
             except RuleDiscrepancyError:
                 del layers[symbology]
             except StyleNotFoundError as e:
-                utils.MessagebarAndLog.info(bar_msg=str(e))
+                common_utils.MessagebarAndLog.info(bar_msg=str(e))
             except:
-                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         symbology = 'Frame'
         if symbology in symbology_stylename:
             try:
                 add_generic_symbology(group, layers[symbology], symbology_stylename[symbology])
             except StyleNotFoundError as e:
-                utils.MessagebarAndLog.info(bar_msg=str(e))
+                common_utils.MessagebarAndLog.info(bar_msg=str(e))
             except:
-                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         layers_group = add_group(group, 'Layers', checked=True)
         try:
             add_layers_symbology(layers_group, plot_types, geo_colors, hydro_colors, layers['Geology'],
                                  layers['Hydro'], symbology_stylename['Geology'])
         except StyleNotFoundError as e:
-            utils.MessagebarAndLog.info(bar_msg=str(e))
+            common_utils.MessagebarAndLog.info(bar_msg=str(e))
         except:
-            utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+            common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         symbology = 'Shadow'
         if symbology in symbology_stylename:
             try:
                 add_generic_symbology(group, layers[symbology], symbology_stylename[symbology])
             except StyleNotFoundError as e:
-                utils.MessagebarAndLog.info(bar_msg=str(e))
+                common_utils.MessagebarAndLog.info(bar_msg=str(e))
             except:
-                utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
+                common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
 
         if any([spec.get('xfactor'), spec.get('yfactor'), spec.get('use_map_scale')]):
             for layer in layers.values():
@@ -276,9 +275,9 @@ def add_group(parent_group, name, checked=False):
     return group
 
 def apply_obsid_filter_to_layers(layers):
-    selected_obsids = utils.getselectedobjectnames(column_name='obsid')
+    selected_obsids = common_utils.getselectedobjectnames(column_name='obsid')
     if selected_obsids:
-        filter_string = '''obsid IN ({})'''.format(utils.sql_unicode_list(selected_obsids))
+        filter_string = '''obsid IN ({})'''.format(tools.utils.common_utils.sql_unicode_list(selected_obsids))
         for layer in layers:
             req = QgsFeatureRequest(QgsExpression(filter_string))
             layer.setSubsetString(req.filterExpression().expression())
@@ -330,7 +329,7 @@ def add_bedrock_symbology(bedrock_group, bedrock_layer, bedrock_stylename, bedro
         bedrock_open_ending.setFilterExpression(
             '''LOWER("drillstop") NOT LIKE '%{}%' OR "drillstop" IS NULL '''.format(bedrock_geoshort))
     else:
-        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('strat_symbology',
+        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('strat_symbology',
                                                                           'Style and code discrepancy! The style %s has an unsupported number of rules!'))
         raise RuleDiscrepancyError()
 
@@ -344,7 +343,7 @@ def apply_style(layer, stylename):
                                 "{}_sv.qml".format(stylename))
     stylefile = os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "strat_symbology",
                              "{}.qml".format(stylename))
-    if utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile(stylefile_sv):  # swedish forms are loaded only if locale settings indicate sweden
+    if midvatten_utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile(stylefile_sv):  # swedish forms are loaded only if locale settings indicate sweden
         try:
             layer.loadNamedStyle(stylefile_sv)
         except:

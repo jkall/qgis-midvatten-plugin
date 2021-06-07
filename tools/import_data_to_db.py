@@ -26,13 +26,10 @@ from builtins import object
 
 from operator import itemgetter
 
-import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import UserInterruptError
+from midvatten.tools.utils import common_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru, UserInterruptError
 
 
 class midv_data_importer(object):  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
@@ -74,9 +71,9 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         try:
             if file_data is None or not file_data:
                 return
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', '\nImport to %s starting\n--------------------')) % dest_table)
+            common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', '\nImport to %s starting\n--------------------')) % dest_table)
 
-            utils.start_waiting_cursor()
+            common_utils.start_waiting_cursor()
 
             if not isinstance(_dbconnection, db_utils.DbConnectionManager):
                 dbconnection = db_utils.DbConnectionManager()
@@ -115,9 +112,9 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
 
             nr_same_date = nr_after - nr_before
             if nr_same_date > 0:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'))%(str(nr_same_date), str(nr_after)))
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.')) % (str(nr_same_date), str(nr_after)))
             if not nr_after > 0:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Nothing imported to %s after deleting duplicate date_times')) % dest_table)
+                common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Nothing imported to %s after deleting duplicate date_times')) % dest_table)
                 return
 
             #Special cases for some tables
@@ -139,8 +136,8 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 if foreign_keys:
                     if self.foreign_keys_import_question is None:
                         msg = ru(QCoreApplication.translate('midv_data_importer', """Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (', '.join(list(foreign_keys.keys())))
-                        utils.MessagebarAndLog.info(log_msg=msg)
-                        stop_question = utils.Askuser("YesNo", msg, ru(QCoreApplication.translate('midv_data_importer', "Info!")))
+                        common_utils.MessagebarAndLog.info(log_msg=msg)
+                        stop_question = common_utils.Askuser("YesNo", msg, ru(QCoreApplication.translate('midv_data_importer', "Info!")))
                         if stop_question.result == 0:      # if the user wants to abort
                             raise UserInterruptError()
                         else:
@@ -150,7 +147,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                         self.import_foreign_keys(dbconnection, dest_table, self.temptable_name, foreign_keys, existing_columns_in_temptable)
                         nr_after = dbconnection.execute_and_fetchall('''select count(*) from %s''' % (self.temptable_name))[0][0]
                         nr_after_foreign_keys = nr_before - nr_after
-                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'))%(str(nr_after_foreign_keys), str(nr_after)))
+                        common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.')) % (str(nr_after_foreign_keys), str(nr_after)))
 
             if not nr_after > 0:
                 raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer', 'Nothing imported, see log message panel')))
@@ -159,8 +156,8 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             nr_failed_import = recsinfile - nr_after
             if nr_failed_import > 0:
                 msg = ru(QCoreApplication.translate('midv_data_importer', """Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" ))% (str(nr_failed_import))
-                utils.MessagebarAndLog.info(log_msg=msg)
-                stop_question = utils.Askuser("YesNo", msg, ru(QCoreApplication.translate('midv_data_importer', "Warning!")))
+                common_utils.MessagebarAndLog.info(log_msg=msg)
+                stop_question = common_utils.Askuser("YesNo", msg, ru(QCoreApplication.translate('midv_data_importer', "Warning!")))
                 if stop_question.result == 0:      # if the user wants to abort
                     raise UserInterruptError()
 
@@ -194,7 +191,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             try:
                 dbconnection.execute(sql)
             except Exception as e:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % dest_table + ru(str(e)))
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % dest_table + ru(str(e)))
                 sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
                 try:
                     dbconnection.execute(sql)
@@ -202,18 +199,18 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                     try:
                         str(e)
                     except UnicodeDecodeError:
-                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import failed, see log message panel')),
-                                                        log_msg=ru(QCoreApplication.translate('midv_data_importer', 'Sql\n%s  failed.')) % (sql), duration=999)
+                        common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import failed, see log message panel')),
+                                                                           log_msg=ru(QCoreApplication.translate('midv_data_importer', 'Sql\n%s  failed.')) % (sql), duration=999)
                     else:
-                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import failed, see log message panel')),
-                                                        log_msg=ru(QCoreApplication.translate('midv_data_importer', 'Sql\n%s  failed.\nMsg:\n%s')) % (sql, ru(str(e))), duration=999)
+                        common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import failed, see log message panel')),
+                                                                           log_msg=ru(QCoreApplication.translate('midv_data_importer', 'Sql\n%s  failed.\nMsg:\n%s')) % (sql, ru(str(e))), duration=999)
 
             recsafter = dbconnection.execute_and_fetchall('select count(*) from %s' % (dest_table))[0][0]
             nr_imported = recsafter - recsbefore
             nr_excluded = recsinfile - nr_imported
 
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('midv_data_importer', '%s rows imported and %s excluded for table %s. See log message panel for details'))%(nr_imported, nr_excluded, dest_table),
-                                        log_msg='--------------------')
+            common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('midv_data_importer', '%s rows imported and %s excluded for table %s. See log message panel for details')) % (nr_imported, nr_excluded, dest_table),
+                                                           log_msg='--------------------')
 
         except:
             # If an external dbconnection is supplied, do not close it.
@@ -228,7 +225,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                     dbconnection.drop_temporary_table(self.temptable_name)
                     #except:
                     #    pass
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             raise
         else:
             dbconnection.commit()
@@ -244,7 +241,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                     dbconnection.drop_temporary_table(self.temptable_name)
                     #except:
                     #    pass
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
 
     def list_to_table(self, dbconnection, destination_table, file_data, primary_keys_for_concat):
         fieldnames_types = ['{} TEXT'.format(field_name) for field_name in file_data[0]]
@@ -270,7 +267,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         #TODO: Let's see what happens without commit
         #dbconnection.commit()
         if numskipped:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate('midv_data_importer', "%s nr of duplicate rows in file was skipped while importing."))%str(numskipped))
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate('midv_data_importer', "%s nr of duplicate rows in file was skipped while importing.")) % str(numskipped))
 
     def delete_existing_date_times_from_temptable(self, primary_keys, dest_table, dbconnection):
         """
@@ -354,12 +351,12 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                         continue
                     #Check that there is no gap in the stratid:
                     if float(sorted_strats[index][stratid_idx]) - float(sorted_strats[index - 1][stratid_idx]) != 1:
-                        utils.MessagebarAndLog.warning(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate('midv_data_importer', 'The obsid %s will not be imported due to gaps in stratid'))%obsid)
+                        common_utils.MessagebarAndLog.warning(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate('midv_data_importer', 'The obsid %s will not be imported due to gaps in stratid')) % obsid)
                         skip_obsids.append(obsid)
                         break
                     #Check that the current depthtop is equal to the previous depthbot
                     elif sorted_strats[index][depthtop_idx] != sorted_strats[index - 1][depthbot_idx]:
-                        utils.MessagebarAndLog.warning(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate('midv_data_importer', 'The obsid %s will not be imported due to gaps in depthtop/depthbot'))%obsid)
+                        common_utils.MessagebarAndLog.warning(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate('midv_data_importer', 'The obsid %s will not be imported due to gaps in depthtop/depthbot')) % obsid)
                         skip_obsids.append(obsid)
                         break
             if skip_obsids:
@@ -376,7 +373,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
             if not all([_from in existing_columns_in_temptable for _from in from_list]):
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import of foreign keys failed, see log message panel')), log_msg=ru(QCoreApplication.translate('midv_data_importer', 'There were keys missing for importing to fk_table %s, so no import was done.'))%fk_table)
+                common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import of foreign keys failed, see log message panel')), log_msg=ru(QCoreApplication.translate('midv_data_importer', 'There were keys missing for importing to fk_table %s, so no import was done.')) % fk_table)
                 continue
 
             nr_fk_before = dbconnection.execute_and_fetchall('''select count(*) from %s''' % fk_table)[0][0]
@@ -398,7 +395,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
 
             nr_fk_after = dbconnection.execute_and_fetchall('''select count(*) from %s''' % fk_table)[0][0]
             if nr_fk_after > nr_fk_before:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total %s rows were imported to foreign key table %s while importing to %s.'))%(str(nr_fk_after - nr_fk_before), fk_table, dest_table))
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'In total %s rows were imported to foreign key table %s while importing to %s.')) % (str(nr_fk_after - nr_fk_before), fk_table, dest_table))
 
     def import_error_msg(self):
         return ru(QCoreApplication.translate('midv_data_importer', 'Import error, see log message panel'))
@@ -413,9 +410,9 @@ def import_exception_handler(func):
         try:
             result = func(*args, **kwargs)
         except MidvDataImporterError as e:
-            utils.stop_waiting_cursor()
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import error, see log message panel')),
-                                            log_msg=str(e))
+            common_utils.stop_waiting_cursor()
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import error, see log message panel')),
+                                                               log_msg=str(e))
         else:
             return result
     return new_func

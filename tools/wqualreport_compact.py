@@ -27,20 +27,20 @@ from builtins import object
 from builtins import range
 from builtins import str
 
-import db_utils
-import gui_utils
 import numpy as np
 import pandas as pd
 import qgis
 import qgis.PyQt
-from midvatten_utils import general_exception_handler
-from midvatten_utils import returnunicode as ru
+
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
 from qgis.PyQt.QtWidgets import QApplication
 
-import midvatten_utils as utils
+import midvatten.tools.utils.gui_utils as gui_utils
+import midvatten.tools.utils.db_utils as db_utils
+import midvatten.tools.utils.common_utils as common_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru, general_exception_handler
 
 custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'compact_w_qual_report.ui'))[0]
 
@@ -111,7 +111,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.page_break_between_tables.clicked.connect(
                      lambda: self.empty_row_between_tables.setChecked(False) if self.page_break_between_tables.isChecked() else True)
 
-        self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
+        self.stored_settings = common_utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
         self.show()
@@ -128,9 +128,9 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.data_column.clear()
         self.data_column.addItems(sorted(fields))
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def wqualreport(self):
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
         num_data_cols = int(self.num_data_cols.text())
         rowheader_colwidth_percent = int(self.rowheader_colwidth_percent.text())
         empty_row_between_tables = self.empty_row_between_tables.isChecked()
@@ -150,7 +150,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                             page_break_between_tables, from_active_layer, sql_table, sort_alphabetically, sort_by_obsid,
                             date_time_as_columns, date_time_format, method, data_column)
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
@@ -172,7 +172,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                     elif isinstance(selfattr, qgis.PyQt.QtWidgets.QComboBox):
                         gui_utils.set_combobox(selfattr, val, add_if_not_exists=False)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def ask_and_update_stored_settings(self):
         self.stored_settings = self.ask_for_stored_settings(self.stored_settings)
         self.update_from_stored_settings(self.stored_settings)
@@ -184,7 +184,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
             try:
                 attr = getattr(self, attrname)
             except:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi',
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi',
                                                                                   "Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
                 if isinstance(attr, qgis.PyQt.QtWidgets.QPlainTextEdit):
@@ -196,24 +196,24 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                 elif isinstance(attr, qgis.PyQt.QtWidgets.QComboBox):
                     val = attr.currentText()
                 else:
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi', 'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
+                    common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi', 'Programming error. The Qt-type %s is unhandled.')) % str(type(attr)))
                     continue
                 stored_settings[attrname] = val
 
         self.stored_settings = stored_settings
 
-        utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
+        common_utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
 
     def ask_for_stored_settings(self, stored_settings):
-        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=',\n', pad='    ',
-                                                             dictformatter='{\n%s}',
-                                                             listformatter='[\n%s]', tupleformatter='(\n%s, )')
+        old_string = common_utils.anything_to_string_representation(stored_settings, itemjoiner=',\n', pad='    ',
+                                                                                dictformatter='{\n%s}',
+                                                                                listformatter='[\n%s]', tupleformatter='(\n%s, )')
 
         msg = ru(QCoreApplication.translate('CompactWqualReportUi', 'Replace the settings string with a new settings string.'))
         new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate('DrillreportUi', "Edit settings string")), msg,
                                                            qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
 
         new_string_text = ru(new_string[0])
         if not new_string_text:
@@ -222,9 +222,9 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         try:
             as_dict = ast.literal_eval(new_string_text)
         except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CompactWqualReportUi', 'Translating string to dict failed, see log message panel')),
-                                           log_msg=str(e))
-            raise utils.UsageError()
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CompactWqualReportUi', 'Translating string to dict failed, see log message panel')),
+                                                              log_msg=str(e))
+            raise common_utils.UsageError()
         else:
             return as_dict
 
@@ -256,12 +256,12 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         if from_active_layer:
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
             if w_qual_lab_layer is None:
-                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
+                raise common_utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
             if not w_qual_lab_layer.selectedFeatureCount():
                 w_qual_lab_layer.selectAll()
             df = self.get_data_from_qgislayer(w_qual_lab_layer, data_columns)
         else:
-            df = self.get_data_from_sql(sql_table, utils.getselectedobjectnames(), data_columns)
+            df = self.get_data_from_sql(sql_table, common_utils.getselectedobjectnames(), data_columns)
 
         if date_time_as_columns:
             columns = ['obsid', 'date_time']
@@ -310,7 +310,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         missing = [column not in fieldnames for column in columns if column != 'report']
         columns = [column for column in columns if column in fieldnames]
         if any(missing):
-                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen table must contain columns %s'))%str(columns))
+                raise common_utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen table must contain columns %s')) % str(columns))
 
 
         sql = '''SELECT %s FROM %s'''%(', '.join(columns), table)
@@ -332,7 +332,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         columns = [column for column in columns if column in fieldnames]
 
         if any(missing):
-                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain columns %s'))%str(columns))
+                raise common_utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain columns %s')) % str(columns))
 
         columns = [column for column in columns if column in fieldnames]
 
@@ -348,9 +348,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         num_features = len(file_data) - 1
         invalid_features = len(features) - num_features
         if invalid_features:
-            msgfunc = utils.MessagebarAndLog.warning
+            msgfunc = common_utils.MessagebarAndLog.warning
         else:
-            msgfunc = utils.MessagebarAndLog.info
+            msgfunc = common_utils.MessagebarAndLog.info
 
         msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(w_qual_lab_layer.selectedFeatureCount()), str(num_features), str(invalid_features)))
         return df

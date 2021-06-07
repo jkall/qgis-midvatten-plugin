@@ -23,13 +23,14 @@
 from __future__ import absolute_import
 #
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 import piper
 from nose.plugins.attrib import attr
 from decimal import Decimal
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 
 
@@ -52,7 +53,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         piperplot = piper.PiperPlot(mock_ms, mock_active_layer)
         piperplot.create_parameter_selection()
 
-        test = utils.anything_to_string_representation(piperplot.ParameterList)
+        test = common_utils.anything_to_string_representation(piperplot.ParameterList)
         ref = '''["(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')", "(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')", "(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')", "(lower(parameter) like '%natrium%')", "(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')", "(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')", "(lower(parameter) like '%magnesium%')"]'''
         assert test == ref
 
@@ -70,7 +71,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         piperplot = piper.PiperPlot(mock_ms, mock_active_layer)
         piperplot.create_parameter_selection()
 
-        test = utils.anything_to_string_representation(piperplot.ParameterList)
+        test = common_utils.anything_to_string_representation(piperplot.ParameterList)
         ref = '''["parameter = 'cl'", "parameter = 'hco3'", "parameter = 'so4'", "parameter = 'na'", "parameter = 'k'", "parameter = 'ca'", "parameter = 'mg'"]'''
         assert test == ref
 
@@ -144,7 +145,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 l[idx] = '{0:.10f}'.format(float(l[idx]))
         print("data: " + str(data))
 
-        test_paramlist = utils.anything_to_string_representation(piperplot.ParameterList)
+        test_paramlist = common_utils.anything_to_string_representation(piperplot.ParameterList)
         ref_paramlist = '''["(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')", "(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')", "(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')", "(lower(parameter) like '%natrium%')", "(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')", "(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')", "(lower(parameter) like '%magnesium%')"]'''
         assert test_paramlist == ref_paramlist
 

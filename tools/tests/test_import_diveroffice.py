@@ -32,6 +32,7 @@ from date_utils import datestring_to_date
 from import_diveroffice import DiverofficeImport
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mocks_for_tests import MockReturnUsingDictIn
 
@@ -55,7 +56,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'utf-8'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
 
@@ -74,7 +75,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -92,7 +93,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -110,7 +111,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -128,7 +129,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data)
@@ -145,7 +146,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data)
@@ -160,7 +161,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -178,7 +179,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
             file_data = DiverofficeImport.parse_diveroffice_file(path,
                                                                    charset_of_diverofficefile)
 
@@ -199,7 +200,7 @@ class TestParseDiverofficeFile(object):
              )
 
         charset_of_diverofficefile = 'cp1252'
-        with utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
             file_data = DiverofficeImport.parse_diveroffice_file(path,
                                                                    charset_of_diverofficefile)
 

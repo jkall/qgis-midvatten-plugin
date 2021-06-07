@@ -24,13 +24,14 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
-from definitions import midvatten_defs as defs
+from midvatten.definitions import midvatten_defs as defs
 
 
 @attr(status='on')
@@ -70,7 +71,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             db_utils.sql_load_fr_db('select * from zz_strat'))
         reference_string = r"""(True, [(berg, berg), (b, berg), (rock, berg), (ro, berg), (grovgrus, grovgrus), (grg, grovgrus), (coarse gravel, grovgrus), (cgr, grovgrus), (grus, grus), (gr, grus), (gravel, grus), (mellangrus, mellangrus), (grm, mellangrus), (medium gravel, mellangrus), (mgr, mellangrus), (fingrus, fingrus), (grf, fingrus), (fine gravel, fingrus), (fgr, fingrus), (grovsand, grovsand), (sag, grovsand), (coarse sand, grovsand), (csa, grovsand), (sand, sand), (sa, sand), (mellansand, mellansand), (sam, mellansand), (medium sand, mellansand), (msa, mellansand), (finsand, finsand), (saf, finsand), (fine sand, finsand), (fsa, finsand), (silt, silt), (si, silt), (lera, lera), (ler, lera), (le, lera), (clay, lera), (cl, lera), (morän, morän), (moran, morän), (mn, morän), (till, morän), (ti, morän), (torv, torv), (t, torv), (peat, torv), (pt, torv), (fyll, fyll), (fyllning, fyll), (f, fyll), (made ground, fyll), (mg, fyll), (land fill, fyll)])"""
         assert test_string == reference_string
-        current_locale = utils.getcurrentlocale()[0]
+        current_locale = midvatten_utils.getcurrentlocale()[0]
         assert current_locale == 'sv_SE'
 
     @mock.patch('qgis.utils.iface')
@@ -90,7 +91,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             db_utils.sql_load_fr_db('select * from zz_strat'))
         reference_string = r"""(True, [(berg, rock), (b, rock), (rock, rock), (ro, rock), (grovgrus, coarse gravel), (grg, coarse gravel), (coarse gravel, coarse gravel), (cgr, coarse gravel), (grus, gravel), (gr, gravel), (gravel, gravel), (mellangrus, medium gravel), (grm, medium gravel), (medium gravel, medium gravel), (mgr, medium gravel), (fingrus, fine gravel), (grf, fine gravel), (fine gravel, fine gravel), (fgr, fine gravel), (grovsand, coarse sand), (sag, coarse sand), (coarse sand, coarse sand), (csa, coarse sand), (sand, sand), (sa, sand), (mellansand, medium sand), (sam, medium sand), (medium sand, medium sand), (msa, medium sand), (finsand, fine sand), (saf, fine sand), (fine sand, fine sand), (fsa, fine sand), (silt, silt), (si, silt), (lera, clay), (ler, clay), (le, clay), (clay, clay), (cl, clay), (morän, till), (moran, till), (mn, till), (till, till), (ti, till), (torv, peat), (t, peat), (peat, peat), (pt, peat), (fyll, made ground), (fyllning, made ground), (f, made ground), (made ground, made ground), (mg, made ground), (land fill, made ground), (unknown, unknown)])"""
         assert test_string == reference_string
-        current_locale = utils.getcurrentlocale()[0]
+        current_locale = midvatten_utils.getcurrentlocale()[0]
         assert current_locale == 'en_US'
 
     @mock.patch('qgis.utils.iface')
@@ -147,7 +148,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         reference = '''(True, [("*", "*", "", "", "", "", "", "locale:sv_SE", "", "", ), ("about_db", "*", "", "", "", "", "", "A status log for the tables in the db", None, None, ), ("about_db", "tablename", "text", "", "", "", "", "Name of a table in the db", None, None, ), ("about_db", "columnname", "text", "", "", "", "", "Name of column", None, None, ), ("about_db", "data_type", "text", "", "", "", "", "Data type of the column", None, None, ), ("about_db", "not_null", "text", "", "", "", "", "1 if NULL-values isn't allowed", None, None, ), ("about_db", "default_value", "text", "", "", "", "", "The default value of the column", None, None, ), ("about_db", "primary_key", "text", "", "", "", "", "The primary key order number if column is a primary key", None, None, ), ("about_db", "foreign_key", "text", "", "", "", "", ""foreign key table(foreign key column)"", None, None, ), ("about_db", "description", "text", "", "", "", "", "Description for column or table", None, None, ), ("about_db", "upd_date", "text", "", "", "", "", "Date for last update", None, None, ), ("about_db", "upd_sign", "text", "", "", "", "", "Person responsible for update", None, None, ), ("comments", "*", "", "", "", "", "", "Comments connected to obsids", None, None, ), ("comments", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("comments", "date_time", "text", "1", "", "2", "", "Date and Time for the comment", None, None, ), ("comments", "comment", "text", "1", "", "", "", "Comment", None, None, ), ("comments", "staff", "text", "1", "", "", "zz_staff(staff)", "Staff who made the comment", None, None, ), ("meteo", "*", "", "", "", "", "", "meteorological observations", None, None, ), ("meteo", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("meteo", "instrumentid", "text", "1", "", "2", "", "Instrument ID", None, None, ), ("meteo", "parameter", "text", "1", "", "3", "zz_meteoparam(parameter)", "The meteorological parameter", None, None, ), ("meteo", "date_time", "text", "1", "", "4", "", "Date and Time for the observation", None, None, ), ("meteo", "reading_num", "double", "", "", "", "", "Value (real number) reading for the parameter", None, None, ), ("meteo", "reading_txt", "text", "", "", "", "", "Value as text (ex. can contain '>' and '<')", None, None, ), ("meteo", "unit", "text", "", "", "", "", "Unit corresponding to the value reading", None, None, ), ("meteo", "comment", "text", "", "", "", "", "Comment", None, None, ), ("obs_lines", "*", "", "", "", "", "", "One of the two main tables. This table holds all line observation objects.", None, None, ), ("obs_lines", "obsid", "text", "1", "", "1", "", "ID for observation line", None, None, ), ("obs_lines", "name", "text", "", "", "", "", "Ordinary name for the observation", None, None, ), ("obs_lines", "place", "text", "", "", "", "", "Place for the observation", None, None, ), ("obs_lines", "type", "text", "", "", "", "", "Type of observation", None, None, ), ("obs_lines", "source", "text", "", "", "", "", "The origin for the observation", None, None, ), ("obs_lines", "geometry", "LINESTRING", "", "", "", "", "None", None, None, ), ("obs_points", "*", "", "", "", "", "", "One of the two main tables. This table holds all point observation objects.", None, None, ), ("obs_points", "obsid", "text", "1", "", "1", "", "ID for the observation point", None, None, ), ("obs_points", "name", "text", "", "", "", "", "Ordinary name for the observation", None, None, ), ("obs_points", "place", "text", "", "", "", "", "Place for the observation. E.g. estate", None, None, ), ("obs_points", "type", "text", "", "", "", "", "Type of observation", None, None, ), ("obs_points", "length", "double", "", "", "", "", "Borehole length from ground surface to bottom (equals to depth if vertical)", None, None, ), ("obs_points", "drillstop", "text", "", "", "", "", "Drill stop (ex "Driven to bedrock")", None, None, ), ("obs_points", "diam", "double", "", "", "", "", "Inner diameter for casing or upper part of borehole", None, None, ), ("obs_points", "material", "text", "", "", "", "", "Well material", None, None, ), ("obs_points", "screen", "text", "", "", "", "", "Type of well screen", None, None, ), ("obs_points", "capacity", "text", "", "", "", "", "Well capacity", None, None, ), ("obs_points", "drilldate", "text", "", "", "", "", "Date when drilling was completed", None, None, ), ("obs_points", "wmeas_yn", "integer", "", "", "", "", "1/0 if water level is to be measured for this point or not", None, None, ), ("obs_points", "wlogg_yn", "integer", "", "", "", "", "1/0 if water level if borehole is equipped with a logger or not", None, None, ), ("obs_points", "east", "double", "", "", "", "", "Eastern coordinate (in the corresponding CRS)", None, None, ), ("obs_points", "north", "double", "", "", "", "", "Northern coordinate (in the corresponding CRS)", None, None, ), ("obs_points", "ne_accur", "double", "", "", "", "", "Approximate inaccuracy for coordinates", None, None, ), ("obs_points", "ne_source", "text", "", "", "", "", "Source for the given position", None, None, ), ("obs_points", "h_toc", "double", "", "", "", "", "Elevation (masl) for the measuring point", None, None, ), ("obs_points", "h_tocags", "double", "", "", "", "", "Distance from Measuring point to Ground Surface (m)", None, None, ), ("obs_points", "h_gs", "double", "", "", "", "", "Ground Surface level (m).", None, None, ), ("obs_points", "h_accur", "double", "", "", "", "", "Inaccuracy (m) for Measuring Point level", None, None, ), ("obs_points", "h_syst", "text", "", "", "", "", "Reference system for elevation", None, None, ), ("obs_points", "h_source", "text", "", "", "", "", "Source for the measuring point elevation (consultancy report or similar)", None, None, ), ("obs_points", "source", "text", "", "", "", "", "The source for the observation point", None, None, ), ("obs_points", "com_onerow", "text", "", "", "", "", "Onerow comment", None, None, ), ("obs_points", "com_html", "text", "", "", "", "", "Multiline formatted comment in html format", None, None, ), ("obs_points", "geometry", "POINT", "", "", "", "", "None", None, None, ), ("seismic_data", "*", "", "", "", "", "", "Interpreted data from seismic measurements", None, None, ), ("seismic_data", "obsid", "text", "1", "", "1", "obs_lines(obsid)", "Obsid linked to obs_lines.obsid", None, None, ), ("seismic_data", "length", "double", "1", "", "2", "", "Length along line", None, None, ), ("seismic_data", "ground", "double", "", "", "", "", "Ground surface level", None, None, ), ("seismic_data", "bedrock", "double", "", "", "", "", "Interpreted level for bedrock surface", None, None, ), ("seismic_data", "gw_table", "double", "", "", "", "", "Interpreted level for limit between unsaturated/saturated conditions", None, None, ), ("seismic_data", "comment", "text", "", "", "", "", "Additional info", None, None, ), ("stratigraphy", "*", "", "", "", "", "", "Stratigraphy information from drillings", None, None, ), ("stratigraphy", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("stratigraphy", "stratid", "integer", "1", "", "2", "", "Stratigraphy layer ID for the OBSID", None, None, ), ("stratigraphy", "depthtop", "double", "", "", "", "", "Top of the layer in m from ground surface", None, None, ), ("stratigraphy", "depthbot", "double", "", "", "", "", "Bottom of the layer in m from ground surface", None, None, ), ("stratigraphy", "geology", "text", "", "", "", "", "Full description of geology", None, None, ), ("stratigraphy", "geoshort", "text", "", "", "", "", "Short description of geology", None, None, ), ("stratigraphy", "capacity", "text", "", "", "", "", "Well development at the layer", None, None, ), ("stratigraphy", "development", "text", "", "", "", "", "Well development - Is the flushed water clear and free of suspended solids?", None, None, ), ("stratigraphy", "comment", "text", "", "", "", "", "Comment", None, None, ), ("vlf_data", "*", "", "", "", "", "", "Raw data from VLF measurements", None, None, ), ("vlf_data", "obsid", "text", "1", "", "1", "obs_lines(obsid)", "Obsid linked to obs_lines.obsid", None, None, ), ("vlf_data", "length", "double", "1", "", "2", "", "Length along line", None, None, ), ("vlf_data", "real_comp", "double", "", "", "", "", "Raw data real component (in-phase(%))", None, None, ), ("vlf_data", "imag_comp", "double", "", "", "", "", "Raw data imaginary component", None, None, ), ("vlf_data", "comment", "text", "", "", "", "", "Additional info", None, None, ), ("w_flow", "*", "", "", "", "", "", "Water flow", None, None, ), ("w_flow", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("w_flow", "instrumentid", "text", "1", "", "2", "", "Instrument Id", None, None, ), ("w_flow", "flowtype", "text", "1", "", "3", "zz_flowtype(type)", "Flowtype must correspond to type in flowtypes", None, None, ), ("w_flow", "date_time", "text", "1", "", "4", "", "Date and Time for the observation", None, None, ), ("w_flow", "reading", "double", "", "", "", "", "Value (real number) reading for the flow rate", None, None, ), ("w_flow", "unit", "text", "", "", "", "", "Unit corresponding to the value reading", None, None, ), ("w_flow", "comment", "text", "", "", "", "", "Comment", None, None, ), ("w_levels", "*", "", "", "", "", "", "Manual water level measurements", None, None, ), ("w_levels", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("w_levels", "date_time", "text", "1", "", "2", "", "Date and Time for the observation", None, None, ), ("w_levels", "meas", "double", "", "", "", "", "Distance from measuring point to water level", None, None, ), ("w_levels", "h_toc", "double", "", "", "", "", "Elevation (masl) for the measuring point at the particular date_time (measuring point elevation may vary by time)", None, None, ), ("w_levels", "level_masl", "double", "", "", "", "", "Water level elevation (masl) calculated from measuring point and distance from measuring point to water level", None, None, ), ("w_levels", "comment", "text", "", "", "", "", "Comment", None, None, ), ("w_levels_logger", "*", "", "", "", "", "", "Automatic water level readings", None, None, ), ("w_levels_logger", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("w_levels_logger", "date_time", "text", "1", "", "2", "", "Date and Time for the observation", None, None, ), ("w_levels_logger", "head_cm", "double", "", "", "", "", "Pressure (cm water column) on pressure transducer", None, None, ), ("w_levels_logger", "temp_degc", "double", "", "", "", "", "Temperature degrees C", None, None, ), ("w_levels_logger", "cond_mscm", "double", "", "", "", "", "Electrical conductivity mS/cm", None, None, ), ("w_levels_logger", "level_masl", "double", "", "", "", "", "Corresponding Water level elevation (masl)", None, None, ), ("w_levels_logger", "comment", "text", "", "", "", "", "Comment", None, None, ), ("w_qual_field", "*", "", "", "", "", "", "Water quality from field measurements", None, None, ), ("w_qual_field", "obsid", "text", "1", "", "1", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("w_qual_field", "staff", "text", "", "", "", "zz_staff(staff)", "Field staff", None, None, ), ("w_qual_field", "date_time", "text", "1", "", "2", "", "Date and Time for the observation", None, None, ), ("w_qual_field", "instrument", "text", "", "", "", "", "Instrument ID", None, None, ), ("w_qual_field", "parameter", "text", "1", "", "3", "", "Measured parameter", None, None, ), ("w_qual_field", "reading_num", "double", "", "", "", "", "Value as real number", None, None, ), ("w_qual_field", "reading_txt", "text", "", "", "", "", "Value as text (ex. can contain '>' and '<')", None, None, ), ("w_qual_field", "unit", "text", "", "", "4", "", "Unit", None, None, ), ("w_qual_field", "depth", "double", "", "", "", "", "The depth at which the measurement was done", None, None, ), ("w_qual_field", "comment", "text", "", "", "", "", "Comment", None, None, ), ("w_qual_lab", "*", "", "", "", "", "", "Water quality from laboratory analysis", None, None, ), ("w_qual_lab", "obsid", "text", "1", "", "", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("w_qual_lab", "depth", "double", "", "", "", "", "Depth (m below h_gs) from where sample is taken", None, None, ), ("w_qual_lab", "report", "text", "1", "", "1", "", "Report no from laboratory", None, None, ), ("w_qual_lab", "project", "text", "", "", "", "", "Project number", None, None, ), ("w_qual_lab", "staff", "text", "", "", "", "zz_staff(staff)", "Field staff", None, None, ), ("w_qual_lab", "date_time", "text", "", "", "", "", "Date and Time for the observation", None, None, ), ("w_qual_lab", "anameth", "text", "", "", "", "", "Analysis method", None, None, ), ("w_qual_lab", "parameter", "text", "1", "", "2", "", "Measured parameter", None, None, ), ("w_qual_lab", "reading_num", "double", "", "", "", "", "Value as real number", None, None, ), ("w_qual_lab", "reading_txt", "text", "", "", "", "", "Value as text (ex. can contain '>' and '<')", None, None, ), ("w_qual_lab", "unit", "text", "", "", "", "", "Unit", None, None, ), ("w_qual_lab", "comment", "text", "", "", "", "", "Comment", None, None, ), ("zz_capacity", "*", "", "", "", "", "", "Data domain for capacity classes used by the plugin", None, None, ), ("zz_capacity", "capacity", "text", "1", "", "1", "", "Water capacity (ex. in the range 1-6)", None, None, ), ("zz_capacity", "explanation", "text", "1", "", "", "", "Description of water capacity classes", None, None, ), ("zz_capacity_plots", "*", "", "", "", "", "", "Data domain for capacity plot colors used by the plugin", None, None, ), ("zz_capacity_plots", "capacity", "text", "1", "", "1", "zz_capacity(capacity)", "Water capacity (ex. in the range 1-6)", None, None, ), ("zz_capacity_plots", "color_qt", "text", "1", "", "", "", "Hatchcolor codes for Qt plots", None, None, ), ("zz_flowtype", "*", "", "", "", "", "", "Data domain for flowtypes in table w_flow", None, None, ), ("zz_flowtype", "type", "text", "1", "", "1", "", "Allowed flowtypes", None, None, ), ("zz_flowtype", "explanation", "text", "", "", "", "", "Explanation of the flowtypes", None, None, ), ("zz_interlab4_obsid_assignment", "*", "", "", "", "", "", "Assign obsids automatically during interlab4 import", None, None, ), ("zz_interlab4_obsid_assignment", "specifik_provplats", "text", "1", "", "1", "", "The attribute Specifik Provplats from interlab4 file format.", None, None, ), ("zz_interlab4_obsid_assignment", "provplatsnamn", "text", "1", "", "2", "", "The attribute Provplatsnamn from interlab4 file format.", None, None, ), ("zz_interlab4_obsid_assignment", "obsid", "text", "1", "", "", "obs_points(obsid)", "Obsid linked to obs_points.obsid", None, None, ), ("zz_meteoparam", "*", "", "", "", "", "", "Data domain for meteorological parameters in meteo", None, None, ), ("zz_meteoparam", "parameter", "text", "1", "", "1", "", "Allowed meteorological parameters", None, None, ), ("zz_meteoparam", "explanation", "text", "", "", "", "", "Explanation of the parameters", None, None, ), ("zz_staff", "*", "", "", "", "", "", "Data domain for field staff used when importing data", None, None, ), ("zz_staff", "staff", "text", "1", "", "1", "", "Initials of the field staff", None, None, ), ("zz_staff", "name", "text", "", "", "", "", "Name of the field staff", None, None, ), ("zz_strat", "*", "", "", "", "", "", "Data domain for stratigraphy classes", None, None, ), ("zz_strat", "geoshort", "text", "1", "", "1", "", "Abbreviation for the strata (stratigraphy class)", None, None, ), ("zz_strat", "strata", "text", "1", "", "", "", "clay etc", None, None, ), ("zz_stratigraphy_plots", "*", "", "", "", "", "", "Data domain for stratigraphy plot colors and symbols used by the plugin", None, None, ), ("zz_stratigraphy_plots", "strata", "text", "1", "", "1", "", "clay etc", None, None, ), ("zz_stratigraphy_plots", "color_mplot", "text", "1", "", "", "", "Color codes for matplotlib plots", None, None, ), ("zz_stratigraphy_plots", "hatch_mplot", "text", "1", "", "", "", "Hatch codes for matplotlib plots", None, None, ), ("zz_stratigraphy_plots", "color_qt", "text", "1", "", "", "", "Color codes for Qt plots", None, None, ), ("zz_stratigraphy_plots", "brush_qt", "text", "1", "", "", "", "Brush types for Qt plots", None, None, )], )'''
 
         result = db_utils.sql_load_fr_db("select * from about_db WHERE rowid != 1 and tablename not in %s"%db_utils.sqlite_internal_tables())
-        test_string = utils.anything_to_string_representation(result)
+        test_string = common_utils.anything_to_string_representation(result)
         print(str(result))
         print(str(test_string))
         printnum = 40
@@ -180,7 +181,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         print(str(mock_messagebar.mock_calls))
         #print(str(db_utils.sql_load_fr_db("SELECT * FROM geometry_columns")))
-        test_string = utils.anything_to_string_representation(result)
+        test_string = common_utils.anything_to_string_representation(result)
         print(test_string)
 
         ref_strings = ['running QGIS version',
@@ -203,7 +204,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_add_triggers_not_change_existing(self):
         """ Adding triggers should not automatically change the db """
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = '(True, [(rb1, 1.0, 1.0, None)])'
@@ -214,7 +215,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         """ Updating coordinates from NULL should create geometry. """
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', NULL, NULL)''')
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         db_utils.sql_alter_db("""update obs_points set east='1.0', north='2.0'""")
         test_string = utils_for_tests.create_test_string(
@@ -229,7 +230,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('select obsid, east, north, AsText(geometry) from obs_points'))
@@ -242,7 +243,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         """ Adding triggers should not automatically delete geometry when east OR north is NULL """
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         db_utils.sql_alter_db("""update obs_points set east=X(geometry) where east is null and geometry is not null""")
         test_string = utils_for_tests.create_test_string(
@@ -293,7 +294,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
 
         test_string = utils_for_tests.create_test_string(
@@ -307,7 +308,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
 
         test_string = utils_for_tests.create_test_string(
@@ -324,7 +325,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -342,7 +343,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -359,7 +360,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north) VALUES ('rb2', 2, 2)""")
 
         test_string = utils_for_tests.create_test_string(
@@ -373,7 +374,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
         db_utils.sql_alter_db('''UPDATE obs_points SET east = 2, north = 2 WHERE (obsid = 'rb1')''')
 
@@ -388,7 +389,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db('''UPDATE obs_points SET geometry = GeomFromText('POINT(2.0 2.0)', 3006) WHERE (obsid = 'rb1')''')
 
@@ -407,7 +408,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db('''UPDATE obs_points SET geometry = GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -426,7 +427,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db('''UPDATE obs_points SET geometry = GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -444,7 +445,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb1', 1, 1, GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, GeomFromText('POINT(2.0 2.0)', 3006))""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         db_utils.sql_alter_db('''UPDATE obs_points SET east = 3, north = 3 WHERE (obsid = 'rb1')''')
 
@@ -459,7 +460,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb1')""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
 
@@ -474,7 +475,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb3')""")

@@ -15,6 +15,7 @@ from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from mock import MagicMock, call
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from .utils_for_tests import create_test_string
 
@@ -133,7 +134,7 @@ class TestFieldLoggerImporterNoDb(object):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
@@ -168,7 +169,7 @@ class TestFieldLoggerImporterNoDb(object):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f), charset='cp1252') as filename:
+        with common_utils.tempinput(''.join(f), charset='cp1252') as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
@@ -205,7 +206,7 @@ class TestFieldLoggerImporterNoDb(object):
             "Rb1512.quality,30-03-2016,15:30:40,58,q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
@@ -240,7 +241,7 @@ class TestFieldLoggerImporterNoDb(object):
             "Rb1512.quality,30-03-2016,15:30:40,58,q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.ask_for_delimiter')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')

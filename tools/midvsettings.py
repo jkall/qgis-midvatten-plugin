@@ -17,9 +17,9 @@ from qgis.core import QgsProject
 
 from qgis.PyQt.QtCore import QCoreApplication
 
-import midvatten_utils as utils
-from definitions import midvatten_defs
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import MessagebarAndLog
+from midvatten.definitions import midvatten_defs
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class midvsettings(object):
@@ -61,7 +61,7 @@ class midvsettings(object):
                 output[key] = func("Midvatten", key)
                 self.settingsdict[key] = output[key][0]
             except KeyError:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midvsettings', "Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"))%(str(key)))
+                MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midvsettings', "Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?")) % (str(key)))
         self.readingSettings = False
         self.settingsareloaded = True
 

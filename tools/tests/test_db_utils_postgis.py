@@ -22,7 +22,7 @@
 from __future__ import absolute_import
 from builtins import object
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import mock
 from nose.plugins.attrib import attr
 

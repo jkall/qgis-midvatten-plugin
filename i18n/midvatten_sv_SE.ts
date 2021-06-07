@@ -158,7 +158,7 @@ obsid;min date;max date;calculated number of measurements:
     </message>
     <message>
         <location filename="../tools/wlevels_calc_calibr.py" line="698"/>
-        <source>Calculated water level from logger: utils.calc_mean_diff(coupled_vals) didn&apos;t return a useable value.</source>
+        <source>Calculated water level from logger: midvatten_utils.calc_mean_diff(coupled_vals) didn&apos;t return a useable value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -20,25 +20,20 @@
 """
 from __future__ import absolute_import
 from builtins import str
-
-import qgis.PyQt
-
-import qgis.utils
-
 import datetime
 import os
-import datetime as dt
-
-import db_utils
-from matplotlib.dates import datestr2num
-import import_data_to_db
 import numpy as np
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from matplotlib.dates import datestr2num
+
+import qgis.PyQt
+import qgis.utils
 #from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
 from qgis.PyQt import uic
-
 from qgis.PyQt.QtCore import QCoreApplication
+
+from midvatten.tools.utils import common_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
+import import_data_to_db
 
 try:
     import pandas as pd
@@ -55,7 +50,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
     def __init__(self, parent):
         qgis.PyQt.QtWidgets.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
-        #self.obsid = utils.getselectedobjectnames()
+        #self.obsid = midvatten_utils.getselectedobjectnames()
         self.setWindowTitle(ru(QCoreApplication.translate('Calcave', "Calculate average flow"))) # Set the title for the dialog
         self.pushButton_All.clicked.connect(lambda x: self.calcall())
         self.pushButton_Selected.clicked.connect(lambda x: self.calcselected())
@@ -64,9 +59,9 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
     def calcall(self, use_pandas=True):
         ok, obsar = db_utils.sql_load_fr_db('''SELECT DISTINCT obsid FROM w_flow WHERE flowtype = 'Accvol' ''')
         #if not ok:
-        #    utils.MessagebarAndLog.critical(bar_msg=)
+        #    midvatten_utils.MessagebarAndLog.critical(bar_msg=)
         if not obsar:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Calcave', "No observations with Accvol found, nothing calculated!")))
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Calcave', "No observations with Accvol found, nothing calculated!")))
             return
         self.observations = [obs[0] for obs in obsar]
         if pandas_on and use_pandas:
@@ -75,7 +70,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
             self.calculateaveflow()
 
     def calcselected(self, use_pandas=True):
-        obsar = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
+        obsar = common_utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
         self.observations = [obs for obs in obsar] #turn into a list of python byte strings
         if pandas_on and use_pandas:
             self.calculateaveflow_pandas()
@@ -83,11 +78,11 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
             self.calculateaveflow()
 
     def calculateaveflow(self):
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
         date_from = self.FromDateTime.dateTime().toPyDateTime()
         date_to = self.ToDateTime.dateTime().toPyDateTime()
         #Identify distinct set of obsid and instrumentid with Accvol-data and within the user-defined date_time-interval:
-        sql= """SELECT DISTINCT obsid, instrumentid FROM (SELECT * FROM w_flow WHERE flowtype = 'Accvol' AND date_time >= '%s' AND date_time <= '%s' AND obsid IN (%s))"""%(date_from,date_to, utils.sql_unicode_list(self.observations))
+        sql= """SELECT DISTINCT obsid, instrumentid FROM (SELECT * FROM w_flow WHERE flowtype = 'Accvol' AND date_time >= '%s' AND date_time <= '%s' AND obsid IN (%s))"""%(date_from, date_to, common_utils.sql_unicode_list(self.observations))
         #utils.pop_up_info(sql)#debug
         uniqueset = db_utils.sql_load_fr_db(sql)[1]  # The unique set of obsid and instrumentid is kept in uniqueset
         negativeflow = False
@@ -109,22 +104,22 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
                     sql = """insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')"""%(pyobsid,pyinstrumentid,table2.date_time[j],Aveflow)
                     db_utils.sql_alter_db(sql)
         if negativeflow:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Calcave', "Please notice that negative flow was encountered.")))
-        utils.stop_waiting_cursor()
+            common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Calcave', "Please notice that negative flow was encountered.")))
+        common_utils.stop_waiting_cursor()
         self.close()
 
     def calculateaveflow_pandas(self):
         if not pandas_on:
-            utils.MessagebarAndLog.warning(bar_msg=ru(
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(
                 QCoreApplication.translate('Calcave', "Python3 pandas not installed. No calculation done!")))
             return
 
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
         date_from = self.FromDateTime.dateTime().toPyDateTime()
         date_to = self.ToDateTime.dateTime().toPyDateTime()
 
         sql = '''SELECT date_time, reading, obsid, instrumentid, comment FROM w_flow WHERE flowtype = 'Accvol' AND date_time >= '%s' AND date_time <= '%s' AND obsid IN (%s)
-                 ORDER by obsid, instrumentid, date_time'''%(date_from,date_to, utils.sql_unicode_list(self.observations))
+                 ORDER by obsid, instrumentid, date_time'''%(date_from, date_to, common_utils.sql_unicode_list(self.observations))
         dbconnection = db_utils.DbConnectionManager()
         df = pd.read_sql(sql, dbconnection.conn, index_col=['date_time'], coerce_float=True, params=None, parse_dates=['date_time'],
                              columns=None,
@@ -137,7 +132,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         df['aveflow'] = (grouped['reading'].diff() / grouped['dt'].diff()) * 1000
 
         if (df['aveflow'] < 0).any():
-            utils.MessagebarAndLog.info(
+            common_utils.MessagebarAndLog.info(
                 bar_msg=ru(QCoreApplication.translate('Calcave', "Please notice that negative flow was encountered.")))
 
         columns = ['obsid', 'instrumentid', 'date_time', 'aveflow', 'comment']
@@ -157,7 +152,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         importer = import_data_to_db.midv_data_importer()
         importer.general_import(dest_table='w_flow', file_data=file_data)
 
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
         self.close()
 
 

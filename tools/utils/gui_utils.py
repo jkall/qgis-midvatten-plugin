@@ -26,10 +26,9 @@ import copy
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 
-from date_utils import datestring_to_date
-import midvatten_utils as utils
-import db_utils
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils.date_utils import datestring_to_date
+from midvatten.tools.utils.common_utils import returnunicode as ru, MessagebarAndLog, sql_failed_msg
+from midvatten.tools.utils.db_utils import sql_load_fr_db
 
 
 class SplitterWithHandel(qgis.PyQt.QtWidgets.QSplitter):
@@ -210,11 +209,11 @@ class DistinctValuesBrowser(VRowEntry):
         if not tablename or not columnname:
             return []
         sql = '''SELECT DISTINCT %s FROM %s''' % (columnname, tablename)
-        connection_ok, result = db_utils.sql_load_fr_db(sql)
+        connection_ok, result = sql_load_fr_db(sql)
 
         if not connection_ok:
-            utils.MessagebarAndLog.critical(
-                bar_msg=utils.sql_failed_msg(),
+            MessagebarAndLog.critical(
+                bar_msg=sql_failed_msg(),
                 log_msg=ru(QCoreApplication.translate('DistinctValuesBrowser', """Cannot get data from sql %s"""))%ru(sql))
             return []
 

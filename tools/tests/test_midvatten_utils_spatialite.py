@@ -23,7 +23,7 @@ from __future__ import absolute_import
 
 from builtins import str
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 import utils_for_tests
@@ -58,7 +58,7 @@ class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :param mock_iface:
         :return:
         """
-        utils.calculate_db_table_rows()
+        midvatten_utils.calculate_db_table_rows()
 
         assert len(str(mock_messagebar.mock_calls[0])) > 1500 and 'about_db' in str(mock_messagebar.mock_calls[0])
 
@@ -68,7 +68,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_warn_about_old_database(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '999.999.999'
-        utils.warn_about_old_database()
+        midvatten_utils.warn_about_old_database()
         print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg='The database version appears to be older than 999.999.999. An upgrade is suggested! See https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database', duration=5) in mock_messagebar.mock_calls
 
@@ -76,7 +76,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     def test_warn_about_old_database_not_old(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
-        utils.warn_about_old_database()
+        midvatten_utils.warn_about_old_database()
         assert not mock_messagebar.mock_calls
 
     @mock.patch('midvatten_utils.latest_database_version')
@@ -84,7 +84,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_warn_about_view_obs_points_missing(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         db_utils.sql_alter_db('''DROP VIEW view_obs_points;''')
-        utils.warn_about_old_database()
+        midvatten_utils.warn_about_old_database()
         print(str(mock_messagebar.mock_calls))
         assert call.warning(bar_msg='Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.', duration=60) in mock_messagebar.mock_calls
 
@@ -93,7 +93,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_warn_about_view_obs_lines_missing(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         db_utils.sql_alter_db('''DROP VIEW view_obs_lines;''')
-        utils.warn_about_old_database()
+        midvatten_utils.warn_about_old_database()
         print(str(mock_messagebar.mock_calls))
         assert call.warning(bar_msg='Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.', duration=60) in mock_messagebar.mock_calls
 
@@ -106,7 +106,7 @@ class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(views_geometry_columns))
         assert views_geometry_columns == [('view_obs_lines',), ('view_obs_points',)]
 
-        utils.add_view_obs_points_obs_lines()
+        midvatten_utils.add_view_obs_points_obs_lines()
         print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg='Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").') in mock_messagebar.mock_calls
 
@@ -126,7 +126,7 @@ class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(views_geometry_columns))
         assert views_geometry_columns == []
 
-        utils.add_view_obs_points_obs_lines()
+        midvatten_utils.add_view_obs_points_obs_lines()
         print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg='Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").') in mock_messagebar.mock_calls
         assert all([db_utils.verify_table_exists('view_obs_points'), db_utils.verify_table_exists('view_obs_lines')])

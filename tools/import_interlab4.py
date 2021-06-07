@@ -29,17 +29,16 @@ import os
 import csv
 from datetime import datetime
 import re
-from midvatten_utils import Timer
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, QItemSelectionModel
 
-import import_data_to_db
-import midvatten_utils as utils
-from date_utils import datestring_to_date
-from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit, get_line
-from midvatten_utils import Cancel, returnunicode as ru
-from db_utils import tables_columns, sql_load_fr_db, sql_alter_db
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools import import_data_to_db
+from midvatten.tools.utils.date_utils import datestring_to_date
+from midvatten.tools.utils.gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit, get_line
+from midvatten.tools.utils.common_utils import returnunicode as ru, Cancel
+from midvatten.tools.utils.db_utils import tables_columns, sql_load_fr_db, sql_alter_db
 
 import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 
@@ -133,10 +132,10 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.show()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def load_files(self):
-        filenames = utils.select_files(only_one_file=False,
-                                       extension="lab (*.lab)")
+        filenames = tools.utils.midvatten_utils.select_files(only_one_file=False,
+                                                             extension="lab (*.lab)")
 
         if self.skip_imported_reports.isChecked():
             skip_reports = [str(x[0]) for x in sql_load_fr_db('''SELECT DISTINCT report FROM w_qual_lab;''')[1]]
@@ -149,7 +148,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.start_import_button.setDisabled(False)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     @import_data_to_db.import_exception_handler
     def start_import(self, all_lab_results, lablitteras_to_import, ignore_provtagningsorsak):
         all_lab_results = copy.deepcopy(all_lab_results)
@@ -161,7 +160,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         for lablittera, v in sorted(all_lab_results.items()):
             metarow = [v['metadata'].get(meta_header, '') for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
-        existing_obsids = utils.get_all_obsids()
+        existing_obsids = tools.utils.db_utils.get_all_obsids()
 
         connection_columns = ('specifik provplats', 'provplatsnamn')
         if self.use_obsid_assignment_table.isChecked():
@@ -171,13 +170,13 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
             remaining_lablitteras_obsids = {}
 
         if ask_obsid_table:
-            answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, 'obsid', existing_values=existing_obsids, try_capitalize=False, always_ask_user=True)
+            answer = common_utils.filter_nonexisting_values_and_ask(ask_obsid_table, 'obsid', existing_values=existing_obsids, try_capitalize=False, always_ask_user=True)
             if answer == 'cancel':
                 self.status = True
                 return Cancel()
             elif not answer:
                 self.status = False
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Error, no observations remain. No import done.')))
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Error, no observations remain. No import done.')))
                 return Cancel()
             else:
                 remaining_lablitteras_obsids.update(dict([(x[0], x[-1]) for x in answer[1:]]))
@@ -208,8 +207,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                             sql_alter_db(sql)
                             handled.add(current)
                     if handled:
-                        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Interlab4Import',
-                                                                                              'Obsid assignments added to table %s.'))%self.obsid_assignment_table)
+                        common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Interlab4Import',
+                                                                                              'Obsid assignments added to table %s.')) % self.obsid_assignment_table)
 
         #Filter the remaining lablitteras and add an obsid field
         _all_lab_results = {}
@@ -228,7 +227,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         if self.close_after_import.isChecked():
             self.close()
 
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
     def obsid_assignment_using_table(self, ask_obsid_table, existing_obsids, connection_columns, ignore_provtagningsorsak):
         remaining_lablitteras_obsids = {}
@@ -244,8 +243,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         try:
             connection_table = sql_load_fr_db('''SELECT {}, {}, "obsid" FROM {}'''.format(connection_columns[0].replace(' ', '_'), connection_columns[1], self.obsid_assignment_table))[1]
         except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Error, could not get data from %s.'))%self.obsid_assignment_table,
-                                           log_msg=ru(str(e)))
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Error, could not get data from %s.')) % self.obsid_assignment_table,
+                                                              log_msg=ru(str(e)))
             return remaining_lablitteras_obsids, ask_obsid_table, []
 
         connection_dict = {(row[0], row[1]): row[2] for row in connection_table}
@@ -269,7 +268,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 continue
             else:
                 if obsid not in existing_obsids:
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import',
+                    common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import',
                                                                                          "Error! Obsid '%s' is used in %s but doesn't exist in obs_points")) % (obsid, self.obsid_assignment_table))
                     _ask_obsid_table.append(row)
                 else:
@@ -291,7 +290,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
             file_settings = self.parse_filesettings(filename)
             file_error, version, encoding, decimalsign, quotechar = file_settings
             if file_error:
-                utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "Warning: The file information %s could not be read. Skipping file"))%filename)
+                common_utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "Warning: The file information %s could not be read. Skipping file")) % filename)
                 continue
 
             with io.open(filename, 'r', encoding=encoding) as f:
@@ -360,11 +359,11 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                 data['mätvärdetal'] = data['mätvärdetal'].replace(decimalsign, '.')
 
                             if not 'parameter' in data:
-                                utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s"))%str(cols))
+                                common_utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s")) % str(cols))
                                 continue
 
                             if data['lablittera'] not in lab_results:
-                                utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata."))%data['lablittera'])
+                                common_utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata.")) % data['lablittera'])
                                 file_error = True
                                 break
 
@@ -378,7 +377,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                 dupl_index = 1
                                 duplicate_parname = _duplicate_data['parameter']
                                 while duplicate_parname in lab_results[data['lablittera']]:
-                                    duplicate_translation = 'dubblett' if utils.getcurrentlocale()[0] == 'sv_SE' else 'duplicate'
+                                    duplicate_translation = 'dubblett' if midvatten_utils.getcurrentlocale()[0] == 'sv_SE' else 'duplicate'
                                     duplicate_parname = '%s (%s %s)'%(_duplicate_data['parameter'], duplicate_translation, str(dupl_index))
                                     dupl_index += 1
                                 else:
@@ -420,10 +419,10 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 continue
 
         if encoding is None:
-            encoding = utils.ask_for_charset(default_charset='utf-16', msg=ru(QCoreApplication.translate('Interlab4Import', 'Give charset used in the file %s'))%filename)
+            encoding = midvatten_utils.ask_for_charset(default_charset='utf-16', msg=ru(QCoreApplication.translate('Interlab4Import', 'Give charset used in the file %s'))%filename)
         if encoding is None or not encoding:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Charset not given, stopping.')))
-            raise utils.UserInterruptError()
+            common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Charset not given, stopping.')))
+            raise common_utils.UserInterruptError()
 
         #Parse the filedescriptor
         with io.open(filename, 'r', encoding=encoding) as f:
@@ -474,7 +473,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
             sampledate = metadata.get('provtagningsdatum', None)
             if sampledate is None:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Interlab4 import: There was no sample date found (column "provtagningsdatum") for lablittera %s. Importing without it.'))%lablittera)
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Interlab4 import: There was no sample date found (column "provtagningsdatum") for lablittera %s. Importing without it.')) % lablittera)
                 date_time = None
             else:
                 sampletime = metadata.get('provtagningstid', None)
@@ -482,7 +481,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     date_time = datetime.strftime(datestring_to_date(' '.join([sampledate, sampletime])), '%Y-%m-%d %H:%M:%S')
                 else:
                     date_time = datetime.strftime(datestring_to_date(sampledate), '%Y-%m-%d %H:%M:%S')
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera %s. Importing without it.'))%lablittera)
+                    common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera %s. Importing without it.')) % lablittera)
 
             meta_comment = metadata.get('kommentar', None)
             additional_meta_comments = ['provtagningsorsak',
@@ -514,8 +513,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     except ValueError:
                         reading_num = None
                         if parameter not in parameter_report_warning_messages:
-                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Import interlab4 warning, see log message panel')),
-                                                           log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'))%(
+                            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Import interlab4 warning, see log message panel')),
+                                                                              log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'))%(
                                                                parameter,
                                                                lablittera))
                         parameter_report_warning_messages.setdefault(parameter, []).append(report)
@@ -555,7 +554,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                  )
 
         for parameter, reports in sorted(parameter_report_warning_messages.items()):
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'reading_num could not be set for parameter %s for reports %s'))%(parameter, ', '.join(reports)))
+            common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'reading_num could not be set for parameter %s for reports %s')) % (parameter, ', '.join(reports)))
 
         return file_data
     
@@ -581,7 +580,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         else:
             layout.addWidget(line)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def handle_save(self):
         """
         An extra, non-critical, feature to save metadata (as shown in the gui) as a csv file for examination in other application
@@ -598,11 +597,11 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                           for column in range(self.metadata_filter.table.columnCount())]
                          for row in range(self.metadata_filter.table.rowCount())])
 
-            utils.write_printlist_to_file(path, printlist)
+            common_utils.write_printlist_to_file(path, printlist)
         else:
-            utils.MessagebarAndLog.info(
+            common_utils.MessagebarAndLog.info(
                 log_msg=ru(QCoreApplication.translate('handle_save', 'No file selected!')))
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
 
     def unitconversion_factor(self, unit):
         unit_conversion = {'g/l': ('mg/l', 1000.0),
@@ -630,7 +629,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
     def get_reading_num(self, reading_num, reading_txt):
         if reading_num is None and reading_txt is not None:
-            reading_num = reading_txt.replace('<', '').replace('>', '').replace(',', '.').lstrip().rstrip()
+            reading_num = common_utils.rstrip()
         return reading_num
 
     def as_float(self, _value):
@@ -730,8 +729,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                             primary_unit = existing_unit
                             duplicate_data = new_data
 
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(
-                'Interlab4Import', """Duplicate parameter '%s' found! Value and unit ('%s', '%s') was saved as primary parameter out of ('%s', '%s') and ('%s', '%s')."""))%(
+            common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(
+                'Interlab4Import', """Duplicate parameter '%s' found! Value and unit ('%s', '%s') was saved as primary parameter out of ('%s', '%s') and ('%s', '%s').""")) % (
                                                        new_data['parameter'],
                                                        primary_value,
                                                        primary_unit,
@@ -816,7 +815,7 @@ class MetadataFilter(VRowEntry):
         self.layout.addWidget(self.table)
 
 
-    @utils.waiting_cursor
+    @common_utils.waiting_cursor
     def set_selection(self, table_header):
         """
         :param table_header: {'table_header': [list of values]}
@@ -862,7 +861,7 @@ class MetadataFilter(VRowEntry):
 
 
 
-    @utils.waiting_cursor
+    @common_utils.waiting_cursor
     def update_table(self, all_lab_results):
         """
         all_lab_results: A dict like {<lablittera>: {'metadata': {'metadataheader': value, ...}, <par1_name>: {'dataheader': value, ...}}}

@@ -21,22 +21,21 @@
 from __future__ import absolute_import
 from builtins import str
 from builtins import object
-import db_utils
 from qgis.PyQt.QtCore import QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
 import qgis.PyQt
 import ast
 
 import os
-import locale
 from collections import OrderedDict
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+
 import codecs
-from time import sleep
 import qgis
 
 from qgis.PyQt.QtCore import QCoreApplication
+
+from midvatten.tools.utils import common_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'custom_drillreport.ui'))[0]
@@ -51,7 +50,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         self.stored_settings_key = 'customdrillreportstoredsettings'
-        self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
+        self.stored_settings = common_utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
         self.pushButton_ok.clicked.connect(lambda x: self.drillreport())
@@ -62,7 +61,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
 
         self.show()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def drillreport(self):
         general_metadata = [x for x in self.general_metadata.toPlainText().split('\n') if x]
         geo_metadata = [x for x in self.geo_metadata.toPlainText().split('\n') if x]
@@ -70,7 +69,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         header_in_table = self.header_in_table.isChecked()
         skip_empty = self.skip_empty.isChecked()
         include_comments = self.include_comments.isChecked()
-        obsids = sorted(utils.getselectedobjectnames(qgis.utils.iface.activeLayer()))  # selected obs_point is now found in obsid[0]
+        obsids = sorted(common_utils.getselectedobjectnames(qgis.utils.iface.activeLayer()))  # selected obs_point is now found in obsid[0]
         general_metadata_header = self.general_metadata_header.text()
         geo_metadata_header = self.geo_metadata_header.text()
         strat_columns_header = self.strat_columns_header.text()
@@ -81,15 +80,15 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         geo_colwidth = self.geo_colwidth.text().split(';')
         decimal_separator = self.decimal_separator.text()
         if not obsids:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DrillreportUi', 'Must select at least 1 obsid in selected layer')))
-            raise utils.UsageError()
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DrillreportUi', 'Must select at least 1 obsid in selected layer')))
+            raise common_utils.UsageError()
         self.save_stored_settings()
         drillrep = Drillreport(obsids, self.ms, general_metadata, geo_metadata, strat_columns, header_in_table,
                                skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
                                comment_header, empty_row_between_obsids, topleft_topright_colwidths, general_colwidth,
                                geo_colwidth, decimal_separator)
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def ask_and_update_stored_settings(self):
         self.stored_settings = self.ask_for_stored_settings(self.stored_settings)
         self.update_from_stored_settings(self.stored_settings)
@@ -175,7 +174,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
             try:
                 attr = getattr(self, attrname)
             except:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi',
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi',
                                                                                   "Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
                 if isinstance(attr, qgis.PyQt.QtWidgets.QPlainTextEdit):
@@ -185,24 +184,24 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
                 elif isinstance(attr, qgis.PyQt.QtWidgets.QLineEdit):
                     val = attr.text()
                 else:
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi', 'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
+                    common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi', 'Programming error. The Qt-type %s is unhandled.')) % str(type(attr)))
                     continue
                 stored_settings[attrname] = val
 
         self.stored_settings = stored_settings
 
-        utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
+        common_utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
 
     def ask_for_stored_settings(self, stored_settings):
-        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=',\n', pad='    ',
-                                                             dictformatter='{\n%s}',
-                                                             listformatter='[\n%s]', tupleformatter='(\n%s, )')
+        old_string = common_utils.anything_to_string_representation(stored_settings, itemjoiner=',\n', pad='    ',
+                                                                                dictformatter='{\n%s}',
+                                                                                listformatter='[\n%s]', tupleformatter='(\n%s, )')
 
         msg = ru(QCoreApplication.translate('DrillreportUi', 'Replace the settings string with a new settings string.'))
         new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate('DrillreportUi', "Edit settings string")), msg,
                                                            qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
 
         new_string_text = ru(new_string[0])
         if not new_string_text:
@@ -211,9 +210,9 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         try:
             as_dict = ast.literal_eval(new_string_text)
         except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DrillreportUi', 'Translating string to dict failed, see log message panel')),
-                                           log_msg=str(e))
-            raise utils.UsageError()
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DrillreportUi', 'Translating string to dict failed, see log message panel')),
+                                                              log_msg=str(e))
+            raise common_utils.UsageError()
         else:
             return as_dict
 
@@ -233,7 +232,7 @@ class Drillreport(object):        # general observation point info for the selec
         imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates")
 
         if len(obsids) == 0:
-            utils.pop_up_info(ru(QCoreApplication.translate('Drillreport', "Must select one or more obsids!")))
+            common_utils.pop_up_info(ru(QCoreApplication.translate('Drillreport', "Must select one or more obsids!")))
             return None
 
         obsids = sorted(set(obsids))
@@ -275,8 +274,9 @@ class Drillreport(object):        # general observation point info for the selec
         dbconnection = db_utils.DbConnectionManager()
 
         obs_points_cols =  ["obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html"]
-        all_obs_points_data = ru(db_utils.get_sql_result_as_dict('SELECT %s FROM obs_points WHERE obsid IN (%s) ORDER BY obsid'%(', '.join(obs_points_cols), ', '.join(["'{}'".format(x) for x in obsids])),
-                                                            dbconnection=dbconnection)[1], keep_containers=True)
+        all_obs_points_data = ru(
+            db_utils.get_sql_result_as_dict('SELECT %s FROM obs_points WHERE obsid IN (%s) ORDER BY obsid' % (', '.join(obs_points_cols), ', '.join(["'{}'".format(x) for x in obsids])),
+                                            dbconnection=dbconnection)[1], keep_containers=True)
 
         if strat_columns:
             strat_sql_columns_list = [x.split(';')[0] for x in strat_columns]
@@ -285,8 +285,9 @@ class Drillreport(object):        # general observation point info for the selec
                 strat_sql_columns_list.remove('depth')
                 strat_sql_columns_list = [x for x in strat_sql_columns_list if x not in ('obsid')]
 
-            all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict('SELECT obsid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(', '.join(strat_sql_columns_list), ', '.join(["'{}'".format(x) for x in obsids])),
-                                                                dbconnection=dbconnection)[1], keep_containers=True)
+            all_stratigrapy_data = ru(
+                db_utils.get_sql_result_as_dict('SELECT obsid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid' % (', '.join(strat_sql_columns_list), ', '.join(["'{}'".format(x) for x in obsids])),
+                                                dbconnection=dbconnection)[1], keep_containers=True)
         else:
             all_stratigrapy_data = {}
             strat_sql_columns_list = []
@@ -444,7 +445,7 @@ class Drillreport(object):        # general observation point info for the selec
             rpt = r''
 
         if not col_widths or len(col_widths) != 2:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Drillreport2', 'Column width not entered correctly, must be like x;y. Was %s'%str(col_widths))))
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Drillreport2', 'Column width not entered correctly, must be like x;y. Was %s' % str(col_widths))))
             col_widths = ['2*', '3*']
 
         rpt += r"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH={}><COL WIDTH={}>""".format(col_widths[0], col_widths[1])
@@ -494,8 +495,8 @@ class Drillreport(object):        # general observation point info for the selec
                 rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
             except UnicodeEncodeError:
                 try:
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('custom_drillreport', 'Writing drillreport failed, see log message panel')),
-                                                    log_msg=ru(QCoreApplication.translate('custom_drillreport', 'Writing header %s and value %s failed'))%(header, value))
+                    common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('custom_drillreport', 'Writing drillreport failed, see log message panel')),
+                                                                       log_msg=ru(QCoreApplication.translate('custom_drillreport', 'Writing header %s and value %s failed'))%(header, value))
                 except:
                     pass
                 raise
@@ -543,7 +544,7 @@ class Drillreport(object):        # general observation point info for the selec
                             depthtop_idx = strat_sql_columns_list.index('depthtop')
                             depthbot_idx = strat_sql_columns_list.index('depthbot')
                         except ValueError:
-                            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Drillreport2',
+                            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Drillreport2',
                                                                                                   'Programming error, depthtop and depthbot columns was supposed to exist')))
                             rpt += r"""<TD><P><font size=1> </font></P></TD>""".format(value)
                         else:

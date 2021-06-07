@@ -22,11 +22,9 @@ import os
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-import gui_utils
+from midvatten.tools.utils import common_utils, gui_utils, db_utils
 
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 calculate_statistics_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calculate_statistics_ui.ui'))[0]
 
@@ -51,15 +49,15 @@ class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statisti
 
         self.show()
 
-    @utils.waiting_cursor
-    @utils.general_exception_handler
+    @common_utils.waiting_cursor
+    @common_utils.general_exception_handler
     def calculate(self):
         table = self.db_browser.table_list
         column = self.db_browser.column_list
-        obsids = utils.get_selected_features_as_tuple()
+        obsids = common_utils.get_selected_features_as_tuple()
 
         if not all([table, column, obsids]):
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('CalculateStatisticsGui', '''Calculation failed, make sure you've selected a table, a column and features with a column obsid.''')))
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('CalculateStatisticsGui', '''Calculation failed, make sure you've selected a table, a column and features with a column obsid.''')))
             return None
 
         sql_function_order = ['min', 'max', 'avg', 'count']
@@ -67,7 +65,7 @@ class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statisti
         printlist = []
         printlist.append(ru(QCoreApplication.translate("Midvatten", 'Obsid;Min;Median;Average;Max;Nr of values')))
         printlist.extend([';'.join([ru(x) for x in (obsid, v[0], v[4], v[2], v[1], v[3])]) for obsid, v in sorted(stats.items())])
-        utils.MessagebarAndLog.info(
+        common_utils.MessagebarAndLog.info(
             bar_msg=ru(QCoreApplication.translate("Midvatten", 'Statistics for table %s column %s done, see log for results.'))%(table, column),
             log_msg='\n'.join(printlist), duration=15, button=True)
 

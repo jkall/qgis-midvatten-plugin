@@ -24,13 +24,14 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
-from definitions import midvatten_defs as defs
+from midvatten.definitions import midvatten_defs as defs
 
 
 @attr(status='on')
@@ -51,7 +52,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
             db_utils.sql_load_fr_db('select * from zz_strat'))
         reference_string = r"""(True, [(berg, berg), (b, berg), (rock, berg), (ro, berg), (grovgrus, grovgrus), (grg, grovgrus), (coarse gravel, grovgrus), (cgr, grovgrus), (grus, grus), (gr, grus), (gravel, grus), (mellangrus, mellangrus), (grm, mellangrus), (medium gravel, mellangrus), (mgr, mellangrus), (fingrus, fingrus), (grf, fingrus), (fine gravel, fingrus), (fgr, fingrus), (grovsand, grovsand), (sag, grovsand), (coarse sand, grovsand), (csa, grovsand), (sand, sand), (sa, sand), (mellansand, mellansand), (sam, mellansand), (medium sand, mellansand), (msa, mellansand), (finsand, finsand), (saf, finsand), (fine sand, finsand), (fsa, finsand), (silt, silt), (si, silt), (lera, lera), (ler, lera), (le, lera), (clay, lera), (cl, lera), (morän, morän), (moran, morän), (mn, morän), (till, morän), (ti, morän), (torv, torv), (t, torv), (peat, torv), (pt, torv), (fyll, fyll), (fyllning, fyll), (f, fyll), (made ground, fyll), (mg, fyll), (land fill, fyll)])"""
         assert test_string == reference_string
-        current_locale = utils.getcurrentlocale()[0]
+        current_locale = midvatten_utils.getcurrentlocale()[0]
         assert current_locale == 'sv_SE'
         print(str(mocked_messagebar.mock_calls))
         assert len(mocked_messagebar.mock_calls) == 0
@@ -71,7 +72,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
             db_utils.sql_load_fr_db('select * from zz_strat'))
         reference_string = r"""(True, [(berg, rock), (b, rock), (rock, rock), (ro, rock), (grovgrus, coarse gravel), (grg, coarse gravel), (coarse gravel, coarse gravel), (cgr, coarse gravel), (grus, gravel), (gr, gravel), (gravel, gravel), (mellangrus, medium gravel), (grm, medium gravel), (medium gravel, medium gravel), (mgr, medium gravel), (fingrus, fine gravel), (grf, fine gravel), (fine gravel, fine gravel), (fgr, fine gravel), (grovsand, coarse sand), (sag, coarse sand), (coarse sand, coarse sand), (csa, coarse sand), (sand, sand), (sa, sand), (mellansand, medium sand), (sam, medium sand), (medium sand, medium sand), (msa, medium sand), (finsand, fine sand), (saf, fine sand), (fine sand, fine sand), (fsa, fine sand), (silt, silt), (si, silt), (lera, clay), (ler, clay), (le, clay), (clay, clay), (cl, clay), (morän, till), (moran, till), (mn, till), (till, till), (ti, till), (torv, peat), (t, peat), (peat, peat), (pt, peat), (fyll, made ground), (fyllning, made ground), (f, made ground), (made ground, made ground), (mg, made ground), (land fill, made ground), (unknown, unknown)])"""
         assert test_string == reference_string
-        current_locale = utils.getcurrentlocale()[0]
+        current_locale = midvatten_utils.getcurrentlocale()[0]
         assert current_locale == 'en_US'
 
     @mock.patch('qgis.utils.iface')
@@ -117,7 +118,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
 
 
         result = db_utils.sql_load_fr_db("SELECT * FROM about_db WHERE tablename NOT IN %s OFFSET 1"%db_utils.postgis_internal_tables())
-        test_string = utils.anything_to_string_representation(result)
+        test_string = common_utils.anything_to_string_representation(result)
         print(test_string)
 
         printnum = 40
@@ -143,7 +144,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert db_utils.check_connection_ok()
 
         result = db_utils.sql_load_fr_db("SELECT * FROM about_db LIMIT 1")
-        test_string = utils.anything_to_string_representation(result)
+        test_string = common_utils.anything_to_string_representation(result)
         print(test_string)
 
         ref_strings = ['running QGIS version',
@@ -174,7 +175,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
     def test_add_triggers_not_change_existing(self, mock_messagebar):
         """ Adding triggers should not automatically change the db """
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('select obsid, east, north, ST_AsText(geometry) from obs_points order by obsid'))
         reference_string = '(True, [(rb1, 1.0, 1.0, None)])'
@@ -186,7 +187,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         """ Updating coordinates from NULL should create geometry. """
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', NULL, NULL)''')
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
 
         db_utils.sql_alter_db("""update obs_points set east='1.0', north='2.0'""")
         test_string = utils_for_tests.create_test_string(
@@ -201,7 +202,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('select obsid, east, north, ST_AsText(geometry) from obs_points order by obsid'))
@@ -214,7 +215,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         """ Adding triggers should not automatically delete geometry when east OR north is NULL """
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
 
         db_utils.sql_alter_db("""update obs_points set east=ST_X(geometry) where east is null and geometry is not null""")
         test_string = utils_for_tests.create_test_string(
@@ -265,7 +266,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
 
         test_string = utils_for_tests.create_test_string(
@@ -279,7 +280,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
 
         test_string = utils_for_tests.create_test_string(
@@ -296,7 +297,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', ST_GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -314,7 +315,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', ST_GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -331,7 +332,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north) VALUES ('rb2', 2, 2)""")
 
         test_string = utils_for_tests.create_test_string(
@@ -345,7 +346,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db('''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
         db_utils.sql_alter_db('''UPDATE obs_points SET east = 2, north = 2 WHERE (obsid = 'rb1')''')
 
@@ -360,7 +361,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db('''UPDATE obs_points SET geometry = ST_GeomFromText('POINT(2.0 2.0)', 3006) WHERE (obsid = 'rb1')''')
 
@@ -379,7 +380,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', ST_GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the first: '(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db('''UPDATE obs_points SET geometry = ST_GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
         #After the second: '(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -397,7 +398,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb1', 1, 1, ST_GeomFromText('POINT(1.0 1.0)', 3006));""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, ST_GeomFromText('POINT(2.0 2.0)', 3006));""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""UPDATE obs_points SET geometry = ST_GeomFromText('POINT(3.0 3.0)', 3006) WHERE obsid='rb1';""")
 
         test_string = utils_for_tests.create_test_string(
@@ -416,7 +417,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb1', 1, 1, ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, ST_GeomFromText('POINT(2.0 2.0)', 3006))""")
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
 
         db_utils.sql_alter_db('''UPDATE obs_points SET east = 3, north = 3 WHERE (obsid = 'rb1')''')
 
@@ -431,7 +432,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb1')""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
 
@@ -446,7 +447,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         :return:
         """
 
-        utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        midvatten_utils.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', ST_GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
         db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('rb3')""")

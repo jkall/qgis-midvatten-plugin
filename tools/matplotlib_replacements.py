@@ -2,7 +2,7 @@
 """
 /***************************************************************************
  This is the place to store the replacements/adjustments made to the matplotlib code
- NOTE - if using this file, it has to be imported by midvatten.py
+ NOTE - if using this file, it has to be imported by midvatten_plugin.py
                              -------------------
         begin                : 2011-10-18
         copyright            : (C) 2011 by joskal
@@ -29,10 +29,10 @@ except:
 
 from matplotlib import pyplot as plt
 from matplotlib import rcsetup
-from cycler import cycler
-from midvatten_utils import returnunicode as ru
 from qgis.PyQt.QtCore import QCoreApplication, Qt, pyqtSignal, QObject
 import types
+
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 def replace_matplotlib_style_core_update_nested_dict():

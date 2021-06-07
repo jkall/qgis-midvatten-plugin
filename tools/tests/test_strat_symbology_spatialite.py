@@ -2,10 +2,12 @@
 
 from builtins import str
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
 import qgis
+
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from nose.plugins.attrib import attr
 from qgis.core import QgsProject
@@ -34,7 +36,7 @@ class TestStratSymbology(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         _test(self)
         root = QgsProject.instance().layerTreeRoot()
-        test = utils.anything_to_string_representation(utils_for_tests.recursive_children(root))
+        test = common_utils.anything_to_string_representation(utils_for_tests.recursive_children(root))
         ref = '["", "", [["Midvatten strat symbology", "", [["Bars", "", [["Obsid label", True, []], ["Layer texts", True, []], ["W levels", "", [["W levels label", True, []], ["W levels", True, []]]], ["Bedrock", "", [["Bedrock label", True, []], ["Bedrock", True, []]]], ["Frame", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]], ["Shadow", True, []]]], ["Static bars", "", [["Obsid label", True, []], ["Layer texts", True, []], ["W levels", "", [["W levels label", True, []], ["W levels", True, []]]], ["Bedrock", "", [["Bedrock label", True, []], ["Bedrock", True, []]]], ["Frame", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]], ["Shadow", True, []]]], ["Rings", "", [["Bedrock", "", [["Bedrock", True, []]]], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]]]]]]'
         print(test)
         assert test == ref

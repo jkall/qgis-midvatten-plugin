@@ -27,10 +27,9 @@ from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from calculate_statistics import get_statistics_for_single_obsid
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.calculate_statistics import get_statistics_for_single_obsid
 
 
 class Drillreport(object):        # general observation point info for the selected object
@@ -45,13 +44,13 @@ class Drillreport(object):        # general observation point info for the selec
         imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates")
 
         if len(obsids) == 0:
-            utils.pop_up_info(ru(QCoreApplication.translate('Drillreport', "Must select one or more obsids!")))
+            common_utils.pop_up_info(ru(QCoreApplication.translate('Drillreport', "Must select one or more obsids!")))
             return None
         elif len(obsids) == 1:
             merged_question = False
         else:
             #Due to problems regarding speed when opening many tabs, only the merge mode is used.
-            #merged_question = utils.Askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
+            #merged_question = midvatten_utils.Askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
             #                                    "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
             merged_question = True
 
@@ -94,7 +93,7 @@ class Drillreport(object):        # general observation point info for the selec
     def write_obsid(self, obsid, rpt, imgpath, logopath, f):
         rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
-        if  utils.getcurrentlocale()[0] == 'sv_SE':
+        if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
             rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report_sv.png'), r'''" /><br><img src=''', r"""'"""])
             #rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
         else:
@@ -102,7 +101,7 @@ class Drillreport(object):        # general observation point info for the selec
             #rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
         rpt += logopath
         rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
-        if  utils.getcurrentlocale()[0] == 'sv_SE':
+        if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
             rpt += 'Allmän information'
         else:
             rpt += ru(QCoreApplication.translate('Drillreport', 'General information'))
@@ -117,14 +116,14 @@ class Drillreport(object):        # general observation point info for the selec
             CRS = ru(result2) #1st we need crs
             result3 = db_utils.get_srid_name(result2)
             CRSname = ru(result3) # and crs name
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
             else:
                 reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
             f.write(reportdata_1)
 
             rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += 'Lagerföljd'
             else:
                 rpt += ru(QCoreApplication.translate('Drillreport', 'Stratigraphy'))
@@ -133,14 +132,14 @@ class Drillreport(object):        # general observation point info for the selec
 
             # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
             StratData = self.GetData(obsid, 'stratigraphy', 'n')[1] #MacOSX fix1
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_2 = self.rpt_upper_right_sv(StratData)
             else:
                 reportdata_2 = self.rpt_upper_right(StratData)
             f.write(reportdata_2)
 
             rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += 'Kommentarer'
             else:
                 rpt += ru(QCoreApplication.translate('Drillreport', 'Comments'))
@@ -152,7 +151,7 @@ class Drillreport(object):        # general observation point info for the selec
             f.write(reportdata_3)
 
             rpt = r"""</TD><TD WIDTH=50%><P><U><B>"""
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += 'Vattennivåer'
             else:
                 rpt += ru(QCoreApplication.translate('Drillreport', 'Water levels'))
@@ -161,7 +160,7 @@ class Drillreport(object):        # general observation point info for the selec
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
             meas_or_level_masl, statistics = get_statistics_for_single_obsid(obsid)#MacOSX fix1
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
+            if  midvatten_utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
                 reportdata_4 = self.rpt_lower_right(statistics,meas_or_level_masl)
@@ -382,7 +381,7 @@ class Drillreport(object):        # general observation point info for the selec
         if tablename == 'stratigraphy':
             sql += r""" order by stratid"""
         if debug == 'y':
-            utils.pop_up_info(sql)
+            common_utils.pop_up_info(sql)
         ConnectionOK, data = db_utils.sql_load_fr_db(sql)
         return ConnectionOK, data
 

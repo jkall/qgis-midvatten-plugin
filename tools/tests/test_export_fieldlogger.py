@@ -35,6 +35,7 @@ from mock import MagicMock
 from nose.plugins.attrib import attr
 import midvatten_utils as utils
 
+import midvatten.tools.utils.common_utils as common_utils
 from .utils_for_tests import create_test_string, create_vectorlayer, MidvattenTestBase
 
 
@@ -52,7 +53,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         mock_ms = MagicMock()
         mock_ms.settingsdict = {"test_settings_key": '((0, ("final_parameter_name", "testname"), ("test", "gotten_test")), (1, ("key1", "value1"), ("key2", "value2"), ("key3", "value3")))'}
         settingskey = 'test_settings_key'
-        stored_settings = create_test_string(utils.get_stored_settings(mock_ms, settingskey))
+        stored_settings = create_test_string(tools.utils.common_utils.get_stored_settings(mock_ms, settingskey))
         reference_string = '((0, (final_parameter_name, testname), (test, gotten_test)), (1, (key1, value1), (key2, value2), (key3, value3)))'
         assert stored_settings == reference_string
 
@@ -63,7 +64,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         stored_settings = [(0, (('input_field_group_list', ['p1.u1;it1:h1', 'p2.u2;it2:h2']), ('key0_2', 'value0_2'))),
                            (1, (('location_suffix', 'value1_1'), ('key1_2', 'value1_2')))]
         testkey = 'thekey'
-        utils.save_stored_settings(mock_ms, stored_settings, testkey)
+        common_utils.save_stored_settings(mock_ms, stored_settings, testkey)
 
         teststring = mock_ms.settingsdict[testkey]
         reference_string = '[(0, (("input_field_group_list", ["p1.u1;it1:h1", "p2.u2;it2:h2"], ), ("key0_2", "value0_2", ), ), ), (1, (("location_suffix", "value1_1", ), ("key1_2", "value1_2", ), ), )]'
@@ -74,7 +75,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         mock_ms = MagicMock()
         mock_ms.settingsdict = {'fieldlogger_export_parameter_browser': '((0, ("input_field_group_list", ("p1.u1;input;hint", "np2.u2;input2;hint2"), ), ), )'}
         settingskey = 'fieldlogger_export_parameter_browser'
-        stored_settings = create_test_string(utils.get_stored_settings(mock_ms, settingskey))
+        stored_settings = create_test_string(tools.utils.common_utils.get_stored_settings(mock_ms, settingskey))
         reference_string = '((0, (input_field_group_list, (p1.u1;input;hint, np2.u2;input2;hint2))))'
         assert stored_settings == reference_string
 
@@ -180,7 +181,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         mock_ms = MagicMock()
         mock_ms.settingsdict = {"fieldlogger_pgroups": '((0, ("input_field_group_list", ["Aveflow.m3/s;numberDecimal|numberSigned;measure flow", "Accflow.m3;numberDecimal|numberSigned;measure flow"])))'}
         settingskey = 'fieldlogger_pgroups'
-        test_string = create_test_string(utils.get_stored_settings(mock_ms, settingskey))
+        test_string = create_test_string(tools.utils.common_utils.get_stored_settings(mock_ms, settingskey))
         reference_string = '(0, (input_field_group_list, [Aveflow.m3/s;numberDecimal|numberSigned;measure flow, Accflow.m3;numberDecimal|numberSigned;measure flow]))'
         assert test_string == reference_string
 
@@ -191,7 +192,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         stored_settings = [(0, (('input_field_group_list', ['Aveflow.m3/s;numberDecimal|numberSigned;measure flow', 'Accflow.m3;numberDecimal|numberSigned;measure flow']), ('key0_2', 'value0_2'))),
                            (1, (('location_suffix', 'value1_1'), ('key1_2', 'value1_2')))]
         testkey = 'fieldlogger_pgroups'
-        utils.save_stored_settings(mock_ms, stored_settings, testkey)
+        common_utils.save_stored_settings(mock_ms, stored_settings, testkey)
 
         teststring = create_test_string(mock_ms.settingsdict[testkey])
         reference_string = '[(0, (("input_field_group_list", ["Aveflow.m3/s;numberDecimal|numberSigned;measure flow", "Accflow.m3;numberDecimal|numberSigned;measure flow"], ), ("key0_2", "value0_2", ), ), ), (1, (("location_suffix", "value1_1", ), ("key1_2", "value1_2", ), ), )]'
@@ -202,7 +203,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         mock_ms = MagicMock()
         mock_ms.settingsdict = {"fieldlogger_pbrowser": '[(0, ("input_field_group_list", ["Aveflow.m3/s;numberDecimal|numberSigned;measure flow", "Accflow.m3;numberDecimal|numberSigned;measure flow"]))]'}
         settingskey = 'fieldlogger_pbrowser'
-        test_string = create_test_string(utils.get_stored_settings(mock_ms, settingskey))
+        test_string = create_test_string(tools.utils.common_utils.get_stored_settings(mock_ms, settingskey))
         reference_string = '[(0, (input_field_group_list, [Aveflow.m3/s;numberDecimal|numberSigned;measure flow, Accflow.m3;numberDecimal|numberSigned;measure flow]))]'
         assert test_string == reference_string
 
@@ -431,10 +432,10 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
 
 
-        with utils.tempinput('', 'utf-8') as testfile:
+        with common_utils.tempinput('', 'utf-8') as testfile:
             mock_get_save_file_name_no_extension.return_value = testfile
 
-            export_fieldlogger.ExportToFieldLogger.write_printlist_to_file(lines)
+            common_utils.write_printlist_to_file(lines)
 
         with open(testfile, 'r') as f:
             result_lines = [row.rstrip('\n') for row in f]

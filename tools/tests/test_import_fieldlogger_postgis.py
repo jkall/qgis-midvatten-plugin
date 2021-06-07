@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import copy
 from collections import OrderedDict
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import import_fieldlogger
 import midvatten_utils as utils
 import mock
@@ -12,6 +12,7 @@ from import_fieldlogger import FieldloggerImport, DateTimeFilter
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, mock_answer
 from .utils_for_tests import create_test_string
@@ -44,7 +45,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
@@ -87,7 +88,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -166,7 +167,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -245,7 +246,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -325,7 +326,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -405,7 +406,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -489,7 +490,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -592,7 +593,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -697,7 +698,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -773,7 +774,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             '2.2892.flow;12-12-2016;10:03:15;onlycomment;f.comment\n',
             '2.2892.comment;12-12-2016;10:03:24;onlycomment;comment\n']
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -852,7 +853,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1615.level;31-03-2016;15:34:13;111;l.meas.m\n",
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
@@ -928,7 +929,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1512.quality;30-03-2016;15:30:40;1.23;q.depth.m\n"
             ]
 
-        with utils.tempinput(''.join(f)) as filename:
+        with common_utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')

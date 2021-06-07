@@ -30,11 +30,9 @@ from qgis.core import Qgis
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import execute_sqlfile
-from midvatten_utils import get_full_filename
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename
+from tools.utils.midvatten_utils import execute_sqlfile
 
 
 class NewDb(object):
@@ -44,40 +42,41 @@ class NewDb(object):
     def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code='4326', delete_srids=True):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
 
         if user_select_CRS=='y':
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            utils.start_waiting_cursor()
+            common_utils.start_waiting_cursor()
         else:
             EPSGID=EPSG_code
 
         if EPSGID=='0' or not EPSGID:
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        utils.stop_waiting_cursor()
-        dbpath = ru(utils.get_save_file_name_no_extension(parent=None, caption="New DB",
-                                                                    directory="midv_obsdb.sqlite",
-                                                                    filter="Spatialite (*.sqlite)"))
+        common_utils.stop_waiting_cursor()
+        dbpath = ru(common_utils.get_save_file_name_no_extension(parent=None, caption="New DB",
+                                                                             directory="midv_obsdb.sqlite",
+                                                                             filter="Spatialite (*.sqlite)"))
 
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
 
         if os.path.exists(dbpath):
-            utils.MessagebarAndLog.critical(
+            common_utils.MessagebarAndLog.critical(
                 bar_msg=ru(QCoreApplication.translate('NewDb', 'A database with the chosen name already existed. Cancelling...')))
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             return ''
 
         #Create the database
         conn = db_utils.connect_with_spatialite_connect(dbpath)
         conn.close()
 
-        self.db_settings = ru(utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}}))
+        self.db_settings = ru(
+            common_utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}}))
 
         #dbconnection = db_utils.DbConnectionManager(self.db_settings)
         try:
@@ -85,9 +84,9 @@ class NewDb(object):
             dbconnection = db_utils.DbConnectionManager(self.db_settings)
             dbconnection.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database dbconnection separately.
         except Exception as e:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('NewDb', "Impossible to connect to selected DataBase, see log message panel")), log_msg=ru(QCoreApplication.translate('NewDb', 'Msg:\n') + str(e)))
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('NewDb', "Impossible to connect to selected DataBase, see log message panel")), log_msg=ru(QCoreApplication.translate('NewDb', 'Msg:\n') + str(e)))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             return ''
         d =dbconnection.connector
         #First, find spatialite version
@@ -95,8 +94,8 @@ class NewDb(object):
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
-            utils.pop_up_info(ru(QCoreApplication.translate('NewDb', "Midvatten plugin needs spatialite4.\nDatabase can not be created")))
-            utils.stop_waiting_cursor()
+            common_utils.pop_up_info(ru(QCoreApplication.translate('NewDb', "Midvatten plugin needs spatialite4.\nDatabase can not be created")))
+            common_utils.stop_waiting_cursor()
             return ''
 
         filenamestring = "create_db.sql"
@@ -157,18 +156,18 @@ class NewDb(object):
         AddLayerStyles(dbpath)
         """
 
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326'):
 
         dbconnection = db_utils.DbConnectionManager()
         db_settings = dbconnection.db_settings
         if not isinstance(db_settings, str):
-            self.db_settings = ru(utils.anything_to_string_representation(dbconnection.db_settings))
+            self.db_settings = ru(common_utils.anything_to_string_representation(dbconnection.db_settings))
         else:
             self.db_settings = ru(db_settings)
         if dbconnection.dbtype != 'postgis':
-            raise utils.UsageError('Database type postgis not selected, check Midvatten settings!')
+            raise common_utils.UsageError('Database type postgis not selected, check Midvatten settings!')
 
         dbconnection.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
 
@@ -176,19 +175,19 @@ class NewDb(object):
 
         versionstext = ', '.join(result[0])
 
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
-        utils.start_waiting_cursor()
+        common_utils.start_waiting_cursor()
 
         if user_select_CRS=='y':
-            utils.stop_waiting_cursor()
+            common_utils.stop_waiting_cursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            utils.start_waiting_cursor()
+            common_utils.start_waiting_cursor()
         else:
             EPSGID=EPSG_code
 
         if EPSGID=='0' or not EPSGID:
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
 
         filenamestring = "create_db.sql"
 
@@ -228,7 +227,7 @@ class NewDb(object):
                         pass
                     raise
                 else:
-                    _sql = sql.lstrip('\r').lstrip('\n').lstrip()
+                    _sql = common_utils.lstrip()
                     if _sql.startswith('CREATE TABLE'):
                         tablename = ' '.join(_sql.split()).split()[2]
                         created_tables_sqls[tablename] = sql
@@ -254,7 +253,7 @@ class NewDb(object):
         #Finally add the layer styles info into the data base
         AddLayerStyles(dbpath)
         """
-        utils.stop_waiting_cursor()
+        common_utils.stop_waiting_cursor()
 
     def replace_words(self, line, replace_word_replace_with):
         for replace_word, replace_with in replace_word_replace_with:
@@ -266,16 +265,16 @@ class NewDb(object):
         locale_names = [localeobj.name() for localeobj in locales]
         locale_names.append(locale.getdefaultlocale()[0])
         locale_names = list(set(locale_names))
-        question = utils.NotFoundQuestion(dialogtitle=ru(QCoreApplication.translate('NewDb', 'User input needed')),
-                                    msg=ru(QCoreApplication.translate('NewDb', 'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
-                                    existing_list=locale_names,
-                                    default_value='',
-                                    combobox_label=ru(QCoreApplication.translate('newdb', 'Locales')),
-                                    button_names=['Cancel', 'Ok'])
+        question = common_utils.NotFoundQuestion(dialogtitle=ru(QCoreApplication.translate('NewDb', 'User input needed')),
+                                                             msg=ru(QCoreApplication.translate('NewDb', 'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
+                                                             existing_list=locale_names,
+                                                             default_value='',
+                                                             combobox_label=ru(QCoreApplication.translate('newdb', 'Locales')),
+                                                             button_names=['Cancel', 'Ok'])
         answer = question.answer
         submitted_value = ru(question.value)
         if answer == 'cancel':
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
         elif answer == 'ok':
             return submitted_value
 
@@ -287,7 +286,7 @@ class NewDb(object):
             default_crs = 4326
         EPSGID = qgis.PyQt.QtWidgets.QInputDialog.getInt(None, ru(QCoreApplication.translate('NewDb', "Select CRS")), ru(QCoreApplication.translate('NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
         if not EPSGID[1]:
-            raise utils.UserInterruptError()
+            raise common_utils.UserInterruptError()
         return EPSGID
 
     def insert_datadomains(self, set_locale=False, dbconnection=None):
@@ -324,7 +323,7 @@ class NewDb(object):
             except IndexError:
                 table_descr = None
             else:
-                table_descr = table_descr.rstrip('\n').rstrip('\r').replace("'", "''")
+                table_descr = common_utils.rstrip('\r').replace("'", "''")
 
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
@@ -352,7 +351,7 @@ class NewDb(object):
                     _foreign_keys = '%s(%s)'%(foreign_keys_dict[colname])
                 column_descr = columns_descr.get(colname, None)
                 if column_descr:
-                    column_descr = column_descr.rstrip('\n').rstrip('\r').replace("'", "''")
+                    column_descr = common_utils.rstrip('\r').replace("'", "''")
                 sql = 'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
                 sql += '({});'.format(', '.join(["""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
                 try:

@@ -22,11 +22,11 @@ import os
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QApplication
-
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
 from qgis.core import QgsVectorLayer
-import gui_utils
+
+
+from midvatten.tools.utils import common_utils, gui_utils, midvatten_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 selected_features_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'selected_features.ui'))[0]
@@ -53,9 +53,9 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
         self.show()
 
     def reload_combobox(self):
-        self.activelayer = utils.get_active_layer()
+        self.activelayer = common_utils.get_active_layer()
         if not isinstance(self.activelayer, QgsVectorLayer):
-            utils.MessagebarAndLog.warning(bar_msg=ru(
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(
                 QCoreApplication.translate('ValuesFromSelectedFeaturesGui', 'Must select a vector layer!')))
             return None
         self.columns.clear()
@@ -71,10 +71,10 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
             thelayer is an optional argument, if not given then activelayer is used
         """
 
-        activelayer = utils.get_active_layer()
+        activelayer = common_utils.get_active_layer()
         if activelayer is not self.activelayer:
             self.reload_combobox()
-            utils.MessagebarAndLog.warning(
+            common_utils.MessagebarAndLog.warning(
                 bar_msg=ru(QCoreApplication.translate('ValuesFromSelectedFeaturesGui', 'Column list reloaded. Select column and press Ok.')))
             return None
 
@@ -89,7 +89,7 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
         selected_feature_ids = [f.id() for f in selected]
 
         if not selected_values:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ValuesFromSelectedFeaturesGui',
+            common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ValuesFromSelectedFeaturesGui',
                                                                               'No features selected!')))
         else:
             if self.unique_sorted_list_checkbox.isChecked():
@@ -120,10 +120,10 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
 
             activelayer.selectByIds(selected_feature_ids)
 
-            utils.MessagebarAndLog.info(bar_msg=ru(
+            common_utils.MessagebarAndLog.info(bar_msg=ru(
                 QCoreApplication.translate('ValuesFromSelectedFeaturesGui', bar_prefix +
-                                           'List of %s selected %s written to log'))%(str(nr), self.selected_column),
-                                        log_msg=filter_string + '\n' + msg)
+                                           'List of %s selected %s written to log')) % (str(nr), self.selected_column),
+                                                           log_msg=filter_string + '\n' + msg)
 
             self.close()
 

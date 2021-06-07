@@ -27,9 +27,10 @@ import numpy as np
 
 from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+import midvatten.tools.utils.common_utils as common_utils
+import midvatten.tools.utils.midvatten_utils as midvatten_utils
+import midvatten.tools.utils.db_utils as db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class XYPlot(object):
@@ -151,6 +152,6 @@ class XYPlot(object):
                     label.set_fontsize(10)
                 fig.show() # causes conflict with plugins "statist" and "chartmaker"
             else:
-                utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select at least one point with xy data")))
+                common_utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select at least one point with xy data")))
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select a layer containing observations with xy data")))
+            common_utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select a layer containing observations with xy data")))

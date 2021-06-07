@@ -30,6 +30,7 @@ from nose.plugins.attrib import attr
 import mock
 from mock import call
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 
 
@@ -49,7 +50,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     "#Provadm",
                     "Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsn",
                         )
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-16') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-16') as testfile:
             result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_filesettings(testfile)))
 
         reference_string = "['False', '4.0', 'utf-16', ',', 'False']"
@@ -67,7 +68,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     "#Provadm",
                     "Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsn",
                         )
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_filesettings(testfile)))
 
         reference_string = "['False', '4.0', 'utf-8', ',', 'False']"
@@ -107,7 +108,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     "#Slut"
                         )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-16') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-16') as testfile:
             result = self.importinstance.parse([testfile])
         result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
@@ -145,7 +146,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     "#Slut"
                         )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'iso-8859-1') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'iso-8859-1') as testfile:
             result = self.importinstance.parse([testfile])
         result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
@@ -182,7 +183,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     "#Slut"
                         )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             result = self.importinstance.parse([testfile])
         result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
@@ -220,7 +221,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     "#Slut"
                         )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             result = self.importinstance.parse([testfile])
         result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
@@ -243,7 +244,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     '#Slut'
                         )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             result = self.importinstance.parse([testfile])
         result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;metadata;adress;PG Vejdes väg 15;lablittera;DM-990908-2773;namn;MFR;ort;Växjö;postnr;351 96'
@@ -265,7 +266,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     '#Slut'
                         )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             result = self.importinstance.parse([testfile])
         result_string = '|'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773|Färgtal|lablittera|DM-990908-2773|metodbeteckning|SS-EN ISO 7887-1/4|mätvärdetal|5|parameter|Färgtal|metadata|adress|PG ;Vejdes väg 15|lablittera|DM-990908-2773|namn|MFR|ort|Växjö|postnr|351 96'
@@ -288,7 +289,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             '#Slut'
                 )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -316,7 +317,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -346,7 +347,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -376,7 +377,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -406,7 +407,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -437,7 +438,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -465,7 +466,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             '#Slut'
                 )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -490,7 +491,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             '#Slut'
                 )
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -520,7 +521,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -555,7 +556,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         mock_getcurrentlocale.return_value = ['en_US', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -590,7 +591,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['sv_SE', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -629,7 +630,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['sv_SE', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
@@ -667,7 +668,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 )
         mock_getcurrentlocale.return_value = ['sv_SE', 'UTF-8']
 
-        with utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse([testfile])
 
         result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))

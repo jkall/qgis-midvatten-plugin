@@ -18,16 +18,17 @@ import ast
 import os.path
 from qgis.PyQt import uic, QtCore
 from functools import partial  # only to get combobox signals to work
-
-import db_utils
-import gui_utils
-import midvatten_utils as utils
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QComboBox, QDockWidget, QFileDialog
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import warn_about_old_database
+
+from midvatten.tools.utils import common_utils, gui_utils, db_utils, midvatten_utils
+
+from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.midvatten_utils import warn_about_old_database
 
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
+
+
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
 
 
@@ -233,7 +234,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.database_settings.update_settings(self.ms.settingsdict['database'])
         self.load_plot_settings()
 
-    @utils.general_exception_handler
+    @common_utils.general_exception_handler
     def load_plot_settings(self):
         self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
         self.LoadDistinctPiperParams()
@@ -549,11 +550,11 @@ class DatabaseSettings(object):
 
     @property
     def dbtype_combobox(self):
-        return utils.returnunicode(self._dbtype_combobox.currentText())
+        return common_utils.returnunicode(self._dbtype_combobox.currentText())
 
     @dbtype_combobox.setter
     def dbtype_combobox(self, value):
-        index = self._dbtype_combobox.findText(utils.returnunicode(value))
+        index = self._dbtype_combobox.findText(tools.utils.common_utils.returnunicode(value))
         if index != -1:
             self._dbtype_combobox.setCurrentIndex(index)
 
@@ -602,7 +603,7 @@ class DatabaseSettings(object):
         try:
             db_settings = ast.literal_eval(_db_settings)
         except:
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DatabaseSettings', 'Reading db_settings failed using string %s'))%_db_settings)
+            common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DatabaseSettings', 'Reading db_settings failed using string %s')) % _db_settings)
         else:
             pass
 
@@ -623,12 +624,12 @@ class DatabaseSettings(object):
                         if hasattr(self.db_settings_obj, str(setting_name)):
                             setattr(self.db_settings_obj, str(setting_name), value)
                         else:
-                            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DatabaseSettings', "Databasetype %s didn' t have setting %s"))%(dbtype, setting_name))
+                            common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DatabaseSettings', "Databasetype %s didn' t have setting %s")) % (dbtype, setting_name))
                     except:
                         print(str(setting_name))
                         raise
         else:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DatabaseSettings', "Could not load database settings. Select database again!")), log_msg=ru(QCoreApplication.translate('DatabaseSettings', 'Tried to load db_settings string %s'))%_db_settings)
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DatabaseSettings', "Could not load database settings. Select database again!")), log_msg=ru(QCoreApplication.translate('DatabaseSettings', 'Tried to load db_settings string %s')) % _db_settings)
 
     def clear(self):
         self.dbtype_combobox = ''
@@ -660,11 +661,11 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
 
     @property
     def dbpath(self):
-        return utils.returnunicode(self._dbpath.text())
+        return common_utils.returnunicode(self._dbpath.text())
 
     @dbpath.setter
     def dbpath(self, value):
-        self._dbpath.setText(utils.returnunicode(value))
+        self._dbpath.setText(tools.utils.common_utils.returnunicode(value))
 
     def select_file(self):
         """ Open a dialog to locate the sqlite file and some more..."""
@@ -673,14 +674,14 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
             self.dbpath = dbpath
 
         else:  # debug
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SpatialiteSettings', "DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
+            common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SpatialiteSettings', "DB selection cancelled and still using database path %s")) % common_utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
 
     def database_chosen(self):
         if self._dbpath.hasFocus():
             return
 
         dbpath = self.dbpath
-        self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation(
+        self.midvsettingsdialogdock.ms.settingsdict['database'] = common_utils.anything_to_string_representation(
             {'spatialite': {'dbpath': dbpath}})
         self.midvsettingsdialogdock.ms.save_settings('database')
         self.midvsettingsdialogdock.load_plot_settings()
@@ -708,17 +709,17 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
     @property
     def connection(self):
-        return utils.returnunicode(self._connection.currentText())
+        return common_utils.returnunicode(self._connection.currentText())
 
     @connection.setter
     def connection(self, value):
-        index = self._connection.findText(utils.returnunicode(value))
+        index = self._connection.findText(tools.utils.common_utils.returnunicode(value))
         if index != -1:
             self._connection.setCurrentIndex(index)
 
     def set_db(self):
         if self.connection:
-            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'postgis': {'connection': self.connection}})
+            self.midvsettingsdialogdock.ms.settingsdict['database'] = common_utils.anything_to_string_representation({'postgis': {'connection': self.connection}})
             self.midvsettingsdialogdock.ms.save_settings('database')
             self.midvsettingsdialogdock.load_plot_settings()
             warn_about_old_database()

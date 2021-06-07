@@ -2,7 +2,7 @@
 """
 /***************************************************************************
  This is where a rectangular plt.plot is created 
- NOTE - if using this file, it has to be imported by midvatten.py
+ NOTE - if using this file, it has to be imported by midvatten_plugin.py
                              -------------------
         begin                : 2013-11-27
         copyright            : (C) 2011 by joskal
@@ -21,7 +21,6 @@ __modified_date__ = "Nov 2013"
 """
 from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
 from builtins import range
 from builtins import object
 
@@ -32,14 +31,10 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 import math
+
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
 from definitions.midvatten_defs import piperplot_style, piperplot2_style
-
-#import plotly.graph_objs as go
-#from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
-
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import returnunicode as ru
 
 
 class PiperPlot(object):
@@ -105,7 +100,7 @@ class PiperPlot(object):
                   group by obsid, date_time
                 ) AS u
             where u.Ca_meqPl is not null and u.Mg_meqPl is not null and u.Na_meqPl is not null and u.K_meqPl is not null and u.HCO3_meqPl is not null and u.Cl_meqPl is not null and u.SO4_meqPl is not null
-            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(ru(self.ParameterList[0]), ru(self.ParameterList[1]), ru(self.ParameterList[2]), ru(self.ParameterList[3]), ru(self.ParameterList[4]), ru(self.ParameterList[5]), ru(self.ParameterList[6]), utils.sql_unicode_list(self.observations))
+            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(ru(self.ParameterList[0]), ru(self.ParameterList[1]), ru(self.ParameterList[2]), ru(self.ParameterList[3]), ru(self.ParameterList[4]), ru(self.ParameterList[5]), ru(self.ParameterList[6]), common_utils.sql_unicode_list(self.observations))
         return sql
 
     def create_markers(self):
@@ -152,13 +147,15 @@ class PiperPlot(object):
         ConnOK, self.date_times = db_utils.sql_load_fr_db(sql2)
         
     def get_selected_observations(self):
-        self.observations = utils.getselectedobjectnames(self.activelayer)
+        self.observations = common_utils.getselectedobjectnames(self.activelayer)
 
     def get_selected_obstypes(self):
-        sql = "select obsid, type from obs_points where obsid in ({})".format(utils.sql_unicode_list(self.observations))
+        sql = "select obsid, type from obs_points where obsid in ({})".format(
+            common_utils.sql_unicode_list(self.observations))
         ConnOK, types = db_utils.sql_load_fr_db(sql)
         self.typedict = dict(types)#make it a dictionary
-        sql = "select distinct type from obs_points where obsid in ({})".format(utils.sql_unicode_list(self.observations))
+        sql = "select distinct type from obs_points where obsid in ({})".format(
+            common_utils.sql_unicode_list(self.observations))
         ConnOK, self.distincttypes = db_utils.sql_load_fr_db(sql)
         
     def get_piper_data(self):
@@ -376,7 +373,7 @@ class PiperPlot(object):
             fig.canvas.mpl_connect('draw_event', self.set_rotated_axes_labels)
             fig.canvas.mpl_connect('button_release_event', self.draw_crossing_lines)
             fig.canvas.mpl_connect('figure_enter_event', self.remove_crossing_lines)
-            self.pa = utils.PickAnnotator(fig, mousebutton='left')
+            self.pa = common_utils.PickAnnotator(fig, mousebutton='left')
 
             # fig and ax probably must be self-variables to keep the matplotlib event connection living.
             self.fig = fig

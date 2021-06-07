@@ -19,17 +19,18 @@
 """
 from __future__ import absolute_import
 from future import standard_library
-from import_data_to_db import midv_data_importer
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import object
-import csv, codecs, io, os, os.path
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru, sql_unicode_list
-from definitions import midvatten_defs as defs
-import qgis.utils
+import os, os.path
 from qgis.PyQt.QtCore import QCoreApplication
+
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
+from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.definitions import midvatten_defs as defs
+
+from import_data_to_db import midv_data_importer
 
 class ExportData(object):
 
@@ -83,7 +84,7 @@ class ExportData(object):
 
         self.dest_dbconnection.cursor.execute('vacuum')
 
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Export done, see differences in log message panel")), log_msg=ru(QCoreApplication.translate('ExportData', "Tables with different number of rows:\n%s"))%statistics)
+        common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Export done, see differences in log message panel")), log_msg=ru(QCoreApplication.translate('ExportData', "Tables with different number of rows:\n%s")) % statistics)
 
         self.dest_dbconnection.commit_and_closedb()
         self.source_dbconnection.closedb()
@@ -91,14 +92,14 @@ class ExportData(object):
     def get_number_of_rows(self, obsids, tname):
         sql = "select count(obsid) from %s"%tname
         if obsids:
-            sql += " WHERE obsid IN ({})".format(sql_unicode_list(obsids))
+            sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         nr_of_rows = self.source_dbconnection.execute_and_fetchall(sql)[0][0]
         return nr_of_rows
 
     def write_data(self, to_writer, obsids, ptabs, replace=False):
         for tname in ptabs:
             if not db_utils.verify_table_exists(tname, dbconnection=self.source_dbconnection):
-                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Table %s didn't exist. Skipping it."))%tname)
+                common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Table %s didn't exist. Skipping it.")) % tname)
                 continue
             if not obsids:
                 to_writer(tname, obsids, replace)
@@ -116,12 +117,12 @@ class ExportData(object):
         """
         sql = "SELECT * FROM %s"%tname
         if obsids:
-            sql += " WHERE obsid IN ({})".format(sql_unicode_list(obsids))
+            sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         data = self.source_dbconnection.execute_and_fetchall(sql)
         printlist = [[col[0] for col in self.source_dbconnection.cursor.description]]
         printlist.extend(data)
         filename = os.path.join(self.exportfolder, tname + ".csv")
-        utils.write_printlist_to_file(filename, printlist)
+        common_utils.write_printlist_to_file(filename, printlist)
 
     def to_sql(self, tname, obsids=None, replace=False):
         """
@@ -187,7 +188,7 @@ class ExportData(object):
 
         sql = '''SELECT {} FROM {}'''.format(u', '.join(select_columns), tname)
         if obsids:
-            sql += " WHERE obsid IN ({})".format(sql_unicode_list(obsids))
+            sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         dbconnection.execute(sql)
         table_data = [[x.lower() for x in columns]]
         table_data.extend([row for row in dbconnection.execute_and_fetchall(sql)])
@@ -212,7 +213,7 @@ class ExportData(object):
                 try:
                     nr_of_rows = dbconnection.execute_and_fetchall(sql)[0][0]
                 except:
-                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportData', 'Sql failed while getting table row differences: %s'))%sql)
+                    common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportData', 'Sql failed while getting table row differences: %s')) % sql)
                 else:
                     results.setdefault(tablename, {})[alias] = str(nr_of_rows)
 

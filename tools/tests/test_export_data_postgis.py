@@ -25,10 +25,10 @@ import io
 import os
 import unittest
 
-import db_utils
+import midvatten.tools.utils.db_utils as db_utils
 import midvatten_utils as utils
 import mock
-from midvatten.midvatten import Midvatten
+from midvatten_plugin.midvatten import Midvatten
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2

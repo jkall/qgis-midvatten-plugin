@@ -30,6 +30,7 @@ from date_utils import datestring_to_date
 from import_hobologger import HobologgerImport, TzConverter, get_tz_string
 from nose.plugins.attrib import attr
 
+import midvatten.tools.utils.common_utils as common_utils
 import utils_for_tests
 from mocks_for_tests import MockReturnUsingDictIn
 
@@ -53,7 +54,7 @@ class TestParseHobologgerFile(object):
         #tz_string = get_tz_string('Date Time, GMT+02:00')
         tzconverter = TzConverter()
         #tzconverter.source_tz = tz_string
-        with utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
             file_data = HobologgerImport.parse_hobologger_file(path, charset_of_hobologgerfile, tz_converter=tzconverter)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -80,7 +81,7 @@ class TestParseHobologgerFile(object):
         tzconverter = TzConverter()
         tzconverter.target_tz = 'GMT+01:00'
         #tzconverter.source_tz = tz_string
-        with utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
             file_data = HobologgerImport.parse_hobologger_file(path, charset_of_hobologgerfile, tz_converter=tzconverter)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -104,7 +105,7 @@ class TestParseHobologgerFile(object):
         #tz_string = get_tz_string('Date Time, GMT+02:00')
         tzconverter = TzConverter()
         #tzconverter.source_tz = tz_string
-        with utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
             file_data = HobologgerImport.parse_hobologger_file(path, charset_of_hobologgerfile, tz_converter=tzconverter)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -127,7 +128,7 @@ class TestParseHobologgerFile(object):
         #tz_string = get_tz_string('Date Time, GMT+02:00')
         tzconverter = TzConverter()
         #tzconverter.source_tz = tz_string
-        with utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
+        with common_utils.tempinput('\n'.join(f), charset_of_hobologgerfile) as path:
             file_data = HobologgerImport.parse_hobologger_file(path, charset_of_hobologgerfile, tz_converter=tzconverter)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
