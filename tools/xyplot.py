@@ -27,9 +27,7 @@ import numpy as np
 
 from qgis.PyQt.QtCore import QCoreApplication
 
-import midvatten.tools.utils.common_utils as common_utils
-import midvatten.tools.utils.midvatten_utils as midvatten_utils
-import midvatten.tools.utils.db_utils as db_utils
+from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 

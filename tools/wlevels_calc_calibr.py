@@ -30,15 +30,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib.backend_bases import MouseButton, PickEvent
 import os
-from qgis.PyQt import uic
+from qgis.PyQt import uic, QtWidgets
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num, num2date
 import numpy as np
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, Qt
-
-import midvatten.tools.utils.common_utils as common_utils
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -48,12 +46,12 @@ except:
 from matplotlib.widgets import RectangleSelector
 
 import datetime
-import midvatten.tools.utils.midvatten_utils as midvatten_utils
-import midvatten.tools.utils.db_utils as db_utils
+
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer
-from tools.utils.date_utils import dateshift, datestring_to_date, long_dateformat
-from qgis.PyQt import QtWidgets
-from tools.utils.gui_utils import add_action_to_navigation_toolbar
+from midvatten.tools.utils.date_utils import dateshift, datestring_to_date, long_dateformat
+from midvatten.tools.utils.gui_utils import add_action_to_navigation_toolbar
+
 
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]

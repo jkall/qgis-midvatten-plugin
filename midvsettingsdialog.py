@@ -22,7 +22,6 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QComboBox, QDockWidget, QFileDialog
 
 from midvatten.tools.utils import common_utils, gui_utils, db_utils, midvatten_utils
-
 from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools.utils.midvatten_utils import warn_about_old_database
 

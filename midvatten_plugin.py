@@ -41,9 +41,7 @@ from qgis.PyQt.QtGui import QCursor, QIcon
 # Add translate
 from midvatten.tools.utils.util_translate import getTranslate
 
-import midvatten.tools.utils.common_utils as common_utils
-import midvatten.tools.utils.db_utils as db_utils
-import midvatten.tools.utils.midvatten_utils as midvatten_utils
+from midvatten.tools.utils import common_utils, db_utils, midvatten_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 
 # Import Midvatten tools and modules
@@ -78,7 +76,6 @@ from midvatten.tools.import_hobologger import HobologgerImport
 from midvatten.tools.create_db import NewDb
 from midvatten.tools.wlevels_calc_calibr import Calclvl
 from midvatten.tools.wlevels_calc_calibr import Calibrlogger
-
 from midvatten.definitions import midvatten_defs
 
 
