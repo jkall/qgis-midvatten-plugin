@@ -559,7 +559,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch("midvatten_utils.MessagebarAndLog")
+                    @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)

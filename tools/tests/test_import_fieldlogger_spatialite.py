@@ -89,7 +89,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -168,7 +168,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -248,7 +248,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -328,7 +328,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -408,7 +408,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -492,7 +492,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -595,7 +595,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -700,7 +700,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -776,7 +776,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             '2.2892.comment;12-12-2016;10:03:24;onlycomment;comment\n']
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -855,7 +855,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -930,7 +930,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.Askuser')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')

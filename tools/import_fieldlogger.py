@@ -1174,7 +1174,7 @@ class WQualFieldImportFields(RowEntryGrid):
     def get_sorted_parameter_date_time_list(self, staff, value_index):
         # The instrument list is sorted with the instruments from the currently chosen staff first, then the rest of the instruments in descending date order.
         all_res = {}
-        for parameter, staff_dicts in defs.midvatten_defs.get_last_used_quality_instruments().items():
+        for parameter, staff_dicts in defs.get_last_used_quality_instruments().items():
             res = []
             if staff is not None and staff in staff_dicts:
                 for _parameter_unit_instrument_staff_date_time in staff_dicts[staff]:
