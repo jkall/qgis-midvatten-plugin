@@ -62,7 +62,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test == reference
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
+    @mock.patch('midvatten.tools.sectionplot.common_utils.getselectedobjectnames', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calselected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         mock_getselectedobjectnames.return_value = ['1']
@@ -94,7 +94,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
+    @mock.patch('midvatten.tools.sectionplot.common_utils.getselectedobjectnames', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calselected_pandas_one_selected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         """
@@ -134,7 +134,7 @@ class TestWFlowCalcAveflow(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten.tools.utils.common_utils.getselectedobjectnames', autospec=True)
+    @mock.patch('midvatten.tools.sectionplot.common_utils.getselectedobjectnames', autospec=True)
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def test_calselected_pandas_two_selected(self, mock_messagebar, mock_getselectedobjectnames, mock_iface):
         mock_getselectedobjectnames.return_value = ['1', '2']

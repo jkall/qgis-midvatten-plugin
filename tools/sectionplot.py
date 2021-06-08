@@ -745,8 +745,16 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         sql = """SELECT p.obsid, ST_Length((SELECT geometry FROM %s)) * ST_Line_Locate_Point((SELECT geometry FROM %s), p.geometry) AS absdist FROM obs_points AS p
                   WHERE p.obsid in %s
                   ORDER BY absdist"""%(self.temptable_name, self.temptable_name, '({})'.format(', '.join(["'{}'".format(o) for o in obsidtuple])))
+        try:
+            data = self.dbconnection.execute_and_fetchall(sql)
+        except:
+            if 'UndefinedFunction' in traceback.format_exc():
+                sql = sql.replace('ST_Line_Locate_Point', 'ST_LineLocatePoint')
+                data = self.dbconnection.execute_and_fetchall(sql)
+            else:
+                raise
 
-        data = self.dbconnection.execute_and_fetchall(sql)
+
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
         #data = midvatten_utils.sql_load_fr_db(sql)[1]

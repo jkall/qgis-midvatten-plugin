@@ -212,7 +212,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.export_data.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
     def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify,
                                mock_locale, mock_createdb_crs_question, mock_messagebar):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
@@ -319,7 +319,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.export_data.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
     def test_export_spatialite_no_selected(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath,
                                            mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
@@ -426,7 +426,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.export_data.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
     def test_export_spatialite_with_umlauts(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath,
                                             mock_verify, mock_selection, mock_locale, mock_createdb_crs_question,
                                             mock_messagebar):
@@ -487,7 +487,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.export_data.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
     def test_export_spatialite_transform_coordinates(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath,
                                                      mock_verify, mock_locale, mock_createdb_crs_question,
                                                      mock_messagebar):
@@ -614,7 +614,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.export_data.common_utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
     def test_export_spatialite_zz_tables(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath,
                                          mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'

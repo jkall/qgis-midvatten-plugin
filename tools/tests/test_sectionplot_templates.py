@@ -54,7 +54,8 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         self.template_folder = os.path.join(os.path.split(os.path.split(os.path.dirname(__file__))[0])[0], 'definitions', 'secplot_templates')
 
         self.sectionplot = mock.MagicMock()
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_load_from_msettings(self, mock_messagebar):
         test_str = '''{"test": 1}'''
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = test_str
@@ -76,7 +77,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with common_utils.tempinput(default_file, 'utf-8') as f1:
 
-            @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
             def _test(self, filename, mock_join, mock_messagebar):
                 mock_join.return_value = filename
@@ -103,7 +104,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         with common_utils.tempinput(afile, 'utf-8') as f1:
 
             @mock.patch('midvatten.tools.utils.midvatten_utils.select_files')
-            @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
             def _test(self, filename, mock_join, mock_messagebar, mock_select_files):
                 mock_join.return_value = ''
@@ -138,7 +139,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with common_utils.tempinput(default_file, 'utf-8') as f1:
 
-            @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+            @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
             @mock.patch('os.path.join')
             def _test(self, filename, mock_join, mock_messagebar):
                 mock_join.return_value = filename
@@ -170,7 +171,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             with common_utils.tempinput(afile, 'utf-8') as f1:
                 @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
                 @mock.patch('midvatten.tools.utils.midvatten_utils.select_files')
-                @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+                @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
                 @mock.patch('os.path.join')
                 def _test(self, filename, save_file, mock_join, mock_messagebar, mock_select_files, mock_save_filename):
                     mock_join.return_value = ''
@@ -199,9 +200,9 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert lines == afile
         assert self.template_list.count() == 2
 
-    @mock.patch('sectionplot.defs.secplot_default_template')
+    @mock.patch('midvatten.tools.sectionplot.defs.secplot_default_template')
     @mock.patch('os.path.join')
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_load_hard_coded_settings(self, mock_messagebar, mock_join, mock_hardcoded_template):
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
         self.midvatten.ms.settingsdict['secplot_templates'] = ''

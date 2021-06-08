@@ -27,7 +27,7 @@ import mock
 from mock import call
 from nose.plugins.attrib import attr
 
-from midvatten.tools.utils import db_utils
+from midvatten.tools.utils import db_utils, midvatten_utils
 from midvatten.tools.tests import utils_for_tests
 from midvatten.tools.tests.utils_for_tests import create_test_string
 
@@ -50,7 +50,7 @@ class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 @attr(status='on')
 class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_get_db_statistics(self, mock_messagebar):
         """
         Test that calculate_db_table_rows can be run without major error
@@ -64,7 +64,7 @@ class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
 @attr(status='on')
 class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten.tools.utils.midvatten_utils.latest_database_version')
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_warn_about_old_database(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '999.999.999'
         midvatten_utils.warn_about_old_database()
@@ -72,14 +72,14 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert call.info(bar_msg='The database version appears to be older than 999.999.999. An upgrade is suggested! See https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database', duration=5) in mock_messagebar.mock_calls
 
     @mock.patch('midvatten.tools.utils.midvatten_utils.latest_database_version')
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_warn_about_old_database_not_old(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         midvatten_utils.warn_about_old_database()
         assert not mock_messagebar.mock_calls
 
     @mock.patch('midvatten.tools.utils.midvatten_utils.latest_database_version')
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_warn_about_view_obs_points_missing(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         db_utils.sql_alter_db('''DROP VIEW view_obs_points;''')
@@ -88,7 +88,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert call.warning(bar_msg='Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.', duration=60) in mock_messagebar.mock_calls
 
     @mock.patch('midvatten.tools.utils.midvatten_utils.latest_database_version')
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_warn_about_view_obs_lines_missing(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         db_utils.sql_alter_db('''DROP VIEW view_obs_lines;''')
@@ -98,7 +98,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 @attr(status='on')
 class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_add_view_obs_points_obs_lines_readd(self, mock_messagebar):
         assert all([db_utils.verify_table_exists('view_obs_points'), db_utils.verify_table_exists('view_obs_lines')])
         views_geometry_columns = db_utils.sql_load_fr_db('''SELECT view_name FROM views_geometry_columns WHERE view_name IN ('view_obs_points', 'view_obs_lines') ORDER BY view_name;''')[1]
@@ -114,7 +114,7 @@ class TestAddViewObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(views_geometry_columns))
         assert views_geometry_columns == [('view_obs_lines',), ('view_obs_points',)]
 
-    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
     def test_add_view_obs_points_obs_lines_add(self, mock_messagebar):
         db_utils.sql_alter_db('''DROP VIEW IF EXISTS view_obs_points;''')
         db_utils.sql_alter_db('''DROP VIEW IF EXISTS view_obs_lines;''')

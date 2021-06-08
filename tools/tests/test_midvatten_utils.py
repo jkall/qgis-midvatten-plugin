@@ -181,7 +181,7 @@ class TestAskUser(object):
 
 @attr(status='on')
 class TestSqlToParametersUnitsTuple(object):
-    @mock.patch('db_utils.sql_load_fr_db', autospec=True)
+    @mock.patch('midvatten.tools.utils.db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [('par1', 'un1'), ('par2', 'un2')])
 
@@ -234,7 +234,7 @@ class TestGetDelimiter(object):
                  'rb1;1;2']
 
         with common_utils.tempinput('\n'.join(file), 'utf-8') as filename:
-            @mock.patch('midvatten.tools.utils.midvatten_utils.ask_for_delimiter')
+            @mock.patch('midvatten.tools.utils.common_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(filename, mock_iface, mock_delimiter_question):
                 mock_delimiter_question.return_value = (';', True)

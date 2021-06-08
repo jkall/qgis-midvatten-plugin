@@ -22,8 +22,8 @@ from midvatten.tools import import_fieldlogger
 @attr(status='on')
 class TestFieldLoggerImporterNoDb(object):
 
-    @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-    @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
+    @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.get_last_used_flow_instruments')
     def test_prepare_w_flow_data(self, mock_flow_instruments, mock_instrument_not_found):
         mock_flow_instruments = [True, {}]
         mock_instrument_not_found.return_value.answer = 'ok'
@@ -69,8 +69,8 @@ class TestFieldLoggerImporterNoDb(object):
         reference = utils_for_tests.create_test_string([{'date_time': '2016-12-12 15:33:30', 'parametername': 'w_lvl', 'sublocation': 'Br2', 'value': '123'}])
         assert test == reference
 
-    @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-    @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
+    @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.get_last_used_flow_instruments')
     def test_prepare_w_flow_data_assert_only_ask_instrument_once(self, mock_flow_instruments,
                                  mock_instrument_not_found):
         mock_flow_instruments = [True, {}]
@@ -89,8 +89,8 @@ class TestFieldLoggerImporterNoDb(object):
         reference_string = '[[obsid, instrumentid, flowtype, date_time, reading, unit, comment], [obs1, inst1, atype, 2016-01-01 00:00:00, 123.4, aunit, ], [obs1, inst1, atype, 2016-01-02 00:00:00, 223.4, aunit, ]]'
         assert test_string == reference_string
 
-    @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-    @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
+    @mock.patch('midvatten.tools.import_fieldlogger.common_utils.NotFoundQuestion')
+    @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.get_last_used_flow_instruments')
     def test_prepare_w_flow_data_assert_only_ask_instrument_twice(self, mock_flow_instruments,
                                  mock_instrument_not_found):
         mock_flow_instruments = [True, {}]

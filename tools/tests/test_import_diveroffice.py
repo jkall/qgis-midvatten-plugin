@@ -121,7 +121,7 @@ class TestParseDiverofficeFile(object):
         assert os.path.basename(path) == file_data[1]
         assert file_data[2] == 'rb1'
 
-    @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
+    @mock.patch('midvatten.tools.import_data_to_db.common_utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_parse_diveroffice_file_comma_sep_comma_dec_failed(self):
         f = ('Location=rb1',
              'Date/time,Water head[cm],Temperature[°C]',
@@ -137,7 +137,7 @@ class TestParseDiverofficeFile(object):
         reference_string = 'cancel'
         assert test_string == reference_string
 
-    @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
+    @mock.patch('midvatten.tools.import_data_to_db.common_utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_parse_diveroffice_file_different_separators_failed(self):
 
         f = ('Location=rb1',
@@ -171,7 +171,7 @@ class TestParseDiverofficeFile(object):
         assert os.path.basename(path) == file_data[1]
         assert file_data[2] == 'rb1'
 
-    @mock.patch("midvatten_utils.MessagebarAndLog")
+    @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
     def test_parse_diveroffice_warning_missing_head_cm(self, mock_messagebarandlog):
         f = ('Location=rb1',
              'Temperature[°C];2:Spec.cond.[mS/cm];Date/time',
@@ -192,7 +192,7 @@ class TestParseDiverofficeFile(object):
         assert os.path.basename(path) == file_data[1]
         assert file_data[2] == 'rb1'
 
-    @mock.patch("midvatten_utils.MessagebarAndLog")
+    @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
     def test_parse_diveroffice_warning_missing_date_time(self, mock_messagebarandlog):
         f = ('Location=rb1',
              'Temperature[°C];2:Spec.cond.[mS/cm];dada',

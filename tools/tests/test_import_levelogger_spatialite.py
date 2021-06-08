@@ -109,12 +109,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
                     @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebar):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -202,12 +202,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -290,12 +290,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -380,12 +380,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -468,12 +468,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-            @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.utils.select_files')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+            @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
             def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                 mock_notfoundquestion.return_value.answer = 'ok'
                 mock_notfoundquestion.return_value.value = 'rb1'
@@ -529,12 +529,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-            @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.utils.select_files')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+            @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
             def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                 mock_notfoundquestion.return_value.answer = 'cancel'
                 mock_notfoundquestion.return_value.value = 'rb1'
@@ -628,12 +628,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -726,12 +726,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -820,12 +820,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                 filenames = [f1, f2]
 
 
-                @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                 @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                 @mock.patch('qgis.utils.iface', autospec=True)
                 @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                @mock.patch('import_data_to_db.utils.select_files')
+                @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                 def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
                     mock_notfoundquestion.return_value.answer = 'ok'
                     mock_notfoundquestion.return_value.value = 'rb1'
@@ -914,13 +914,13 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch("midvatten_utils.MessagebarAndLog")
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch("midvatten.tools.import_levelogger.common_utils.MessagebarAndLog")
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebarandlog):
 
                         mocks_notfoundquestion = []
@@ -1021,12 +1021,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
                     @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
-                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.utils.select_files')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
                     def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebar):
                         mock_notfoundquestion.return_value.answer = 'ok'
                         mock_notfoundquestion.return_value.value = 'rb1'
@@ -1083,12 +1083,12 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestSpatiali
             utils_askuser_answer_no_obj.result = 0
             utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
-            @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
             @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.utils.select_files')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+            @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
             def _test_wlvllogg_import_from_levelogger_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebar):
                 mock_notfoundquestion.return_value.answer = 'ok'
                 mock_notfoundquestion.return_value.value = 'rb3'
