@@ -367,8 +367,9 @@ class TestContinuousColorCycle(object):
                        (('color', 'r'), ('linestyle', '-')),
                        (('color', 'b'), ('linestyle', '-'), ('marker', 'o')),
                        (('color', 'r'), ('linestyle', '--'), ('marker', 'o')))
+
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
-    @mock.patch('midvatten.tools.utils.midvatten_utils.np.random.rand')
+    @mock.patch('midvatten.tools.utils.common_utils.np.random.rand')
     def test_continous_color_cycle_ran_out(self, mock_np_random_rand, mock_messagebar):
         """Test that i can also cycle line and markers. I mean the product line_cycler * marker_cycler"""
         color_cycler = (cycler('color', ['r', 'g']))

@@ -35,7 +35,7 @@ import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, QItemSelectionModel
 
 from midvatten.tools import import_data_to_db
-from midvatten.tools.utils import common_utils, midvatten_utils
+from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, Cancel
 from midvatten.tools.utils.date_utils import datestring_to_date
 from midvatten.tools.utils.db_utils import tables_columns, sql_load_fr_db, sql_alter_db
@@ -135,7 +135,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
     @common_utils.general_exception_handler
     def load_files(self):
-        filenames = tools.utils.midvatten_utils.select_files(only_one_file=False,
+        filenames = midvatten_utils.select_files(only_one_file=False,
                                                              extension="lab (*.lab)")
 
         if self.skip_imported_reports.isChecked():
@@ -161,7 +161,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         for lablittera, v in sorted(all_lab_results.items()):
             metarow = [v['metadata'].get(meta_header, '') for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
-        existing_obsids = tools.utils.db_utils.get_all_obsids()
+        existing_obsids = db_utils.get_all_obsids()
 
         connection_columns = ('specifik provplats', 'provplatsnamn')
         if self.use_obsid_assignment_table.isChecked():

@@ -418,7 +418,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         assert reference_string == test_string
 
     @staticmethod
-    @mock.patch('export_fieldlogger.utils.get_save_file_name_no_extension')
+    @mock.patch('midvatten.tools.export_fieldlogger.common_utils.get_save_file_name_no_extension')
     @mock.patch('midvatten.tools.export_fieldlogger.common_utils.MessagebarAndLog')
     def test_write_printlist_to_file(mock_MessagebarAndLog, mock_get_save_file_name_no_extension):
         lines = (
@@ -434,7 +434,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         with common_utils.tempinput('', 'utf-8') as testfile:
             mock_get_save_file_name_no_extension.return_value = testfile
 
-            common_utils.write_printlist_to_file(lines)
+            export_fieldlogger.ExportToFieldLogger.write_printlist_to_file(lines)
 
         with open(testfile, 'r') as f:
             result_lines = [row.rstrip('\n') for row in f]
@@ -444,7 +444,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
     #@staticmethod
     @mock.patch('midvatten.tools.export_fieldlogger.db_utils.tables_columns')
-    @mock.patch('export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
+    @mock.patch('midvatten.tools.export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
     @mock.patch('midvatten.tools.export_fieldlogger.common_utils.MessagebarAndLog')
     def test_laton_from_vectorlayer(self, mock_tables_columns, mock_write_printlist_to_file, mock_MessagebarAndLog):
         mock_ms = mock.MagicMock()
