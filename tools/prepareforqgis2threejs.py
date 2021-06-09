@@ -126,7 +126,7 @@ class PrepareForQgis2Threejs(object):
                 color = colors[idx]
                 if color:
                     current_symbol = layer.renderer().symbol()
-                    current_symbol.setColor(QColor.fromRgb(color[0], color[1], color[2]))
+                    current_symbol.setColor(QColor.fromRgb(int(color[0]), int(color[1]), int(color[2])))
 
                 QgsProject.instance().addMapLayers([layer],False)
                 MyGroup.insertLayer(0,layer)

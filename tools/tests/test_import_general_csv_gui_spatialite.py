@@ -194,7 +194,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
+                    @mock.patch('midvatten.tools.utils.common_utils.NotFoundQuestion', autospec=True)
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
@@ -269,7 +269,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-                    @mock.patch('midvatten.tools.utils.midvatten_utils.NotFoundQuestion', autospec=True)
+                    @mock.patch('midvatten.tools.utils.common_utils.NotFoundQuestion', autospec=True)
                     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')

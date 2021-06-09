@@ -241,7 +241,7 @@ class TestFieldLoggerImporterNoDb(object):
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
-            @mock.patch('midvatten.tools.import_fieldlogger.common.ask_for_delimiter')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.ask_for_delimiter')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
             @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
@@ -333,7 +333,7 @@ class TestCommentsImportFields(object):
 @attr(status='on')
 class TestStaffQuestion(object):
 
-    @mock.patch('import_fieldlogger.defs.staff_list')
+    @mock.patch('midvatten.tools.import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
         mock_stafflist.return_value = (True, ['staff1', 'staff2'])
         self.staff_question = import_fieldlogger.StaffQuestion()
@@ -351,7 +351,7 @@ class TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 
-    @mock.patch('import_fieldlogger.utils.get_all_obsids')
+    @mock.patch('midvatten.tools.import_fieldlogger.db_utils.get_all_obsids')
     def test_alter_data(self, mock_get_all_obsids):
         mock_get_all_obsids.return_value = ['rb1', 'rb2']
 
@@ -365,7 +365,7 @@ class TestObsidFilter(object):
 
 @attr(status='on')
 @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
-@mock.patch('import_fieldlogger.defs.w_qual_field_parameter_units')
+@mock.patch('midvatten.tools.import_fieldlogger.defs.w_qual_field_parameter_units')
 def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
     mock_w_qual_field_parameter_units.retun_value = {}
 
