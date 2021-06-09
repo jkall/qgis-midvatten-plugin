@@ -488,34 +488,24 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
     @mock.patch('midvatten.tools.utils.midvatten_utils.find_layer', autospec=True)
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
-    def test_export_spatialite_transform_coordinates(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath,
-                                                     mock_verify, mock_locale, mock_createdb_crs_question,
-                                                     mock_messagebar):
+    def test_export_spatialite_transform_coordinates(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
         mock_createdb_crs_question.return_value = [3010, True]
 
         mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
-        db_utils.sql_alter_db(
-            '''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 1)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 1)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''')
+        db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot) VALUES ('P1', 1, 0, 10)''')
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''')
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''')
-        db_utils.sql_alter_db(
-            '''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
+        db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
 
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
@@ -540,6 +530,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
         for sql in sql_list:
             test_list.append('\n' + sql + '\n')
             test_list.append(curs.execute(sql).fetchall())
+
         conn.commit()
         conn.close()
 
@@ -548,9 +539,10 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
         # The coordinates aquired from st_transform differs from Linux Mint 18.2 to Linux Mint 19
         # In Mint 18, it's -517888.383773 for both postgis and spatialite
         # In Mint 19, it's -517888.383737 for both postgis and spatialite
+        # In Ubuntu 20.04 it's -517888.384559 for both postgis and spatialite
         #// I've made changes to the transformation so the above values no longer exists, but the previous issue probably does.
         # !!! No idea why
-
+        
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',
                             ''', [(P1, POINT(-517888.392089 1.000667))], ''',
@@ -577,7 +569,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
         """
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',
-                            ''', [(P1, POINT(-517888.383737 1.002821))], ''',
+                            ''', [(P1, POINT(-517888.384559 1.002821))], ''',
                             '''select staff from zz_staff''',
                             ''', [(s1)], ''',
                             '''select obsid, date_time, staff, comment from comments''',
@@ -602,7 +594,6 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
         reference_string = '\n'.join(reference_string)
         print("Test\n" + test_string)
         print("Ref\n" + reference_string)
-        print(str(mock_messagebar.mock_calls))
         assert test_string == reference_string
 
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')

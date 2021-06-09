@@ -483,6 +483,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         # The coordinates aquired from st_transform differs from Linux Mint 18.2 to Linux Mint 19
         # In Mint 18, it's -517888.383773 for both postgis and spatialite
         # In Mint 19, it's -517888.383737 for both postgis and spatialite
+        # In Ubuntu 20.04 it's -517888.384559 for both postgis and spatialite
         #// I've made changes to the transformation so the above values no longer exists, but the previous issue probably does.
         # !!! No idea why
         
@@ -512,7 +513,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         """
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',
-                            ''', [(P1, POINT(-517888.383737 1.002821))], ''',
+                            ''', [(P1, POINT(-517888.384559 1.002821))], ''',
                             '''select staff from zz_staff''',
                             ''', [(s1)], ''',
                             '''select obsid, date_time, staff, comment from comments''',
