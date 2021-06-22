@@ -164,7 +164,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 QCoreApplication.translate('SectionPlot', 'Could not alter NavigationToolbar, msg: %s')) % str(e))
 
         try:
-            self.mpltoolbar.edit_parameters_used.connect(self.update_legend)
+            self.mpltoolbar.edit_parameters_used.connect(lambda: self.update_legend(from_navbar=True))
         except Exception as e:
             common_utils.MessagebarAndLog.info(log_msg=ru(
                 QCoreApplication.translate('SectionPlot', 'Could not connect to edit_parameters_used signal, msg: %s')) % str(e))
@@ -713,13 +713,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         plt.close(self.figure)#this closes reference to self.secfig
 
-    def update_legend(self):
+    def update_legend(self, from_navbar=False):
         if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
             self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
             legend_kwargs = dict(self.secplot_templates.loaded_template['legend_Axes_legend'])
 
-            leg = self.axes.legend(self.skipped_bars, self.labels, **legend_kwargs)
+            labels = list(self.labels)
+            if from_navbar:
+                for idx, bar in enumerate(self.skipped_bars):
+                    if bar.get_label() != labels[idx] and bar.get_label():
+                        labels[idx] = bar.get_label()
+
+            leg = self.axes.legend(self.skipped_bars, labels, **legend_kwargs)
 
             try:
                 leg.set_draggable(state=True)
@@ -733,6 +739,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
             for t in leg.get_texts():
                 t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
+
+            if from_navbar:
+                self.canvas.draw()
 
     def get_dem_selection(self):
         self.rasterselection = []
@@ -884,9 +893,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def get_plot_data_2(self):
-        self.obsid_wlid = []  # if no stratigr plot, obsid will be plotted close to water level instead of toc or gs
-        self.x_id_wwl = []
-        self.z_id_wwl = []
         self.obs_p_w_drill_stops = []
         self.drill_stops = []
         self.x_ds = []
@@ -899,51 +905,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 for item in result[1]:
                     self.obs_p_w_drill_stops.append(item[0])
 
-        q=0
-
-        # The priority should be like this:
-        # 1. If stratigraphy exists, then plot obsid at h_toc or h-gs
-        # 2. If only waterlevel exist, then plot obsid at waterlevel
-
-        for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
-            labellevel = None
-            if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0 and self.ms.settingsdict['secplotwlvltab']:
-                query = """select avg(level_masl) from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
-                #print(query)#debug
-                worked, recs = db_utils.sql_load_fr_db(query, self.dbconnection)
-                if worked and recs:
-                    if common_utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
-                        labellevel = recs[0][0]
-                del recs
-
-            if labellevel is None:
-                worked, recs = db_utils.sql_load_fr_db('''SELECT h_toc, h_gs, h_tocags FROM obs_points WHERE obsid = '{}' '''.format(obs), self.dbconnection)
-                if worked and recs:
-                    row = recs[0]
-                    try:
-                        labellevel = float(row[1])
-                    except (ValueError, TypeError):
-                        if row[0] is not None and row[2] is not None:
-                            try:
-                                labellevel = float(row[0]) - float(row[2])
-                            except (ValueError, TypeError):
-                                if row[0] is not None:
-                                    try:
-                                        labellevel = float(row[0])
-                                    except (ValueError, TypeError):
-                                        pass
-
-            if labellevel is None:
-                labellevel = 0
-
-            self.z_id_wwl.append(labellevel)
-            self.obsid_wlid.append(obs)
-            self.x_id_wwl.append(float(self.length_along[q]))
-                    
+        for q, obs in enumerate(self.selected_obsids):#Finally adding obsid at top of stratigraphy
             if obs in self.obs_p_w_drill_stops:
                 self.x_ds.append(float(self.length_along[q]))
                 self.z_ds.append(float(self.bottoms[q]))
-            q += 1
 
     def get_plot_data_hydro(self):  # called when class is instantiated collecting data for profile line layer & obs_points
         common_utils.start_waiting_cursor()
@@ -1208,6 +1173,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             settings['width'] = settings.get('width', self.barwidth)
             settings['color'] = settings.get('color', self.Colors[Typ])
             settings['hatch'] = settings.get('hatch', self.Hatches[Typ])
+            settings['label'] = settings.get('label', Typ)
 
             plotxleftbarcorner = [float(i) - float(settings['width'])/2.0 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
             self.p.append(self.axes.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
@@ -1238,6 +1204,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             settings['width'] = settings.get('width', self.barwidth)
             settings['color'] = settings.get('color_qt', self.hydroColors[capacity_txt][1])
+            settings['label'] = settings.get('label', capacity_txt)
 
             plotx_hleftbarcorner = [float(i) - float(settings['width']) / 2.0 for i in self.plotx_h[capacity_txt]] #subtract half bar width from x position (x position is stored as bar center in self.plotx)
             try:
@@ -1406,7 +1373,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.sliderax.set_xlim(left=min_idx, right=max_idx)
 
     def plot_specific_water_level(self):
-
         for _datum in self.ms.settingsdict['secplotdates']:
             datum_obsids = _datum.split(';')
             datum = datum_obsids[0]
@@ -1418,8 +1384,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         continue
 
                 # TODO: There should probably be a setting for using avg(level_masl)
-                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(
-                    self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND ({}) """
+                _d = datum.strip('-')
+                for _int in range(10):
+                    _d = _d.replace(str(_int), '')
+                if _d:
+                    # Assume that the datum is an sql string
+                    query = query.format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                else:
+                    query = query.format(self.ms.settingsdict['secplotwlvltab'], obs,
+                                         """date_time like '{}%'""".format(datum))
+
                 # query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
                 try:
@@ -1435,7 +1410,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                                                                 self.ms.settingsdict['secplothydrologyplotted']]):
                     self.obsid_annotation[obs] = (x_wl[-1], WL[-1])
             self.waterlevel_lineplot(x_wl, WL, datum)
-
 
     def waterlevel_lineplot(self, x_wl, WL, datum):
         plotlable = self.get_plot_label_name(datum, self.water_level_labels_duplicate_check)
@@ -1546,6 +1520,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             obsid_Axes_bar = copy.deepcopy(self.secplot_templates.loaded_template['obsid_Axes_bar'])
             obsid_Axes_bar['width'] = obsid_Axes_bar.get('width', self.barwidth)
             obsid_Axes_bar['bottom'] = obsid_Axes_bar.get('bottom', bottoms)
+            obsid_Axes_bar['label'] = 'frame'
             #plot empty bars
             p = self.axes.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar)
             p.skip_legend = True
