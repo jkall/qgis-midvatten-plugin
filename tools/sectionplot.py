@@ -751,18 +751,36 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
 
-        sql = """SELECT p.obsid, ST_Length((SELECT geometry FROM %s)) * ST_Line_Locate_Point((SELECT geometry FROM %s), p.geometry) AS absdist FROM obs_points AS p
-                  WHERE p.obsid in %s
-                  ORDER BY absdist"""%(self.temptable_name, self.temptable_name, '({})'.format(', '.join(["'{}'".format(o) for o in obsidtuple])))
-        try:
-            data = self.dbconnection.execute_and_fetchall(sql)
-        except:
-            if 'UndefinedFunction' in traceback.format_exc():
-                sql = sql.replace('ST_Line_Locate_Point', 'ST_LineLocatePoint')
-                data = self.dbconnection.execute_and_fetchall(sql)
-            else:
-                raise
+        sql = """SELECT p.obsid, ST_Length((SELECT geometry FROM {temptable_name})) * {funcname}((SELECT geometry FROM {temptable_name}), p.geometry) AS absdist FROM obs_points AS p
+                  WHERE p.obsid in {obsids}
+                  ORDER BY absdist"""
 
+        funcnames = ['ST_Line_Locate_Point', 'ST_LineLocatePoint']
+
+        if self.dbconnection.dbtype == 'postgis':
+            try:
+                _funcname = self.dbconnection.execute_and_fetchall('''SELECT proname FROM pg_proc
+                                                                 WHERE lower(proname) LIKE '%line%locate%point%';''')
+            except:
+                common_utils.MessagebarAndLog.info(log_msg=traceback.format_exc())
+            else:
+                if _funcname:
+                    _funcname = _funcname[0][0]
+                    funcnames.append(_funcname)
+
+        for nr, funcname in enumerate(funcnames):
+            try:
+                data = self.dbconnection.execute_and_fetchall(sql.format(temptable_name=self.temptable_name,
+                                           funcname=funcname,
+                                           obsids='({})'.format(', '.join(
+                                               ["'{}'".format(o) for o in obsidtuple]))))
+            except:
+                if nr == len(funcnames)-1:
+                    raise
+                else:
+                    pass
+            else:
+                break
 
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]

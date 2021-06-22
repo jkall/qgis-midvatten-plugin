@@ -243,7 +243,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
         labels = [p.get_label() for p in self.myplot.p]
-        assert anything_to_string_representation(labels) == '''["1", "2", "drillstop like %berg%", "_container0"]'''
+        print(str(labels))
+        assert anything_to_string_representation(labels) == '''["1", "2", "drillstop like %berg%", "frame"]'''
         assert anything_to_string_representation(self.myplot.water_level_labels_duplicate_check) == '''["2015", "2015_2"]'''
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
@@ -426,7 +427,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         labels = [p.get_label() for p in self.myplot.p]
         assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
         assert len(self.myplot.skipped_bars) == 4
-        assert anything_to_string_representation(labels) == '''["sandtest", "grustest", "2015", "drillstop like %berg%", "_container2"]'''
+        assert anything_to_string_representation(labels) == '''["sandtest", "grustest", "2015", "drillstop like %berg%", "frame"]'''
         assert anything_to_string_representation(self.myplot.water_level_labels_duplicate_check) == '''["2015"]'''
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')

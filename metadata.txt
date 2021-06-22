@@ -23,6 +23,7 @@ changelog=
         Version 1.6.6b4:
         - Sectionplot: Added option to chose water level base on sql WHERE condition (see tooltip for water level square).
         - Sectionplot: Fixes bug where changing water level label in figure options on navigation toolbar didn't change legend text.
+        - Sectionplot: Probably fixes #333 (supporting multiple variations of function "line locate point").
         Version 1.6.6b3:
         - Remade all imports of local packages and functions to make the code reusable from outside the plugin.
         Version 1.6.6b2:
