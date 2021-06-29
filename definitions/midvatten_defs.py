@@ -70,6 +70,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplot_templates': '',
             'secplotwidthofplot': 1,
             'secplotincludeviews': False,
+            'secplotlayertextalignment': 'center',
             'settingslocation':1,
             'compactwqualreport':'',
             'custplot_tabwidget':0,
