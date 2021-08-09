@@ -29,15 +29,18 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-from midvatten.definitions import midvatten_defs as defs
+from midvatten.definitions import midvatten_defs as defs, db_defs
 
 from midvatten.tools.import_data_to_db import midv_data_importer
+
 
 class ExportData(object):
 
     def __init__(self, OBSID_P, OBSID_L):
         self.ID_obs_points = OBSID_P
         self.ID_obs_lines = OBSID_L
+        self.dest_dbconnection = None
+        self.source_dbconnection = None
 
     def export_2_csv(self,exportfolder):
         self.source_dbconnection = db_utils.DbConnectionManager()
@@ -47,6 +50,8 @@ class ExportData(object):
         self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'))
         self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'))
         self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='extra_data_tables'))
+        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='interlab4_import_table'))
+
         self.source_dbconnection.closedb()
 
     def export_2_splite(self, target_db, dest_srid):
@@ -64,17 +69,15 @@ class ExportData(object):
 
         self.midv_data_importer = midv_data_importer()
 
-        data_domains = defs.get_subset_of_tables_fr_db(category='data_domains')
-        self.write_data(self.to_sql, None, [x for x in data_domains if x != 'zz_interlab4_obsid_assignment'], replace=True)
+        self.write_data(self.to_sql, None, defs.get_subset_of_tables_fr_db(category='data_domains'), replace=True)
         self.dest_dbconnection.commit()
         self.write_data(self.to_sql, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'))
         self.dest_dbconnection.commit()
-        if 'zz_interlab4_obsid_assignment' in data_domains:
-            self.write_data(self.to_sql, None, ['zz_interlab4_obsid_assignment'], replace=True)
-            self.dest_dbconnection.commit()
         self.write_data(self.to_sql, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'))
         self.dest_dbconnection.commit()
         self.write_data(self.to_sql, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='extra_data_tables'))
+        self.dest_dbconnection.commit()
+        self.write_data(self.to_sql, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='interlab4_import_table'))
         self.dest_dbconnection.commit()
 
         db_utils.delete_srids(self.dest_dbconnection.cursor, dest_srid)
@@ -102,6 +105,22 @@ class ExportData(object):
             if not db_utils.verify_table_exists(tname, dbconnection=self.source_dbconnection):
                 common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Table %s didn't exist. Skipping it.")) % tname)
                 continue
+            if self.dest_dbconnection is not None:
+                if not db_utils.verify_table_exists(tname, dbconnection=self.dest_dbconnection):
+                    if tname in defs.get_subset_of_tables_fr_db('extra_data_tables'):
+                        sqlfile = db_defs.extra_datatables_sqlfile()
+                        if not os.path.isfile(sqlfile):
+                            common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData',
+                               'Programming error, file path not existing: %s. Skipping table %s'))%(sqlfile,
+                                                                                                     tname))
+                            continue
+                        else:
+                            db_utils.execute_sqlfile(sqlfile, self.dest_dbconnection, merge_newlines=True)
+                            self.dest_dbconnection.commit()
+                    else:
+                        common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData',
+                                          'Programming error, table missing in new database: %s.')) %tname)
+
             if not obsids:
                 to_writer(tname, obsids, replace)
             else:

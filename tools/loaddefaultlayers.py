@@ -70,7 +70,8 @@ class LoadLayers(object):
             add_layers_to_list(layer_list, d_domain_tables, dbconnection=dbconnection)
 
         elif self.group_name == 'Midvatten_data_tables':
-            data_tables = defs.data_tables()
+            data_tables = defs.get_subset_of_tables_fr_db('data_tables')
+            data_tables.extend(defs.get_subset_of_tables_fr_db('extra_data_tables'))
             add_layers_to_list(layer_list, data_tables, dbconnection=dbconnection)
 
         #now loop over all the layers and set styles etc
