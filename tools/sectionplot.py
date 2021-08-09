@@ -895,6 +895,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 if capacity:
                     bar_texts.setdefault('hydroexplanation', {})[(x, z)] = \
                         self.hydro_colors.get(capacity, [' '])[0]
+
+        # Remove bad texts.
+        bar_texts = {k: {xz: t for xz, t in v.items() if all([t is not None,
+                                                             str(t).strip(),
+                                                             str(t).lower().strip() != 'null'])}
+                     for k, v in bar_texts.items()}
+
         common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
         return bar_texts
 
@@ -1366,6 +1373,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         settings = self.secplot_templates.loaded_template['layer_Axes_annotate']
 
         for xy, text in xy_texts.items():
+            if text is None or not str(text):
+                continue
             if self.ms.settingsdict['secplotlayertextalignment'] == 'center':
                 x = xy[0]
             else:

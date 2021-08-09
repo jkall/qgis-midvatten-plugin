@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.6b5
         - Sectionplot: Fixes bug with interactive water level plot.
+        - Sectionplot: Fixes bug where layer texts was NULL was written to plot.
         Version 1.6.6b4:
         - Sectionplot: Added option to chose water level base on sql WHERE condition (see tooltip for water level square).
         - Sectionplot: Fixes bug where changing water level label in figure options on navigation toolbar didn't change legend text.
