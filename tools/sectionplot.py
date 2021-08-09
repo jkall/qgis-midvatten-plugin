@@ -51,7 +51,7 @@ import datetime
 import matplotlib.dates as mdates
 
 from midvatten.tools.utils import common_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer
 from midvatten.tools.utils.midvatten_utils import PlotTemplates
 from midvatten.tools.utils.matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
 import midvatten.definitions.midvatten_defs as defs
@@ -84,6 +84,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         #Ui_SecPlotDock.__init__(self)
 
+        self.df = None
         self.p = []
 
         self.geo_bars = {}
@@ -91,6 +92,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.layer_texts = {}
         self.layer_annotations = []
         self.hydro_colors = defs.hydrocolors()
+
 
         self.parent = parent1
         self.iface = iface1
@@ -108,6 +110,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
         self.template_plot_label.setOpenExternalLinks(True)
 
+    @fn_timer
     def initUI(self):
         # connect signal
         self.pushButton.clicked.connect(lambda x: self.draw_plot())
@@ -132,6 +135,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.resample_how.setText('mean')
         self.resample_how.setToolTip(defs.pandas_how_tooltip())
 
+    @fn_timer
     def init_figure(self):
         try:
             self.title = self.axes.get_title()
@@ -257,6 +261,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.tabWidget.adjustSize()
         event.accept()
 
+    @fn_timer
     def do_it(self, msettings, selected_obspoints, sectionlinelayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
         self.obsid_annotation = {}
 
@@ -339,6 +344,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #draw plot
         self.draw_plot()
 
+    @fn_timer
     def get_plot_data_seismic(self):
         common_utils.start_waiting_cursor()
         # Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any
@@ -361,12 +367,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barheights) + str(self.bottoms))#debug
         common_utils.stop_waiting_cursor()
 
+    @fn_timer
     def get_missing_obsid_labels(self):
         for obs, x in self.obsids_x_position.items():
             if obs not in self.obsid_annotation and (self.ms.settingsdict['stratigraphyplotted'] or
                                                      self.ms.settingsdict['secplothydrologyplotted']):
                 self.obsid_annotation[obs] = (x, self.z_data[obs]['bottom'] + self.z_data[obs]['barheight'])
 
+    @fn_timer
     def draw_plot(self): #replot
         self.water_level_labels_duplicate_check = []
 
@@ -520,6 +528,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         else:
             common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
+    @fn_timer
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
         """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
         query=str(query)
@@ -669,6 +678,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.wlvltableComboBox.addItem(tabell)
         set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
 
+    @fn_timer
     def finish_plot(self):
         self.update_legend()
 
@@ -726,6 +736,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         plt.close(self.figure)#this closes reference to self.secfig
 
+    @fn_timer
     def update_legend(self, from_navbar=False):
         if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
@@ -756,11 +767,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if from_navbar:
                 self.canvas.draw()
 
+    @fn_timer
     def get_dem_selection(self):
         self.rasterselection = []
         for item in self.inData.selectedItems():
             self.rasterselection.append(item.text())
-                
+
+    @fn_timer
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
 
@@ -798,6 +811,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         data = {ru(row[0]): row[1] for row in res}
         return data
 
+    @fn_timer
     def get_z_data(self):
         z_data = {}
         for obs in self.obsids_x_position.keys():
@@ -829,6 +843,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         return z_data
 
+    @fn_timer
     def get_plot_data_bars(self, typ_subtypes, strat_key='lower(geoshort)'):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
         common_utils.start_waiting_cursor()#show the user this may take a long time...
         bars = {}
@@ -852,6 +867,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
         return bars
 
+    @fn_timer
     def get_plot_data_layer_texts(self):
         bar_texts = {}
         common_utils.start_waiting_cursor()#show the user this may take a long time...
@@ -882,6 +898,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
         return bar_texts
 
+    @fn_timer
     def get_drillstops(self):
         obs_p_w_drill_stops = []
         if self.ms.settingsdict['secplotdrillstop']!='':
@@ -895,6 +912,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                            if obs in obs_p_w_drill_stops]
         return drillstops
 
+    @fn_timer
     def get_selected_dems_params(self, dialog):
         selected_dems = []
         selected_dem_colors = [] 
@@ -905,6 +923,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 selected_dem_colors.append(dialog.listDEMs_treeWidget.itemWidget( curr_DEM_item, 1 ).currentText() )
         return selected_dems, selected_dem_colors
 
+    @fn_timer
     def plot_dems(self):
         try:
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
@@ -947,6 +966,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             except:
                 pass
 
+    @fn_timer
     def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, poly_layer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
         poly_layer = common_utils.find_layer(poly_layer_name)
         points_srid = temp_memorylayer.crs().authid()
@@ -994,6 +1014,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     plotted_polylabels.add(label)
                 y_vals = list(y1)
 
+    @fn_timer
     def plot_drill_stop(self):
         settings = copy.deepcopy(self.secplot_templates.loaded_template['drillstop_Axes_plot'])
         label = settings.get('label', None)
@@ -1006,6 +1027,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.p.append(lineplot)
 
+    @fn_timer
     def get_plot_label_name(self, label, labels):
         label_occurence = labels.count(label)
         if not label_occurence:
@@ -1013,6 +1035,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         else:
             return label + '_' + str(label_occurence + 1)
 
+    @fn_timer
     def plot_bars(self, bars_dict, color_dict, color_key='color', hatch_dict=None):
         for typ, bar_data in bars_dict.items():
             _settings = copy.deepcopy(self.secplot_templates.loaded_template['geology_Axes_bar'])
@@ -1051,6 +1074,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             self.labels.append(typ)
 
+    @fn_timer
     def plot_obs_lines_data(self):
         plotlable = self.get_plot_label_name(self.y1_column, self.labels)
         self.labels.append(self.y1_column)
@@ -1077,6 +1101,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
+    @fn_timer
     def plot_water_level(self):   # Adding a plot for each water level date identified
         if not self.ms.settingsdict['secplotwlvltab']:
             return
@@ -1086,36 +1111,41 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if self.interactive_groupbox.isChecked():
             self.plot_water_level_interactive()
 
+    @fn_timer
     def plot_water_level_interactive(self):
         sql = '''SELECT date_time, level_masl, obsid FROM {} WHERE obsid IN ({})'''.format(self.ms.settingsdict['secplotwlvltab'], common_utils.sql_unicode_list(self.obsids_x_position.keys()))
-        self.df = pd.read_sql(sql,
+        df = pd.read_sql(sql,
                          self.dbconnection.conn, index_col='date_time', coerce_float=True, params=None, parse_dates=['date_time'],
                          columns=None,
                          chunksize=None)
 
-        if isinstance(self.df, pd.Series):
-            self.df = self.df.to_frame()
-
-        self.df = self.df.reset_index()
-        self.df = self.df.pivot(index='date_time', columns='obsid', values='level_masl')
+        if isinstance(df, pd.Series):
+            df = df.to_frame()
 
         resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'convention': 'start',
                            'base': int(self.resample_base.text())}
 
-        self.df = resample(self.df, None, self.resample_rule.text(), resample_kwargs)
+        # First resample each obsid to overcome duplicate date_times
+        df = resample(df.groupby(by=['obsid']), 'level_masl', self.resample_rule.text(), resample_kwargs)
+        df = df.apply(lambda x: x)
+
+        # Then pivot and resample to get a complete date_time index without missing datetimes.
+        df = df.reset_index()
+        df = df.pivot(index='date_time', columns='obsid', values='level_masl')
+        df = resample(df, None, self.resample_rule.text(), resample_kwargs)
 
         if self.skip_nan.isChecked():
-            self.df = self.df.dropna()
+            df = df.dropna()
 
         #The slider should update after user pan.
         valuemin = 0
-        valuemax = len(self.df)-1
+        valuemax = len(df)-1
         valinit = valuemin
         #valstep = 1
         self.wlvl_axes = self.figure.add_subplot(self.gridspec[0:1, 1:2])
-        self.df.plot(ax=self.wlvl_axes, picker=2)
-        self.wlvl_axes.set_xlabel('')
+        df.plot(ax=self.wlvl_axes, picker=2)
 
+        self.wlvl_axes.set_xlabel('')
         #Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).items() if k != 'ylabel'])
         #ylabel = self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).get('ylabel', defs.secplot_default_template()['Axes_set_ylabel']['ylabel'])
         #self.wlvl_axes.set_ylabel(ylabel, **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
@@ -1130,19 +1160,22 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.sliderax = self.figure.add_subplot(self.gridspec[1:2, 1:2])
         self.date_slider = Slider(self.sliderax, 'Date', valuemin, valuemax, valinit=valinit, valfmt='%1.0f')
 
-        self.axvline = self.wlvl_axes.axvline(df_idx_as_datetime(self.df, valinit), color='black', linewidth=2, linestyle='--') # mdates.date2num(df_idx_as_datetime(self.df, valinit)))
+        self.axvline = self.wlvl_axes.axvline(df_idx_as_datetime(df, valinit), color='black', linewidth=2, linestyle='--') # mdates.date2num(df_idx_as_datetime(self.df, valinit)))
 
         self.date_slider.on_changed(self.update_animation)
         current_idx = self.get_slider_idx()
-        x_wl, WL = self.get_water_levels_from_df(self.df, current_idx, self.obsids_x_position)
+        x_wl, WL = self.get_water_levels_from_df(df, current_idx, self.obsids_x_position)
         self.animation_label_idx = len(self.labels)
-        self.waterlevel_lineplot(x_wl, WL, longdateformat(df_idx_as_datetime(self.df, current_idx)))
+        self.waterlevel_lineplot(x_wl, WL, longdateformat(df_idx_as_datetime(df, current_idx)))
 
         self.canvas.mpl_connect('draw_event', self.update_slider)
+
+        self.df = df
 
     def get_slider_idx(self):
         return int(round(self.date_slider.val, 0))
 
+    @fn_timer
     def get_water_levels_from_df(self, df, idx, obsids_x_position):
         WL = []
         x_wl = []
@@ -1155,7 +1188,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 try:
                     _obs = obs.encode('utf8').decode('utf8')
                 except Exception as e:
-                    common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Sectionplot: Encoding string failed for %s")) % ru(col))
+                    common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Sectionplot: Encoding string failed for %s")) % ru(obs))
                     continue
                 else:
                     try:
@@ -1205,6 +1238,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.date_slider.reset()
         self.sliderax.set_xlim(left=min_idx, right=max_idx)
 
+    @fn_timer
     def plot_specific_water_level(self):
         for _datum in self.ms.settingsdict['secplotdates']:
             datum_obsids = _datum.split(';')
@@ -1244,6 +1278,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     self.obsid_annotation[obs] = (x_wl[-1], WL[-1])
             self.waterlevel_lineplot(x_wl, WL, datum)
 
+    @fn_timer
     def waterlevel_lineplot(self, x_wl, WL, datum):
         plotlable = self.get_plot_label_name(datum, self.water_level_labels_duplicate_check)
         self.water_level_labels_duplicate_check.append(plotlable)
@@ -1285,6 +1320,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['secplotlocation']=dockarea
 
+    @fn_timer
     def upload_qgis_vector_layer(self, layer, srid=None,selected=False, mapinfo=True,Attributes=False): #from qspatialite, with a few  changes LAST ARGUMENT IS USED TO SKIP ARGUMENTS SINCE WE ONLY WANT THE GEOMETRY TO CALCULATE DISTANCES
         """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptable_name (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""
 
@@ -1324,6 +1360,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.dbconnection.execute(sql)
         return True
 
+    @fn_timer
     def write_annotation(self):
         xy_texts = self.layer_texts[self.ms.settingsdict['secplottext']]
         settings = self.secplot_templates.loaded_template['layer_Axes_annotate']
@@ -1338,7 +1375,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                                          (x, xy[1]), **settings))
             self.layer_annotations[-1].original_xy = xy
 
-
+    @fn_timer
     def write_obsid(self, plot_labels=True):  # annotation, and also empty bars to show drillings without stratigraphy data
 
         if self.ms.settingsdict['stratigraphyplotted'] or self.ms.settingsdict['secplothydrologyplotted']:
@@ -1370,6 +1407,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 #for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                 text = self.axes.annotate(o, xy=(m, n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
+    @fn_timer
     def update_barwidths_from_plot(self, event):
         if not all((self.width_of_plot.isChecked(), len(self.obsids_x_position) > 0)):
             return
@@ -1393,6 +1431,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             a.xy = (x, a.original_xy[1])
         #self.canvas.draw()
 
+    @fn_timer
     def sample_polygon(self, pointLayer, polyLayer):
         """
         Code reused from PointSamplingTool
@@ -1449,12 +1488,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
 
 def resample(df, valuecol, rule, resample_kwargs):
+    resample_kwargs = dict(resample_kwargs)
     how = resample_kwargs.get('how', 'mean')
     del resample_kwargs['how']
     df = df if valuecol is None else df[valuecol]
     df = getattr(df.resample(rule, **resample_kwargs), how)()
     return df
-
 
 def groupby(df, indexcol, filters):
     df = df.reset_index()
