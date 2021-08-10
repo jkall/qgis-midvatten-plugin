@@ -81,7 +81,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
         self.drawn = False
         self.used_format = None
-        self.matplotlib_style_sheet_reference.setText("""<a href="https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html">Matplotlib style sheet reference</a>""")
+        self.matplotlib_style_sheet_reference.setText("""<a href="https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html">Matplotlib style sheet reference</a>""")
         self.matplotlib_style_sheet_reference.setOpenExternalLinks(True)
 
     def initUI(self):
