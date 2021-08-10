@@ -269,12 +269,12 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                 columns.append('report')
             rows = ['parunit']
             values = [data_column]
-            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
+            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format, date_time_as_columns)
         else:
             columns = ['obsid']
             rows = ['parunit', 'date_time']
             values = [data_column]
-            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format)
+            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format, date_time_as_columns)
 
         # Split the data into separate tables with the specified number of columns
         for startcol in range(len(rows), len(report_data[0]), num_data_cols):
@@ -355,15 +355,17 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(w_qual_lab_layer.selectedFeatureCount()), str(num_features), str(invalid_features)))
         return df
 
-    def data_to_printlist(self, df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format):
+    def data_to_printlist(self, df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format,
+                          date_time_as_columns):
         df['parunit'] = df['parameter'] + ', ' + df['unit'].fillna('')
         par_unit_order = {val: idx for idx, val in enumerate(df['parunit'].drop_duplicates(keep='first').tolist())}
         df['par_unit_order'] = df['parunit']
         df = df.replace({'par_unit_order': par_unit_order})
         df['date_time'] = df['date_time'].dt.strftime(date_time_format)
-        rows.insert(0, 'par_unit_order')
+        _rows = list(rows)
+        _rows.insert(0, 'par_unit_order')
 
-        df = pd.pivot_table(df, values=values, index=rows, columns=columns,
+        df = pd.pivot_table(df, values=values, index=_rows, columns=columns,
                             aggfunc=method)
 
         if len(columns) >= 2:
@@ -378,9 +380,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         df = df.sort_index(axis=1, level=order)
 
         if sort_parameters_alphabetically:
-            df = df.sort_index(axis=0, level=[x for x in rows if x != 'par_unit_order'])
+            df = df.sort_index(axis=0, level=[x for x in _rows if x != 'par_unit_order'])
         else:
-            df = df.sort_index(axis=0, level=[x for x in rows if x != 'parunit'])
+            df = df.sort_index(axis=0, level=[x for x in _rows if x != 'parunit'])
 
         # Drop par_unit_order order
         df.index = df.index.droplevel(0)
@@ -388,12 +390,19 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         df = df.replace(np.nan, '', regex=True)
 
         index = [list(row) if isinstance(row, tuple) else [row] for row in df.index.values.tolist()]
-        columns = [x[1:] for x in df.columns.values.tolist()]
+        df_columns = [x[1:] for x in df.columns.values.tolist()]
         values = df.values.tolist()
         printlist = [['']*df.index.nlevels for _ in range(df.columns.nlevels-1)]
-        [row.extend([c[idx] for c in columns]) for idx, row in enumerate(printlist)]
+        [row.extend([c[idx] for c in df_columns]) for idx, row in enumerate(printlist)]
         [row.extend(values[idx]) for idx, row in enumerate(index)]
         printlist.extend(index)
+
+        if date_time_as_columns:
+            for rownr, col in enumerate(columns):
+                printlist[rownr][0] = col
+        else:
+            for colnr, col in enumerate(rows):
+                printlist[0][colnr] = col
 
         return printlist
 
