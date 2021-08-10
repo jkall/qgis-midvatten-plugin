@@ -74,8 +74,6 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
 
         tables = list(db_utils.tables_columns().keys())
         self.sql_table.addItems(sorted(tables))
-        #Use w_qual_lab as default.
-        gui_utils.set_combobox(self.sql_table, 'w_qual_lab', add_if_not_exists=False)
 
         self.save_attrnames = ['num_data_cols',
                          'rowheader_colwidth_percent',
@@ -107,6 +105,11 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                      lambda: self.page_break_between_tables.setChecked(False) if self.empty_row_between_tables.isChecked() else True)
         self.page_break_between_tables.clicked.connect(
                      lambda: self.empty_row_between_tables.setChecked(False) if self.page_break_between_tables.isChecked() else True)
+
+        #Use w_qual_lab as default.
+        self.from_sql_table.click()
+        gui_utils.set_combobox(self.sql_table, 'w_qual_lab', add_if_not_exists=False)
+        gui_utils.set_combobox(self.data_column, 'reading_txt', add_if_not_exists=False)
 
         self.stored_settings = common_utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)

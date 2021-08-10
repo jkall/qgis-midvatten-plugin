@@ -25,6 +25,7 @@ changelog=
         - Sectionplot: Fixes bug where layer texts was NULL was written to plot.
         - Export data: Fixes bugs related to s_qual_lab and w_qual_logger.
         - FieldloggerExport: Fixes bug where adding layer to QGIS caused an error message.
+        - CompactWQualReport: Fixes default table and column not working.
         Version 1.6.6b4:
         - Sectionplot: Added option to chose water level base on sql WHERE condition (see tooltip for water level square).
         - Sectionplot: Fixes bug where changing water level label in figure options on navigation toolbar didn't change legend text.
