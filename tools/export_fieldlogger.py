@@ -406,6 +406,10 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         except UnicodeDecodeError as e:
             common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', "Error writing %s")) % str(printlist))
 
+    def closeEvent(self, event):
+        self.obslayer.disconnect_event()
+        super().closeEvent(event)
+
 
 class ParameterGroup(object):
     def __init__(self, obslayer):
@@ -833,4 +837,6 @@ class ObsLayer(gui_utils.VRowEntry):
                     for k, v in features.items()}
         return latlons
 
+    def disconnect_event(self):
+        QgsProject.instance().layersAdded.disconnect(self.update_vectorlayers)
 
