@@ -26,9 +26,10 @@ import os
 
 import mock
 
-from midvatten.tools.utils import db_utils
+from midvatten.tools.utils import db_utils, common_utils
 from midvatten.tools.tests import utils_for_tests
 from midvatten.tools.tests.mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn
+from midvatten.definitions import db_defs
 
 EXPORT_DB_PATH = '/tmp/tmp_midvatten_export_db.sqlite'
 TEMP_DIR = '/tmp/'
@@ -613,7 +614,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print(str(reference_string))
         assert test_string == reference_string
 
-
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
@@ -631,7 +631,13 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
-        db_utils.execute_sqlfile()
+        if dbconnection.dbtype == 'postgis':
+            with open(db_defs.extra_datatables_sqlfile()) as f:
+                data = ''.join([row.replace('double', 'double precision') for row in f])
+            with common_utils.tempinput(data) as tf:
+                db_utils.execute_sqlfile(tf, dbconnection, merge_newlines=True)
+        else:
+            db_utils.execute_sqlfile(db_defs.extra_datatables_sqlfile(), dbconnection, merge_newlines=True)
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''', dbconnection=dbconnection)
@@ -644,8 +650,13 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO s_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar2', 'report2', 's1')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO w_qual_logger (obsid, date_time, instrument, parameter, unit) VALUES ('P1', '2021-08-11 11:14', 'testinst', 'testpar', 'm')''',
+            dbconnection=dbconnection)
 
         dbconnection.commit_and_closedb()
+
+        print(str(db_utils.sql_load_fr_db('''select * From s_qual_lab''')))
 
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'
@@ -661,7 +672,9 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select obsid, stratid, depthtop, depthbot from stratigraphy''',
                     '''select obsid from obs_lines''',
                     '''select obsid, length from seismic_data''',
-                    '''select obsid, instrumentid, parameter, date_time from meteo''']
+                    '''select obsid, instrumentid, parameter, date_time from meteo''',
+                    '''select obsid, parameter, report, staff from s_qual_lab''',
+                    '''select obsid, date_time, instrument, parameter, unit from w_qual_logger''']
 
 
         conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
@@ -698,7 +711,12 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             '''select obsid, length from seismic_data''',
                             ''', [(L1, 5.0)], ''',
                             '''select obsid, instrumentid, parameter, date_time from meteo''',
-                            ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
+                            ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)], ''',
+                            '''select obsid, parameter, report, staff from s_qual_lab''',
+                            ''', [(P1, labpar2, report2, s1)], ''',
+                            '''select obsid, date_time, instrument, parameter, unit from w_qual_logger''',
+                            ''', [(P1, 2021-08-11 11:14, testinst, testpar, m)]]'''
+                            ]
         reference_string = '\n'.join(reference_string)
         print("Ref:")
         print(str(reference_string))
