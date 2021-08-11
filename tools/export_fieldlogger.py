@@ -113,9 +113,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.add_parameter_group.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Creates an additional empty input field group.')))
         self.gridLayout_buttons.addWidget(self.add_parameter_group, self.gridLayout_buttons.rowCount(), 0)
         #Lambda and map is used to run several functions for every button click
-        self.add_parameter_group.clicked.connect(
-                     lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup(self.obslayer)),
-                                  lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]])
+        self.add_parameter_group.clicked.connect(self._add_parameter_group)
 
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
 
@@ -138,20 +136,12 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.save_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Save settings')))
         self.save_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Saves the current input fields settings.')))
         self.gridLayout_buttons.addWidget(self.save_settings_button, self.gridLayout_buttons.rowCount(), 0)
-        self.save_settings_button.clicked.connect(
-                        lambda: [x() for x in [lambda: common_utils.save_stored_settings(self.ms,
-                                                                                                     self.update_stored_settings(self.parameter_groups),
-                                                                                                     self.stored_settingskey),
-                                  lambda: common_utils.save_stored_settings(self.ms,
-                                                                                        self.update_stored_settings([self.parameter_browser]),
-                                                                                        self.stored_settingskey_parameterbrowser)]])
+        self.save_settings_button.clicked.connect(self.save_stored_settings)
 
         self.clear_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear all input fields settings.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, self.gridLayout_buttons.rowCount(), 0)
-        self.clear_settings_button.clicked.connect(
-                     lambda: [x() for x in [lambda: common_utils.save_stored_settings(self.ms, [], self.stored_settingskey),
-                                            lambda: common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))]])
+        self.clear_settings_button.clicked.connect(self.clear_settings)
 
         self.settings_strings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings strings')))
         self.settings_strings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Access the settings strings ("Create input fields" and input fields) to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.')))
@@ -250,13 +240,14 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
                 try:
                     if hasattr(parameter_browser, ru(attr[0])):
                         setattr(parameter_browser, ru(attr[0]), ru(attr[1], keep_containers=True))
-                    common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportToFieldLogger',
+                    else:
+                        common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportToFieldLogger',
                                                                                          'Tried to load input field fields browser but the variable %s did not exist.')) %
                                                                               attr[0])
                 except UnicodeEncodeError:
                     common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportToFieldLogger',
-                                                                                         'Tried to load input field fields browser but the variable %s did not exist.')) %
-                                                                              attr[0])
+                                                                                         'Tried to load input field fields browser but the string %s could not be handled.')) %
+                                                                              ru(attr[1]))
 
     @staticmethod
     def update_stored_settings(objects_with_get_settings):
@@ -409,6 +400,26 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
     def closeEvent(self, event):
         self.obslayer.disconnect_event()
         super().closeEvent(event)
+
+    def save_stored_settings(self):
+        common_utils.save_stored_settings(self.ms,
+                                          self.update_stored_settings(
+                                              self.parameter_groups),
+                                          self.stored_settingskey)
+
+        common_utils.save_stored_settings(self.ms,
+                                          self.update_stored_settings(
+                                              [self.parameter_browser]),
+                                          self.stored_settingskey_parameterbrowser)
+
+    def clear_settings(self):
+        common_utils.save_stored_settings(self.ms, [], self.stored_settingskey),
+        common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger',
+            'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))
+
+    def _add_parameter_group(self):
+        self.parameter_groups.append(ParameterGroup(self.obslayer))
+        self.add_parameter_group_to_gui(self.widgets_layouts,   self.parameter_groups[-1])
 
 
 class ParameterGroup(object):

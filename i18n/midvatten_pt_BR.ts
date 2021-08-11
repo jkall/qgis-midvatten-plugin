@@ -2692,7 +2692,7 @@ Do you want to stop the import? (else it will continue with the next file)</sour
 <context>
     <name>ExportToFieldLogger</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="174"/>
+        <location filename="../tools/export_fieldlogger.py" line="164"/>
         <source>Export</source>
         <translation type="unfinished">Exportar</translation>
     </message>
@@ -2727,177 +2727,177 @@ Do you want to stop the import? (else it will continue with the next file)</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="138"/>
+        <location filename="../tools/export_fieldlogger.py" line="136"/>
         <source>Save settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="139"/>
+        <location filename="../tools/export_fieldlogger.py" line="137"/>
         <source>Saves the current input fields settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="149"/>
+        <location filename="../tools/export_fieldlogger.py" line="141"/>
         <source>Clear settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="150"/>
+        <location filename="../tools/export_fieldlogger.py" line="142"/>
         <source>Clear all input fields settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="152"/>
+        <location filename="../tools/export_fieldlogger.py" line="417"/>
         <source>Settings cleared. Restart Export to Fieldlogger dialog to complete,
 or press &quot;Save settings&quot; to save current input fields settings again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="156"/>
+        <location filename="../tools/export_fieldlogger.py" line="146"/>
         <source>Settings strings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="157"/>
+        <location filename="../tools/export_fieldlogger.py" line="147"/>
         <source>Access the settings strings (&quot;Create input fields&quot; and input fields) to copy and paste all settings between different qgis projects.
  Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="161"/>
+        <location filename="../tools/export_fieldlogger.py" line="151"/>
         <source>Default settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="162"/>
+        <location filename="../tools/export_fieldlogger.py" line="152"/>
         <source>Updates &quot;Create input fields&quot; and input fields to default settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="168"/>
+        <location filename="../tools/export_fieldlogger.py" line="158"/>
         <source>Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="169"/>
+        <location filename="../tools/export_fieldlogger.py" line="159"/>
         <source>View a preview of the Fieldlogger location file as pop-up info.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="175"/>
+        <location filename="../tools/export_fieldlogger.py" line="165"/>
         <source>Exports the current combination of locations and input fields to a Fieldlogger location file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="197"/>
+        <location filename="../tools/export_fieldlogger.py" line="187"/>
         <source>Sub-location suffix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="197"/>
+        <location filename="../tools/export_fieldlogger.py" line="187"/>
         <source>Input fields</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="203"/>
+        <location filename="../tools/export_fieldlogger.py" line="193"/>
         <source>Locations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="203"/>
+        <location filename="../tools/export_fieldlogger.py" line="193"/>
         <source>Location suffix
 (ex. project number)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="237"/>
+        <location filename="../tools/export_fieldlogger.py" line="227"/>
         <source>Tried to load input field groups but the variable %s did not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="257"/>
+        <location filename="../tools/export_fieldlogger.py" line="244"/>
         <source>Tried to load input field fields browser but the variable %s did not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="269"/>
+        <location filename="../tools/export_fieldlogger.py" line="260"/>
         <source>Input fields and &quot;Create Input Fields&quot; updated to default.
 Restart Export to Fieldlogger dialog to complete,
 or press &quot;Save settings&quot; to save current input fields settings again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="273"/>
+        <location filename="../tools/export_fieldlogger.py" line="264"/>
         <source>Edit the settings string for input fields browser and restart export fieldlogger dialog
 to load the change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="275"/>
+        <location filename="../tools/export_fieldlogger.py" line="266"/>
         <source>Edit the settings string for input fields groups and restart export fieldlogger dialog
 to load the change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="278"/>
+        <location filename="../tools/export_fieldlogger.py" line="269"/>
         <source>Settings updated. Restart Export to Fieldlogger dialog
 or press &quot;Save settings&quot; to undo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="284"/>
+        <location filename="../tools/export_fieldlogger.py" line="275"/>
         <source>Edit settings string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="298"/>
+        <location filename="../tools/export_fieldlogger.py" line="289"/>
         <source>Parsing settings failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="298"/>
+        <location filename="../tools/export_fieldlogger.py" line="289"/>
         <source>Parsing settings failed using string
 %s
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="342"/>
+        <location filename="../tools/export_fieldlogger.py" line="333"/>
         <source>Warning: Empty input fields list for group nr %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="352"/>
+        <location filename="../tools/export_fieldlogger.py" line="343"/>
         <source>Critical: Obsid %s did not have lat-lon coordinates. Check obs_points table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="362"/>
+        <location filename="../tools/export_fieldlogger.py" line="353"/>
         <source>Warning, parameter error, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="362"/>
+        <location filename="../tools/export_fieldlogger.py" line="353"/>
         <source>The parameter %s exists more than once and the last one will overwrite the previous.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="398"/>
+        <location filename="../tools/export_fieldlogger.py" line="389"/>
         <source>Choose a file name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="405"/>
+        <location filename="../tools/export_fieldlogger.py" line="396"/>
         <source>Writing of file failed!: %s </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="407"/>
+        <location filename="../tools/export_fieldlogger.py" line="398"/>
         <source>Error writing %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="558"/>
+        <location filename="../tools/export_fieldlogger.py" line="569"/>
         <source>(mandatory)
 Either supply a chosen name directly or use parameter
 and unit boxes to create a name.
@@ -2905,7 +2905,7 @@ ex: parameter.unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="565"/>
+        <location filename="../tools/export_fieldlogger.py" line="576"/>
         <source>(mandatory)
 Decides the keyboard layout in the Fieldlogger app.
 numberDecimal|numberSigned: Decimals with allowed &quot;-&quot; sign
@@ -2923,8 +2923,13 @@ text: Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="123"/>
+        <location filename="../tools/export_fieldlogger.py" line="121"/>
         <source>Locations from:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/export_fieldlogger.py" line="248"/>
+        <source>Tried to load input field fields browser but the string %s could not be handled.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5295,7 +5300,7 @@ error msg:
 <context>
     <name>ObsLayer</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="762"/>
+        <location filename="../tools/export_fieldlogger.py" line="773"/>
         <source>id column:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5339,43 +5344,43 @@ See Pandas pandas.rolling_mean documentation for more info.</source>
 <context>
     <name>ParameterBrowser</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="570"/>
+        <location filename="../tools/export_fieldlogger.py" line="581"/>
         <source>(optional)
 Hint given to the Fieldlogger user for the parameter. Ex: &quot;depth to water&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="572"/>
+        <location filename="../tools/export_fieldlogger.py" line="583"/>
         <source>Copy input fields to the &quot;Input Fields&quot; boxes using ctrl+c, ctrl+v.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="589"/>
+        <location filename="../tools/export_fieldlogger.py" line="600"/>
         <source>Error, sql failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="589"/>
+        <location filename="../tools/export_fieldlogger.py" line="600"/>
         <source>Cannot get data from sql %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="618"/>
+        <location filename="../tools/export_fieldlogger.py" line="629"/>
         <source>Error, input name not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="621"/>
+        <location filename="../tools/export_fieldlogger.py" line="632"/>
         <source>Error, input type not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="624"/>
+        <location filename="../tools/export_fieldlogger.py" line="635"/>
         <source>Error, input name already existing. No duplicates allowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="628"/>
+        <location filename="../tools/export_fieldlogger.py" line="639"/>
         <source>Warning, hint not given and will be set to a space (&quot; &quot;) as it must exist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5451,7 +5456,7 @@ Hint given to the Fieldlogger user for the parameter. Ex: &quot;depth to water&q
 <context>
     <name>ParameterGroup</name>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="427"/>
+        <location filename="../tools/export_fieldlogger.py" line="438"/>
         <source>(optional)
 The Fieldlogger location in the Fieldlogger map will be &quot;obsid.LOCATION SUFFIX&quot;.
 
@@ -5460,7 +5465,7 @@ ex: Location suffix 1234 --&gt; obsid.1234</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="432"/>
+        <location filename="../tools/export_fieldlogger.py" line="443"/>
         <source>(optional)
 Fieldlogger sub-location will be obsid.Location suffix.Sub-location suffix
 
@@ -5470,7 +5475,7 @@ ex: level, quality, sample, comment, flow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="438"/>
+        <location filename="../tools/export_fieldlogger.py" line="449"/>
         <source>Copy and paste input fields from &quot;Create Input Fields&quot; to this box
 or from/to other input field boxes.
 The input fields in Fieldlogger will appear in the same order as in
@@ -5481,12 +5486,12 @@ field already exists in a previous group it will end up on top!!!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="425"/>
+        <location filename="../tools/export_fieldlogger.py" line="436"/>
         <source>Paste selected ids</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_fieldlogger.py" line="446"/>
+        <location filename="../tools/export_fieldlogger.py" line="457"/>
         <source>Add locations to Locations box by selecting rows in the chosen layer (see &quot;Locations from&quot;
 in the left column) using it&apos;s attribute table or selection from map.
 Then click the button &quot;Paste selected ids.&quot;
