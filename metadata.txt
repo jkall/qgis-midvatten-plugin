@@ -20,25 +20,30 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
-        Version 1.6.6b5
-        - Sectionplot: Fixes bug with interactive water level plot.
-        - Sectionplot: Fixes bug where layer texts was NULL was written to plot.
-        - Export data: Fixes bugs related to s_qual_lab and w_qual_logger.
-        - FieldloggerExport: Fixes bug where adding layer to QGIS caused an error message.
-        - CompactWQualReport: Fixes default table and column not working.
-        - CompactWQualReport: Fixes missing column headers.
-        Version 1.6.6b4:
-        - Sectionplot: Added option to chose water level base on sql WHERE condition (see tooltip for water level square).
-        - Sectionplot: Fixes bug where changing water level label in figure options on navigation toolbar didn't change legend text.
-        - Sectionplot: Probably fixes #333 (supporting multiple variations of function "line locate point").
-        - Sectionplot: Refactoring. Fixes bug where error message was printed too many times. Feature to write layer annotation at the edge or center of the bar.
-        Version 1.6.6b3:
-        - Remade all imports of local packages and functions to make the code reusable from outside the plugin.
-        Version 1.6.6b2:
-        - Midvattensettings: Removes midvattensettings-variable when it's closed (fixes #332).
-        Version 1.6.6b1:
-        - Compact w-qual report: Made the column report optional to allow reports from w_qual_field.
-        - Compact w-qual report: Fixes bug when using aggregation other than concat.
+        Version 1.6.6
+        - Major update of imports in modules to increase code reusability from outside the plugin.
+        - Compact w-qual report
+            * Made the column report optional to allow reports from w_qual_field.
+            * Fixes bug when using aggregation other than concat.
+        - Midvattensettings:
+            * Fixes bug after closing the settings dialog (fixes #332).
+        - Sectionplot:
+            * Refactoring.
+            * Feature to write layer annotation at the edge or center of the bar.
+            * Added option to chose water level base on sql WHERE condition (see tooltip for water level square).
+            * Fixes bug where error message was printed too many times.
+            * Probably fixes #333 (supporting multiple variations of function "line locate point").
+            * Fixes bug where changing water level label in figure options on navigation toolbar didn't change legend text.
+            * Fixes bug where layer texts was NULL was written to plot.
+            * Fixes bug with interactive water level plot.
+        - Export data:
+            * Fixes bugs related to the optional tables s_qual_lab and w_qual_logger.
+        - FieldloggerExport:
+            * Fixes bug where adding layer to QGIS caused an error message.
+        - CompactWQualReport:
+            * Fixes bug where default table and column not working.
+        - CompactWQualReport:
+            * Fixes missing column headers.
         Version 1.6.5
         - Database:
             * Added index to w_levels_logger and w_flow for perhaps increased read performance.

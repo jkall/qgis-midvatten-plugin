@@ -1,4 +1,5 @@
 SOURCES = \
+./definitions/db_defs.py \
 ./definitions/midvatten_defs.py \
 ./midvatten_plugin.py \
 ./midvsettingsdialog.py \
@@ -18,25 +19,26 @@ SOURCES = \
 ./tools/import_interlab4.py \
 ./tools/import_levelogger.py \
 ./tools/loaddefaultlayers.py \
-./tools/matplotlib_replacements.py \
 ./tools/midvsettings.py \
 ./tools/piper.py \
 ./tools/prepareforqgis2threejs.py \
-./tools/sampledem.py \
 ./tools/sectionplot.py \
 ./tools/stratigraphy.py \
 ./tools/strat_symbology.py \
 ./tools/tsplot.py \
+./tools/utils/common_utils.py \
+./tools/utils/date_utils.py \
+./tools/utils/db_utils.py \
+./tools/utils/gui_utils.py \
+./tools/utils/matplotlib_replacements.py \
+./tools/utils/midvatten_utils.py \
+./tools/utils/sampledem.py \
+./tools/utils/util_translate.py \
 ./tools/w_flow_calc_aveflow.py \
 ./tools/wlevels_calc_calibr.py \
 ./tools/wqualreport_compact.py \
 ./tools/wqualreport.py \
 ./tools/xyplot.py \
-./tools/utils/midvatten_utils.py \
-./tools/utils/gui_utils.py \
-./tools/utils/date_utils.py \
-./tools/utils/db_utils.py \
-./tools/utils/util_translate.py \
 ./ui/simpleplotdialog.py \
 
 FORMS = \

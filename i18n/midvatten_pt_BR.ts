@@ -362,6 +362,11 @@ imported rows instead of being read from file column.</source>
 %s </source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1269"/>
+        <source>Style cycler ran out of unique combinations. Using random color!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DatabaseSettings</name>
@@ -2932,6 +2937,11 @@ text: Text</source>
         <source>Tried to load input field fields browser but the string %s could not be handled.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1189"/>
+        <source>Parsing the settingsstring %s failed. Msg &quot;%s&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>FieldloggerImport</name>
@@ -3128,6 +3138,14 @@ from active layer</source>
     <message>
         <location filename="../tools/import_hobologger.py" line="153"/>
         <source>Dateformat in file %s could not be parsed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HtmlDialog</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="253"/>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4300,6 +4318,14 @@ arquivo de poços </translation>
     </message>
 </context>
 <context>
+    <name>MessagebarAndLog</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="87"/>
+        <source>View message log</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MetadataFilter</name>
     <message>
         <location filename="../tools/import_interlab4.py" line="884"/>
@@ -5298,6 +5324,24 @@ error msg:
     </message>
 </context>
 <context>
+    <name>NotFoundQuestion</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="178"/>
+        <source>Ignore database missmatch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="179"/>
+        <source>Ignore database missmatch and try to import anyway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="187"/>
+        <source>Reuse answer for all identical</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ObsLayer</name>
     <message>
         <location filename="../tools/export_fieldlogger.py" line="773"/>
@@ -5496,6 +5540,24 @@ field already exists in a previous group it will end up on top!!!)</source>
 in the left column) using it&apos;s attribute table or selection from map.
 Then click the button &quot;Paste selected ids.&quot;
 Copy and paste obsids between Locations boxes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PickAnnotator</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1295"/>
+        <source>PickAnnotator initialized.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1335"/>
+        <source>Adding annotation failed, msg: %s.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1347"/>
+        <source>Removing annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6405,6 +6467,14 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>Timer</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1359"/>
+        <source>Total time running %s: %s seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TzSelector</name>
     <message>
         <location filename="../tools/import_hobologger.py" line="192"/>
@@ -6554,16 +6624,71 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
     </message>
 </context>
 <context>
-    <name>askuser</name>
+    <name>ask_for_delimiter</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="164"/>
-        <source>All</source>
-        <translation type="obsolete">Todas</translation>
+        <location filename="../tools/utils/common_utils.py" line="1058"/>
+        <source>Give delimiter</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="165"/>
+        <location filename="../tools/utils/common_utils.py" line="1064"/>
+        <source>Delimiter not given. Stopping.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ask_for_export_crs</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="658"/>
+        <source>Set export crs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="658"/>
+        <source>Give the crs for the exported database.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>askuser</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="130"/>
+        <source>All</source>
+        <translation type="unfinished">Todas</translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="131"/>
         <source>Selected</source>
-        <translation type="obsolete">Selecionadas</translation>
+        <translation type="unfinished">Selecionadas</translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="146"/>
+        <source>User input needed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="146"/>
+        <source>Give needed adjustment of date/time for the data.
+Supported format: +- X &lt;resolution&gt;
+Ex: 1 hours, -1 hours, -1 days
+Supported units:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="157"/>
+        <source>Failure:
+Only support resolutions
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="159"/>
+        <source>Failure:
+Must write time resolution also.
+</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6711,6 +6836,22 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
     </message>
 </context>
 <context>
+    <name>filter_nonexisting_values_and_ask</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="856"/>
+        <source>(Message %s of %s)
+
+Give the %s for:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="857"/>
+        <source>User input needed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>find_date_format</name>
     <message>
         <location filename="../tools/utils/date_utils.py" line="71"/>
@@ -6722,6 +6863,27 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
         <source>Could not find the date format for string &quot;%s&quot;
 Supported date formats:
 %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>find_layer</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="298"/>
+        <source>The layer %s was not found!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="300"/>
+        <source>Found %s layers with the name &quot;%s&quot;. There can be only one!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>general_exception_handler</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1131"/>
+        <source>Usage error: %s</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6743,6 +6905,27 @@ Msg2:
     </message>
 </context>
 <context>
+    <name>get_delimiter</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1009"/>
+        <source>Must give filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>get_delimiter_from_file_rows</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1052"/>
+        <source>Delimiter couldn&apos;t be found automatically for %s. Give the correct one (ex &apos;;&apos;):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1042"/>
+        <source>Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>get_locale_from_db</name>
     <message>
         <location filename="../tools/utils/midvatten_utils.py" line="250"/>
@@ -6760,6 +6943,14 @@ Msg2:
     </message>
 </context>
 <context>
+    <name>get_selected_features_as_tuple</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="316"/>
+        <source>Programming error: The layername &quot;%s&quot; was not str or QgsMapLayer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>get_spatialite_db_path_from_dbsettings_string</name>
     <message>
         <location filename="../tools/utils/db_utils.py" line="992"/>
@@ -6769,6 +6960,30 @@ Msg2:
     <message>
         <location filename="../tools/utils/db_utils.py" line="993"/>
         <source>%s error msg from db_settings string &quot;%s&quot;: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>get_stored_settings</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1168"/>
+        <source>Settings key %s did not exist in midvatten settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1171"/>
+        <source>Settings key %s was empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1177"/>
+        <source>Reading stored settings &quot;%s&quot;:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1189"/>
+        <source>Getting stored settings failed for key %s see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7413,10 +7628,42 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
     </message>
 </context>
 <context>
+    <name>pop_up_info</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="391"/>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>prepare_layers_for_qgis2threejs</name>
     <message>
         <location filename="../midvatten_plugin.py" line="940"/>
         <source>Only supported for spatialite.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_xylimits</name>
+    <message>
+        <location filename="../tools/utils/matplotlib_replacements.py" line="122"/>
+        <source>xlim %s ylim %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>returnunicode</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="477"/>
+        <source>data type unknown, check database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>save_stored_settings</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1153"/>
+        <source>Settings %s stored for key %s.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7444,6 +7691,24 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
     </message>
 </context>
 <context>
+    <name>selection_check</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="489"/>
+        <source>Error, select at least one object in the qgis layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="491"/>
+        <source>&quot;&quot;&quot;Error, select exactly %s object in the qgis layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="493"/>
+        <source>Select a qgis layer that has a field obsid!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>sql_alter_db</name>
     <message>
         <location filename="../tools/utils/db_utils.py" line="446"/>
@@ -7456,6 +7721,14 @@ Msg:
     <message>
         <location filename="../tools/utils/db_utils.py" line="448"/>
         <source>Some sql failure, see log for additional info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>sql_failed_msg</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1077"/>
+        <source>Sql failed, see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7493,6 +7766,14 @@ Msg:
     </message>
 </context>
 <context>
+    <name>strat_selection_check</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="500"/>
+        <source>Error, select a qgis layer with field h_gs!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>strat_symbology</name>
     <message>
         <location filename="../tools/strat_symbology.py" line="79"/>
@@ -7512,6 +7793,40 @@ Msg:
     <message>
         <location filename="../tools/strat_symbology.py" line="358"/>
         <source>&apos;Missing stylefile %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>timer</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1368"/>
+        <source>Total time running %s: %s seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>unicode_2_utf8</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="534"/>
+        <source>data type unknown, check database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>verify_layer_selection</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="544"/>
+        <source>Error, you have to select some features!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="546"/>
+        <source>Error, you have to select exactly %s features!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="548"/>
+        <source>Error, you have to select a relevant layer!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7541,6 +7856,19 @@ Please exit this mode before proceeding with this operation.</source>
     <message>
         <location filename="../tools/utils/midvatten_utils.py" line="79"/>
         <source>Error layer %s is required but missing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>verify_this_layer_selected_and_not_in_edit_mode</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="571"/>
+        <source>Error, you have to select/activate %s layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="568"/>
+        <source>Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7595,6 +7923,14 @@ Please exit this mode before proceeding with this operation.</source>
     <message>
         <location filename="../tools/utils/midvatten_utils.py" line="388"/>
         <source>Database is missing view_obs_points or view_obs_lines! Add these using Midvatten&gt;Database Management&gt;Add view_obs_points as workaround for qgis bug #20633.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>write_printlist_to_file</name>
+    <message>
+        <location filename="../tools/utils/common_utils.py" line="1225"/>
+        <source>Data written to file %s.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
