@@ -134,7 +134,13 @@ class XYPlot(object):
                 ylabel = str(self.y1col) + ", \n" + str(self.y2col) + ", \n" + str(self.y3col) #MacOSX fix1
                 ax.set_ylabel(ylabel)
                 ax.set_title(self.settingsdict['xytable']) #MacOSX fix1
-                leg = fig.legend(p, plabel, loc=0)
+
+                try:
+                    leg = fig.legend(p, plabel, loc=0) #leg = fig.legend(p, plabel, 'right')
+                except ValueError as e:
+                    common_utils.MessagebarAndLog.info(log_msg="""Figure legend didn't work, using axis legend instead, msg: """%str(e))
+                    leg = ax.legend(p, plabel, loc=0)  # leg = fig.legend(p, plabel, 'right')
+
                 try:
                     leg.set_draggable(state=True)
                 except AttributeError:
