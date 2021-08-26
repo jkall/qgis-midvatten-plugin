@@ -138,7 +138,7 @@ class XYPlot(object):
                 try:
                     leg = fig.legend(p, plabel, loc=0) #leg = fig.legend(p, plabel, 'right')
                 except ValueError as e:
-                    common_utils.MessagebarAndLog.info(log_msg="""Figure legend didn't work, using axis legend instead, msg: """%str(e))
+                    common_utils.MessagebarAndLog.info(log_msg="""Figure legend didn't work, using axis legend instead, msg: %s"""%str(e))
                     leg = ax.legend(p, plabel, loc=0)  # leg = fig.legend(p, plabel, 'right')
 
                 try:
