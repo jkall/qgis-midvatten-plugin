@@ -21,6 +21,7 @@
 from __future__ import absolute_import
 
 import datetime
+import logging
 from builtins import object
 from builtins import str
 
@@ -100,7 +101,13 @@ class TimeSeriesPlot(object):
                 fig.autofmt_xdate()
                 ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
                 ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
-                leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
+
+                try:
+                    leg = fig.legend(p, plabel, loc=0) #leg = fig.legend(p, plabel, 'right')
+                except ValueError as e:
+                    common_utils.MessagebarAndLog.info(log_msg="""Figure legend didn't work, using axis legend instead, msg: """%str(e))
+                    leg = ax.legend(p, plabel, loc=0)  # leg = fig.legend(p, plabel, 'right')
+
                 try:
                     leg.set_draggable(state=True)
                 except AttributeError:
