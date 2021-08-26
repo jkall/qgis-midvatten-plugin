@@ -21,7 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.6.7
-        - Fixes #335 (fig.legend giving error message).
+        - Fixes #335 (fig.legend giving error message)..
         Version 1.6.6
         - Major update of imports in modules to increase code reusability from outside the plugin.
         - Compact w-qual report
