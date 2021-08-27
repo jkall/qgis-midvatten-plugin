@@ -76,19 +76,19 @@ class XYPlot(object):
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """
                     sql += str(self.xcol) #MacOSX fix1
-                    sql += r""" as 'x'"""
+                    sql += r""" as x"""
                     if len(self.y1col):
                         sql += r""", """
                         sql += str(self.y1col) #MacOSX fix1
-                        sql += r""" as 'y1'"""
+                        sql += r""" as y1"""
                     if len(self.y2col):
                         sql += r""", """
                         sql += str(self.y2col) #MacOSX fix1
-                        sql += r""" as 'y2'"""
+                        sql += r""" as y2"""
                     if len(self.y3col):
                         sql += r""", """
                         sql += str(self.y3col) #MacOSX fix1
-                        sql += r""" as 'y3'"""
+                        sql += r""" as y3"""
                     sql += """ FROM """
                     sql += str(self.table) #MacOSX fix1
                     sql += r""" WHERE obsid = '"""
