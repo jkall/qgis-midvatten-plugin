@@ -46,7 +46,7 @@ from builtins import object
 from builtins import str
 from functools import partial  # only to get combobox signals to work
 
-import qgis.PyQt
+from qgis.PyQt import QtPrintSupport, QtWidgets, QtCore, QtGui
 from qgis.PyQt.QtCore import QCoreApplication
 
 from midvatten.definitions import midvatten_defs as defs
@@ -314,11 +314,11 @@ class SurveyStore(object):
             surveys[obsid] = survey
         return surveys
 
-class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
+class SurveyWidget(QtWidgets.QFrame):
 
     def __init__(self, parent = None):
-        qgis.PyQt.QtWidgets.QFrame.__init__(self, parent)
-        self.setFrameShape(qgis.PyQt.QtWidgets.QFrame.StyledPanel)
+        QtWidgets.QFrame.__init__(self, parent)
+        self.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.setLineWidth(3)
         self.sondaggio = {}
         # In the original ARPAT plugin the following convention was used F = points, T = vertical lines and  C = horizontal lines
@@ -401,15 +401,15 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
     def paintEvent(self, event):
         """ redraws the whole widget's area """
         
-        qgis.PyQt.QtWidgets.QFrame.paintEvent(self,event)
+        QtWidgets.QFrame.paintEvent(self,event)
 
         # check whether there's a survey to show
         if len(self.sondaggio) == 0:
-            p = qgis.PyQt.QtGui.QPainter(self)
-            p.drawText(self.rect(), qgis.PyQt.QtCore.Qt.AlignCenter | qgis.PyQt.QtCore.Qt.AlignVCenter, ru(QCoreApplication.translate('SurveyWidget', "No data to display")))
+            p = QtGui.QPainter(self)
+            p.drawText(self.rect(), QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter, ru(QCoreApplication.translate('SurveyWidget', "No data to display")))
             return
 
-        painter = qgis.PyQt.QtGui.QPainter(self)
+        painter = QtGui.QPainter(self)
 
         self.drawSurveys(self.rect(), painter)
 
@@ -438,7 +438,7 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
                 
         # draw surveys
         for survey in self.order:
-            r = qgis.PyQt.QtCore.QRect(x + margin, 0 + margin, surveyWidth - 2*margin, surveyHeight - 2*margin)
+            r = QtCore.QRect(x + margin, 0 + margin, surveyWidth - 2*margin, surveyHeight - 2*margin)
             x += surveyWidth
             sond = self.sondaggio[survey.obsid]
             # draw the survey
@@ -452,13 +452,13 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         depthTop = sond.top_lvl
         depthBot = depthTop - sond.strata[-1].depthBot
         
-        fm = qgis.PyQt.QtGui.QFontMetrics(p.font())
+        fm = QtGui.QFontMetrics(p.font())
         nameHeight = fm.height()
         depthHeight = fm.height()
         
         # draw obsid 'name'
-        labelRect = qgis.PyQt.QtCore.QRect(sRect.left(),sRect.top(),sRect.width(),nameHeight)
-        p.drawText(labelRect, qgis.PyQt.QtCore.Qt.AlignVCenter, sond.obsid)
+        labelRect = QtCore.QRect(sRect.left(),sRect.top(),sRect.width(),nameHeight)
+        p.drawText(labelRect, QtCore.Qt.AlignVCenter, sond.obsid)
         
         scale = (sRect.height() - nameHeight - depthHeight*2) / (interval[1]-interval[0])
         
@@ -467,16 +467,16 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         yBed = top + (interval[1]-depthBot)*scale
         
         # top depth
-        depthRect = qgis.PyQt.QtCore.QRect(sRect.left(),yTop-depthHeight,sRect.width(),depthHeight)
-        p.drawText(depthRect, qgis.PyQt.QtCore.Qt.AlignVCenter, "%.1f m" % depthTop)
+        depthRect = QtCore.QRect(sRect.left(),yTop-depthHeight,sRect.width(),depthHeight)
+        p.drawText(depthRect, QtCore.Qt.AlignVCenter, "%.1f m" % depthTop)
         
         # bed depth
-        depthRect = qgis.PyQt.QtCore.QRect(sRect.left(),yBed+1,sRect.width(),depthHeight)
-        p.drawText(depthRect, qgis.PyQt.QtCore.Qt.AlignVCenter, "%.1f m" % depthBot)
+        depthRect = QtCore.QRect(sRect.left(),yBed+1,sRect.width(),depthHeight)
+        p.drawText(depthRect, QtCore.Qt.AlignVCenter, "%.1f m" % depthBot)
         
         
-        dRect = qgis.PyQt.QtCore.QRect(qgis.PyQt.QtCore.QPoint(sRect.left(), yTop),
-                             qgis.PyQt.QtCore.QPoint(sRect.left()+columnWidth, yBed))
+        dRect = QtCore.QRect(QtCore.QPoint(sRect.left(), yTop),
+                             QtCore.QPoint(sRect.left()+columnWidth, yBed))
     
         p.drawRect(dRect)
     
@@ -487,12 +487,12 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         for layer in sond.strata:
             y2 = (layer.depthBot - layer.depthTop) * scale
             # column rectangle
-            cRect = qgis.PyQt.QtCore.QRect(qgis.PyQt.QtCore.QPoint(dRect.left(), y),
-                                 qgis.PyQt.QtCore.QPoint(dRect.right(), y+y2-1))
+            cRect = QtCore.QRect(QtCore.QPoint(dRect.left(), y),
+                                 QtCore.QPoint(dRect.right(), y+y2-1))
 
             # text rectangle
-            tRect = qgis.PyQt.QtCore.QRect(qgis.PyQt.QtCore.QPoint(dRect.right()+10, y),
-                                 qgis.PyQt.QtCore.QPoint(sRect.right(), y+y2))
+            tRect = QtCore.QRect(QtCore.QPoint(dRect.right()+10, y),
+                                 QtCore.QPoint(sRect.right(), y+y2))
 
             bType = self.geoToSymbol(layer.geo_short)  # select brush pattern depending on the geo_short 
             # select brush pattern depending on usage of geo or hydro
@@ -505,28 +505,28 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
             p.drawRect(cRect)
 
             # draw column with specified hatch
-            p.setBrush(qgis.PyQt.QtGui.QBrush(qgis.PyQt.QtCore.Qt.black, bType))
+            p.setBrush(QtGui.QBrush(QtCore.Qt.black, bType))
             p.drawRect(cRect)
 
             # draw associated text
             if self.showDesc:
                 if self.GeoOrComment == "geology":
-                    p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, '' if layer.geology=='NULL' else layer.geology)#'Yes' if fruit == 'Apple' else 'No'
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, '' if layer.geology=='NULL' else layer.geology)#'Yes' if fruit == 'Apple' else 'No'
                 elif self.GeoOrComment == "comment":
-                    p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, '' if layer.comment=='NULL' else layer.comment)
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, '' if layer.comment=='NULL' else layer.comment)
                 elif self.GeoOrComment == "geoshort":
-                    p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, '' if layer.geo_short=='NULL' else layer.geo_short)
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, '' if layer.geo_short=='NULL' else layer.geo_short)
                 elif self.GeoOrComment == "hydro":
-                    p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
                 elif self.GeoOrComment == "hydro explanation":
                     if layer.hydro is None or layer.hydro=='NULL':
                         hydr = ''
                     else:
                         hydr = self.hydroColors.get(layer.hydro, '')[0]
-                    p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, hydr)
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, hydr)
 
                 else:
-                    p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, '' if layer.development=='NULL' else layer.development)
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, '' if layer.development=='NULL' else layer.development)
 
             y += y2
 
@@ -536,19 +536,19 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         if type == 'hydro':
             if id in self.hydroColors:
                 #return eval("PyQt4.QtCore.Qt" + self.hydroColors[id][2])    # Less sofisticated method to create a function call from a string (function syntax is in the string)
-                return getattr(qgis.PyQt.QtCore.Qt, self.hydroColors[id][1])  # getattr is to combine a function and a string to a combined function
+                return getattr(QtCore.Qt, self.hydroColors[id][1])  # getattr is to combine a function and a string to a combined function
             else:
-                return qgis.PyQt.QtCore.Qt.white
+                return QtCore.Qt.white
         elif type == 'geo':
             #if id.lower() in self.geoColorSymbols:
             if id in self.geoColorSymbols:
                 try:# first we assume it is a predefined Qt color, hence use PyQt4.QtCore.Qt  
                     #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][1])
-                    return getattr(qgis.PyQt.QtCore.Qt, self.geoColorSymbols[id][1])
+                    return getattr(QtCore.Qt, self.geoColorSymbols[id][1])
                 except: # otherwise it must be a SVG 1.0 color name, then it must be created by QtGui.QColor instead
-                    return qgis.PyQt.QtGui.QColor(self.geoColorSymbols[id][1])
+                    return QtGui.QColor(self.geoColorSymbols[id][1])
             else:
-                return qgis.PyQt.QtCore.Qt.white
+                return QtCore.Qt.white
 
     def geoToSymbol(self, id=''):    # A function to return fill type for the box representing the stratigraphy layer
         """ returns Symbol from the specified text """
@@ -556,26 +556,26 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
 
         if id in self.geoColorSymbols:
             #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][0])   # Or possibly [0]?
-            return getattr(qgis.PyQt.QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
+            return getattr(QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
         else:
-            return qgis.PyQt.QtCore.Qt.NoBrush
+            return QtCore.Qt.NoBrush
         
     def printDiagram(self):
         """ outputs the diagram to the printer (or PDF) """
-        printer = qgis.PyQt.QtPrintSupport.QPrinter(qgis.PyQt.QtPrintSupport.QPrinter.HighResolution)
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
         
         # set defaults
-        printer.setOrientation(qgis.PyQt.QtPrintSupport.QPrinter.Landscape)
+        printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
 
     # setting output file name results in not opening print dialog on Win
         #printer.setOutputFileName("arpat.pdf")
         
         # show print dialog
-        dlg = qgis.PyQt.QtPrintSupport.QPrintDialog(printer, self)
-        if dlg.exec_() != qgis.PyQt.QtWidgets.QDialog.Accepted:
+        dlg = QtPrintSupport.QPrintDialog(printer, self)
+        if dlg.exec_() != QtWidgets.QDialog.Accepted:
             return
         
-        p = qgis.PyQt.QtGui.QPainter()
+        p = QtGui.QPainter()
         p.begin(printer)
         
         rect = printer.pageRect()
@@ -585,39 +585,39 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         
         p.end()
 
-class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
+class SurveyDialog(QtWidgets.QDialog):
     
     def __init__(self, parent=None):
-        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         
-        self.resize(qgis.PyQt.QtCore.QSize(500,250))
-        self.setWindowFlags(qgis.PyQt.QtCore.Qt.Window | qgis.PyQt.QtCore.Qt.WindowMinimizeButtonHint | qgis.PyQt.QtCore.Qt.WindowMaximizeButtonHint | qgis.PyQt.QtCore.Qt.WindowCloseButtonHint);
+        self.resize(QtCore.QSize(500,250))
+        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint | QtCore.Qt.WindowCloseButtonHint);
 
         self.setWindowTitle(ru(QCoreApplication.translate('SurveyDialog', "Identify Results")))
         
-        self.layout = qgis.PyQt.QtWidgets.QVBoxLayout(self)
+        self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.setMargin(5)
         
-        self.layout2 = qgis.PyQt.QtWidgets.QHBoxLayout()
+        self.layout2 = QtWidgets.QHBoxLayout()
         
         self.widget = SurveyWidget()
         self.layout.addWidget(self.widget)
         
-        self.radGeo = qgis.PyQt.QtWidgets.QRadioButton("Geo")
+        self.radGeo = QtWidgets.QRadioButton("Geo")
         self.radGeo.setChecked(True)    #Default is to show colors as per geo
         self.layout2.addWidget(self.radGeo)
-        self.radHydro = qgis.PyQt.QtWidgets.QRadioButton("Hydro")
+        self.radHydro = QtWidgets.QRadioButton("Hydro")
         #self.radHydro.setChecked(False)  #Default is NOT to show colors as per hydro
         self.layout2.addWidget(self.radHydro)
         
-        spacerItem = qgis.PyQt.QtWidgets.QSpacerItem(100,0)
+        spacerItem = QtWidgets.QSpacerItem(100,0)
         self.layout2.addItem(spacerItem)
         
-        self.chkShowDesc = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('SurveyDialog', "Show text")))
+        self.chkShowDesc = QtWidgets.QCheckBox(ru(QCoreApplication.translate('SurveyDialog', "Show text")))
         self.chkShowDesc.setChecked(True)
         self.layout2.addWidget(self.chkShowDesc)
 
-        self.GeologyOrCommentCBox = qgis.PyQt.QtWidgets.QComboBox(self)
+        self.GeologyOrCommentCBox = QtWidgets.QComboBox(self)
         self.GeologyOrCommentCBox.addItem('geology')
         self.GeologyOrCommentCBox.addItem('comment')
         self.GeologyOrCommentCBox.addItem('geoshort')
@@ -628,10 +628,10 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         
 
 
-        self.btnPrint = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('SurveyDialog', "Print")))
+        self.btnPrint = QtWidgets.QPushButton(ru(QCoreApplication.translate('SurveyDialog', "Print")))
         self.layout2.addWidget(self.btnPrint)
         
-        self.btnClose = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('SurveyDialog', "Close")))
+        self.btnClose = QtWidgets.QPushButton(ru(QCoreApplication.translate('SurveyDialog', "Close")))
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)
