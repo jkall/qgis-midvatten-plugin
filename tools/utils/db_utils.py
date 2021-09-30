@@ -23,6 +23,7 @@ from __future__ import absolute_import
 
 import ast
 import os
+import traceback
 import zipfile
 from builtins import object
 from builtins import str
@@ -867,8 +868,14 @@ def get_srid_name(srid, dbconnection=None):
     if dbconnection.dbtype == 'spatialite':
         ref_sys_name = dbconnection.execute_and_fetchall("""SELECT ref_sys_name FROM spatial_ref_sys WHERE srid = '%s'"""%srid)[0][0]
     else:
-        #I haven't found the location of the name yet for postgis. It's not in spatial_ref_sys
-        ref_sys_name = ''
+        try:
+            ref_sys_name = dbconnection.execute_and_fetchall("""SELECT split_part(srtext, '"', 2) AS "name"
+                                                                FROM spatial_ref_sys
+                                                                WHERE srid IN ({});""".format(srid))[0][0]
+        except:
+            MessagebarAndLog.info(log_msg=traceback.format_exc())
+            ref_sys_name = ''
+
     return ref_sys_name
 
 
@@ -935,15 +942,18 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
 
 
     else:
-        sql = """SELECT median(u.%s) AS median_value FROM (SELECT %s FROM %s WHERE obsid = '%s') AS u;"""%(column, column, table, obsid)
-        ConnectionOK, median_value = sql_load_fr_db(sql, dbconnection)
-        try:
-            median_value = median_value[0][0]
-        except IndexError:
-            MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
-                                                                                 'Median calculation error, see log message panel')),
-                                                              log_msg=ru(QCoreApplication.translate('calculate_median_value',
-                                                                                 'Sql failed: %s')) % sql)
+        if sql_load_fr_db('''SELECT {column} FROM {table} WHERE obsid = '{obsid}' AND {column} IS NOT NULL LIMIT 1'''.format(table=table, obsid=obsid, column=column), dbconnection)[1]:
+            sql = """SELECT median({column}) FROM {table} t1 WHERE obsid = '{obsid}';""".format(column=column, table=table, obsid=obsid)
+            ConnectionOK, median_value = sql_load_fr_db(sql, dbconnection)
+            try:
+                median_value = median_value[0][0]
+            except IndexError:
+                MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
+                                                                                     'Median calculation error, see log message panel')),
+                                                                  log_msg=ru(QCoreApplication.translate('calculate_median_value',
+                                                                                     'Sql failed: %s')) % sql)
+                median_value = None
+        else:
             median_value = None
     return median_value
 
