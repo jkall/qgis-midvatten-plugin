@@ -45,7 +45,9 @@ class StratSymbology(qgis.PyQt.QtWidgets.QDialog, strat_symbology_dialog):
         self.ok_button.clicked.connect(lambda : self.create_symbology())
         self.show()
 
+    @common_utils.general_exception_handler
     def create_symbology(self):
+        common_utils.start_waiting_cursor()
         strat_symbology(self.iface,
                         self.rings_groupbox.isChecked(),
                         self.bars_groupbox.isChecked(),
@@ -55,6 +57,7 @@ class StratSymbology(qgis.PyQt.QtWidgets.QDialog, strat_symbology_dialog):
                         self.static_bars_xfactor.value(),
                         self.static_bars_yfactor.value(),
                         self.apply_obsid_filter.isChecked())
+        common_utils.stop_waiting_cursor()
 
 
 def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor, bars_yfactor, static_bars_xfactor,
