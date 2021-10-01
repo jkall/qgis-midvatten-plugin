@@ -560,16 +560,9 @@ class Midvatten(object):
         err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
-                importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
-                importinstance.load_gui()
-                if not importinstance.status == 'True' and not importinstance.status:
-                    common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
-                else:
-                    try:
-                        self.midvsettingsdialog.ClearEverything()
-                        self.midvsettingsdialog.LoadAndSelectLastSettings()
-                    except:
-                        pass
+                self.importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
+                self.importinstance.load_gui()
+                self.importinstance.destroyed.connect(lambda: self._del_dialog('importinstance'))
             else:
                 common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         common_utils.stop_waiting_cursor()
@@ -976,8 +969,11 @@ class Midvatten(object):
             self.midvsettingsdialog.destroyed.connect(self._del_dialog)
             #self.midvsettingsdialog.closed.connect(lambda: self.del_dialog())
 
-    def _del_dialog(self):
-        del self.midvsettingsdialog
+    def _del_dialog(self, var=None):
+        if var is None:
+            del self.midvsettingsdialog
+        else:
+            delattr(self, var)
 
     def vacuum_db(self):
         err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
