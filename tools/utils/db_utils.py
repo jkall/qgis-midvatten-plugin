@@ -419,23 +419,36 @@ def get_postgis_connections():
 
 
 def sql_load_fr_db(sql, dbconnection=None, print_error_message_in_bar=True):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     try:
-        if not isinstance(dbconnection, DbConnectionManager):
-            dbconnection = DbConnectionManager()
         result = dbconnection.execute_and_fetchall(sql)
     except Exception as e:
         textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(sql), ru(str(e)))
         if print_error_message_in_bar:
             MessagebarAndLog.warning(bar_msg=sql_failed_msg(), duration=4)
         MessagebarAndLog.warning(log_msg=textstring)
-        return False, []
+        res = (False, [])
     else:
-        return True, result
+        res = (True, result)
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return res
 
 
 def sql_alter_db(sql, dbconnection=None, all_args=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     if dbconnection.dbtype == 'spatialite':
         try:
             dbconnection.execute('PRAGMA foreign_keys = ON')
@@ -449,6 +462,9 @@ def sql_alter_db(sql, dbconnection=None, all_args=None):
         MessagebarAndLog.warning(
             bar_msg=ru(QCoreApplication.translate('sql_alter_db', 'Some sql failure, see log for additional info.')),
             log_msg=textstring, duration=4)
+
+    if dbconnection_created:
+        dbconnection.closedb()
 
 def execute_sqlfile_using_func(sqlfilename, function=sql_alter_db):
     with open(sqlfilename, 'r') as f:
@@ -486,10 +502,17 @@ def db_tables_columns_info(table=None, dbconnection=None):
     """Returns a dict like {'tablename': (ordernumber, name, type, notnull, defaultvalue, primarykey)}"""
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     existing_tablenames = get_tables(dbconnection=dbconnection)
+
+
     if table is not None:
         if table not in existing_tablenames:
+            if dbconnection_created:
+                dbconnection.closedb()
             return {}
     if table is None:
         tablenames = existing_tablenames
@@ -511,12 +534,19 @@ def db_tables_columns_info(table=None, dbconnection=None):
                 QCoreApplication.translate('db_tables_columns_info', 'Getting columns from table %s failed!')) % (tablename))
             continue
         tables_dict[tablename] = columns
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return tables_dict
 
 
 def get_tables(dbconnection=None, skip_views=False):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     if dbconnection.dbtype == 'spatialite':
         if skip_views:
@@ -533,6 +563,10 @@ def get_tables(dbconnection=None, skip_views=False):
         tables_sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='%s' %s AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), tabletype, postgis_internal_tables())
     tables = dbconnection.execute_and_fetchall(tables_sql)
     tablenames = [col[0] for col in tables]
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return tablenames
 
 
@@ -540,6 +574,9 @@ def get_table_info(tablename, dbconnection=None):
 
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     if dbconnection.dbtype == 'spatialite':
         columns_sql = """PRAGMA table_info ('%s')""" % (tablename)
@@ -558,6 +595,10 @@ def get_table_info(tablename, dbconnection=None):
             if column[1] in primary_keys:
                 column[5] = 1
         columns = [tuple(column) for column in columns]
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return columns
 
 
@@ -571,6 +612,10 @@ def get_foreign_keys(table, dbconnection=None):
     """
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     foreign_keys = {}
     if dbconnection.dbtype == 'spatialite':
         result_list = dbconnection.execute_and_fetchall("""PRAGMA foreign_key_list('%s')"""%table)
@@ -615,6 +660,9 @@ def get_foreign_keys(table, dbconnection=None):
             res = m.groups()
             if res:
                 foreign_keys.setdefault(res[1], []).append((res[0], res[2]))
+
+    if dbconnection_created:
+        dbconnection.closedb()
 
     return foreign_keys
 
@@ -681,6 +729,9 @@ def get_sql_result_as_dict(sql, dbconnection=None):
     """
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     connection_ok, result_list = sql_load_fr_db(sql, dbconnection=dbconnection)
     if not connection_ok:
@@ -689,6 +740,10 @@ def get_sql_result_as_dict(sql, dbconnection=None):
     result_dict = OrderedDict()
     for res in result_list:
         result_dict.setdefault(res[0], []).append(tuple(res[1:]))
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return True, result_dict
 
 
@@ -731,12 +786,19 @@ def delete_duplicate_values(dbconnection, tablename, primary_keys):
 def activate_foreign_keys(activated=True, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     if dbconnection.dbtype == 'spatialite':
         if activated:
             _activated = 'ON'
         else:
             _activated = 'OFF'
         dbconnection.execute('PRAGMA foreign_keys=%s'%_activated)
+
+    if dbconnection_created:
+        dbconnection.closedb()
 
 
 def add_insert_or_ignore_to_sql(sql, dbconnection):
@@ -752,15 +814,19 @@ class DatabaseLockedError(Exception):
 
 
 def placeholder_sign(dbconnection=None):
-    signs = {'spatialite': '?',
-             'postgis': '%s'}
-
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
-        sign = signs.get(dbconnection.dbtype, '%s')
-        dbconnection.closedb()
+        dbconnection_created = True
     else:
-        sign = signs.get(dbconnection.dbtype, '%s')
+        dbconnection_created = False
+
+    signs = {'spatialite': '?',
+             'postgis': '%s'}
+    sign = signs.get(dbconnection.dbtype, '%s')
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return sign
 
 
@@ -779,20 +845,33 @@ def get_dbtype(dbtype):
 def cast_date_time_as_epoch(dbconnection=None, date_time=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     if date_time is None:
         date_time = 'date_time'
     else:
         date_time = "'{}'".format(date_time)
     if dbconnection.dbtype == 'spatialite':
-        return """CAST(strftime('%s', {}) AS NUMERIC)""".format(date_time)
+        sql = """CAST(strftime('%s', {}) AS NUMERIC)""".format(date_time)
     else:
-        return """extract(epoch from {}::timestamp)""".format(date_time)
+        sql = """extract(epoch from {}::timestamp)""".format(date_time)
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return sql
+
+
 
 
 def backup_db(dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     if dbconnection.dbtype == 'spatialite':
         curs = dbconnection.cursor
@@ -811,32 +890,50 @@ def backup_db(dbconnection=None):
             bar_msg=ru(
                 QCoreApplication.translate("backup_db", "Backup of PostGIS database not supported yet!")),
             duration=15)
-    dbconnection.closedb()
+
+    if dbconnection_created:
+        dbconnection.closedb()
 
 
 def cast_null(data_type, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     if dbconnection.dbtype == 'spatialite':
-        return 'NULL'
+        sql = 'NULL'
     else:
-        return 'NULL::%s'%data_type
+        sql = 'NULL::%s'%data_type
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return sql
 
 
 def test_not_null_and_not_empty_string(table, column, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     if dbconnection.dbtype == 'spatialite':
-        return """%s IS NOT NULL AND %s !='' """%(column, column)
+        sql = """%s IS NOT NULL AND %s !='' """%(column, column)
     else:
         table_info = [col for col in get_table_info(table) if col[1] == column][0]
         data_type = table_info[2]
         if data_type in postgresql_numeric_data_types():
-            return '''%s IS NOT NULL'''%(column)
+            sql = '''%s IS NOT NULL'''%(column)
         else:
-            return '''%s IS NOT NULL AND %s !='' ''' % (column, column)
+            sql = '''%s IS NOT NULL AND %s !='' ''' % (column, column)
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return sql
 
 
 def postgresql_numeric_data_types():
@@ -865,6 +962,10 @@ def sqlite_numeric_data_types():
 def get_srid_name(srid, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     if dbconnection.dbtype == 'spatialite':
         ref_sys_name = dbconnection.execute_and_fetchall("""SELECT ref_sys_name FROM spatial_ref_sys WHERE srid = '%s'"""%srid)[0][0]
     else:
@@ -876,25 +977,46 @@ def get_srid_name(srid, dbconnection=None):
             MessagebarAndLog.info(log_msg=traceback.format_exc())
             ref_sys_name = ''
 
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return ref_sys_name
 
 
 def test_if_numeric(column, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
-    if dbconnection.dbtype == 'spatialite':
-        return """(typeof(%s)=typeof(0.01) OR typeof(%s)=typeof(1))"""%(column, column)
+        dbconnection_created = True
     else:
-        return """pg_typeof(%s) in (%s)"""%(column, ', '.join(["'%s'"%data_type for data_type in postgresql_numeric_data_types()]))
+        dbconnection_created = False
+
+    if dbconnection.dbtype == 'spatialite':
+        sql = """(typeof(%s)=typeof(0.01) OR typeof(%s)=typeof(1))"""%(column, column)
+    else:
+        sql = """pg_typeof(%s) in (%s)"""%(column, ', '.join(["'%s'"%data_type for data_type in postgresql_numeric_data_types()]))
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return sql
 
 
 def numeric_datatypes(dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
-    if dbconnection.dbtype == 'spatialite':
-        return sqlite_numeric_data_types()
+        dbconnection_created = True
     else:
-        return postgresql_numeric_data_types()
+        dbconnection_created = False
+
+    if dbconnection.dbtype == 'spatialite':
+        res = sqlite_numeric_data_types()
+    else:
+        res = postgresql_numeric_data_types()
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return  res
 
 
 def calculate_median_value(table, column, obsid, dbconnection=None):
@@ -908,6 +1030,10 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
     """
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     if dbconnection.dbtype == 'spatialite':
 
         data = {'column': column,
@@ -955,16 +1081,29 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
                 median_value = None
         else:
             median_value = None
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     return median_value
 
 
 def rowid_string(dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
-    if dbconnection.dbtype == 'spatialite':
-        return 'ROWID'
+        dbconnection_created = True
     else:
-        return 'ctid'
+        dbconnection_created = False
+
+    if dbconnection.dbtype == 'spatialite':
+        res = 'ROWID'
+    else:
+        res = 'ctid'
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    return res
 
 
 def delete_srids(execute_able_object, keep_epsg_code):

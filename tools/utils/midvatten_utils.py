@@ -299,6 +299,9 @@ def list_of_lists_from_table(tablename):
 def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbconnection=None, layername=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
         dbconnection = db_utils.DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
 
     uri = dbconnection.uri
     dbtype = dbconnection.dbtype
@@ -309,12 +312,28 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
     _name = tablename if layername is None else layername
     layer = QgsVectorLayer(uri.uri(), _name, dbtype)
+    if tablename == 'w_lvls_last_geom':
+        print("Args: schema {}, tablename {}, geometrycolumn {}, sql {}, keycolumn {}".format(schema, tablename,
+                                                                                              geometrycolumn, sql, keycolumn))
+        print("After layer creation")
+        print(str(db_utils.tables_columns(tablename, dbconnection=dbconnection)))
+        print(str(uri.uri()))
+        fields = layer.fields()
+        print("Fields:")
+        for f in fields:
+            print(f.name())
+
+    if dbconnection_created:
+        dbconnection.closedb()
     return layer
 
 
 def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None, layernames=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
         dbconnection = db_utils.DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
     existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
 
     for idx, tablename in enumerate(tablenames):  # first load all non-spatial layers
@@ -335,17 +354,27 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
                 break
         else:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
+            if dbconnection_created:
+                dbconnection.closedb()
+
             return
 
         if tablename in ['view_obs_points', 'view_obs_lines']:
             layer.setName(orig_tablename)
         resultlist.append(layer)
 
+    if dbconnection_created:
+        dbconnection.closedb()
+
 
 def warn_about_old_database():
     try:
         dbconnection = db_utils.DbConnectionManager()
     except UsageError:
+        try:
+            dbconnection.closedb()
+        except:
+            pass
         #Probably empty project
         return
 
@@ -387,11 +416,13 @@ def warn_about_old_database():
 
         MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.''')), duration=60)
 
+    dbconnection.closedb()
 
 def add_view_obs_points_obs_lines():
     dbconnection = db_utils.DbConnectionManager()
     if dbconnection.dbtype != 'spatialite':
         MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten", 'Views not added for PostGIS databases (not needed)!'))
+        dbconnection.closedb()
         return
 
     connection_ok = dbconnection.connect2db()

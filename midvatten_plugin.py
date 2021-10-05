@@ -1032,6 +1032,7 @@ class Midvatten(object):
             connection_ok = dbconnection.connect2db()
             if connection_ok:
                 db_utils.backup_db(dbconnection)
+                dbconnection.closedb()
 
     @common_utils.general_exception_handler
     def calculate_statistics_for_selected_obsids(self):
