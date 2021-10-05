@@ -40,6 +40,7 @@ from builtins import str
 import re
 import locale
 import os
+import string
 from qgis.PyQt import QtWidgets, QtCore
 from qgis.PyQt.QtCore import QCoreApplication
 
@@ -313,15 +314,7 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     _name = tablename if layername is None else layername
     layer = QgsVectorLayer(uri.uri(), _name, dbtype)
     if tablename == 'w_lvls_last_geom':
-        print("Args: schema {}, tablename {}, geometrycolumn {}, sql {}, keycolumn {}".format(schema, tablename,
-                                                                                              geometrycolumn, sql, keycolumn))
-        print("After layer creation")
-        print(str(db_utils.tables_columns(tablename, dbconnection=dbconnection)))
-        print(str(uri.uri()))
         fields = layer.fields()
-        print("Fields:")
-        for f in fields:
-            print(f.name())
 
     if dbconnection_created:
         dbconnection.closedb()
@@ -393,8 +386,9 @@ def warn_about_old_database():
         MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('warn_about_old_database', "No row returned from about_db when searching for version.")))
         return
     if row:
-        patterns = ['''Midvatten plugin Version ([0-9\.a-b]+)''',
-                    '''Midvatten plugin ([0-9\.a-b]+)''',
+        print(str(row))
+        patterns = [r'''Midvatten plugin Version ([0-9\.a-b]+)''',
+                    r'''Midvatten plugin ([0-9\.a-b]+)''',
                     ]
         version = None
         for pattern in patterns:
@@ -402,9 +396,14 @@ def warn_about_old_database():
             if m:
                 version = m.groups()[0]
                 break
+        print(version)
         if version:
             wikipage = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database'
-            if version < latest_database_version():
+
+            is_old = compare_verson_lists(version_comparison_list(version),
+                                          version_comparison_list(latest_database_version()))
+
+            if is_old:
                 MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s''')) % (latest_database_version(), wikipage), duration=5)
 
     #wikipage_view_obs_points = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#add-view_obs_points-as-workaround-for-qgis-bug-20633'
@@ -417,6 +416,39 @@ def warn_about_old_database():
         MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.''')), duration=60)
 
     dbconnection.closedb()
+
+def version_comparison_list(version_string):
+    aslist = version_string.split('.')
+    res = []
+    for entry in aslist:
+        try:
+            val = int(entry)
+        except ValueError:
+            for letter_no, letter in enumerate(string.ascii_lowercase):
+                if letter in entry.lower():
+                    inner_res = entry.lower().split(letter)
+                    for idx, inner in enumerate(inner_res):
+                        res.append(int(inner))
+                        if idx+1 < len(inner_res):
+                            res.append(letter_no)
+        else:
+            res.append(val)
+    return res
+
+def compare_verson_lists(testlist, reflist):
+    is_old = False
+    for idx, testval in enumerate(testlist):
+        try:
+            refval = reflist[idx]
+        except IndexError:
+            is_old = True
+            break
+        else:
+            if refval > testval:
+                is_old = True
+                break
+    return is_old
+
 
 def add_view_obs_points_obs_lines():
     dbconnection = db_utils.DbConnectionManager()

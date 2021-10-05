@@ -966,14 +966,11 @@ class Midvatten(object):
         except AttributeError:
             #utils.MessagebarAndLog.info(log_msg=traceback.format_exc())
             self.midvsettingsdialog = midvsettingsdialog.midvsettingsdialogdock(self.iface.mainWindow(),self.iface, self.ms)#self.iface as arg?
-            self.midvsettingsdialog.destroyed.connect(self._del_dialog)
+            self.midvsettingsdialog.destroyed.connect(lambda: self._del_dialog('midvsettingsdialog'))
             #self.midvsettingsdialog.closed.connect(lambda: self.del_dialog())
 
-    def _del_dialog(self, var=None):
-        if var is None:
-            del self.midvsettingsdialog
-        else:
-            delattr(self, var)
+    def _del_dialog(self, var):
+        delattr(self, var)
 
     def vacuum_db(self):
         err_flag = midvatten_utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded

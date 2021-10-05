@@ -151,12 +151,6 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
         symbology_stylename = spec['symbology_stylename']
         group = add_group(stratigraphy_group, groupname)
         layers = create_layers({k: symbology_tables[k] for k in symbology_stylename.keys()})
-        print(str(layers))
-        if 'W levels' in layers:
-            print("'W levels'")
-            print(str(layers['W levels'].fields().count()))
-            for f in layers['W levels'].fields():
-                print(str(f.name()))
 
         symbology = 'Obsid label'
         if symbology in symbology_stylename:
@@ -178,27 +172,21 @@ def strat_symbology(iface, plot_rings, plot_bars, plot_static_bars, bars_xfactor
 
         symbology = 'W levels'
         if symbology in symbology_stylename:
-            print("In symb " + symbology)
             wlvls_layer = layers.get(symbology)
-            print(str(wlvls_layer.fields().names()))
             if 'h_tocags' in wlvls_layer.fields().names():
-                print("h_tocags found")
                 wlvls_group = add_group(group, symbology, checked=True)
-
                 wlvl_label = 'W levels label'
                 if wlvl_label in symbology_stylename:
                     try:
                         add_generic_symbology(wlvls_group, layers[wlvl_label],
                                               symbology_stylename[wlvl_label],
                                               checked=False)
-                        print(wlvl_label + " worked")
                     except StyleNotFoundError as e:
                         common_utils.MessagebarAndLog.info(bar_msg=str(e))
                     except:
                         common_utils.MessagebarAndLog.info(bar_msg=traceback.format_exc())
                 try:
                     add_wlvls_symbology(wlvls_group, wlvls_layer, symbology_stylename[symbology])
-                    print("wlvl Worked")
                 except StyleNotFoundError as e:
                     common_utils.MessagebarAndLog.info(bar_msg=str(e))
                 except:
@@ -311,8 +299,6 @@ def add_layers_symbology(layers_group, plot_types, geo_colors, hydro_colors, geo
     layers_group.setIsMutuallyExclusive(True)
 
 def add_wlvls_symbology(wlvls_group, wlvls_layer, wlvls_stylename):
-    print("layer {} style {}".format(str(wlvls_layer), str(wlvls_stylename)))
-    print("group: " + str(wlvls_group))
     apply_style(wlvls_layer, wlvls_stylename)
     # QgsProject.instance().addMapLayer(layers[2], False)
     wlvls_group.addLayer(wlvls_layer)
@@ -462,19 +448,11 @@ def scale_geometry(layer, xfactor=None, yfactor=None, use_map_scale=None):
             labeling.setSettings(settings)
 
 def add_views_to_db(dbconnection, bedrock_types):
-    view_name = 'bars_strat'
-    print("before bars_strat: ")
-    for k, v in db_utils.tables_columns(dbconnection=dbconnection).items():
-        print(k + ': ' + str(v))
-    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
-    dbconnection.commit()
-    print("after: ")
-    for k, v in db_utils.tables_columns(dbconnection=dbconnection).items():
-        print(k + ': ' + str(v))
 
+    view_name = 'bars_strat'
+    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
-        dbconnection.commit()
         sql = '''
     CREATE VIEW {} AS
         SELECT stratigraphy.{} AS rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
@@ -492,42 +470,23 @@ def add_views_to_db(dbconnection, bedrock_types):
     dbconnection.execute(sql)
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
-    dbconnection.commit()
 
     view_name = 'w_lvls_last_geom'
-    print("before w_lvls_last_geom: ")
-    print(str(dbconnection.execute_and_fetchall('''select * FROM views_geometry_columns''')))
-    for k, v in db_utils.tables_columns(dbconnection=dbconnection).items():
-        print(k + ': ' + str(v))
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
-    dbconnection.commit()
-    print("after: ")
-    for k, v in db_utils.tables_columns(dbconnection=dbconnection).items():
-        print(k + ': ' + str(v))
     if dbconnection.dbtype == 'spatialite':
-        print("before delete: " + str(dbconnection.execute_and_fetchall('''select *  FROM views_geometry_columns''')))
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
-        dbconnection.commit()
-        print("after delete: " + str(dbconnection.execute_and_fetchall('''select *  FROM views_geometry_columns''')))
         dbconnection.execute('''CREATE VIEW {view_name} AS 
                                 SELECT b.{rowid} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry 
                                 FROM w_levels AS a JOIN obs_points AS b using (obsid) 
                                 GROUP BY obsid;'''.format(
             **{'view_name': view_name, 'rowid': db_utils.rowid_string(dbconnection)}))
-        print("before insert: " + str(dbconnection.execute_and_fetchall('''select *  FROM views_geometry_columns''')))
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
-        print("after insert: " + str(dbconnection.execute_and_fetchall('''select *  FROM views_geometry_columns''')))
-        print("after new: ")
-        for k, v in db_utils.tables_columns(dbconnection=dbconnection).items():
-            print(k + ': ' + str(v))
     else:
         dbconnection.execute('''CREATE VIEW {view_name} AS SELECT a.obsid AS obsid, a.date_time AS date_time, a.meas AS meas, a.level_masl AS level_masl, c.h_tocags AS h_tocags, c.geometry AS geometry FROM w_levels AS a JOIN (SELECT obsid, max(date_time) as date_time FROM w_levels GROUP BY obsid) as b ON a.obsid=b.obsid and a.date_time=b.date_time JOIN obs_points AS c ON a.obsid=c.obsid;'''
                              .format(**{'view_name': view_name}))
-    dbconnection.commit()
 
     view_name = 'bedrock'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
-    dbconnection.commit()
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
         dbconnection.commit()
@@ -579,8 +538,6 @@ CREATE VIEW {view_name} AS
     dbconnection.execute(bergy)
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
-
-    dbconnection.commit()
 
 class RuleDiscrepancyError(Exception):
     pass
