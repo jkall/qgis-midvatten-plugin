@@ -448,7 +448,6 @@ def scale_geometry(layer, xfactor=None, yfactor=None, use_map_scale=None):
             labeling.setSettings(settings)
 
 def add_views_to_db(dbconnection, bedrock_types):
-
     view_name = 'bars_strat'
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
@@ -489,7 +488,6 @@ def add_views_to_db(dbconnection, bedrock_types):
     dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
-        dbconnection.commit()
     bergy = (
         '''
 CREATE VIEW {view_name} AS
@@ -538,6 +536,7 @@ CREATE VIEW {view_name} AS
     dbconnection.execute(bergy)
     if dbconnection.dbtype == 'spatialite':
         dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
+
 
 class RuleDiscrepancyError(Exception):
     pass
