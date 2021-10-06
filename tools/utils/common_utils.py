@@ -1122,20 +1122,18 @@ def general_exception_handler(func):
             result = func(*args, **kwargs)
         except UserInterruptError:
             # The user interrupted the process.
-            stop_waiting_cursor()
             pass
         except UsageError as e:
-            stop_waiting_cursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('general_exception_handler', 'Usage error: %s')) % str(e),
                                           duration=30)
         except:
-            stop_waiting_cursor()
-            #traceback.print_exc()
             raise
         else:
             return result
+        finally:
+            stop_waiting_cursor()
     return new_func
 
 
