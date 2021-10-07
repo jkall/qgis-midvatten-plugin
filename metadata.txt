@@ -24,6 +24,7 @@ changelog=
         - Better database version comparison.
         - Fix to close connections more frequently when not used anymore.
         - Fix to always turn of waiting cursor in general_exception_handler.
+        - CompactWQualReport: Feature to allow the user to choose header columns and sort order.
         Version 1.6.10b3:
         - Probably fixes bug where csv import dialog object seems to be destroyed in the middle of import.
         - Stratsymbology: Added waiting cursor when loading symbology.

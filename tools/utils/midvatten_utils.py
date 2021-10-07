@@ -427,13 +427,19 @@ def version_comparison_list(version_string):
             for letter_no, letter in enumerate(string.ascii_lowercase):
                 if letter in entry.lower():
                     inner_res = entry.lower().split(letter)
+
                     for idx, inner in enumerate(inner_res):
+                        inner = 0 if not inner.strip() else inner.strip()
                         try:
                             res.append(int(inner))
                         except ValueError:
+                            """Programming error. Version string was 1.5.7b."""
                             MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('version_comparison_list',
                                                                                            '''Programming error. Version string was %s.'''))%version_string,
-                                                     duration=60)
+                                                     duration=5,
+                                                  log_msg='''aslist: {}, Entry: {}, inner_res: {}'''.format(str(aslist), str(entry), str(inner_res)))
+
+
 
                         else:
                             if idx+1 < len(inner_res):

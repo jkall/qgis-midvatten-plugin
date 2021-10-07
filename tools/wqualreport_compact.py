@@ -72,6 +72,13 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.date_time_format.addItems(self.date_time_formats.keys())
         self.method.addItems(self.methods.keys())
 
+        self.sort1.addItems(['', 'obsid', 'date_time', 'report'])
+        self.sort2.addItems(['', 'obsid', 'date_time', 'report'])
+        self.sort3.addItems(['', 'obsid', 'date_time', 'report'])
+        gui_utils.set_combobox(self.sort1, 'obsid', add_if_not_exists=False)
+        gui_utils.set_combobox(self.sort2, 'date_time', add_if_not_exists=False)
+        gui_utils.set_combobox(self.sort3, 'report', add_if_not_exists=False)
+
         tables = list(db_utils.tables_columns().keys())
         self.sql_table.addItems(sorted(tables))
 
@@ -83,7 +90,9 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                          'from_sql_table',
                          'sql_table',
                          'sort_alphabetically',
-                         'sort_by_obsid',
+                         'sort1',
+                         'sort2',
+                         'sort3',
                          'date_time_as_columns',
                          'date_time_format',
                          'method',
@@ -139,8 +148,15 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         from_sql_table = self.from_sql_table.isChecked()
         sql_table = self.sql_table.currentText()
         sort_alphabetically = self.sort_alphabetically.isChecked()
-        sort_by_obsid = self.sort_by_obsid.isChecked()
+        sort_order = []
+        [sort_order.append(box.currentText()) for box in [self.sort1, self.sort2, self.sort3]
+            if box.currentText() and box.currentText() not in sort_order]
         date_time_as_columns = self.date_time_as_columns.isChecked()
+        if date_time_as_columns and not sort_order:
+            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('CompactWqualReportUi',
+                                                          "Must give at least one column to sort by!")))
+            return
+
         date_time_format = self.date_time_formats[self.date_time_format.currentText()]
         method = self.methods[self.method.currentText()]
         data_column = self.data_column.currentText()
@@ -148,7 +164,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.save_stored_settings(self.save_attrnames)
 
         wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, from_active_layer, sql_table, sort_alphabetically, sort_by_obsid,
+                            page_break_between_tables, from_active_layer, sql_table, sort_alphabetically, sort_order,
                             date_time_as_columns, date_time_format, method, data_column)
         common_utils.stop_waiting_cursor()
 
@@ -233,7 +249,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
     @general_exception_handler
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                  page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically,
-                 sort_by_obsid, date_time_as_columns, date_time_format, method, data_column):
+                 sort_order, date_time_as_columns, date_time_format, method, data_column):
         #show the user this may take a long time...
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
@@ -263,18 +279,18 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             df = self.get_data_from_sql(sql_table, common_utils.getselectedobjectnames(), data_columns)
 
+        sort_order = [c for c in sort_order if c in df.columns.values.tolist()]
         if date_time_as_columns:
-            columns = ['obsid', 'date_time']
-            if 'report' in df.columns.values.tolist():
-                columns.append('report')
+            columns = [c for c in ('obsid', 'date_time', 'report') if c in sort_order]
             rows = ['parunit']
             values = [data_column]
-            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format, date_time_as_columns)
+            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_order, method, date_time_format, date_time_as_columns)
         else:
             columns = ['obsid']
+            _sort_order = columns
             rows = ['parunit', 'date_time']
             values = [data_column]
-            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format, date_time_as_columns)
+            report_data = self.data_to_printlist(df, list(columns), list(rows), values, sort_parameters_alphabetically, _sort_order, method, date_time_format, date_time_as_columns)
 
         # Split the data into separate tables with the specified number of columns
         for startcol in range(len(rows), len(report_data[0]), num_data_cols):
@@ -355,7 +371,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         msgfunc(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Layer processed with %s selected features, %s read features and %s invalid features.'))%(str(w_qual_lab_layer.selectedFeatureCount()), str(num_features), str(invalid_features)))
         return df
 
-    def data_to_printlist(self, df, columns, rows, values, sort_parameters_alphabetically, sort_by_obsid, method, date_time_format,
+    def data_to_printlist(self, df, columns, rows, values, sort_parameters_alphabetically, sort_order, method, date_time_format,
                           date_time_as_columns):
         df['parunit'] = df['parameter'] + ', ' + df['unit'].fillna('')
         par_unit_order = {val: idx for idx, val in enumerate(df['parunit'].drop_duplicates(keep='first').tolist())}
@@ -368,16 +384,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         df = pd.pivot_table(df, values=values, index=_rows, columns=columns,
                             aggfunc=method)
 
-        if len(columns) >= 2:
-            if sort_by_obsid:
-                    order = ['obsid', 'date_time']
-            else:
-                    order = ['date_time', 'obsid']
-            if 'report' in columns:
-                order.append('report')
-        else:
-            order = ['obsid']
-        df = df.sort_index(axis=1, level=order)
+        df = df.sort_index(axis=1, level=sort_order)
 
         if sort_parameters_alphabetically:
             df = df.sort_index(axis=0, level=[x for x in _rows if x != 'par_unit_order'])
