@@ -125,7 +125,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
 
                         try:
                             importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
@@ -218,7 +218,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
 
                         importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
 
@@ -306,7 +306,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
                         importer.import_all_data.checked = False
                         importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
 
@@ -396,7 +396,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
                         importer.import_all_data.checked = True
                         importer.confirm_names.checked = False
                         importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
@@ -483,7 +483,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
                 importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                importer.select_files_and_load_gui()
+                importer.select_files()
                 importer.import_all_data.checked = False
                 importer.confirm_names.checked = False
                 importer.start_import(importer.files,
@@ -543,7 +543,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
                 importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                importer.select_files_and_load_gui()
+                importer.select_files()
                 importer.import_all_data.checked = True
                 importer.confirm_names.checked = False
                 answer = importer.start_import(importer.files,
@@ -643,7 +643,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(),
                                                      ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
                         importer.import_all_data.checked = True
                         importer.confirm_names.checked = False
                         importer.skip_rows.checked = True
@@ -741,7 +741,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(),
                                                      ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
                         importer.import_all_data.checked = True
                         importer.confirm_names.checked = False
                         importer.skip_rows.checked = False
@@ -834,7 +834,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                     ms = MagicMock()
                     ms.settingsdict = OrderedDict()
                     importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                    importer.select_files_and_load_gui()
+                    importer.select_files()
                     importer.import_all_data.checked = True
                     importer.confirm_names.checked = False
                     importer.date_time_filter.from_date = '2016-03-15 11:00:00'
@@ -939,7 +939,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
 
                         importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
 
@@ -1035,7 +1035,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
                         importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                        importer.select_files_and_load_gui()
+                        importer.select_files()
 
                         try:
                             importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
@@ -1097,7 +1097,7 @@ class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisD
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
                 importer = LeveloggerImport(self.iface.mainWindow(), ms)
-                importer.select_files_and_load_gui()
+                importer.select_files()
 
                 try:
                     importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
