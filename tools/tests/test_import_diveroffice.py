@@ -208,6 +208,28 @@ class TestParseDiverofficeFile(object):
         assert file_data == 'skip'
         assert len(mock_messagebarandlog.mock_calls) == 1
 
+    @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
+    def test_parse_diveroffice_get_timezone(self, mock_messagebarandlog):
+
+        f = ('Location=rb1',
+             'Instrument number       =UTC+1',
+             'Date/time,Water head[cm],Temperature[°C]',
+             '2016/03/15 10:30:00,26.9,5.18',
+             '2016/03/15 11:00:00,157.7,0.6'
+             )
+
+        charset_of_diverofficefile = 'utf-8'
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
+                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+
+
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'
+        assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == 'rb1'
+        assert file_data[3] == 'UTC+1'
+
 @attr(status='on')
 class TestFilterDatesFromFiledata(object):
 

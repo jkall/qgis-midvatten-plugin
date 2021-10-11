@@ -603,16 +603,6 @@ class Midvatten(object):
                 sanity = common_utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
-                    importinstance.select_files_and_load_gui()
-
-                    if not importinstance.status:
-                        common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
-                    else:
-                        try:
-                            self.midvsettingsdialog.ClearEverything()
-                            self.midvsettingsdialog.LoadAndSelectLastSettings()
-                        except:
-                            pass
             else: 
                 common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         common_utils.stop_waiting_cursor()

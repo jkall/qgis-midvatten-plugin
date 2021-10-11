@@ -30,12 +30,21 @@ from datetime import datetime
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt import QtWidgets
 
 from midvatten.tools import import_data_to_db
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
-from midvatten.tools.utils.date_utils import find_date_format, datestring_to_date
-from midvatten.tools.utils.gui_utils import VRowEntry, get_line, DateTimeFilter
+from midvatten.tools.utils.date_utils import find_date_format, datestring_to_date, \
+    parse_timezone_to_timedelta
+from midvatten.tools.utils.gui_utils import VRowEntry, get_line, DateTimeFilter, RowEntry
+
+try:
+    import pandas as pd
+except:
+    pandas_on = False
+else:
+    pandas_on = True
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -43,6 +52,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     def __init__(self, parent, msettings=None):
         self.status = False
         self.default_charset = 'cp1252'
+        self.utc_offset = None
         self.iface = parent
         self.ms = msettings
         self.ms.loadSettings()
@@ -53,21 +63,34 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.table_chooser = None
         self.file_data = None
         self.status = True
+        self.files = []
         self.parse_func = self.parse_diveroffice_file
         self.use_skiprows = True
+        self.load_gui()
 
-    def select_files_and_load_gui(self):
-        self.files = self.select_files()
-        if not self.files:
-            raise common_utils.UserInterruptError()
-
+    def load_gui(self):
         self.date_time_filter = DateTimeFilter(calendar=True)
         self.add_row(self.date_time_filter.widget)
 
+        if pandas_on:
+            self.utcoffset_label = QtWidgets.QLabel(QCoreApplication.translate('DiverofficeImport', 'Identify and change UTC offset:'))
+            self.utc_offset = QtWidgets.QComboBox()
+            self.utc_offset.setToolTip(QCoreApplication.translate('DiverofficeImport',
+                                                          'Identifies UTC-offset in file and '
+                                                          'changes to the selected one.'))
+            self.utc_offset.addItem('')
+            self.utc_offset.addItems([format_timezone_string(hour) for hour in range(-12, 15)])
+            self.utcoffset_row = RowEntry()
+            self.utcoffset_row.layout.addWidget(self.utcoffset_label)
+            self.utcoffset_row.layout.addWidget(self.utc_offset)
+            self.add_row(self.utcoffset_row.widget)
+
         self.add_row(get_line())
 
-        self.skip_rows = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', 'Skip rows without water level'),
-                                                QCoreApplication.translate('DiverofficeImport', 'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.'))
+        self.skip_rows = CheckboxAndExplanation(
+            QCoreApplication.translate('DiverofficeImport', 'Skip rows without water level'),
+            QCoreApplication.translate('DiverofficeImport',
+                                       'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.'))
         if self.use_skiprows:
             self.skip_rows.checked = True
             self.add_row(self.skip_rows.widget)
@@ -75,56 +98,78 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         else:
             self.skip_rows.checked = False
 
-        self.confirm_names = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', 'Confirm each logger obsid before import'),
-                                                    QCoreApplication.translate('DiverofficeImport', 'Checked = The obsid will be requested of the user for every file.\n\n') +
-                                                    QCoreApplication.translate('DiverofficeImport', 'Unchecked = the location attribute, both as is and capitalized, in the\n') +
-                                                    QCoreApplication.translate('DiverofficeImport', 'file will be matched against obsids in the database.\n\n') +
-                                                    QCoreApplication.translate('DiverofficeImport', 'In both case, obsid will be requested of the user if no match in the database is found.'))
+        self.confirm_names = CheckboxAndExplanation(
+            QCoreApplication.translate('DiverofficeImport', 'Confirm each logger obsid before import'),
+            QCoreApplication.translate('DiverofficeImport',
+                                       'Checked = The obsid will be requested of the user for every file.\n\n') +
+            QCoreApplication.translate('DiverofficeImport',
+                                       'Unchecked = the location attribute, both as is and capitalized, in the\n') +
+            QCoreApplication.translate('DiverofficeImport',
+                                       'file will be matched against obsids in the database.\n\n') +
+            QCoreApplication.translate('DiverofficeImport',
+                                       'In both case, obsid will be requested of the user if no match in the database is found.'))
         self.confirm_names.checked = True
         self.add_row(self.confirm_names.widget)
         self.add_row(get_line())
-        self.import_all_data = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', 'Import all data'),
-                                                      QCoreApplication.translate('DiverofficeImport', 'Checked = any data not matching an exact datetime in the database\n') +
-                                                      QCoreApplication.translate('DiverofficeImport', 'for the corresponding obsid will be imported.\n\n') +
-                                                      QCoreApplication.translate('DiverofficeImport', 'Unchecked = only new data after the latest date in the database,\n') +
-                                                      QCoreApplication.translate('DiverofficeImport', 'for each observation point, will be imported.'))
+        self.import_all_data = CheckboxAndExplanation(
+            QCoreApplication.translate('DiverofficeImport', 'Import all data'),
+            QCoreApplication.translate('DiverofficeImport',
+                                       'Checked = any data not matching an exact datetime in the database\n') +
+            QCoreApplication.translate('DiverofficeImport', 'for the corresponding obsid will be imported.\n\n') +
+            QCoreApplication.translate('DiverofficeImport',
+                                       'Unchecked = only new data after the latest date in the database,\n') +
+            QCoreApplication.translate('DiverofficeImport', 'for each observation point, will be imported.'))
         self.import_all_data.checked = False
         self.add_row(self.import_all_data.widget)
 
-        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('DiverofficeImport', 'Close dialog after import')))
-        self.close_after_import.setChecked(True)
-        self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
+        self.select_files_button = qgis.PyQt.QtWidgets.QPushButton(
+            QCoreApplication.translate('DiverofficeImport', 'Select files'))
+        self.gridLayout_buttons.addWidget(self.select_files_button, 0, 0)
+        self.select_files_button.clicked.connect(lambda: self.select_files())
 
-        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', 'Start import'))
-        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(
+            ru(QCoreApplication.translate('DiverofficeImport', 'Close dialog after import')))
+        self.close_after_import.setChecked(True)
+        self.gridLayout_buttons.addWidget(self.close_after_import, 1, 0)
+
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(
+            QCoreApplication.translate('DiverofficeImport', 'Start import'))
+        self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
         self.start_import_button.clicked.connect(
             lambda: self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked,
                                       confirm_names=self.confirm_names.checked,
                                       import_all_data=self.import_all_data.checked,
                                       from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date,
                                       export_csv=False, import_to_db=True))
+        self.start_import_button.setEnabled(False)
 
-        self.export_csv_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', 'Export csv'))
-        self.gridLayout_buttons.addWidget(self.export_csv_button, 2, 0)
+        self.export_csv_button = qgis.PyQt.QtWidgets.QPushButton(
+            QCoreApplication.translate('DiverofficeImport', 'Export csv'))
+        self.gridLayout_buttons.addWidget(self.export_csv_button, 3, 0)
         self.export_csv_button.clicked.connect(
             lambda: self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked,
                                       confirm_names=self.confirm_names.checked,
                                       import_all_data=self.import_all_data.checked,
                                       from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date,
                                       export_csv=True, import_to_db=False))
+        self.export_csv_button.setEnabled(False)
 
-        self.gridLayout_buttons.setRowStretch(3, 1)
+        self.gridLayout_buttons.setRowStretch(4, 1)
 
         self.show()
 
-
+    @common_utils.general_exception_handler
     def select_files(self):
         self.charsetchoosen = midvatten_utils.ask_for_charset(default_charset=self.default_charset)
         if not self.charsetchoosen:
             raise common_utils.UserInterruptError()
 
         files = midvatten_utils.select_files(only_one_file=False, extension="csv (*.csv)")
-        return files
+        if not files:
+            raise common_utils.UserInterruptError()
+        self.start_import_button.setEnabled(True)
+        self.export_csv_button.setEnabled(True)
+        self.files = files
 
     @common_utils.general_exception_handler
     @import_data_to_db.import_exception_handler
@@ -134,6 +179,8 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         """
         common_utils.start_waiting_cursor()  #show the user this may take a long time...
         parsed_files = []
+        missing_utcoffset = False
+
         for selected_file in files:
             try:
                 res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
@@ -150,11 +197,34 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 continue
 
             try:
-                file_data, filename, location = res
+                file_data, filename, location, file_utc_offset = res
             except Exception as e:
                 common_utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', 'Import error, see log message panel'),
                                                                   log_msg=ru(QCoreApplication.translate('DiverofficeImport', 'File %s could not be parsed. Msg:\n%s'))%(selected_file, str(e)))
                 continue
+
+            # Change utc offset.
+            if pandas_on:
+                if self.utc_offset.currentText():
+                    if not file_utc_offset:
+                        missing_utcoffset = True
+                        common_utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DiverofficeImport',
+                                                              'UTC-offset not found in file %s')) % (
+                                                                      filename))
+                    else:
+                        requested_timedelta =  parse_timezone_to_timedelta(self.utc_offset.currentText())
+                        file_timedelta = parse_timezone_to_timedelta(file_utc_offset)
+
+                        if requested_timedelta != file_timedelta:
+                            td = file_timedelta - requested_timedelta
+                            df = pd.DataFrame.from_records(file_data[1:], index='date_time',
+                                                           columns=file_data[0])
+                            df.index = pd.to_datetime(df.index) - td
+                            df.index = df.index.strftime('%Y-%m-%d %H:%M:%S')
+                            file_data = [['date_time']]
+                            file_data[0].extend(df.columns.tolist())
+                            file_data.extend([list(row) for row in df.itertuples()])
+
             parsed_files.append((file_data, filename, location))
 
         if len(parsed_files) == 0:
@@ -219,6 +289,10 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 path = ru(path[0])
                 common_utils.write_printlist_to_file(path, file_to_import_to_db)
 
+        if missing_utcoffset:
+            common_utils.MessagebarAndLog.info(QCoreApplication.translate('DiverofficeImport',
+                                                                          "Could not identify UTC-offset for all files, see log."))
+
         common_utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():
@@ -261,6 +335,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         filedata = []
         begin_extraction = False
+        utc_offset = None
 
         data_rows = []
         with io.open(path, 'rt', encoding=str(charset)) as f:
@@ -272,6 +347,13 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 #Try to get location
                 if row.startswith('Location'):
                     location = row.split('=')[1].strip()
+                    continue
+
+                if row.lower().startswith('Instrument number'.lower()):
+                    try:
+                        utc_offset = row.split('=')[1].strip()
+                    except IndexError:
+                        pass
                     continue
 
                 #Parse eader
@@ -361,7 +443,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         filename = os.path.basename(path)
 
-        return filedata, filename, location
+        return filedata, filename, location, utc_offset
 
     @staticmethod
     def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name='obsid', date_time_header_name='date_time'):
@@ -380,7 +462,10 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         obsid_idx = file_data[0].index(obsid_header_name)
         date_time_idx = file_data[0].index(date_time_header_name)
-        filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [('0001-01-01 00:00:00',)])[0][0])]
+        filtered_file_data = [row for row in file_data[1:]
+                              if datestring_to_date(row[date_time_idx]) >
+                              datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx],
+                              [('0001-01-01 00:00:00',)])[0][0])]
 
         filtered_file_data.reverse()
         filtered_file_data.append(file_data[0])
@@ -415,3 +500,13 @@ class CheckboxAndExplanation(VRowEntry):
     def checked(self, check=True):
         self.checkbox.setChecked(check)
 
+
+def format_timezone_string(index):
+    if index < -12 or index > 14:
+        raise Exception("Error, timezone must be between -12 and + 14.")
+    if index < 0:
+        return 'UTC{}'.format(str(index))
+    elif not index:
+        return 'UTC'
+    else:
+        return 'UTC+{}'.format(str(index))

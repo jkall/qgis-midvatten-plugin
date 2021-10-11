@@ -22,6 +22,8 @@ from __future__ import absolute_import
 import datetime
 import re
 from builtins import str
+import pytz
+import numpy as np
 
 from qgis.PyQt.QtCore import QCoreApplication
 
@@ -226,23 +228,37 @@ def parse_timezone_to_timedelta(tz_string):
     >>> parse_timezone_to_timedelta('GMT+02:35')
     datetime.timedelta(seconds=9300)
 
+    >>> parse_timezone_to_timedelta('UTC+02:00')
+    datetime.timedelta(seconds=7200)
+    >>> parse_timezone_to_timedelta('UTC')
+    datetime.timedelta(0)
+    >>> parse_timezone_to_timedelta('UTC00:00')
+    datetime.timedelta(0)
+    >>> parse_timezone_to_timedelta('UTC-11:00')
+    datetime.timedelta(days=-1, seconds=46800)
+    >>> parse_timezone_to_timedelta('UTC+14:00')
+    datetime.timedelta(seconds=50400)
+    >>> parse_timezone_to_timedelta('UTC+2')
+    datetime.timedelta(seconds=7200)
+    >>> parse_timezone_to_timedelta('UTC+02:35')
+    datetime.timedelta(seconds=9300)
+
     """
-    tz_string = ru(tz_string)
-    match = re.match('GMT([\+\-]*)([0-9]+)([\:]*[0-9]*)', tz_string, re.IGNORECASE)
+    _tz_string = ru(tz_string).lower()
+    match = re.match(r'(gmt|utc)([\+\-]*)([0-9]+)([\:]*[0-9]*)', _tz_string, re.IGNORECASE)
     if match is None:
-        if not tz_string.replace('GMT', '').replace('gmt', ''):
-            res = ('', '', '')
+        if not _tz_string.replace('gmt', '').replace('utc', ''):
+            res = ('', '', '', '')
         else:
-            raise ValueError(ru(QCoreApplication.translate('parse_timezone_to_timedelta', 'Timezone string %s could not be parsed!'))%tz_string)
+            raise ValueError(ru(QCoreApplication.translate('parse_timezone_to_timedelta',
+                                                           'Timezone string %s could not be parsed!'))%tz_string)
     else:
         res = match.groups()
-    if res[0] == '-':
+    if res[1] == '-':
         sign = -1
     else:
         sign = 1
-    hours = int(res[1])*sign if res[1] else 0
-    minutes = int(res[2].lstrip(':'))*sign if res[2].lstrip(':') else 0
+    hours = int(res[2])*sign if res[2] else 0
+    minutes = int(res[3].lstrip(':'))*sign if res[3].lstrip(':') else 0
     td = datetime.timedelta(hours=hours, minutes=minutes)
     return td
-
-
