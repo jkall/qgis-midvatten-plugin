@@ -386,7 +386,6 @@ def warn_about_old_database():
         MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('warn_about_old_database', "No row returned from about_db when searching for version.")))
         return
     if row:
-        print(str(row))
         patterns = [r'''Midvatten plugin Version ([0-9\.a-b]+)''',
                     r'''Midvatten plugin ([0-9\.a-b]+)''',
                     ]
@@ -396,7 +395,7 @@ def warn_about_old_database():
             if m:
                 version = m.groups()[0]
                 break
-        print(version)
+
         if version:
             wikipage = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#upgrade-database'
 
@@ -416,6 +415,7 @@ def warn_about_old_database():
         MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.''')), duration=60)
 
     dbconnection.closedb()
+
 
 def version_comparison_list(version_string):
     aslist = version_string.split('.')
@@ -448,6 +448,7 @@ def version_comparison_list(version_string):
             res.append(val)
     return res
 
+
 def compare_verson_lists(testlist, reflist):
     is_old = False
     for idx, testval in enumerate(testlist):
@@ -457,6 +458,8 @@ def compare_verson_lists(testlist, reflist):
             is_old = True
             break
         else:
+            if testval > refval:
+                break
             if refval > testval:
                 is_old = True
                 break

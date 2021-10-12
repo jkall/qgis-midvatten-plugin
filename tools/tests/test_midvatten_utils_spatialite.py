@@ -61,7 +61,7 @@ class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         assert len(str(mock_messagebar.mock_calls[0])) > 1500 and 'about_db' in str(mock_messagebar.mock_calls[0])
 
-@attr(status='on')
+@attr(status='only')
 class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten.tools.utils.midvatten_utils.latest_database_version')
     @mock.patch('midvatten.tools.utils.midvatten_utils.MessagebarAndLog')
@@ -76,6 +76,7 @@ class TestWarnAboutOldDatabase(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_warn_about_old_database_not_old(self, mock_messagebar, mock_latest_version):
         mock_latest_version.return_value = '0.0.1'
         midvatten_utils.warn_about_old_database()
+        print(str(mock_messagebar.mock_calls))
         assert not mock_messagebar.mock_calls
 
     @mock.patch('midvatten.tools.utils.midvatten_utils.latest_database_version')
