@@ -110,7 +110,7 @@ class PrepareForQgis2Threejs(object):
                     pass
                 pass
             else:
-                # TODO: Made this a comment, but there might be some hidden feature thats still needed!
+                # TODO: Made this a comment, but there might be some hidden feature that's still needed!
                 #map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
 
                 #now try to load the style file
@@ -138,19 +138,29 @@ class PrepareForQgis2Threejs(object):
         # TODO: Update to support PostGIS
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql")
 
-        self.dbconnection.execute(r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))""")
-        self.dbconnection.execute(r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);""")
+        if self.dbconnection.dbtype == 'spatialite':
+            self.dbconnection.execute(r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))""")
+            self.dbconnection.execute(r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);""")
+        else:
+            self.dbconnection.execute(
+                r"""CREATE VIEW strat_obs_p_for_qgsi2threejs AS 
+                    SELECT ROW_NUMBER() OVER (ORDER BY obsid) rowid, obsid, "geometry"
+                    FROM "obs_points"
+                    WHERE EXISTS (SELECT s.obsid FROM stratigraphy s WHERE s.obsid = obs_points.obsid LIMIT 1)
+                    AND COALESCE(h_toc, h_gs, 0) > 0;
+                    """)
 
         for key in self.strat_layers_dict:
             with open(SQLFile, 'r') as f:
                 for linecounter, line in enumerate(f):
                     if linecounter > 0:    # first line is encoding info....
-                        sqliteline = line.replace('CHANGETOVIEWNAME',key).replace('CHANGETOPLOTTYPESDICTVALUE',self.strat_layers_dict[key])
-                        #print(sqliteline)#debug
-                        self.dbconnection.execute(sqliteline)
+                        if line.startswith(self.dbconnection.dbtype.upper()):
+                            line = common_utils.lstrip(self.dbconnection.dbtype.upper(), line)
+                            sqliteline = line.replace('CHANGETOVIEWNAME',key).replace('CHANGETOPLOTTYPESDICTVALUE',self.strat_layers_dict[key])
+                            #print(sqliteline)#debug
+                            self.dbconnection.execute(sqliteline)
 
     def drop_db_views(self):
-        # TODO: Update to support PostGIS
         if self.dbconnection.dbtype == 'spatialite':
             db_utils.sql_alter_db("delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'", dbconnection=self.dbconnection)
 

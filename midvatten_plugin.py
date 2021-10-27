@@ -918,9 +918,9 @@ class Midvatten(object):
             dbconnection = db_utils.DbConnectionManager()
             dbtype = dbconnection.dbtype
             dbconnection.closedb()
-            if dbtype != 'spatialite':
+            """if dbtype != 'spatialite':
                 common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('prepare_layers_for_qgis2threejs', 'Only supported for spatialite.')))
-                return
+                return"""
 
             common_utils.start_waiting_cursor()#show the user this may take a long time...
             PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
