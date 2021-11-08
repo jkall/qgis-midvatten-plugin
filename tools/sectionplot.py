@@ -83,6 +83,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         qgis.PyQt.QtWidgets.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         #Ui_SecPlotDock.__init__(self)
+        self.obsids_x_position = {}
 
         self.df = None
         self.p = []
