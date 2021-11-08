@@ -401,16 +401,56 @@ def scale_geometry(layer, xfactor=None, yfactor=None, use_map_scale=None):
         try:
             root = renderer.rootRule()
         except AttributeError:
-            symbols = [renderer.symbol()]
+            symbols = [(renderer.symbol(), None)]
         else:
-            symbols = [rule.symbol() for rule in root.children()]
+            symbols = [(rule.symbol(), rule) for rule in root.children()]
 
-        for symbol in symbols:
+        #rule.setFilterExpression('''lower("{}") {}'''.format(column, types))
+        #rule.setLabel(key)
+
+        strat_widths = {'berg': 1,
+                        'fyll': 1,
+                        'lera': 1,
+                        'silt': 2,
+                        'gyttja': 2.5,
+                        'finsand': 3,
+                        'morän': 3,
+                        'mellansand': 4,
+                        'torv': 4,
+                        'sand': 4,
+                        'grovsand': 5,
+                        'fingrus': 6,
+                        'mellangrus': 7,
+                        'grus': 7,
+                        'grovgrus': 8,
+                        'block': 9}
+
+        max_width = 3
+        bar_side = 1
+        width = 0.25
+        for symbol, rule in symbols:
+            if rule is not None:
+                label = rule.label()
+                print(str(rule.filterExpression()))
+                if 'geoshort' in rule.filterExpression():
+                    if label.strip():
+                        width = strat_widths[label.lower().strip()]
+                        width = max_width * (width / max(list(strat_widths.values())))
+                elif 'capacity' in rule.filterExpression():
+                    bar_side = -1
+                    if label.strip():
+                        width = float(label.replace('+', '').replace('-', '').strip())
+                        if '+' in label:
+                            width += 0.25
+                        elif '-' in label:
+                            width -= 0.25
+                        width = max_width * (width/6.5)
+
             sl = symbol.symbolLayer(0)
             if isinstance(sl, QgsGeometryGeneratorSymbolLayer):
                 geometry_expression = sl.geometryExpression()
                 if xfactor is not None:
-                    geometry_expression = geometry_expression.replace('/**{xfactor}*/', '* ' + str(xfactor))
+                    geometry_expression = geometry_expression.replace('/**{xfactor}*/', '* ' + str(xfactor*bar_side*width))
                 if yfactor is not None:
                     geometry_expression = geometry_expression.replace('/**{yfactor}*/', '* ' + str(yfactor))
                 if use_map_scale:
