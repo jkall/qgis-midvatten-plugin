@@ -120,6 +120,8 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             #Special cases for some tables
             if dest_table == 'stratigraphy':
                 self.check_and_delete_stratigraphy(existing_columns_in_dest_table, dbconnection)
+            elif dest_table == 'w_qual_field':
+                self.convert_null_unit_to_empty_string(self.temptable_name, 'unit', dbconnection)
 
             # Dump temptable to csv for debugging
             if dump_temptable:
@@ -171,7 +173,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                                                                null_replacement, binary_geometry))
                 else:
                     sourcecols.append(
-                        """(CASE WHEN ({colname} !='' AND {colname} !=' ' AND {colname} IS NOT NULL)\n    THEN CAST({colname} AS {type}) ELSE {null} END)""".format(
+                        """(CASE WHEN {colname} IS NOT NULL\n    THEN CAST({colname} AS {type}) ELSE {null} END)""".format(
                             colname=colname,
                             type=column_headers_types[colname],
                             null=null_replacement))
@@ -260,14 +262,19 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                     continue
                 else:
                     added_rows.add(concatted)
-            args = tuple([None if any([r is None, (isinstance(r, str) and not r.strip()) if r is not None else None])
-                          else r for r in row])
+
+            args = tuple([self.sanitize(r) for r in row])
 
             dbconnection.cursor.execute(sql, args)
         #TODO: Let's see what happens without commit
         #dbconnection.commit()
         if numskipped:
             common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate('midv_data_importer', "%s nr of duplicate rows in file was skipped while importing.")) % str(numskipped))
+
+    def sanitize(self, value):
+        if isinstance(value, str):
+            value = value.strip() if value.strip() else None
+        return value
 
     def delete_existing_date_times_from_temptable(self, primary_keys, dest_table, dbconnection):
         """
@@ -361,6 +368,11 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                         break
             if skip_obsids:
                 dbconnection.execute('delete from %s where obsid in (%s)' % (self.temptable_name, ', '.join(["'{}'".format(obsid) for obsid in skip_obsids])))
+
+    def convert_null_unit_to_empty_string(self, temptable_name, column, dbconnection):
+        dbconnection.execute('''UPDATE {table} 
+                                SET {column} = replace(replace(replace(COALESCE({column}, ''),' ','<>'),'><',''),'<>','')'''.format(
+                             table=temptable_name, column=column))
 
     def import_foreign_keys(self, dbconnection, dest_table, temptablename, foreign_keys, existing_columns_in_temptable):
         #TODO: Empty foreign keys are probably imported now. Must add "case when...NULL" to a couple of sql questions here
