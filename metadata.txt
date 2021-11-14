@@ -23,6 +23,7 @@ changelog=
         Version 1.6.10b7:
         - Sectionplot: Fixes a bug which causes an (otherwise hidden) error message (but doesn't affect the functionality).
         - Possible fix for #338.
+        - Loaddefaultlayers now loads obs_points and obs_lines instad of view_obs_points and view_obs_lines) as they are no longer needed.
         Version 1.6.10b6:
         - PrepareForQgis2Threejs: Added support for postgis databases.
         Version 1.6.10b5:
