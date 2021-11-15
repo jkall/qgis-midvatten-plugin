@@ -461,12 +461,31 @@ def version_comparison_list(version_string):
 
 
 def compare_verson_lists(testlist, reflist):
+    r"""
+    Compares versions.
+
+    >>> compare_verson_lists(version_comparison_list('3.16'), version_comparison_list('3.16'))
+    False
+    >>> compare_verson_lists(version_comparison_list('3.17'), version_comparison_list('3.16'))
+    False
+    >>> compare_verson_lists(version_comparison_list('3.14'), version_comparison_list('3.16'))
+    True
+    >>> compare_verson_lists(version_comparison_list('3.14.1'), version_comparison_list('3.16'))
+    True
+    >>> compare_verson_lists(version_comparison_list('3.14.1b2'), version_comparison_list('3.16'))
+    True
+    >>> compare_verson_lists(version_comparison_list('3.16.1'), version_comparison_list('3.16'))
+    False
+    >>> compare_verson_lists(version_comparison_list('3.16.1b1'), version_comparison_list('3.16'))
+    False
+    """
+
     is_old = False
     for idx, testval in enumerate(testlist):
         try:
             refval = reflist[idx]
         except IndexError:
-            is_old = True
+            # The test version has more subversions, and since it was not old at previous level, it must be newer.
             break
         else:
             if testval > refval:
