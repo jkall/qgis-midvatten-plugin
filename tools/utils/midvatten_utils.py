@@ -43,6 +43,7 @@ import os
 import string
 from qgis.PyQt import QtWidgets, QtCore
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import Qgis
 
 try:
     import pandas as pd
@@ -338,7 +339,13 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         layername = layernames[idx] if layernames is not None else None
 
         if tablename in ['obs_points', 'obs_lines'] and 'view_{}'.format(tablename) in existing_tables:
-            tablename = 'view_{}'.format(tablename)
+            # The bug that required view_obs_points (https://github.com/qgis/QGIS/issues/28453)
+            # is fixed in 3.16 (and probably much sooner. So view_obs_points is no longer needed above that version.
+            qgisversion = Qgis.QGIS_VERSION
+            is_old = compare_verson_lists(version_comparison_list(qgisversion),
+                                          version_comparison_list('3.16'))
+            if is_old:
+                tablename = 'view_{}'.format(tablename)
 
         for keycolumn in [None, 'obsid', 'rowid']:
             layer = create_layer(tablename, geometrycolumn=geometrycolumn, dbconnection=dbconnection, layername=layername,
@@ -418,6 +425,10 @@ def warn_about_old_database():
 
 
 def version_comparison_list(version_string):
+    if '-' in version_string:
+        # Assume that the version name is used as suffix, ex: '3.22.0-Białowieża'
+        version_string = version_string.split('-')[0]
+
     aslist = version_string.split('.')
     res = []
     for entry in aslist:
