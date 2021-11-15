@@ -37,6 +37,7 @@ from midvatten.tools.tests.utils_for_tests import create_test_string
 from midvatten.tools.utils import common_utils, midvatten_utils
 from midvatten.tools.utils.common_utils import dict_to_tuple
 from midvatten.tools.utils.matplotlib_replacements import perform_all_replacements
+from midvatten.tools.utils.midvatten_utils import compare_verson_lists, version_comparison_list
 
 
 @attr(status='on')
@@ -407,6 +408,42 @@ class TestContinuousColorCycle(object):
          call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!'),
          call.info(bar_msg='Style cycler ran out of unique combinations. Using random color!')]
 
+@attr(status='on')
+class TestVersionComparisonLists(object):
+    def test_compare_verson_lists_same_not_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.16'),
+                             version_comparison_list('3.16'))
+        assert not is_old
+
+    def test_compare_verson_lists_one_above_not_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.17'),
+                             version_comparison_list('3.16'))
+        assert not is_old
+
+    def test_compare_verson_lists_one_more_not_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.16.1'),
+                             version_comparison_list('3.16'))
+        assert not is_old
+
+    def test_compare_verson_lists_one_more_beta_not_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.16.1b2'),
+                             version_comparison_list('3.16'))
+        assert not is_old
+
+    def test_compare_verson_same_length_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.14'),
+                                      version_comparison_list('3.16'))
+        assert is_old
+
+    def test_compare_verson_lists_one_more_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.14.1'),
+                                      version_comparison_list('3.16'))
+        assert is_old
+
+    def test_compare_verson_lists_one_more_beta_old(self):
+        is_old = compare_verson_lists(version_comparison_list('3.14.1b2'),
+                                      version_comparison_list('3.16'))
+        assert is_old
 
 
 
