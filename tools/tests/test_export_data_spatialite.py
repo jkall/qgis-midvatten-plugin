@@ -574,16 +574,28 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = '0' ''')
         dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = '0' ''')
         #print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
-        dbconnection.commit_and_closedb()
-        print("Before export")
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'en_US'
-
-        self.midvatten.export_spatialite()
+        #dbconnection.commit_and_closedb()
+        dbconnection.commit()
         sql_list = ['''SELECT geoshort, strata FROM zz_strat WHERE geoshort IN ('land fill', 'rock') ''',
                     '''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
                     '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN ('0', '1')''',
                     '''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN ('0', '1') ''']
+
+
+        print("Before export")
+        test_list = []
+        for sql in sql_list:
+            test_list.append('\n' + sql + '\n')
+            test_list.append(dbconnection.cursor.execute(sql).fetchall())
+
+        dbconnection.closedb()
+        print("After")
+
+        mock_locale.return_value.answer = 'ok'
+        mock_locale.return_value.value = 'en_US'
+
+        self.midvatten.export_spatialite()
+
 
         conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
         curs = conn.cursor()
