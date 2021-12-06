@@ -255,7 +255,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         numskipped = 0
         sql = """INSERT INTO %s VALUES (%s)""" % (self.temptable_name, ', '.join([placeholder_sign for x in range(len(file_data[0]))]))
         for row in file_data[1:]:
-            if  primary_keys_for_concat:
+            if primary_keys_for_concat:
                 concatted = '|'.join([ru(row[idx]) for idx in concat_cols])
                 if concatted in added_rows:
                     numskipped += 1

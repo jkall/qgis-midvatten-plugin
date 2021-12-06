@@ -168,6 +168,8 @@ class ExportData(object):
             self.dest_dbconnection.execute('''PRAGMA foreign_keys = OFF;''')
             dest_data = self.get_table_data(tname, obsids, self.dest_dbconnection, file_data_srid)
             if dest_data:
+                print("Here replace " + tname + str(dest_data))
+                print("Replace with " + str(source_data))
                 self.dest_dbconnection.execute('''DELETE FROM {}'''.format(tname))
 
         if tname == 'obs_points':
@@ -210,6 +212,7 @@ class ExportData(object):
         if obsids:
             sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         dbconnection.execute(sql)
+        print(str(sql))
         table_data = [[x.lower() for x in columns]]
         table_data.extend([row for row in dbconnection.execute_and_fetchall(sql)])
         if len(table_data) < 2:

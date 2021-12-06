@@ -334,9 +334,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         
         # get PlotData
         self.z_data = self.get_z_data()
-        self.geo_bars = self.get_plot_data_bars(defs.PlotTypesDict(), strat_key='lower(geoshort)')
+        self.geo_bars = self.get_plot_data_bars(defs.PlotTypesDict(), strat_key='TRIM(LOWER(geoshort))')
         hydro_subtypes = {k: "IN ('{}')".format(k) for k in self.hydro_colors.keys()}
-        self.hydro_bars = self.get_plot_data_bars(hydro_subtypes, strat_key='capacity')
+        self.hydro_bars = self.get_plot_data_bars(hydro_subtypes, strat_key='TRIM(capacity)')
         self.layer_texts = self.get_plot_data_layer_texts()
         self.get_plot_data_seismic()
         self.get_missing_obsid_labels()
