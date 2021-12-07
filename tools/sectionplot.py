@@ -739,18 +739,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     @fn_timer
     def update_legend(self, from_navbar=False):
+        from_navbar = True
         if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
-            self.skipped_bars = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+            self.items_for_legend = [p for p in self.p if not getattr(p, 'skip_legend', False)]
             legend_kwargs = dict(self.secplot_templates.loaded_template['legend_Axes_legend'])
+            labels = [p.get_label() for p in self.items_for_legend]
+            #labels = list(self.labels)
 
-            labels = list(self.labels)
-            if from_navbar:
-                for idx, bar in enumerate(self.skipped_bars):
-                    if bar.get_label() != labels[idx] and bar.get_label():
-                        labels[idx] = bar.get_label()
 
-            leg = self.axes.legend(self.skipped_bars, labels, **legend_kwargs)
+
+            leg = self.axes.legend(self.items_for_legend, labels, **legend_kwargs)
 
             try:
                 leg.set_draggable(state=True)
@@ -1219,7 +1218,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.axvline.set_xdata(df_idx_as_datetime(self.df, current_idx))
             self.canvas.draw_idle()
             self.labels[self.animation_label_idx] = longdateformat(df_idx_as_datetime(self.df, current_idx))
-            self.update_legend()
+            self._waterlevel_lineplot.set_label(longdateformat(df_idx_as_datetime(self.df, current_idx)))
+            self.update_legend(from_navbar=True)
 
     def update_slider(self, event):
         xmin, xmax = self.wlvl_axes.get_xlim()

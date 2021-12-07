@@ -338,8 +338,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
         print(str(self.myplot.labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        assert len(self.myplot.skipped_bars) == 2
+        assert len(self.myplot.items_for_legend) == len(self.myplot.labels)
+        assert len(self.myplot.items_for_legend) == 2
         #assert False
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
@@ -377,9 +377,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
         print(str(self.myplot.labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        print(str(self.myplot.skipped_bars))
-        assert len(self.myplot.skipped_bars) == 4
+        assert len(self.myplot.items_for_legend) == len(self.myplot.labels)
+        print(str(self.myplot.items_for_legend))
+        assert len(self.myplot.items_for_legend) == 4
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section_p_label_lengths_with_geology_changed_label(self, mock_messagebar):
@@ -422,8 +422,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         #print(str(self.myplot.p))
         #print(str(self.myplot.labels))
         labels = [p.get_label() for p in self.myplot.p]
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        assert len(self.myplot.skipped_bars) == 4
+        assert len(self.myplot.items_for_legend) == len(self.myplot.labels)
+        assert len(self.myplot.items_for_legend) == 4
         assert anything_to_string_representation(labels) == '''["sandtest", "grustest", "2015", "drillstop like %berg%", "frame"]'''
         assert anything_to_string_representation(self.myplot.water_level_labels_duplicate_check) == '''["2015"]'''
 
