@@ -74,7 +74,10 @@ class midvsettings(object):
             if key =='': #if no argument, then save all settings according to dictionary
                 for (key, value) in list(self.settingsdict.items()):
                     try: # write plugin settings to QgsProject
-                        QgsProject.instance().writeEntry("Midvatten",key, value )
+                        if isinstance(value, float):
+                            QgsProject.writeEntryDouble("Midvatten",key, value)
+                        else:
+                            QgsProject.instance().writeEntry("Midvatten",key, value)
                     except TypeError:
                         try:
                             print("debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate")
@@ -82,7 +85,10 @@ class midvsettings(object):
                             pass
             else:#otherwise only save specific setting as per given key
                 try:
-                    QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key])
+                    if isinstance(self.settingsdict[key], float):
+                        QgsProject.writeEntryDouble("Midvatten", key, self.settingsdict[key])
+                    else:
+                        QgsProject.instance().writeEntry("Midvatten", key, self.settingsdict[key])
                     #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
                 except TypeError:
                     try:
