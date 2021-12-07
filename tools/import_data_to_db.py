@@ -371,7 +371,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
 
     def convert_null_unit_to_empty_string(self, temptable_name, column, dbconnection):
         dbconnection.execute('''UPDATE {table} 
-                                SET {column} = replace(replace(replace(COALESCE({column}, ''),' ','<>'),'><',''),'<>','')'''.format(
+                                SET {column} = TRIM(COALESCE({column}, ''))'''.format(
                              table=temptable_name, column=column))
 
     def import_foreign_keys(self, dbconnection, dest_table, temptablename, foreign_keys, existing_columns_in_temptable):
