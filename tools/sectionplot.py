@@ -426,7 +426,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             #fix Floating Bar Width in percents of xmax - xmin
             self.p = []
-            self.labels = []
 
             if len(self.obsids_x_position) > 0:
                 xmax, xmin = float(max(self.obsids_x_position.values())), float(min(self.obsids_x_position.values()))
@@ -742,14 +741,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         from_navbar = True
         if self.ms.settingsdict['secplotlegendplotted']:  # Include legend in plot
             # skipped_bars is self-variable just to make it easily available for tests.
-            self.items_for_legend = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+            items, labels = self.get_legend_items_labels()
+
             legend_kwargs = dict(self.secplot_templates.loaded_template['legend_Axes_legend'])
-            labels = [p.get_label() for p in self.items_for_legend]
-            #labels = list(self.labels)
 
-
-
-            leg = self.axes.legend(self.items_for_legend, labels, **legend_kwargs)
+            leg = self.axes.legend(items, labels, **legend_kwargs)
 
             try:
                 leg.set_draggable(state=True)
@@ -793,19 +789,24 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 if _funcname:
                     _funcname = _funcname[0][0]
                     funcnames.append(_funcname)
-
+        cur = self.dbconnection.cursor
         for nr, funcname in enumerate(funcnames):
             try:
-                res = self.dbconnection.execute_and_fetchall(sql.format(temptable_name=self.temptable_name,
+                cur.execute(sql.format(temptable_name=self.temptable_name,
                                            funcname=funcname,
                                            obsids='({})'.format(', '.join(
                                                ["'{}'".format(o) for o in obsidtuple]))))
             except:
-                if nr == len(funcnames)-1:
-                    raise
+                if nr+1 == len(funcnames):
+                    # Run last sql again to get an error.
+                    res = self.dbconnection.execute_and_fetchall(sql.format(temptable_name=self.temptable_name,
+                                           funcname=funcname,
+                                           obsids='({})'.format(', '.join(
+                                               ["'{}'".format(o) for o in obsidtuple]))))
                 else:
                     pass
             else:
+                res = cur.fetchall()
                 break
 
         data = {ru(row[0]): row[1] for row in res}
@@ -942,13 +943,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
                     temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
-                    plotlable = self.get_plot_label_name(layername, self.labels)
+                    plotlable = self.get_plot_label_name(layername, self.get_legend_items_labels()[1])
                     settings = self.secplot_templates.loaded_template['dems_Axes_plot'].get(plotlable,
                                                                                      self.secplot_templates.loaded_template['dems_Axes_plot']['DEFAULT'])
                     self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable] = copy.deepcopy(settings)
                     settings = self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable]
                     settings['label'] = settings.get('label', plotlable)
-                    self.labels.append(settings['label'])
                     settings['picker'] = 2
                     lineplot, = self.axes.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                     self.p.append(lineplot)
@@ -1006,18 +1006,20 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if skip_labels and label in skip_labels:
                 continue
 
-            plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, label), self.labels)
+            plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, label), self.get_legend_items_labels()[1])
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
             color = labels_colors[label]
 
             gradients = np.linspace(alpha_max, alpha_min, number_of_plots)
             for grad_idx, grad in enumerate(gradients):
                 y1 = [_y - graded_plot_height for _y in y_vals]
-                theplot = self.axes.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0)
+                theplot = self.axes.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0, label=plotlable)
 
-                if label not in plotted_polylabels:
-                    self.p.append(theplot)
-                    self.labels.append(plotlable)
+                self.p.append(theplot)
+                if label in plotted_polylabels:
+                    theplot.skip_legend = True
+                else:
+                    theplot.skip_legend = False
                     plotted_polylabels.add(label)
                 y_vals = list(y1)
 
@@ -1027,7 +1029,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         label = settings.get('label', None)
         if label is None:
             label = 'drillstop like ' + self.ms.settingsdict['secplotdrillstop']
-        self.labels.append(label)
         settings['label'] = label
         settings['picker'] = 2
         lineplot, = self.axes.plot(*list(zip(*self.drillstops)), **settings)
@@ -1079,13 +1080,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 self.p.append(self.axes.bar(bar_data['x'], bar_data['height'],
                                             bottom=bar_data['bottom'], align='edge', **settings))
 
-            self.labels.append(typ)
+    def get_legend_items_labels(self):
+        legend_items = [p for p in self.p if not getattr(p, 'skip_legend', False)]
+        labels = [p.get_label() for p in legend_items]
+        return legend_items, labels
 
     @fn_timer
     def plot_obs_lines_data(self):
-        plotlable = self.get_plot_label_name(self.y1_column, self.labels)
-        self.labels.append(self.y1_column)
-
         def remove_nones(xdata, ydata):
             x_y = [(xdata[idx], row) for idx, row in enumerate(ydata) if not np.isnan(row)]
             x = [row[0] for row in x_y]
@@ -1093,17 +1094,16 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             return x, y
 
         x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1)
+        plotlable = self.get_plot_label_name(self.y1_column, self.get_legend_items_labels()[1])
         lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
-        plotlable = self.get_plot_label_name(self.y2_column, self.labels)
-        self.labels.append(self.y2_column)
+        plotlable = self.get_plot_label_name(self.y2_column, self.get_legend_items_labels()[1])
         x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2)
         lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
-        plotlable = self.get_plot_label_name(self.y3_column, self.labels)
-        self.labels.append(self.y3_column)
+        plotlable = self.get_plot_label_name(self.y3_column, self.get_legend_items_labels()[1])
         x, y = remove_nones(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y3)
         lineplot, = self.axes.plot(x, y, picker=2, marker ='+', linestyle ='-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
@@ -1172,7 +1172,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.date_slider.on_changed(self.update_animation)
         current_idx = self.get_slider_idx()
         x_wl, WL = self.get_water_levels_from_df(df, current_idx, self.obsids_x_position)
-        self.animation_label_idx = len(self.labels)
         self.waterlevel_lineplot(x_wl, WL, longdateformat(df_idx_as_datetime(df, current_idx)))
 
         self.canvas.mpl_connect('draw_event', self.update_slider)
@@ -1217,7 +1216,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self._waterlevel_lineplot.set_ydata(WL)
             self.axvline.set_xdata(df_idx_as_datetime(self.df, current_idx))
             self.canvas.draw_idle()
-            self.labels[self.animation_label_idx] = longdateformat(df_idx_as_datetime(self.df, current_idx))
             self._waterlevel_lineplot.set_label(longdateformat(df_idx_as_datetime(self.df, current_idx)))
             self.update_legend(from_navbar=True)
 
@@ -1296,7 +1294,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.secplot_templates.loaded_template['wlevels_Axes_plot'][plotlable] = copy.deepcopy(settings)
         settings = self.secplot_templates.loaded_template['wlevels_Axes_plot'][plotlable]
         settings['label'] = settings.get('label', plotlable)
-        self.labels.append(settings['label'])
         settings['picker'] = 2
         lineplot, = self.axes.plot(x_wl, WL, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
         self._waterlevel_lineplot = lineplot
