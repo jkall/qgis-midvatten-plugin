@@ -22,7 +22,7 @@ from __future__ import absolute_import
 import os
 
 import qgis.PyQt
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.core import QgsVectorLayer
 
@@ -85,22 +85,27 @@ class ValuesFromSelectedFeaturesGui(qgis.PyQt.QtWidgets.QDialog, selected_featur
         if idx == -1:
             idx = activelayer.dataProvider().fieldNameIndex(self.selected_column.upper())  # backwards compatibility
         selected_values = [obs[idx] for obs in selected]  # value in column obsid is stored as unicode
-
         selected_feature_ids = [f.id() for f in selected]
 
         if not selected_values:
             common_utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ValuesFromSelectedFeaturesGui',
                                                                               'No features selected!')))
         else:
+            nulls = [value for value in selected_values if value is None or (isinstance(value, QVariant)
+                                                                             and value.isNull())]
+
+            no_nulls = [value for value in selected_values if not any([value is None,
+                                                                       (isinstance(value, QVariant)
+                                                                        and value.isNull())])]
             if self.unique_sorted_list_checkbox.isChecked():
-                selected_values = sorted(set(selected_values))
-            nr = len(selected_values)
+                no_nulls = sorted(set(no_nulls))
+            nr = len(no_nulls)
 
             filter_string = '"{}" IN ({})'.format(self.selected_column,
-                                                ', '.join(["'{}'".format(value.replace("'", "''")) if isinstance(value, str) else str(value)
-                                                           for value in selected_values if value is not None]))
+                                                ', '.join(["'{}'".format(value.replace("'", "''"))
+                                                           if isinstance(value, str) else str(value)
+                                                           for value in no_nulls]))
 
-            nulls = [value for value in selected_values if value is None]
             if nulls:
                 filter_string += ' or "{}" IS NULL'.format(self.selected_column)
 

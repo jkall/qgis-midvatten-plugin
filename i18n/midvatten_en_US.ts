@@ -5520,7 +5520,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SectionPlot</name>
     <message>
-        <location filename="../tools/sectionplot.py" line="549"/>
+        <location filename="../tools/sectionplot.py" line="548"/>
         <source>The SQL query
  %s
  seems to be invalid.
@@ -5539,12 +5539,12 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="1340"/>
+        <location filename="../tools/sectionplot.py" line="1337"/>
         <source>Must select only one feature in qgis layer: %s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="1353"/>
+        <location filename="../tools/sectionplot.py" line="1350"/>
         <source>Layer %s is missing geometry type MULTILINESTRING, had %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5561,12 +5561,12 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="513"/>
+        <location filename="../tools/sectionplot.py" line="512"/>
         <source>Section plot optional settings error, press &quot;Restore defaults&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="513"/>
+        <location filename="../tools/sectionplot.py" line="512"/>
         <source>Error msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5576,12 +5576,12 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="983"/>
+        <location filename="../tools/sectionplot.py" line="982"/>
         <source>Grade dem: Layer %s had wrong srid! Had &apos;%s&apos; but should have &apos;%s&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="1356"/>
+        <location filename="../tools/sectionplot.py" line="1353"/>
         <source>Layer %s is not MultiLineString geometry</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5606,18 +5606,18 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="520"/>
+        <location filename="../tools/sectionplot.py" line="519"/>
         <source>An error occured, see log message panel!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="520"/>
+        <location filename="../tools/sectionplot.py" line="519"/>
         <source>Error msg:
  %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="646"/>
+        <location filename="../tools/sectionplot.py" line="645"/>
         <source>One or more layers were omitted due to unfulfilled requirements, see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5987,7 +5987,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/column_values_from_selected_features.py" line="92"/>
+        <location filename="../tools/column_values_from_selected_features.py" line="91"/>
         <source>No features selected!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6956,7 +6956,7 @@ Msg:
 <context>
     <name>midvsettings</name>
     <message>
-        <location filename="../tools/midvsettings.py" line="65"/>
+        <location filename="../tools/midvsettings.py" line="66"/>
         <source>Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?</source>
         <translation type="unfinished"></translation>
     </message>

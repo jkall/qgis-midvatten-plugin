@@ -24,6 +24,7 @@ changelog=
         - ExportFieldlogger: Fixes #340 (bug where empty row in list caused error).
         - General csv import: Addition to fix for #338 which removed all spaces.
         - Sectionplot: Fixes labeling problem #334.
+        - List of values from selected features: Fixes problem when QVariant was NULL.
         Version 1.6.10b9:
         - Removes trailing spaces from capacity in zz_capacity and zz_capacity_plots.
         Version 1.6.10b8:
