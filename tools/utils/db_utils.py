@@ -287,13 +287,6 @@ class DbConnectionManager(object):
 
         if not temptable_name.startswith('temp_'):
             temptable_name = 'temp_%s'%temptable_name
-        existing_names = list(tables_columns(dbconnection=self).keys())
-        while temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = qgis.PyQt.QtWidgets.QMessageBox.question(None, ru(QCoreApplication.translate('DbConnectionManager', "Warning - Table name confusion!")),ru(QCoreApplication.translate('midv_data_importer', '''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtWidgets.QMessageBox.Yes | qgis.PyQt.QtWidgets.QMessageBox.No)
-            if reponse == qgis.PyQt.QtWidgets.QMessageBox.Yes:
-                self.temptable_name = '%s_2' % self.temptable_name
-            else:
-                raise UserInterruptError()
 
         if self.dbtype == 'spatialite':
             temptable_name = 'mem.' + temptable_name
@@ -301,24 +294,18 @@ class DbConnectionManager(object):
                 self.cursor.execute("""ATTACH DATABASE ':memory:' AS mem""")
             except:
                 #Assume mem already exist.
-                pass
+                try:
+                    MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('create_temporary_table_for_import',
+                                                                                'attaching memory database failed, %s')
+                                                     )%traceback.format_exc())
+                except:
+                    pass
 
             if geometry_colname_type_srid is not None:
-                geom_column = geometry_colname_type_srid[0]
-                geom_type = geometry_colname_type_srid[1]
-                srid = geometry_colname_type_srid[2]
                 fieldnames_types.append('geometry %s'%geometry_colname_type_srid[0])
                 sql = """CREATE table %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, %s)"""%(temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
                 self.conn.commit()
-
-                # This sql doesnt work for some reason, error msg "RecoverGeometryColumn() error: table 'mem.temp_temporary_section_line' does not exist"
-                # Doesn't seem to work with memory databases. It doesn't seem to be needed for us though.
-                try:
-                    sql = """SELECT RecoverGeometryColumn('%s','%s',%s,'%s',2) from %s AS a"""%(temptable_name, geom_column, srid, geom_type, temptable_name)
-                    self.execute(sql)
-                except:
-                    pass
             else:
                 sql = """CREATE table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)

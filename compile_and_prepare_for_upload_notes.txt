@@ -5,7 +5,7 @@
 - icons should be 22x22 px
 - set paths to icons in resources.qrc
 - compile resources.qrc (i.e. update resources.py):
-$ cd ~/pythoncode/qgis_plugins/midvatten && pyrcc4 -o resources.py resources.qrc
+$ cd ~/pythoncode/qgis_plugins/midvatten && pyrcc5 -o resources.py resources.qrc
 
 # ----------- Qt ui ------------
 - keep all ui forms in a subfolder ui which also contains an empty file __init__.py
@@ -23,7 +23,14 @@ $ cd ~/pythoncode/qgis_plugins/midvatten/ui && pyuic4 -xo myui.py myui.ui
 cd path/to/midvatten/plugin/
 
 Update pro with pythonfiles:
-find tools -maxdepth 1 -iname "*.py" | sort | sed 's:^:./:g' | sed 's:$: \\:g'
+find . -iname "*.py" | sort | sed 's:^:./:g' | sed 's:$: \\:g'
+Skip files:
+* */__init__.py,
+* ././tools/tests/*
+* ././tools/utils/util_translate.py
+* ././resources.py
+* ././plugin_zip_and_upload.py
+
 And ui-files:
 find ui -maxdepth 1 -iname "*.ui" | sort | sed 's:^:./:g' | sed 's:$: \\:g'
 

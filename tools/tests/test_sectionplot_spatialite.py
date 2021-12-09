@@ -68,7 +68,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         self.create_and_select_vlayer()
         print(str(self.vlayer.selectedFeatureCount()))
-        
+
         @mock.patch('midvatten.tools.sectionplot.common_utils.find_layer')
         @mock.patch('midvatten.tools.sectionplot.common_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
@@ -90,8 +90,10 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
         #print(str(mock_messagebar.mock_calls))
-        print("self.myplot.p {} self.myplot.labels {}".format(str(self.myplot.p), str(self.myplot.labels)))
-        assert len(self.myplot.p) - 1 == len(self.myplot.labels)  # The bars should not be labeled, so there is one less label than plot.
+        print("self.myplot.p {} self.myplot.get_legend_items_labels()[1] {}".format(str(self.myplot.p),
+                                                              str(self.myplot.get_legend_items_labels()[1])))
+        assert len(self.myplot.get_legend_items_labels()[0]) == len(self.myplot.get_legend_items_labels()[1])
+        assert len(self.myplot.p) - 1 == len(self.myplot.get_legend_items_labels()[0])  # The bars should not be labeled, so there is one less label than plot.
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section_no_linelayer_message(self, mock_messagebar):
@@ -114,7 +116,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert call.info(bar_msg='No line layer was selected. The stratigraphy bars will be lined up from south-north or west-east and no DEMS will be plotted.', duration=10) in mock_messagebar.mock_calls
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
-        
+
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section_with_string_obsid(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash with string obsid """
@@ -269,10 +271,11 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             self.myplot.draw_plot()
         _test(self.midvatten, self.vlayer)
 
-        test_string = utils_for_tests.create_test_string(self.myplot.obsids_x_position)
+        test_string = utils_for_tests.create_test_string({k: round(v, 6)
+                                                          for k, v in self.myplot.obsids_x_position.items()})
         print(str(test_string))
         print(str(mock_messagebar.mock_calls))
-        assert test_string == '{P1: 0.0, P2: 0.6246950475544243, P3: 1.8740851426632725}'
+        assert test_string == '{P1: 0.0, P2: 0.624695, P3: 1.874085}'
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
 
@@ -337,9 +340,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        assert len(self.myplot.skipped_bars) == 2
+        assert len(self.myplot.get_legend_items_labels()[0]) == 2
         #assert False
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
@@ -354,7 +355,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('P1', 2, 1, 2, 'gravel')''')
 
         self.create_and_select_vlayer()
-        
+
         @mock.patch('midvatten.tools.sectionplot.common_utils.find_layer')
         @mock.patch('midvatten.tools.sectionplot.common_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
@@ -376,10 +377,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        print(str(self.myplot.skipped_bars))
-        assert len(self.myplot.skipped_bars) == 4
+        assert len(self.myplot.get_legend_items_labels()[0]) == len(self.myplot.get_legend_items_labels()[1])
+        print(str(self.myplot.get_legend_items_labels()[1]))
+        assert len(self.myplot.get_legend_items_labels()[0]) == 4
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section_p_label_lengths_with_geology_changed_label(self, mock_messagebar):
@@ -420,10 +420,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         #print(str(mock_messagebar.mock_calls))
         #print(str(self.myplot.p))
-        #print(str(self.myplot.labels))
         labels = [p.get_label() for p in self.myplot.p]
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        assert len(self.myplot.skipped_bars) == 4
+        assert len(self.myplot.get_legend_items_labels()[0]) == len(self.myplot.get_legend_items_labels()[1])
+        assert len(self.myplot.get_legend_items_labels()[1]) == 4
         assert anything_to_string_representation(labels) == '''["sandtest", "grustest", "2015", "drillstop like %berg%", "frame"]'''
         assert anything_to_string_representation(self.myplot.water_level_labels_duplicate_check) == '''["2015"]'''
 
@@ -438,7 +437,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-02 00:00:00', '15', '200', '185')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-03 00:00:00', '15', '200', '185')''')
         self.create_and_select_vlayer()
-        
+
         @mock.patch('midvatten.tools.sectionplot.common_utils.find_layer')
         @mock.patch('midvatten.tools.sectionplot.common_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
@@ -535,7 +534,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.labels))
 
         pattern_obsids = {'''Obsid {}: using h_gs '[0-9None]+' failed, using 'h_toc' instead.''': ['P1'],
                           '''Obsid {}: using h_gs None or h_toc None failed, using 0 instead.''': ['P2']}

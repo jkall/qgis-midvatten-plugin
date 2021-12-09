@@ -99,7 +99,7 @@ class ExtendedQPlainTextEdit(qgis.PyQt.QtWidgets.QPlainTextEdit):
 
     def get_all_data(self):
         if self.toPlainText():
-            return ru(self.toPlainText()).replace('\r', '').split('\n')
+            return [x for x in ru(self.toPlainText()).replace('\r', '').split('\n') if x]
         else:
             return []
 

@@ -380,7 +380,7 @@ def symbology_using_cloning(plot_types, colors, layer, stylename, column):
         color = QColor(colors.get(key, [None, 'white'])[1])
         rule = for_cloning.clone()
         rule.setIsElse(False)
-        rule.setFilterExpression('''lower("{}") {}'''.format(column, types))
+        rule.setFilterExpression('''trim(lower("{}")) {}'''.format(column, types))
         rule.setLabel(key)
         sl = rule.symbol().symbolLayer(0)
         sl.setColor(color)

@@ -59,7 +59,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         print(str(feature_ids))
         self.vlayer.selectByIds(feature_ids)
 
-
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
@@ -92,8 +91,10 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
         #print(str(mock_messagebar.mock_calls))
-        print("self.myplot.p {} self.myplot.labels {}".format(str(self.myplot.p), str(self.myplot.labels)))
-        assert len(self.myplot.p) - 1 == len(self.myplot.labels)  # The bars should not be labeled, so there is one less label than plot.
+        print("self.myplot.p {} self.myplot.get_legend_items_labels()[1] {}".format(str(self.myplot.p),
+                                                              str(self.myplot.get_legend_items_labels()[1])))
+        assert len(self.myplot.get_legend_items_labels()[0]) == len(self.myplot.get_legend_items_labels()[1])
+        assert len(self.myplot.p) - 1 == len(self.myplot.get_legend_items_labels()[0])  # The bars should not be labeled, so there is one less label than plot.
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section_no_linelayer_message(self, mock_messagebar):
@@ -271,10 +272,11 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             self.myplot.draw_plot()
         _test(self.midvatten, self.vlayer)
 
-        test_string = utils_for_tests.create_test_string(self.myplot.obsids_x_position)
+        test_string = utils_for_tests.create_test_string({k: round(v, 6)
+                                                          for k, v in self.myplot.obsids_x_position.items()})
         print(str(test_string))
         print(str(mock_messagebar.mock_calls))
-        assert test_string == '{P1: 0.0, P2: 0.6246950475544242, P3: 1.874085142663273}'
+        assert test_string == '{P1: 0.0, P2: 0.624695, P3: 1.874085}'
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
 
@@ -339,9 +341,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        assert len(self.myplot.skipped_bars) == 2
+        assert len(self.myplot.get_legend_items_labels()[0]) == 2
         #assert False
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
@@ -378,10 +378,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.labels))
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        print(str(self.myplot.skipped_bars))
-        assert len(self.myplot.skipped_bars) == 4
+        assert len(self.myplot.get_legend_items_labels()[0]) == len(self.myplot.get_legend_items_labels()[1])
+        print(str(self.myplot.get_legend_items_labels()[1]))
+        assert len(self.myplot.get_legend_items_labels()[0]) == 4
 
     @mock.patch('midvatten.tools.sectionplot.common_utils.MessagebarAndLog')
     def test_plot_section_p_label_lengths_with_geology_changed_label(self, mock_messagebar):
@@ -422,10 +421,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         #print(str(mock_messagebar.mock_calls))
         #print(str(self.myplot.p))
-        #print(str(self.myplot.labels))
         labels = [p.get_label() for p in self.myplot.p]
-        assert len(self.myplot.skipped_bars) == len(self.myplot.labels)
-        assert len(self.myplot.skipped_bars) == 4
+        assert len(self.myplot.get_legend_items_labels()[0]) == len(self.myplot.get_legend_items_labels()[1])
+        assert len(self.myplot.get_legend_items_labels()[1]) == 4
         assert anything_to_string_representation(labels) == '''["sandtest", "grustest", "2015", "drillstop like %berg%", "frame"]'''
         assert anything_to_string_representation(self.myplot.water_level_labels_duplicate_check) == '''["2015"]'''
 
@@ -537,7 +535,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         print(str(mock_messagebar.mock_calls))
         print(str(self.myplot.p))
-        print(str(self.myplot.labels))
 
         pattern_obsids = {'''Obsid {}: using h_gs '[0-9None]+' failed, using 'h_toc' instead.''': ['P1'],
                           '''Obsid {}: using h_gs None or h_toc None failed, using 0 instead.''': ['P2']}

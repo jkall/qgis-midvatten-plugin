@@ -225,7 +225,7 @@ class SurveyStore(object):
         """ STEP 2: get strata information for every point """
         dbconnection = db_utils.DbConnectionManager()
         for (obsid, survey) in surveys.items():
-            sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
+            sql =r"""SELECT stratid, depthtop, depthbot, geology, trim(lower(geoshort)), trim(capacity), comment, development FROM """
             sql += self.stratitable #MacOSX fix1
             sql += r""" WHERE obsid = '"""
             sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
@@ -522,7 +522,7 @@ class SurveyWidget(QtWidgets.QFrame):
                     if layer.hydro is None or layer.hydro=='NULL':
                         hydr = ''
                     else:
-                        hydr = self.hydroColors.get(layer.hydro, '')[0]
+                        hydr = self.hydroColors.get(layer.hydro.strip(), '')[0]
                     p.drawText(tRect, QtCore.Qt.AlignVCenter, hydr)
 
                 else:

@@ -12,6 +12,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import traceback
 from builtins import object
 from builtins import str
 
@@ -69,24 +70,25 @@ class midvsettings(object):
     def reset_settings(self):    
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
 
-    def save_settings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
+    def save_settings(self, key=None):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         if not self.readingSettings:
-            if key =='': #if no argument, then save all settings according to dictionary
-                for (key, value) in list(self.settingsdict.items()):
-                    try: # write plugin settings to QgsProject
-                        QgsProject.instance().writeEntry("Midvatten",key, value )
-                    except TypeError:
-                        try:
-                            print("debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate")
-                        except:
-                            pass
-            else:#otherwise only save specific setting as per given key
+            if key is None:
+                # if no argument, then save all settings according to dictionary
+                for _key in list(self.settingsdict.keys()):
+                    self.save_settings(_key)
+            else:
+                # otherwise only save specific setting as per given key
+                value = self.settingsdict[key]
+                if isinstance(value, float):
+                    save_func = QgsProject.instance().writeEntryDouble
+                else:
+                    save_func = QgsProject.instance().writeEntry
+
                 try:
-                    QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key])
-                    #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
-                except TypeError:
+                    save_func("Midvatten", key, value)
+                except:
                     try:
-                        print("debug info; midvsettings found that "+key+" had type: "+str(type(self.settingsdict[key]))+" which is not appropriate")
+                        print("debug info; midvsettings.save_settings failed, key: '{}', value '{}', value type: '{}', msg:\n{}".format(
+                            key, str(value), str(type(value)), traceback.format_exc()))
                     except:
                         pass
-        

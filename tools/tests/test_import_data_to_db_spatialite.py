@@ -31,7 +31,7 @@ import nose
 from mock import call
 from nose.plugins.attrib import attr
 
-from midvatten.tools.utils import db_utils
+from midvatten.tools.utils import db_utils, common_utils
 from midvatten.tools.tests import utils_for_tests
 from midvatten.tools.import_data_to_db import MidvDataImporterError
 
@@ -503,6 +503,40 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select * from zz_staff'''))
         reference_string = r'''(True, [])'''
+        assert test_string == reference_string
+
+    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_w_qual_field_units(self, mock_messagebar):
+        """
+        Test related to issue #338.
+        """
+        db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
+        db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('obsid2')""")
+        db_utils.sql_alter_db("""INSERT INTO obs_points (obsid) VALUES ('obsid3')""")
+        f = [['obsid', 'staff', 'date_time', 'instrument', 'parameter', 'reading_num', 'reading_txt', 'unit', 'depth', 'comment'],
+             ['obsid1', 'teststaff', '2011-10-19 12:30:00', 'testinstrument', 'DO', '12', '<12', 'test unit', '22', 'testcomment'],
+             ['obsid2', 'teststaff', '2011-10-19 12:31:00', 'testinstrument2', 'DO2', '13', '<13', 'test unit  ', '23', 'testcomment'],
+             ['obsid2', 'teststaff', '2011-10-19 12:36:00', 'testinstrument2', 'DO2', '13', '<13', '  test  unit  ', '23', 'testcomment'],
+             ['obsid3', 'teststaff', '2011-10-19 12:32:00', 'testinstrument3', 'DO3', '14', '<14', '  test unit  ', '24', 'testcomment'],
+             ['obsid3', 'teststaff', '2011-10-19 12:33:00', 'testinstrument3', 'DO3', '14', '<14', None, '24', 'testcomment'],
+             ['obsid3', 'teststaff', '2011-10-19 12:34:00', 'testinstrument3', 'DO3', '14', '<14', ' ', '24', 'testcomment'],
+             ['obsid3', 'teststaff', '2011-10-19 12:35:00', 'testinstrument3', 'DO3', '14', '<14', '  ', '24', 'testcomment']]
+
+        self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
+
+        print(str(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_field''')))
+        test_calls_list = [call.info(log_msg='In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.'),
+            call.info(log_msg='In total "0" rows were deleted due to foreign keys restrictions and "7" rows remain.'),
+            call.info(bar_msg='7 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
+        print(str(mock_messagebar.mock_calls))
+        for test_call in test_calls_list:
+            assert test_call in mock_messagebar.mock_calls
+
+        test_string = common_utils.anything_to_string_representation(
+            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+        print(str(test_string))
+        reference_string = r'''(True, [("obsid1", "teststaff", "2011-10-19 12:30:00", "testinstrument", "DO", 12.0, "<12", "test unit", 22.0, "testcomment", ), ("obsid2", "teststaff", "2011-10-19 12:31:00", "testinstrument2", "DO2", 13.0, "<13", "test unit", 23.0, "testcomment", ), ("obsid2", "teststaff", "2011-10-19 12:36:00", "testinstrument2", "DO2", 13.0, "<13", "test  unit", 23.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:32:00", "testinstrument3", "DO3", 14.0, "<14", "test unit", 24.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:33:00", "testinstrument3", "DO3", 14.0, "<14", "", 24.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:34:00", "testinstrument3", "DO3", 14.0, "<14", "", 24.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:35:00", "testinstrument3", "DO3", 14.0, "<14", "", 24.0, "testcomment", )], )'''
         assert test_string == reference_string
 
 
