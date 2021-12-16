@@ -28,6 +28,7 @@ import math
 from builtins import object
 from builtins import range
 from operator import sub
+from cycler import cycler
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -114,8 +115,9 @@ class PiperPlot(object):
             for obs in self.observations:
                 self.markerset[obs] =next(marker)
         elif self.ms.settingsdict['piper_markers']=='date_time':
+            marker = 'o'
             for date_time in self.date_times:
-                self.markerset[date_time[0]] =next(marker)
+                self.markerset[date_time[0]] = marker  #next(marker)
 
     def create_parameter_selection(self):
         self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
@@ -525,17 +527,33 @@ class PiperPlot(object):
                    'date_time': lambda i:  {'label': self.obsrecarray.date_time[i]}}
         default_marker = lambda i: 'ko'
 
+        cdict = {'red': [(0.0, 0.0, 0.0),
+                         (0.5, 1.0, 1.0),
+                         (1.0, 1.0, 1.0)],
+
+                 'green': [(0.0, 0.0, 0.0),
+                           (0.25, 0.0, 0.0),
+                           (0.75, 1.0, 1.0),
+                           (1.0, 1.0, 1.0)],
+
+                 'blue': [(0.0, 0.0, 0.0),
+                          (0.5, 0.0, 0.0),
+                          (1.0, 1.0, 1.0)]}
+        my_cmap = mpl.colors.LinearSegmentedColormap('mycmap', cdict, N=nosamples,
+                                                     gamma=1.0)
+
+        mfc = [my_cmap(nr/nosamples) for nr in range(nosamples)]
         for i in range(0, nosamples):
             ax.plot(*tri1.transform(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i])),
                     markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
                     **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i),
-                    picker=2)
+                    picker=2, markerfacecolor=mfc[i])
 
         for i in range(0, nosamples):
             plt.plot(*tri2.transform(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])),
                      markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
                      **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i),
-                     picker=2)
+                     picker=2, markerfacecolor=mfc[i])
 
         h=[]
         for i in range(0, nosamples):
@@ -543,7 +561,8 @@ class PiperPlot(object):
             ansum = (self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])
             h.append(ax.plot(*rhomb.transform(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum),
                              markers.get(self.ms.settingsdict['piper_markers'], default_marker)(i),
-                             **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i), picker=2))
+                             **_labels.get(self.ms.settingsdict['piper_markers'], lambda i: {})(i), picker=2,
+                             markerfacecolor=mfc[i]))
 
     def set_rotated_axes_labels(self, event=None):
         for l in self.labels_positive_rotation:
