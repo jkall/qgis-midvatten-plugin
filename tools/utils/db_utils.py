@@ -571,7 +571,7 @@ def get_table_info(tablename, dbconnection=None):
             columns = dbconnection.execute_and_fetchall(columns_sql)
         except Exception as e:
             MessagebarAndLog.warning(bar_msg=sql_failed_msg(), log_msg=ru(
-                QCoreApplication.translate('get_table_info', 'Sql failed: %s\msg:%s')) % (columns_sql, str(e)))
+                QCoreApplication.translate('get_table_info', 'Sql failed: %s\nmsg:%s')) % (columns_sql, str(e)))
             return None
 
     else:

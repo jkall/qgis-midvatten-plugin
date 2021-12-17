@@ -368,7 +368,7 @@ imported rows instead of being read from file column.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1267"/>
+        <location filename="../tools/utils/common_utils.py" line="1278"/>
         <source>Style cycler ran out of unique combinations. Using random color!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1974,50 +1974,50 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="202"/>
+        <location filename="../tools/import_diveroffice.py" line="207"/>
         <source>Import error, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="202"/>
+        <location filename="../tools/import_diveroffice.py" line="207"/>
         <source>File %s could not be parsed. Msg:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="231"/>
+        <location filename="../tools/import_diveroffice.py" line="250"/>
         <source>Import Failure: No files imported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="250"/>
+        <location filename="../tools/import_diveroffice.py" line="269"/>
         <source>Warning. All files were skipped, nothing imported!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="276"/>
+        <location filename="../tools/import_diveroffice.py" line="295"/>
         <source>No new data existed in the files. Nothing imported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="388"/>
+        <location filename="../tools/import_diveroffice.py" line="407"/>
         <source>Diveroffice import warning. See log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="368"/>
+        <location filename="../tools/import_diveroffice.py" line="387"/>
         <source>Warning, the file %s 
 did not have Date/time as a header and will be skipped.
 Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="382"/>
+        <location filename="../tools/import_diveroffice.py" line="401"/>
         <source>Delimiter could not be found for file %s or it contained only one column, skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="388"/>
+        <location filename="../tools/import_diveroffice.py" line="407"/>
         <source>Warning, the file %s 
 did not have Water head[cm] as a header.
 Make sure its barocompensated!
@@ -2025,25 +2025,25 @@ Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="404"/>
+        <location filename="../tools/import_diveroffice.py" line="423"/>
         <source>Failure: The number of data columns in file %s was not equal to the header.
 Is the decimal separator the same as the delimiter?
 Do you want to stop the import? (else it will continue with the next file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="433"/>
+        <location filename="../tools/import_diveroffice.py" line="452"/>
         <source>parse_diveroffice_file error: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="439"/>
+        <location filename="../tools/import_diveroffice.py" line="458"/>
         <source>Error messages while parsing file &quot;%s&quot;:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="442"/>
+        <location filename="../tools/import_diveroffice.py" line="461"/>
         <source>Failure, parsing failed for file %s
 No valid data found!
 Do you want to stop the import? (else it will continue with the next file)</source>
@@ -2075,13 +2075,22 @@ Do you want to stop the import? (else it will continue with the next file)</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="211"/>
+        <location filename="../tools/import_diveroffice.py" line="216"/>
         <source>UTC-offset not found in file %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="293"/>
+        <location filename="../tools/import_diveroffice.py" line="312"/>
         <source>Could not identify UTC-offset for all files, see log.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="224"/>
+        <source>Reading timezone in file %s failed,
+ no conversion done:
+%s
+
+Skip file?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2820,7 +2829,7 @@ text: Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1187"/>
+        <location filename="../tools/utils/common_utils.py" line="1198"/>
         <source>Parsing the settingsstring %s failed. Msg &quot;%s&quot;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3026,7 +3035,7 @@ from active layer</source>
 <context>
     <name>HtmlDialog</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="253"/>
+        <location filename="../tools/utils/common_utils.py" line="264"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3308,7 +3317,7 @@ Hover over a column header to see which database column it will go to.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="188"/>
+        <location filename="../tools/import_diveroffice.py" line="193"/>
         <source>Error on file %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4915,17 +4924,17 @@ error msg:
 <context>
     <name>NotFoundQuestion</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="178"/>
+        <location filename="../tools/utils/common_utils.py" line="189"/>
         <source>Ignore database missmatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="179"/>
+        <location filename="../tools/utils/common_utils.py" line="190"/>
         <source>Ignore database missmatch and try to import anyway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="187"/>
+        <location filename="../tools/utils/common_utils.py" line="198"/>
         <source>Reuse answer for all identical</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5135,17 +5144,17 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PickAnnotator</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1293"/>
+        <location filename="../tools/utils/common_utils.py" line="1304"/>
         <source>PickAnnotator initialized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1333"/>
+        <location filename="../tools/utils/common_utils.py" line="1344"/>
         <source>Adding annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1345"/>
+        <location filename="../tools/utils/common_utils.py" line="1356"/>
         <source>Removing annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5996,7 +6005,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Timer</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1357"/>
+        <location filename="../tools/utils/common_utils.py" line="1368"/>
         <source>Total time running %s: %s seconds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6153,12 +6162,12 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>ask_for_delimiter</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1058"/>
+        <location filename="../tools/utils/common_utils.py" line="1069"/>
         <source>Give delimiter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1064"/>
+        <location filename="../tools/utils/common_utils.py" line="1075"/>
         <source>Delimiter not given. Stopping.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6166,12 +6175,12 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>ask_for_export_crs</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="658"/>
+        <location filename="../tools/utils/common_utils.py" line="669"/>
         <source>Set export crs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="658"/>
+        <location filename="../tools/utils/common_utils.py" line="669"/>
         <source>Give the crs for the exported database.
 </source>
         <translation type="unfinished"></translation>
@@ -6180,22 +6189,22 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>askuser</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="146"/>
+        <location filename="../tools/utils/common_utils.py" line="157"/>
         <source>User input needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="130"/>
+        <location filename="../tools/utils/common_utils.py" line="141"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="131"/>
+        <location filename="../tools/utils/common_utils.py" line="142"/>
         <source>Selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="146"/>
+        <location filename="../tools/utils/common_utils.py" line="157"/>
         <source>Give needed adjustment of date/time for the data.
 Supported format: +- X &lt;resolution&gt;
 Ex: 1 hours, -1 hours, -1 days
@@ -6204,17 +6213,22 @@ Supported units:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="157"/>
+        <location filename="../tools/utils/common_utils.py" line="168"/>
         <source>Failure:
 Only support resolutions
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="159"/>
+        <location filename="../tools/utils/common_utils.py" line="170"/>
         <source>Failure:
 Must write time resolution also.
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="228"/>
+        <source>File timezone error!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6328,7 +6342,7 @@ Must write time resolution also.
 <context>
     <name>filter_nonexisting_values_and_ask</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="856"/>
+        <location filename="../tools/utils/common_utils.py" line="867"/>
         <source>(Message %s of %s)
 
 Give the %s for:
@@ -6336,7 +6350,7 @@ Give the %s for:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="857"/>
+        <location filename="../tools/utils/common_utils.py" line="868"/>
         <source>User input needed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6359,12 +6373,12 @@ Supported date formats:
 <context>
     <name>find_layer</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="298"/>
+        <location filename="../tools/utils/common_utils.py" line="309"/>
         <source>The layer %s was not found!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="300"/>
+        <location filename="../tools/utils/common_utils.py" line="311"/>
         <source>Found %s layers with the name &quot;%s&quot;. There can be only one!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6372,7 +6386,7 @@ Supported date formats:
 <context>
     <name>general_exception_handler</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1129"/>
+        <location filename="../tools/utils/common_utils.py" line="1140"/>
         <source>Usage error: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6397,7 +6411,7 @@ Msg2:
 <context>
     <name>get_delimiter</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1009"/>
+        <location filename="../tools/utils/common_utils.py" line="1020"/>
         <source>Must give filename</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6405,12 +6419,12 @@ Msg2:
 <context>
     <name>get_delimiter_from_file_rows</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1052"/>
+        <location filename="../tools/utils/common_utils.py" line="1063"/>
         <source>Delimiter couldn&apos;t be found automatically for %s. Give the correct one (ex &apos;;&apos;):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1042"/>
+        <location filename="../tools/utils/common_utils.py" line="1053"/>
         <source>Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6435,7 +6449,7 @@ Msg2:
 <context>
     <name>get_selected_features_as_tuple</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="316"/>
+        <location filename="../tools/utils/common_utils.py" line="327"/>
         <source>Programming error: The layername &quot;%s&quot; was not str or QgsMapLayer!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6456,23 +6470,23 @@ Msg2:
 <context>
     <name>get_stored_settings</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1166"/>
+        <location filename="../tools/utils/common_utils.py" line="1177"/>
         <source>Settings key %s did not exist in midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1169"/>
+        <location filename="../tools/utils/common_utils.py" line="1180"/>
         <source>Settings key %s was empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1175"/>
+        <location filename="../tools/utils/common_utils.py" line="1186"/>
         <source>Reading stored settings &quot;%s&quot;:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1187"/>
+        <location filename="../tools/utils/common_utils.py" line="1198"/>
         <source>Getting stored settings failed for key %s see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6481,7 +6495,8 @@ Msg2:
     <name>get_table_info</name>
     <message>
         <location filename="../tools/utils/db_utils.py" line="573"/>
-        <source>Sql failed: %smsg:%s</source>
+        <source>Sql failed: %s
+msg:%s</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7067,7 +7082,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>parse_timezone_to_timedelta</name>
     <message>
-        <location filename="../tools/utils/date_utils.py" line="253"/>
+        <location filename="../tools/utils/date_utils.py" line="256"/>
         <source>Timezone string %s could not be parsed!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7098,7 +7113,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>pop_up_info</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="391"/>
+        <location filename="../tools/utils/common_utils.py" line="402"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7114,7 +7129,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>returnunicode</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="477"/>
+        <location filename="../tools/utils/common_utils.py" line="488"/>
         <source>data type unknown, check database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7122,7 +7137,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>save_stored_settings</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1151"/>
+        <location filename="../tools/utils/common_utils.py" line="1162"/>
         <source>Settings %s stored for key %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7153,17 +7168,17 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>selection_check</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="489"/>
+        <location filename="../tools/utils/common_utils.py" line="500"/>
         <source>Error, select at least one object in the qgis layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="491"/>
+        <location filename="../tools/utils/common_utils.py" line="502"/>
         <source>&quot;&quot;&quot;Error, select exactly %s object in the qgis layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="493"/>
+        <location filename="../tools/utils/common_utils.py" line="504"/>
         <source>Select a qgis layer that has a field obsid!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7195,7 +7210,7 @@ Msg:
 <context>
     <name>sql_failed_msg</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1077"/>
+        <location filename="../tools/utils/common_utils.py" line="1088"/>
         <source>Sql failed, see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7236,7 +7251,7 @@ Msg:
 <context>
     <name>strat_selection_check</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="500"/>
+        <location filename="../tools/utils/common_utils.py" line="511"/>
         <source>Error, select a qgis layer with field h_gs!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7267,7 +7282,7 @@ Msg:
 <context>
     <name>timer</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1366"/>
+        <location filename="../tools/utils/common_utils.py" line="1377"/>
         <source>Total time running %s: %s seconds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7275,7 +7290,7 @@ Msg:
 <context>
     <name>unicode_2_utf8</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="534"/>
+        <location filename="../tools/utils/common_utils.py" line="545"/>
         <source>data type unknown, check database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7283,17 +7298,17 @@ Msg:
 <context>
     <name>verify_layer_selection</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="544"/>
+        <location filename="../tools/utils/common_utils.py" line="555"/>
         <source>Error, you have to select some features!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="546"/>
+        <location filename="../tools/utils/common_utils.py" line="557"/>
         <source>Error, you have to select exactly %s features!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="548"/>
+        <location filename="../tools/utils/common_utils.py" line="559"/>
         <source>Error, you have to select a relevant layer!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7330,12 +7345,12 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>verify_this_layer_selected_and_not_in_edit_mode</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="571"/>
+        <location filename="../tools/utils/common_utils.py" line="582"/>
         <source>Error, you have to select/activate %s layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="568"/>
+        <location filename="../tools/utils/common_utils.py" line="579"/>
         <source>Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7405,7 +7420,7 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>write_printlist_to_file</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1223"/>
+        <location filename="../tools/utils/common_utils.py" line="1234"/>
         <source>Data written to file %s.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -2,10 +2,10 @@
 
 [general]
 name=Midvatten
-qgisMinimumVersion=3.4.5
+qgisMinimumVersion=3.16.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
-version=Version 1.6.10b10
+version=Version 1.6.10
 author=Josef Källgården, Henrik Spångmyr
 email=midvattenplugin@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
@@ -20,35 +20,30 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
-        Version 1.6.10b10:
-        - ExportFieldlogger: Fixes #340 (bug where empty row in list caused error).
-        - General csv import: Addition to fix for #338 which removed all spaces.
-        - Sectionplot: Fixes labeling problem #334.
-        - List of values from selected features: Fixes problem when QVariant was NULL.
-        Version 1.6.10b9:
-        - Removes trailing spaces from capacity in zz_capacity and zz_capacity_plots.
-        Version 1.6.10b8:
-        - Fixes version comparison.
-        Version 1.6.10b7:
-        - Sectionplot: Fixes a bug which causes an (otherwise hidden) error message (but doesn't affect the functionality).
-        - Possible fix for #338.
-        - Loaddefaultlayers now loads obs_points and obs_lines instad of view_obs_points and view_obs_lines) as they are no longer needed.
-        Version 1.6.10b6:
-        - PrepareForQgis2Threejs: Added support for postgis databases.
-        Version 1.6.10b5:
-        - DiverofficeImport: Feature to choose UTC-offset for conversion during import.
-        Version 1.6.10b4:
-        - Better database version comparison.
-        - Fix to close connections more frequently when not used anymore.
-        - Fix to always turn of waiting cursor in general_exception_handler.
+        Version 1.6.10:
+        - Database:
+        * Removed trailing spaces from capacity in zz_capacity and zz_capacity_plots (handled using strip and trim instead).
+        - General:
+            * Fixes bug where obs_points and obs_lines were not editabel
+                (Loaddefaultlayers now loads obs_points and obs_lines instad of view_obs_points and view_obs_lines)
+                (Requires user to reload layers using "Load default db-layers to qgis")
+            * Better database version comparison.
+            * Fix to close connections more frequently when the connection is not used anymore.
+            * Fix to always turn of waiting cursor in general_exception_handler.
         - CompactWQualReport: Feature to allow the user to choose header columns and sort order.
-        Version 1.6.10b3:
-        - Probably fixes bug where csv import dialog object seems to be destroyed in the middle of import.
+        - DiverofficeImport: Feature to choose target UTC-offset for conversion during import.
+        - ExportFieldlogger: Fixes #340 (bug where empty row in list caused error)
+        - General csv import:
+            * Fixes import problem to w_qual_field-table using PostGIS/PostgreSQL-database (#338)
+            * Fixes bug where csv import dialog object was destroyed in the middle of import.
+        - General report: Fixes bug #336. (general report failed when water level data was missing in postgresql)
+        - List of values from selected features: Fixes problem when QVariant was NULL.
+        - PrepareForQgis2Threejs: Added support for postgis databases.
+        - Sectionplot:
+            * Fixes labeling problem #334.
+            * Fixes a bug which causes an (otherwise hidden) error message (but doesn't affect the functionality).
         - Stratsymbology: Added waiting cursor when loading symbology.
-        Version 1.6.10b2:
-        Fixes #336. (general report fails when water level data missing in postgresql)
-        Version 1.6.10b1:
-        - Fixes printing bug in Stratigraphy plot.
+        - Stratigraphy plot: Fixes printing bug.
         Version 1.6.9
         - Fixes bug in XYplot when using Midvattenplugin with Postgresql/Postgis-database.
         Version 1.6.8

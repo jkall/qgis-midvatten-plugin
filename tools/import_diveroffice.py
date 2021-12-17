@@ -155,13 +155,15 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.export_csv_button.setEnabled(False)
 
         self.gridLayout_buttons.setRowStretch(4, 1)
+        self.main_vertical_layout.addStretch()
 
+        self.setGeometry(500, 150, 1200, 700)
         self.show()
 
     @common_utils.general_exception_handler
     def select_files(self):
-        self.charsetchoosen = midvatten_utils.ask_for_charset(default_charset=self.default_charset)
-        if not self.charsetchoosen:
+        charsetchoosen = midvatten_utils.ask_for_charset(default_charset=self.default_charset)
+        if not charsetchoosen:
             raise common_utils.UserInterruptError()
 
         files = midvatten_utils.select_files(only_one_file=False, extension="csv (*.csv)")
@@ -169,6 +171,8 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             raise common_utils.UserInterruptError()
         self.start_import_button.setEnabled(True)
         self.export_csv_button.setEnabled(True)
+
+        self.charsetchoosen = charsetchoosen
         self.files = files
 
     @common_utils.general_exception_handler
@@ -182,6 +186,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         missing_utcoffset = False
 
         for selected_file in files:
+            skip_file = False
             try:
                 res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
             except:
@@ -213,19 +218,33 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                                                                       filename))
                     else:
                         requested_timedelta =  parse_timezone_to_timedelta(self.utc_offset.currentText())
-                        file_timedelta = parse_timezone_to_timedelta(file_utc_offset)
+                        try:
+                            file_timedelta = parse_timezone_to_timedelta(file_utc_offset)
+                        except ValueError as e:
+                            msg = ru(QCoreApplication.translate('DiverofficeImport',
+                                                             'Reading timezone in file %s failed,\n no conversion done:\n%s\n\nSkip file?'))%(
+                                ru(selected_file), str(e))
+                            common_utils.stop_waiting_cursor()
+                            question = common_utils.Askuser(question="YesNo", msg=msg,
+                                                            dialogtitle=QCoreApplication.translate('askuser',
+                                                            'File timezone error!'),
+                                                            include_cancel_button=True)
+                            common_utils.start_waiting_cursor()
+                            if question.result:
+                                skip_file = True
+                        else:
+                            if requested_timedelta != file_timedelta:
+                                td = file_timedelta - requested_timedelta
+                                df = pd.DataFrame.from_records(file_data[1:], index='date_time',
+                                                               columns=file_data[0])
+                                df.index = pd.to_datetime(df.index) - td
+                                df.index = df.index.strftime('%Y-%m-%d %H:%M:%S')
+                                file_data = [['date_time']]
+                                file_data[0].extend(df.columns.tolist())
+                                file_data.extend([list(row) for row in df.itertuples()])
 
-                        if requested_timedelta != file_timedelta:
-                            td = file_timedelta - requested_timedelta
-                            df = pd.DataFrame.from_records(file_data[1:], index='date_time',
-                                                           columns=file_data[0])
-                            df.index = pd.to_datetime(df.index) - td
-                            df.index = df.index.strftime('%Y-%m-%d %H:%M:%S')
-                            file_data = [['date_time']]
-                            file_data[0].extend(df.columns.tolist())
-                            file_data.extend([list(row) for row in df.itertuples()])
-
-            parsed_files.append((file_data, filename, location))
+            if not skip_file:
+                parsed_files.append((file_data, filename, location))
 
         if len(parsed_files) == 0:
             common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('DiverofficeImport', "Import Failure: No files imported"""))
@@ -463,9 +482,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         obsid_idx = file_data[0].index(obsid_header_name)
         date_time_idx = file_data[0].index(date_time_header_name)
         filtered_file_data = [row for row in file_data[1:]
-                              if datestring_to_date(row[date_time_idx]) >
-                              datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx],
-                              [('0001-01-01 00:00:00',)])[0][0])]
+                              if obsid_last_imported_dates.get(row[obsid_idx], None) is None
+                              or (datestring_to_date(row[date_time_idx]) >
+                              datestring_to_date(obsid_last_imported_dates[row[obsid_idx]][0][0]))]
 
         filtered_file_data.reverse()
         filtered_file_data.append(file_data[0])

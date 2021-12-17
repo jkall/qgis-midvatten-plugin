@@ -118,11 +118,22 @@ def write_qgs_log_to_file(message, tag, level):
 
 
 class Askuser(QtWidgets.QDialog):
-    def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate('askuser', 'User input needed'), parent=None):
+    def __init__(self, question="YesNo", msg = '',
+                 dialogtitle=QCoreApplication.translate('askuser', 'User input needed'),
+                 parent=None, include_cancel_button=False):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog
-            reply = QtWidgets.QMessageBox.information(parent, dialogtitle, msg, QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.Yes)
-            if reply==QtWidgets.QMessageBox.Yes:
+            if include_cancel_button:
+                buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel
+            else:
+                buttons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            reply = QtWidgets.QMessageBox.information(parent,
+                                                      dialogtitle, msg,
+                                                      buttons,
+                                                      QtWidgets.QMessageBox.Yes)
+            if reply == QtWidgets.QMessageBox.Cancel:
+                raise UserInterruptError()
+            elif reply == QtWidgets.QMessageBox.Yes:
                 self.result = 1 #1 = "yes"
             else:
                 self.result = 0  #0="no"

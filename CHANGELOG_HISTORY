@@ -10,7 +10,66 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 
 
 
-2021-05-18 changes until 1.6.5
+2021-12-16 changes until 1.6.10
+Version 1.6.10b10:
+        - ExportFieldlogger: Fixes #340 (bug where empty row in list caused error).
+        - General csv import: Addition to fix for #338 which removed all spaces.
+        - Sectionplot: Fixes labeling problem #334.
+        - List of values from selected features: Fixes problem when QVariant was NULL.
+Version 1.6.10b9:
+        - Removes trailing spaces from capacity in zz_capacity and zz_capacity_plots.
+Version 1.6.10b8:
+        - Fixes version comparison.
+Version 1.6.10b7:
+        - Sectionplot: Fixes a bug which causes an (otherwise hidden) error message (but doesn't affect the functionality).
+        - Possible fix for #338.
+        - Loaddefaultlayers now loads obs_points and obs_lines instad of view_obs_points and view_obs_lines) as they are no longer needed.
+Version 1.6.10b6:
+        - PrepareForQgis2Threejs: Added support for postgis databases.
+Version 1.6.10b5:
+        - DiverofficeImport: Feature to choose UTC-offset for conversion during import.
+Version 1.6.10b4:
+        - Better database version comparison.
+        - Fix to close connections more frequently when not used anymore.
+        - Fix to always turn of waiting cursor in general_exception_handler.
+        - CompactWQualReport: Feature to allow the user to choose header columns and sort order.
+Version 1.6.10b3:
+        - Probably fixes bug where csv import dialog object seems to be destroyed in the middle of import.
+        - Stratsymbology: Added waiting cursor when loading symbology.
+Version 1.6.10b2:
+        Fixes #336. (general report fails when water level data missing in postgresql)
+Version 1.6.10b1:
+        - Fixes printing bug in Stratigraphy plot.
+Version 1.6.9
+        - Fixes bug in XYplot when using Midvattenplugin with Postgresql/Postgis-database.
+Version 1.6.8
+        - Fixes #335 (fig.legend giving error message)..
+Version 1.6.7
+        - Fixes #335 (fig.legend giving error message)..
+Version 1.6.6
+        - Major update of imports in modules to increase code reusability from outside the plugin.
+        - Compact w-qual report
+            * Made the column report optional to allow reports from w_qual_field.
+            * Fixes bug when using aggregation other than concat.
+        - Midvattensettings:
+            * Fixes bug after closing the settings dialog (fixes #332).
+        - Sectionplot:
+            * Refactoring.
+            * Feature to write layer annotation at the edge or center of the bar.
+            * Added option to chose water level base on sql WHERE condition (see tooltip for water level square).
+            * Fixes bug where error message was printed too many times.
+            * Probably fixes #333 (supporting multiple variations of function "line locate point").
+            * Fixes bug where changing water level label in figure options on navigation toolbar didn't change legend text.
+            * Fixes bug where layer texts was NULL was written to plot.
+            * Fixes bug with interactive water level plot.
+        - Export data:
+            * Fixes bugs related to the optional tables s_qual_lab and w_qual_logger.
+        - FieldloggerExport:
+            * Fixes bug where adding layer to QGIS caused an error message.
+        - CompactWQualReport:
+            * Fixes bug where default table and column not working.
+        - CompactWQualReport:
+            * Fixes missing column headers.
 Version 1.6.6b5
         - Sectionplot: Fixes bug with interactive water level plot.
         - Sectionplot: Fixes bug where layer texts was NULL was written to plot.

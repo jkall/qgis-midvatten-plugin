@@ -91,7 +91,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.start_import_button.clicked.connect(lambda x: self.start_import())
 
         self.gridLayout_buttons.setRowStretch(8, 1)
-
+        self.setGeometry(100, 100, 1800, 800)
         self.show()
 
     @common_utils.general_exception_handler

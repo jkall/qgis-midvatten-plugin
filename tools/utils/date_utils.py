@@ -227,7 +227,6 @@ def parse_timezone_to_timedelta(tz_string):
     datetime.timedelta(seconds=7200)
     >>> parse_timezone_to_timedelta('GMT+02:35')
     datetime.timedelta(seconds=9300)
-
     >>> parse_timezone_to_timedelta('UTC+02:00')
     datetime.timedelta(seconds=7200)
     >>> parse_timezone_to_timedelta('UTC')
@@ -242,10 +241,14 @@ def parse_timezone_to_timedelta(tz_string):
     datetime.timedelta(seconds=7200)
     >>> parse_timezone_to_timedelta('UTC+02:35')
     datetime.timedelta(seconds=9300)
+    >>> parse_timezone_to_timedelta('01234 UTC+02:35')
+    datetime.timedelta(seconds=9300)
+    >>> parse_timezone_to_timedelta('01234\tUTC+02:35')
+    datetime.timedelta(seconds=9300)
 
     """
     _tz_string = ru(tz_string).lower()
-    match = re.match(r'(gmt|utc)([\+\-]*)([0-9]+)([\:]*[0-9]*)', _tz_string, re.IGNORECASE)
+    match = re.match(r'[a-zA-Z0-9\ \t]*(gmt|utc)([\+\-]*)([0-9]+)([\:]*[0-9]*)', _tz_string, re.IGNORECASE)
     if match is None:
         if not _tz_string.replace('gmt', '').replace('utc', ''):
             res = ('', '', '', '')
