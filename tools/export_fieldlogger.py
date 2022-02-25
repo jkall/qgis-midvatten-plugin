@@ -302,6 +302,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
                 latlons = {}
         else:
             latlons = self.obslayer.get_latlon_for_features()
+        latlons = {str(k): v for k, v in latlons.items()}
         return latlons
 
     @common_utils.general_exception_handler
@@ -844,8 +845,10 @@ class ObsLayer(gui_utils.VRowEntry):
             return geometry
 
         features = {f.attributes()[id_index]: transform(f.geometry()) for f in current_layer.getFeatures('True')}
+        print("Features: " + str(features))
         latlons = {k: ((v.asPoint().y(), v.asPoint().x()) if not v.isNull() else (None, None))
                     for k, v in features.items()}
+        print("Latlons: " + str(latlons))
         return latlons
 
     def disconnect_event(self):
