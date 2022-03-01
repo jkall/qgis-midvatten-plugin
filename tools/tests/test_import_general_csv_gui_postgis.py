@@ -34,7 +34,8 @@ import qgis.PyQt
 
 from mock import MagicMock
 from nose.plugins.attrib import attr
-from qgis.core import QgsProject, QgsVectorLayer
+from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields, QgsGeometry
+from PyQt5.QtCore import QVariant
 
 from midvatten.tools.utils import common_utils
 from midvatten.tools.utils import db_utils
@@ -1245,6 +1246,78 @@ class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestPostgisDbSv):
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''SELECT obsid, ST_AsText(geometry) FROM obs_points'''))
         reference_string = r'''(True, [(1, POINT(633466 711659)), (2, POINT(633466 711659))])'''
+        print(str(test_string))
+        print(str(reference_string))
+        assert test_string == reference_string
+
+    def test_import_obs_points_from_layer_other_srid(self):
+        _fields = [QgsField('obsid', QVariant.String, QVariant.typeToName(QVariant.String))]
+        data = [['obs1']]
+        geometries = [QgsGeometry.fromWkt('POINT(14.786846 58.639219)')]
+        self.vlayer = utils_for_tests.create_vectorlayer(_fields, data, geometries, 'Point', crs=4326,
+                                                    select_ids=True, hide_print=True)
+
+        utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+        utils_askuser_answer_no_obj.result = 0
+        utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+        @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
+        @mock.patch('qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+        def _test(self, mock_skippopup, mock_iface, mock_askuser):
+
+            def side_effect(*args, **kwargs):
+                mock_result = mock.MagicMock()
+                if 'msg' in kwargs:
+                    if kwargs['msg'].startswith('Does the file contain a header?'):
+                        mock_result.result = 1
+                        return mock_result
+                if len(args) > 1:
+                    if args[1].startswith('Do you want to confirm'):
+                        mock_result.result = 0
+                        return mock_result
+                        #mock_askuser.return_value.result.return_value = 0
+                    elif args[1].startswith('Do you want to import all'):
+                        mock_result.result = 0
+                        return mock_result
+                    elif args[1].startswith('Please note!\nForeign keys'):
+                        mock_result.result = 1
+                        return mock_result
+                    elif args[1].startswith('Please note!\nThere are'):
+                        mock_result.result = 1
+                        return mock_result
+                    elif args[1].startswith('It is a strong recommendation'):
+                        mock_result.result = 0
+                        return mock_result
+            mock_askuser.side_effect = side_effect
+
+            mock_iface.activeLayer.return_value = self.vlayer
+
+            ms = MagicMock()
+            ms.settingsdict = OrderedDict()
+            importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+            importer.load_gui()
+
+            importer.import_all_features()
+            importer.table_chooser.import_method = 'obs_points'
+
+            # obsid and geometry should be filled automatically
+            for column in importer.table_chooser.columns:
+                if column.db_column == 'geometry':
+                    column.file_column_name = 'geometry'
+
+                """for idx in range(column.combobox.count()):
+                    print("column {} contents:".format(column.db_column))
+                    print(column.combobox.itemText(idx))"""
+            importer.start_import()
+
+        _test(self)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db('''SELECT obsid, round(east), round(north) FROM obs_points;'''))
+        #reference_string = r'''(True, [(obs1, POINT(487626 6499900))])'''
+        reference_string = r'''(True, [(obs1, 487626.0, 6499900.0)])'''
+
+        #Wgs84: 58,639219°	14,786846°, SWEREF99TM: N 6499900	E 487626
         print(str(test_string))
         print(str(reference_string))
         assert test_string == reference_string

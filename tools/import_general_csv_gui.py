@@ -33,6 +33,7 @@ from operator import itemgetter
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import QgsCoordinateReferenceSystem
 
 import midvatten.definitions.midvatten_defs as defs
 from midvatten.tools import import_data_to_db
@@ -183,7 +184,6 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         features = list(active_layer.getSelectedFeatures())
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
         [file_data.append([ru(attr) if all([ru(attr).strip() != 'NULL' if attr is not None else '', attr is not None]) else '' for attr in feature]) for feature in features]
-
         geometries = [feature.geometry().asWkt() if feature.geometry().asWkt() else None for feature in features]
         if any(geometries):
             geom_name = 'geometry'
@@ -193,6 +193,8 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             [file_data[idx+1].append(wkt) for idx, wkt in enumerate(geometries)]
 
         self.file_data = file_data
+        self.srid = active_layer.crs().authid()
+        print(str(self.srid))
         self.table_chooser.file_header = file_data[0]
 
     @common_utils.waiting_cursor
@@ -268,7 +270,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         file_data = self.reformat_date_time(file_data)
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(dest_table=dest_table, file_data=file_data)
+        answer = importer.general_import(dest_table=dest_table, file_data=file_data, source_srid=self.srid)
         common_utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():

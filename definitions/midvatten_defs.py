@@ -632,8 +632,8 @@ def get_last_used_quality_instruments():
 
     return ru(result_dict, True)
 
-specific_table_info = {'obs_lines': 'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
-                       'obs_points': 'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}
+specific_table_info = {'obs_lines': '''The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must have a SRID that's supported by database.''',
+                       'obs_points': '''The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must have a SRID that's supported by database.'''}
 
 def export_fieldlogger_defaults():
     current_locale = getcurrentlocale(print_error_message_in_bar=False)[0]

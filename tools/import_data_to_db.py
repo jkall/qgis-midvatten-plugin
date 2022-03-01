@@ -326,6 +326,9 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         sql = """(CASE WHEN ({colname} !='' AND {colname} !=' ' AND {colname} IS NOT NULL)\n    THEN {to_geometry} ELSE {null} END)"""
         kwargs = {'colname': geom_col, 'null': null_replacement}
 
+        if str(source_srid).startswith('EPSG:'):
+            source_srid = source_srid.split(':')[-1]
+
         if source_srid is None or int(source_srid) == int(dest_srid):
             to_geometry = """{convert_func}({geometry}, {dest_srid})""".format(geometry=geom_col,
                                                                                convert_func=convert_func,

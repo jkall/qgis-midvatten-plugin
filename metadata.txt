@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.11b2:
         - Export Fieldlogger: Fixes #342 (latlot from vectorlayer bug).
+        - GeneralCsvImport: Support for importing geometry of all srids thas included in the database spatial_ref_sys table.
         Version 1.6.11b1:
         - DiverofficeImport: Fixes bug where timezone can't be parsed in file.
         Version 1.6.10:

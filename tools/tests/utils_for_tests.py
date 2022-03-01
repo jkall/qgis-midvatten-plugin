@@ -323,11 +323,12 @@ def recursive_children(parent):
     return [parent.name(), valid, [recursive_children(child) for child in children]]
 
 
-def create_vectorlayer(_fields, data, geometries=None, geomtype='Point', crs=4326):
+def create_vectorlayer(_fields, data, geometries=None, geomtype='Point', crs=4326, select_ids=False,
+                       hide_print=True):
     """From GroupStats"""
     vlayer = QgsVectorLayer("{}?crs=epsg:{}".format(geomtype, str(crs)), "test", "memory")
     provider = vlayer.dataProvider()
-
+    print(str(crs))
     fields = QgsFields()
     for _field in _fields:
         fields.append(_field)
@@ -350,9 +351,10 @@ def create_vectorlayer(_fields, data, geometries=None, geomtype='Point', crs=432
 
     features = [f for f in vlayer.getFeatures('True') if f.id() in vlayer.allFeatureIds()]
     feature_ids = [feature.id() for feature in features]
+    if select_ids:
+        vlayer.selectByIds(feature_ids)
 
     QgsProject.instance().addMapLayer(vlayer)
-    hide_print = True
     if not hide_print:
         print("1. Valid vlayer '{}'".format(vlayer.isValid()))
         print("2. feature_ids: " + str(feature_ids))
