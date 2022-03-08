@@ -25,6 +25,7 @@ import copy
 from builtins import object
 
 import qgis.PyQt
+from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 
@@ -45,6 +46,9 @@ class SplitterWithHandel(qgis.PyQt.QtWidgets.QSplitter):
         self.setHandleWidth(10)
         layout = qgis.PyQt.QtWidgets.QVBoxLayout(handle)
         layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+
         layout.setMargin(0)
         line = qgis.PyQt.QtWidgets.QFrame(handle)
         line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine)
@@ -113,8 +117,10 @@ def get_line():
 
 
 class DateTimeFilter(RowEntry):
-    def __init__(self, calendar=False, stretch=True):
+    def __init__(self, calendar=False):
         super(DateTimeFilter, self).__init__()
+        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+
         self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('DateTimeFilter', 'Import data from: ')))
         self.from_datetimeedit = qgis.PyQt.QtWidgets.QDateTimeEdit(datestring_to_date('1901-01-01 00:00:00'))
         self.from_datetimeedit.setDisplayFormat('yyyy-MM-dd hh:mm:ss')
@@ -131,8 +137,6 @@ class DateTimeFilter(RowEntry):
         #self.import_after_last_date = PyQt4.QtWidgets.QCheckBox("Import after latest date in database for each obsid")
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
             self.layout.addWidget(widget)
-        if stretch:
-            self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)

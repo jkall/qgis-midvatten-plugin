@@ -1247,6 +1247,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     @fn_timer
     def plot_specific_water_level(self):
         for _datum in self.ms.settingsdict['secplotdates']:
+            if _datum.startswith('#'):
+                continue
             datum_obsids = _datum.split(';')
             datum = datum_obsids[0]
             WL = []
@@ -1257,8 +1259,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         continue
 
                 # TODO: There should probably be a setting for using avg(level_masl)
-                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND ({}) """
-                _d = datum.strip('-')
+                query = """SELECT level_masl FROM {} WHERE obsid = '{}' AND ({}) AND level_masl IS NOT NULL"""
+                _d = datum.replace('-', '').replace(' ', '').strip()
                 for _int in range(10):
                     _d = _d.replace(str(_int), '')
                 if _d:
@@ -1266,14 +1268,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     query = query.format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 else:
                     query = query.format(self.ms.settingsdict['secplotwlvltab'], obs,
-                                         """date_time like '{}%'""".format(datum))
-
+                                         """date_time LIKE '{}%'""".format(datum)) + ' ORDER BY date_time ASC'
                 # query = """SELECT avg(level_masl) FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
+
                 try:
                     val = res[0][0]
                 except IndexError:
                     continue
+
                 if val is None:
                     continue
 

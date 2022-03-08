@@ -1171,3 +1171,30 @@ def get_all_obsids(table='obs_points'):
     if connection_ok:
         obsids = [row[0] for row in result]
     return obsids
+
+
+def get_latlon_for_all_obsids(dbconnection=None):
+    """
+    Returns lat, lon for all obsids
+    :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
+    """
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
+    if dbconnection.dbtype == 'spatialite':
+        sql = 'SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points'
+    else:
+        sql = 'SELECT obsid, ST_Y(ST_Transform(geometry, 4326)) as lat, ST_X(ST_Transform(geometry, 4326)) as lon from obs_points'
+    try:
+        latlon_dict = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
+    except:
+        raise
+    finally:
+        if dbconnection_created:
+            dbconnection.closedb()
+
+    latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.items()])
+    return latlon_dict

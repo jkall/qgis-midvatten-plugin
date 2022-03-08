@@ -61,6 +61,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
                 importer.start_import(importer.observations)
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg='Import error, staff not given')
+
     def test_full_integration_test_to_db(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -968,9 +969,11 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
                 importer.start_import(importer.observations)
-                print(str(mock_MessagebarAndLog.mock_calls))
+                return mock_MessagebarAndLog
 
-            _test(self, filename)
+            mock_messagebar = _test(self, filename)
+            print(str(mock_messagebar.mock_calls))
+            #assert not mock_messagebar.mock_calls
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))

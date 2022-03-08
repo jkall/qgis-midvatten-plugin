@@ -376,7 +376,8 @@ def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units
 
 
     input_fields = InputFields()
-    input_fields.parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, [x[0] for x in stored_settings])) for k in [x[0] for x in stored_settings]])
+    #parameter_names = [x[0] for x in stored_settings]
+    input_fields.parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k)) for k in [x[0] for x in stored_settings]])
 
     input_fields.set_parameters_using_stored_settings(stored_settings)
 

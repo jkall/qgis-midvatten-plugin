@@ -54,8 +54,7 @@ else:
 
 
 from midvatten.tools.utils.common_utils import MessagebarAndLog, find_layer, returnunicode as ru, \
-    sql_failed_msg, UsageError, get_full_filename, returnunicode, UserInterruptError, rstrip,\
-    transpose_lists_of_lists, general_exception_handler, get_save_file_name_no_extension, \
+    sql_failed_msg, UsageError, get_full_filename, returnunicode, UserInterruptError, transpose_lists_of_lists, general_exception_handler, get_save_file_name_no_extension, \
     anything_to_string_representation, Askuser
 
 from midvatten.definitions.db_defs import latest_database_version
@@ -105,16 +104,6 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
                 errorsignal += 1
 
     return errorsignal
-
-
-def get_latlon_for_all_obsids():
-    """
-    Returns lat, lon for all obsids
-    :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
-    """
-    latlon_dict = db_utils.get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
-    latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.items()])
-    return latlon_dict
 
 
 def get_last_used_flow_instruments():

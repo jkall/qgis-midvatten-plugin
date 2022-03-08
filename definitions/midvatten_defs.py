@@ -622,8 +622,11 @@ def get_last_used_quality_instruments():
     Returns quality instrumentids
     :return: A tuple with instrument ids from w_qual_field
     """
-    sql = '''select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit,
-             instrument, staff order by parameter, date_time desc, unit asc, staff'''
+    sql = '''SELECT parameter, unit, instrument, staff, date_time
+              FROM (
+                select parameter, unit, instrument, staff, max(date_time) AS date_time
+                from w_qual_field group by parameter, unit, instrument, staff) AS foo
+              order by parameter, date_time desc, unit asc, staff'''
     connection_ok, result = sql_load_fr_db(sql)
 
     result_dict = {}

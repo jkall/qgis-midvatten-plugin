@@ -296,7 +296,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
     def get_latlons(self):
         if self.obs_from_obs_points.isChecked():
             try:
-                latlons = midvatten_utils.get_latlon_for_all_obsids()
+                latlons = db_utils.get_latlon_for_all_obsids()
             except common_utils.UsageError as e:
                 common_utils.MessagebarAndLog.warning(bar_msg=str(e))
                 latlons = {}
@@ -340,7 +340,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
                 if location not in locations_lat_lon:
                     lat, lon = latlons.get(obsid, [None, None])
-                    if any([lat is None, not lat, lon is None, not lon]):
+                    if not lat or not lon:
                         common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportToFieldLogger', 'Critical: Obsid %s did not have lat-lon coordinates. Check obs_points table')) % obsid)
                         continue
 
@@ -845,10 +845,8 @@ class ObsLayer(gui_utils.VRowEntry):
             return geometry
 
         features = {f.attributes()[id_index]: transform(f.geometry()) for f in current_layer.getFeatures('True')}
-        print("Features: " + str(features))
         latlons = {k: ((v.asPoint().y(), v.asPoint().x()) if not v.isNull() else (None, None))
                     for k, v in features.items()}
-        print("Latlons: " + str(latlons))
         return latlons
 
     def disconnect_event(self):
