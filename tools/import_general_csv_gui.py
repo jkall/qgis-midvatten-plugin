@@ -55,6 +55,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.setWindowTitle(ru(QCoreApplication.translate('GeneralCsvImportGui', "Csv import")))  # Set the title for the dialog
         self.table_chooser = None
         self.file_data = None
+        self.srid = None
 
     def load_gui(self):
         self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info().items() if not k.endswith('_geom')}
@@ -194,7 +195,6 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.file_data = file_data
         self.srid = active_layer.crs().authid()
-        print(str(self.srid))
         self.table_chooser.file_header = file_data[0]
 
     @common_utils.waiting_cursor
