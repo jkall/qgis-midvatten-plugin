@@ -1305,7 +1305,12 @@ class PickAnnotator(object):
 
     def identify_plot(self, mpltoolbar, event):
         try:
-            if mpltoolbar._active:
+            try:
+                a = self.mpltoolbar._active
+            except AttributeError:
+                # Adjustment for matplotlib ~3.5
+                a = self.mpltoolbar.mode.name
+            if a:
                 return
             mouseevent = event.mouseevent
             if mouseevent.button.name.lower() != self.mousebutton:

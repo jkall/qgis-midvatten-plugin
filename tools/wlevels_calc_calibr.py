@@ -790,9 +790,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     @fn_timer
     def deactivate_pan_zoom(self):
         """ Deactivates the NavigationToolbar pan or zoom feature if they are currently active """
-        if self.mpltoolbar._active == "PAN":
+        try:
+            a = self.mpltoolbar._active
+        except AttributeError:
+            # Adjustment for matplotlib ~3.5
+            a = self.mpltoolbar.mode.name
+        if a.upper() == "PAN":
             self.mpltoolbar.pan()
-        elif self.mpltoolbar._active == "ZOOM":
+        elif a.upper() == "ZOOM":
             self.mpltoolbar.zoom()
 
     @fn_timer
