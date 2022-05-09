@@ -819,16 +819,19 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         fr_d_t = str((self.FromDateTime.dateTime().toPyDateTime() - datetime.datetime(1970,1,1)).total_seconds())
         to_d_t = str((self.ToDateTime.dateTime().toPyDateTime() - datetime.datetime(1970,1,1)).total_seconds())
 
-        sql_list = []
-        sql_list.append(r"""DELETE FROM "%s" """%table_name)
-        sql_list.append(r"""WHERE obsid = '%s' """%selected_obsid)
-        # This %s is db formatting for seconds. It is not used as python formatting!
-        sql_list.append(r"""AND CAST(strftime('%s', date_time) AS NUMERIC) """)
-        sql_list.append(r""" >= '%s' """%fr_d_t)
-        # This %s is db formatting for seconds. It is not used as python formatting!
-        sql_list.append(r"""AND CAST(strftime('%s', date_time) AS NUMERIC) """)
-        sql_list.append(r""" <= '%s' """%to_d_t)
-        sql = ''.join(sql_list)
+        dbconnection = db_utils.DbConnectionManager()
+        dbtype = dbconnection.dbtype
+        dbconnection.closedb()
+        if dbtype == 'spatialite':
+            sql = f"""DELETE FROM "{table_name}" 
+                      WHERE obsid = '{selected_obsid}'
+                         AND CAST(strftime('%s', date_time) AS NUMERIC) >= '{fr_d_t}'
+                         AND CAST(strftime('%s', date_time) AS NUMERIC) <= '{to_d_t}'"""
+        else:
+            sql = f"""DELETE FROM "{table_name}" 
+                      WHERE obsid = '{selected_obsid}'
+                      AND EXTRACT(EPOCH FROM date_time::timestamp) >= '{fr_d_t}'
+                      AND EXTRACT(EPOCH FROM date_time::timestamp) <= '{to_d_t}'"""
 
         really_delete = common_utils.Askuser("YesNo", ru(QCoreApplication.translate('Calibrlogger', "Do you want to delete the period %s to %s for obsid %s from table %s?")) % (str(self.FromDateTime.dateTime().toPyDateTime()), str(self.ToDateTime.dateTime().toPyDateTime()), selected_obsid, table_name)).result
         if really_delete:

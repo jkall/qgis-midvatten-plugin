@@ -255,3 +255,33 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = '[rb1]'
         print(test)
         assert test == ref
+
+    @mock.patch('midvatten.tools.utils.common_utils.Askuser')
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_delete_range(self, mock_messagebar, askuser):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-10 00:00', 200)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-01-28 00:00', 200)")
+
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
+        calibrlogger.update_plot()
+        calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2017-01-30 00:00'))
+        calibrlogger.ToDateTime.setDateTime(date_utils.datestring_to_date('2017-02-02 00:00'))
+        askuser.return_value.result = True
+
+        calibrlogger.delete_selected_range('w_levels_logger')
+
+        res = db_utils.sql_load_fr_db('SELECT date_time FROM w_levels_logger ORDER BY date_time')
+        test = utils_for_tests.create_test_string(res)
+        print(mock_messagebar.mock_calls)
+
+
+        ref = '(True, [(2017-01-28 00:00), (2017-02-10 00:00)])'
+        print("Ref")
+
+        print(ref)
+        print("Test")
+        print(test)
+        assert test == ref
