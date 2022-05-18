@@ -449,16 +449,23 @@ def scale_geometry(layer, xfactor=None, yfactor=None, use_map_scale=None):
 
 def add_views_to_db(dbconnection, bedrock_types):
     view_name = 'bars_strat'
-    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    cur = dbconnection.cursor
+    try:
+        cur.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    except:
+        midvatten_utils.MessagebarAndLog.warning(log_msg=traceback.format_exc())
+
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
+        cur.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
         sql = '''
     CREATE VIEW {} AS
         SELECT stratigraphy.{} AS rowid, "obsid", (SELECT MAX(depthbot) FROM stratigraphy AS a where a.obsid = stratigraphy.obsid) AS "maxdepthbot",
         "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid)'''.format(view_name, db_utils.rowid_string(dbconnection))
     else:
+        # The first user that creates this view will own it in the PostgreSQL-database.
+        #
         sql = '''
-        CREATE VIEW {} AS
+            CREATE OR REPLACE VIEW {} AS
             SELECT row_number() OVER (ORDER BY "obsid", "stratid") "rowid",
             "obsid", "maxdepthbot", "stratid", "depthtop", "depthbot", "geology", "geoshort", "capacity", "development", "comment", "geometry"
             FROM (
@@ -466,31 +473,55 @@ def add_views_to_db(dbconnection, bedrock_types):
             "stratid", "depthtop", "depthbot", "geology", "geoshort", stratigraphy."capacity", stratigraphy."development", "comment", geometry FROM stratigraphy JOIN obs_points USING (obsid)
             ) b'''.format(
             view_name, db_utils.rowid_string(dbconnection))
-    dbconnection.execute(sql)
+    try:
+        cur.execute(sql)
+    except:
+        midvatten_utils.MessagebarAndLog.warning(log_msg=traceback.format_exc())
+
+    if view_name not in list(db_utils.tables_columns(dbconnection=dbconnection).keys()):
+        raise NotFoundError(ru(QCoreApplication.translate('strat_symbology',
+            'Stratsymbology failed. The view %s could not be found. See log for info.'))%view_name)
+
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
+        cur.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
 
     view_name = 'w_lvls_last_geom'
-    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
-    if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
-        dbconnection.execute('''CREATE VIEW {view_name} AS 
-                                SELECT b.{rowid} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry 
-                                FROM w_levels AS a JOIN obs_points AS b using (obsid) 
-                                GROUP BY obsid;'''.format(
-            **{'view_name': view_name, 'rowid': db_utils.rowid_string(dbconnection)}))
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
-    else:
-        dbconnection.execute('''CREATE VIEW {view_name} AS SELECT a.obsid AS obsid, a.date_time AS date_time, a.meas AS meas, a.level_masl AS level_masl, c.h_tocags AS h_tocags, c.geometry AS geometry FROM w_levels AS a JOIN (SELECT obsid, max(date_time) as date_time FROM w_levels GROUP BY obsid) as b ON a.obsid=b.obsid and a.date_time=b.date_time JOIN obs_points AS c ON a.obsid=c.obsid;'''
-                             .format(**{'view_name': view_name}))
+    try:
+        cur.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+        if dbconnection.dbtype == 'spatialite':
+            cur.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
+            cur.execute('''CREATE VIEW {view_name} AS 
+                                    SELECT b.{rowid} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry 
+                                    FROM w_levels AS a JOIN obs_points AS b using (obsid) 
+                                    GROUP BY obsid;'''.format(
+                **{'view_name': view_name, 'rowid': db_utils.rowid_string(dbconnection)}))
+            cur.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
+        else:
+            cur.execute('''CREATE OR REPLACE VIEW {view_name} AS SELECT a.obsid AS obsid, a.date_time AS date_time, a.meas AS meas, a.level_masl AS level_masl, c.h_tocags AS h_tocags, c.geometry AS geometry FROM w_levels AS a JOIN (SELECT obsid, max(date_time) as date_time FROM w_levels GROUP BY obsid) as b ON a.obsid=b.obsid and a.date_time=b.date_time JOIN obs_points AS c ON a.obsid=c.obsid;'''
+                                 .format(**{'view_name': view_name}))
+    except:
+        midvatten_utils.MessagebarAndLog.warning(log_msg=traceback.format_exc())
+
+    view_found = False
+    if view_name in list(db_utils.tables_columns(dbconnection=dbconnection).keys()):
+        if 'h_tocags' in db_utils.tables_columns(table=view_name,
+                                                 dbconnection=dbconnection)[view_name]:
+            view_found = True
+    if not view_found:
+        raise NotFoundError(ru(QCoreApplication.translate('strat_symbology',
+            'Stratsymbology failed. The view %s could not be found. See log for info.'))%view_name)
 
     view_name = 'bedrock'
-    dbconnection.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    try:
+        cur.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
+    except:
+        midvatten_utils.MessagebarAndLog.warning(log_msg=traceback.format_exc())
+
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
+        cur.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
     bergy = (
         '''
-CREATE VIEW {view_name} AS
+CREATE OR REPLACE VIEW {view_name} AS
  SELECT a.{rowid},
     a.obsid,
     a.h_toc,
@@ -533,9 +564,18 @@ CREATE VIEW {view_name} AS
                 ) u ON a.obsid = u.obsid
     ORDER BY a.obsid'''.format(**{'view_name': view_name, 'bedrock_types': bedrock_types, 'rowid': db_utils.rowid_string(dbconnection)}))
 
-    dbconnection.execute(bergy)
+    try:
+        cur.execute(bergy)
+    except:
+        midvatten_utils.MessagebarAndLog.warning(log_msg=traceback.format_exc())
+
     if dbconnection.dbtype == 'spatialite':
-        dbconnection.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
+        cur.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1'''.format(view_name))
+
+    if view_name not in list(db_utils.tables_columns(dbconnection=dbconnection).keys()):
+        midvatten_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('strat_symbology',
+            'Stratsymbology failed. The view %s could not be found. See log for info.')) % view_name)
+        raise NotFoundError()
 
 
 class RuleDiscrepancyError(Exception):
@@ -543,4 +583,8 @@ class RuleDiscrepancyError(Exception):
 
 
 class StyleNotFoundError(Exception):
+    pass
+
+
+class NotFoundError(Exception):
     pass

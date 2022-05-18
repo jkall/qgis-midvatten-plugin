@@ -36,5 +36,8 @@ class TestStratSymbology(utils_for_tests.MidvattenTestPostgisDbSv):
         root = QgsProject.instance().layerTreeRoot()
         test = common_utils.anything_to_string_representation(utils_for_tests.recursive_children(root))
         ref = '["", "", [["Midvatten strat symbology", "", [["Bars", "", [["Obsid label", True, []], ["Layer texts", True, []], ["W levels", "", [["W levels label", True, []], ["W levels", True, []]]], ["Bedrock", "", [["Bedrock label", True, []], ["Bedrock", True, []]]], ["Frame", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]], ["Shadow", True, []]]], ["Static bars", "", [["Obsid label", True, []], ["Layer texts", True, []], ["W levels", "", [["W levels label", True, []], ["W levels", True, []]]], ["Bedrock", "", [["Bedrock label", True, []], ["Bedrock", True, []]]], ["Frame", True, []], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]], ["Shadow", True, []]]], ["Rings", "", [["Bedrock", "", [["Bedrock", True, []]]], ["Layers", "", [["Geology", True, []], ["Hydro", True, []]]]]]]]]]'
+        print(str(test))
+        print(str(ref))
+        print(str(mock_messagebar.mock_calls))
         assert test == ref
         assert mock_messagebar.mock_calls == []
