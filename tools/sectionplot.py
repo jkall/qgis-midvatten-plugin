@@ -185,7 +185,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
-        pick_annotator = common_utils.PickAnnotator(self.figure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
+        pick_annotator = common_utils.PickAnnotator(self.figure, canvas=self.canvas)
 
     def tabwidget_resize(self, tabwidget):
         current_index = tabwidget.currentIndex()

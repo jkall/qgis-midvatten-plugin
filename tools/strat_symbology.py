@@ -521,7 +521,7 @@ def add_views_to_db(dbconnection, bedrock_types):
         cur.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
     bergy = (
         '''
-CREATE OR REPLACE VIEW {view_name} AS
+CREATE VIEW {view_name} AS
  SELECT a.{rowid},
     a.obsid,
     a.h_toc,

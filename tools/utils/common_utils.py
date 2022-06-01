@@ -1290,28 +1290,20 @@ def get_full_filename(filename):
 
 
 class PickAnnotator(object):
-    def __init__(self, fig, canvas=None, mpltoolbar=None, mousebutton='left'):
+    def __init__(self, fig, canvas=None, mousebutton='left'):
         self.fig = fig
         self.annotation = None
 
         self.mousebutton = mousebutton
         if canvas is None:
             canvas = fig.canvas
-        if mpltoolbar is None:
-            mpltoolbar = fig.canvas.manager.toolbar
-        canvas.mpl_connect('pick_event', lambda event: self.identify_plot(mpltoolbar, event))
+
+        canvas.mpl_connect('pick_event',  lambda event: self.identify_plot(event))
         canvas.mpl_connect('figure_enter_event', self.remove_annotation)
         MessagebarAndLog.info(log_msg=QCoreApplication.translate("PickAnnotator", 'PickAnnotator initialized.'))
 
-    def identify_plot(self, mpltoolbar, event):
+    def identify_plot(self, event):
         try:
-            try:
-                a = self.mpltoolbar._active
-            except AttributeError:
-                # Adjustment for matplotlib ~3.5
-                a = self.mpltoolbar.mode.name
-            if a:
-                return
             mouseevent = event.mouseevent
             if mouseevent.button.name.lower() != self.mousebutton:
                 return

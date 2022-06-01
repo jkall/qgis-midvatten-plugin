@@ -202,7 +202,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.canvas = FigureCanvas(self.custplotfigure)
 
         self.mpltoolbar = NavigationToolbar(self.canvas, self.widgetPlot)
-        common_utils.PickAnnotator(self.custplotfigure, canvas=self.canvas, mpltoolbar=self.mpltoolbar)
+        common_utils.PickAnnotator(self.custplotfigure, canvas=self.canvas)
         self.layoutplot.addWidget(self.canvas)
         self.layoutplot.addWidget(self.mpltoolbar)
 
