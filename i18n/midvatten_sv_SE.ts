@@ -167,21 +167,21 @@ obsid;min date;max date;calculated number of measurements:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="806"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="811"/>
         <source>Error!
  The obsid selection has been changed but the plot has not been updated. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="810"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="815"/>
         <source>Error!
  No obsid was selected. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="828"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="836"/>
         <source>Do you want to delete the period %s to %s for obsid %s from table %s?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -201,7 +201,7 @@ Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="891"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="899"/>
         <source>Warning!
  No data found within the chosen period. No trend adjustment done!
 Try changing &quot;from&quot; and &quot;to&quot;.</source>
@@ -228,7 +228,7 @@ Try changing &quot;from&quot; and &quot;to&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="919"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="927"/>
         <source>Selected nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5144,17 +5144,17 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PickAnnotator</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1304"/>
+        <location filename="../tools/utils/common_utils.py" line="1303"/>
         <source>PickAnnotator initialized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1344"/>
+        <location filename="../tools/utils/common_utils.py" line="1341"/>
         <source>Adding annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1356"/>
+        <location filename="../tools/utils/common_utils.py" line="1353"/>
         <source>Removing annotation failed, msg: %s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6005,7 +6005,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Timer</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1368"/>
+        <location filename="../tools/utils/common_utils.py" line="1365"/>
         <source>Total time running %s: %s seconds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7121,7 +7121,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
 <context>
     <name>replace_matplotlib_backends_backend_qt5agg_NavigationToolbar2QT_set_message_xylimits</name>
     <message>
-        <location filename="../tools/utils/matplotlib_replacements.py" line="122"/>
+        <location filename="../tools/utils/matplotlib_replacements.py" line="130"/>
         <source>xlim %s ylim %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7278,11 +7278,16 @@ Msg:
         <source>&apos;Missing stylefile %s</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../tools/strat_symbology.py" line="576"/>
+        <source>Stratsymbology failed. The view %s could not be found. See log for info.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>timer</name>
     <message>
-        <location filename="../tools/utils/common_utils.py" line="1377"/>
+        <location filename="../tools/utils/common_utils.py" line="1374"/>
         <source>Total time running %s: %s seconds</source>
         <translation type="unfinished"></translation>
     </message>
