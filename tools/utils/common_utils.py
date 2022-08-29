@@ -1015,12 +1015,14 @@ class Cancel(object):
         pass
 
 
-def get_delimiter(filename, charset='utf-8', delimiters=None, num_fields=None):
+def get_delimiter(filename, charset='utf-8', delimiters=None, num_fields=None,
+                  skip_empty_rows=True):
     if filename is None:
         raise TypeError(QCoreApplication.translate('get_delimiter', 'Must give filename'))
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
-
+    if skip_empty_rows:
+        rows = [row for row in rows if row.strip().strip('\r').strip('\n')]
     delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=None, num_fields=None)
     return delimiter
 

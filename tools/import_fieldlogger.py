@@ -197,7 +197,7 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
         observations = []
         for rownr, rawrow in enumerate(f):
             observation = {}
-            row = rawrow.rstrip('\n')
+            row = rawrow.rstrip('\n').strip()
             if not row:
                 continue
             cols = row.split(delimiter)
@@ -294,7 +294,8 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
             comment = observation.get('comment', '')
 
             file_data_list.append([obsid, date_time, meas, h_toc, level_masl, comment])
-
+        if len(file_data_list) < 2:
+            return None
         return file_data_list
 
     @staticmethod
@@ -309,6 +310,8 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
             comment = observation['value']
             staff = observation['staff']
             file_data_list.append([obsid, date_time, comment, staff])
+        if len(file_data_list) < 2:
+            return None
         return file_data_list
 
     @staticmethod
@@ -359,7 +362,8 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
 
             comment = observation.get('comment', '')
             file_data_list.append([obsid, instrumentid, flowtype, date_time, reading, unit, comment])
-
+        if len(file_data_list) < 2:
+            return None
         return file_data_list
 
     @staticmethod
@@ -384,7 +388,8 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
             depth = observation.get('depth', '').replace(',', '.')
             comment = observation.get('comment', '')
             file_data_list.append([obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment])
-
+        if len(file_data_list) < 2:
+            return None
         return file_data_list
 
     @staticmethod
