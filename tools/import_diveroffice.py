@@ -37,7 +37,7 @@ from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools.utils.date_utils import find_date_format, datestring_to_date, \
     parse_timezone_to_timedelta
-from midvatten.tools.utils.gui_utils import VRowEntry, get_line, DateTimeFilter, RowEntry
+from midvatten.tools.utils.gui_utils import VRowEntry, get_line, DateTimeFilter, RowEntry, set_combobox
 
 try:
     import pandas as pd
@@ -80,6 +80,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                                                           'changes to the selected one.'))
             self.utc_offset.addItem('')
             self.utc_offset.addItems([format_timezone_string(hour) for hour in range(-12, 15)])
+            database_timezone = db_utils.get_timezone_from_db('w_levels_logger')
+            if database_timezone is not None:
+                set_combobox(self.utc_offset, database_timezone, add_if_not_exists=False)
             self.utcoffset_row = RowEntry()
             self.utcoffset_row.layout.addWidget(self.utcoffset_label)
             self.utcoffset_row.layout.addWidget(self.utc_offset)

@@ -1198,3 +1198,26 @@ def get_latlon_for_all_obsids(dbconnection=None):
 
     latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.items()])
     return latlon_dict
+
+def get_timezone_from_db(tablename, dbconnection=None):
+    timezone = None
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
+    res = dbconnection.execute_and_fetchall(
+        f"""SELECT description FROM about_db WHERE tablename = '{tablename}' AND columnname = 'date_time' LIMIT 1;""")
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
+    if res:
+        pattern = r'[(]*[\-a-zA-Z0-9\ \t]*(gmt|utc)([\+\-]*)([0-9]+)([\:]*[0-9]*)\)[)]*'
+        m = re.search(pattern, res[0][0], re.IGNORECASE)
+
+        if m is not None:
+            timezone = m.group(0).lstrip('(').rstrip(')')
+
+    return timezone

@@ -135,3 +135,13 @@ class TestNonplotTables(object):
         tables = db_utils.nonplot_tables()
 
         assert tables == r"""('about_db', 'comments', 'zz_flowtype', 'zz_meteoparam', 'zz_strat', 'zz_hydro')"""
+
+
+@attr(status='on')
+class TestGetTimezoneFromDb(utils_for_tests.MidvattenTestPostgisDbSv):
+    def test_get_timezone_from_db(self):
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (UTC+1)'
+            WHERE tablename = 'w_levels_logger' and columnname = 'date_time';""")
+        tz = db_utils.get_timezone_from_db('w_levels_logger')
+        #print(str(tz))
+        assert tz == 'UTC+1'
