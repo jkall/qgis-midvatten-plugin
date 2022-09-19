@@ -688,7 +688,10 @@ def sqlite_internal_tables(as_tuple=False):
                 'virts_geometry_columns_statistics' ,
                 'geometry_columns',
                 'spatialindex',
-                'SpatialIndex')"""
+                'SpatialIndex',
+                'KNN',
+                'KNN2',
+                'data_licenses')"""
     if as_tuple:
         return ast.literal_eval(astring)
     else:

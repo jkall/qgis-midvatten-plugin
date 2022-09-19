@@ -41,9 +41,17 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def test_create_db_locale_sv(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mocked_messagebar):
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'sv_SE'
+    def test_create_db_locale_sv(self, mock_crs_question, mock_answer_yes, mock_not_found, mock_iface, mocked_messagebar):
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'sv_SE'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
@@ -61,9 +69,17 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def test_create_db_locale_en(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'en_US'
+    def test_create_db_locale_en(self, mock_crs_question, mock_answer_yes, mock_not_found, mock_iface):
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'en_US'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
@@ -79,13 +95,21 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def test_create_db_setup_string(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+    def test_create_db_setup_string(self, mock_crs_question, mock_answer_yes, mock_not_found, mock_iface):
         """
         This test fails every time anything other than comments are changed in create_db
         The purpose is to be sure that every change is meant to be.
         """
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'sv_SE'
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'en_US'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
@@ -101,12 +125,20 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def test_about_db_creation(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+    def test_about_db_creation(self, mock_crs_question, mock_answer_yes, mock_not_found, mock_iface):
         """
         Check that about_db is written correctly
         """
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'sv_SE'
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'sv_SE'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
@@ -126,18 +158,27 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
             if test_string[charnr] != reference[charnr]:
                 #print('%s\n%s'%(test_string[charnr-printnum:charnr+printnum], reference[charnr-printnum:charnr+printnum]))
                 break
+        print(utils_for_tests.compare_strings(reference, test_string))
         assert test_string == reference
 
     @mock.patch('qgis.utils.iface')
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def test_about_db_creation_version_string(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+    def test_about_db_creation_version_string(self, mock_crs_question, mock_answer_yes, mock_not_found, mock_iface):
         """
         Check that version string in about_db is written correctly
         """
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'sv_SE'
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'en_US'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()

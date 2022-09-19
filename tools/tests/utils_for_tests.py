@@ -173,10 +173,20 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale):
+    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_not_found):
         super().setUp()
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'sv_SE'
+
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'sv_SE'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
+
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         mock_savefilename.return_value = (self.TEMP_DBPATH, 'Spatialite (*.sqlite)')
@@ -188,10 +198,20 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale):
+    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_not_found):
         super().setUp()
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'en_US'
+
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'en_US'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
+
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         mock_savefilename.return_value = (self.TEMP_DBPATH, 'Spatialite (*.sqlite)')
@@ -242,10 +262,20 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def setUp(self, mock_crs_question, mock_answer_yes, mock_locale):
+    def setUp(self, mock_crs_question, mock_answer_yes, mock_not_found):
         super().setUp()
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'sv_SE'
+
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'sv_SE'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
+
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
@@ -255,10 +285,20 @@ class MidvattenTestPostgisDbEn(MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten.tools.create_db.common_utils.NotFoundQuestion')
     @mock.patch('midvatten.tools.utils.common_utils.Askuser')
     @mock.patch('midvatten.tools.create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
-    def setUp(self, mock_crs_question, mock_answer_yes, mock_locale):
+    def setUp(self, mock_crs_question, mock_answer_yes, mock_not_found):
         super().setUp()
-        mock_locale.return_value.answer = 'ok'
-        mock_locale.return_value.value = 'en_US'
+
+        def side_effect(*args, **kwargs):
+            mock_result = mock.MagicMock()
+            if kwargs.get('combobox_label', None) == 'Locales':
+                mock_result.answer = 'ok'
+                mock_result.value = 'en_US'
+            elif kwargs.get('combobox_label', None) == 'Timezone':
+                mock_result.answer = 'ok'
+                mock_result.value = ''
+            return mock_result
+        mock_not_found.side_effect = side_effect
+
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()

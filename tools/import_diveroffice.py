@@ -34,7 +34,7 @@ from qgis.PyQt import QtWidgets
 
 from midvatten.tools import import_data_to_db
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import returnunicode as ru, format_timezone_string
 from midvatten.tools.utils.date_utils import find_date_format, datestring_to_date, \
     parse_timezone_to_timedelta
 from midvatten.tools.utils.gui_utils import VRowEntry, get_line, DateTimeFilter, RowEntry, set_combobox
@@ -523,12 +523,3 @@ class CheckboxAndExplanation(VRowEntry):
         self.checkbox.setChecked(check)
 
 
-def format_timezone_string(index):
-    if index < -12 or index > 14:
-        raise Exception("Error, timezone must be between -12 and + 14.")
-    if index < 0:
-        return 'UTC{}'.format(str(index))
-    elif not index:
-        return 'UTC'
-    else:
-        return 'UTC+{}'.format(str(index))

@@ -32,7 +32,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import Qgis
 
 from midvatten.tools.utils import common_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename
+from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename, format_timezone_string
 from midvatten.tools.utils.db_utils import execute_sqlfile
 
 
@@ -40,12 +40,13 @@ class NewDb(object):
     def __init__(self):
         self.db_settings = ''
 
-    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code='4326', delete_srids=True):  #CreateNewDB(self, verno):
+    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code='4326', delete_srids=True, timezone=None):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
         common_utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
         common_utils.start_waiting_cursor()
+        print("Got locale " + str(set_locale))
 
         if user_select_CRS=='y':
             common_utils.stop_waiting_cursor()
@@ -59,6 +60,12 @@ class NewDb(object):
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
+
+        if timezone is None:
+            common_utils.stop_waiting_cursor()
+            timezone = self.ask_for_timezone()
+            common_utils.start_waiting_cursor()
+        print("Got timezone:" + str(timezone))
         common_utils.stop_waiting_cursor()
         dbpath = ru(common_utils.get_save_file_name_no_extension(parent=None, caption="New DB",
                                                                              directory="midv_obsdb.sqlite",
@@ -136,7 +143,7 @@ class NewDb(object):
 
         execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
 
-        self.add_metadata_to_about_db(dbconnection)
+        self.add_metadata_to_about_db(dbconnection, timezone=timezone)
 
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
 
@@ -159,7 +166,7 @@ class NewDb(object):
 
         common_utils.stop_waiting_cursor()
 
-    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326'):
+    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326', timezone=None):
 
         dbconnection = db_utils.DbConnectionManager()
         db_settings = dbconnection.db_settings
@@ -189,6 +196,11 @@ class NewDb(object):
 
         if EPSGID=='0' or not EPSGID:
             raise common_utils.UserInterruptError()
+
+        if timezone is None:
+            common_utils.stop_waiting_cursor()
+            timezone = self.ask_for_timezone()
+            common_utils.start_waiting_cursor()
 
         filenamestring = "create_db.sql"
 
@@ -242,7 +254,7 @@ class NewDb(object):
 
         execute_sqlfile(get_full_filename('insert_functions_postgis.sql'), dbconnection)
 
-        self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
+        self.add_metadata_to_about_db(dbconnection, created_tables_sqls, timezone=timezone)
 
         dbconnection.vacuum()
 
@@ -290,6 +302,24 @@ class NewDb(object):
             raise common_utils.UserInterruptError()
         return EPSGID
 
+    def ask_for_timezone(self):
+        timezone_list = ['']
+        timezone_list.extend([format_timezone_string(hour) for hour in range(-12, 15)])
+        question = common_utils.NotFoundQuestion(
+            dialogtitle=ru(QCoreApplication.translate('NewDb', 'User input needed')),
+            msg=ru(QCoreApplication.translate('NewDb',
+                                              'Supply preferred timezone for logger data for table w_levels_loggerSupply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
+            existing_list=timezone_list,
+            default_value='',
+            combobox_label=ru(QCoreApplication.translate('newdb', 'Timezone')),
+            button_names=['Cancel', 'Ok'])
+        answer = question.answer
+        submitted_value = ru(question.value)
+        if answer == 'cancel':
+            raise common_utils.UserInterruptError()
+        elif answer == 'ok':
+            return submitted_value
+
     def insert_datadomains(self, set_locale=False, dbconnection=None):
         filenamestring = 'insert_datadomain'
         if set_locale == 'sv_SE':
@@ -298,7 +328,7 @@ class NewDb(object):
             filenamestring += ".sql"
         execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filenamestring), dbconnection)
 
-    def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None):
+    def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None, timezone=None):
         tables = sorted(db_utils.get_tables(dbconnection=dbconnection, skip_views=True))
 
         #Matches comment inside /* */
@@ -363,7 +393,11 @@ class NewDb(object):
                     except:
                         pass
                     raise
-
+        if timezone:
+            dbconnection.execute(f"""UPDATE about_db SET description = 
+                                     CASE WHEN description IS NULL THEN description = '({timezone})'
+                                     ELSE description || ' ({timezone})' END
+                                     WHERE tablename = 'w_levels_logger' and columnname = 'date_time';""")
 
 class AddLayerStyles(object):
     """ currently this class is not used although it should be, when storing layer styles in the database works better """

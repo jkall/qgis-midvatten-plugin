@@ -130,11 +130,12 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 1, 0, 1, 'sand', 'sand', '3', 'j')''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
         self.create_and_select_vlayer()
-
+        print(str(db_utils.sql_load_fr_db('''SELECT * FROM zz_strat''')))
         dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()
         print(str(mock_skippopup.mock_calls))
+
         test = common_utils.anything_to_string_representation(dlg.data)
         print(str(dlg.data))
         test_survey = common_utils.anything_to_string_representation(repr(dlg.data['P1']))
@@ -142,6 +143,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
             common_utils.returnunicode(dlg.data['P1'].strata, keep_containers=True))
 
         assert len(mock_skippopup.mock_calls) == 0
+        print(str(mock_messagebar.mock_calls))
         assert len(mock_messagebar.mock_calls) == 0
         assert test == """{"P1": SURVEY('P1', 5.000000, '<QgsPointXY: POINT(633466 711659)>')}"""
         assert test_survey == '''"SURVEY('P1', 5.000000, '<QgsPointXY: POINT(633466 711659)>')"'''

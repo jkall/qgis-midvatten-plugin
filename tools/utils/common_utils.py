@@ -17,6 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
 
 import ast
 import copy
@@ -1380,3 +1381,14 @@ def timer(name):
 def get_date_time():
     """returns date and time as a string in a pre-formatted format"""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
+def format_timezone_string(index):
+    if index < -12 or index > 14:
+        raise Exception("Error, timezone must be between -12 and + 14.")
+    if index < 0:
+        return 'UTC{}'.format(str(index))
+    elif not index:
+        return 'UTC'
+    else:
+        return 'UTC+{}'.format(str(index))

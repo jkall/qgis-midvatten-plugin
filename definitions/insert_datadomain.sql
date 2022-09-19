@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
-INSERT INTO zz_flowtype (type, explanation) VALUES ('Momflow', 'Momentary flow rate');
+insert into zz_flowtype(type, explanation) values('Accvol', 'Accumulated volume');
+insert into zz_flowtype(type, explanation) values('Momflow', 'Momentary flow rate');
 insert into zz_flowtype(type, explanation) values('Aveflow', 'Average flow since last reading');
 insert into zz_meteoparam(parameter, explanation) values('precip', 'Precipitation');
 insert into zz_meteoparam(parameter, explanation) values('temp', 'Air temperature');
@@ -73,6 +74,7 @@ insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('coarse gravel','DarkGreen','O','darkGreen','Dense7Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('till','cyan','/','cyan','CrossPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('rock','red','x','red','DiagCrossPattern');
+insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('rock','white','x','white','NoBrush');
 insert into zz_capacity (capacity,explanation) values('','unknown');
 insert into zz_capacity (capacity,explanation) values('0','unknown');
 insert into zz_capacity (capacity,explanation) values('1','above gwl');

@@ -25,6 +25,7 @@ changelog=
             * UTC-combobox can now be set from database. (Add "(UTC+/-X)" at the end of the description string in
                   about_db at row tablename=w_levels_logger and columnname=date_time).
                   Ex. "Date and Time for the observation (UTC+1)"
+        - Fixed failing tests.
         Version 1.6.12b1:
         - Some adjustments after new Python-version where float is not implicitly converted to int. Much more changes are probably required.
         - Adjusted fieldlogger import to skip non-error warning message.

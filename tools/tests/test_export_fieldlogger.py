@@ -441,7 +441,6 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
         assert tuple(lines) == tuple(result_lines)
 
-
     #@staticmethod
     @mock.patch('midvatten.tools.export_fieldlogger.db_utils.tables_columns')
     @mock.patch('midvatten.tools.export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
@@ -478,9 +477,56 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
         exporttofieldlogger.export()
 
-        print("printlist" + str(mock_write_printlist_to_file.mock_calls))
+        #print("printlist" + str(mock_write_printlist_to_file.mock_calls))
+        print("Prints")
+        #maximum_test_precision = 8
+        testlist = []
+        for _call in mock_write_printlist_to_file.call_args_list:
+            args = _call[0][0]
+            #print(str(args))
+            for location_idx in range(len(args)):
+                loc = args[location_idx]
+                if location_idx in [4, 5, 6]:
+                    #String 'obsid1.proj;obsid1.proj.group;0.9019366063889331;19.489297537299507;par1'
+                    alist = loc.split(';')
+                    for colnr in [2, 3]:
+                        alist[colnr] = '{:.8f}'.format(float(alist[colnr]))
+                    testlist.append(';'.join(alist))
+                else:
+                    testlist.append(loc)
+        print("Test")
+        print(str(testlist))
 
-        assert mock_write_printlist_to_file.mock_calls == [mock.call(['NAME;INPUTTYPE;HINT', 'par1;type1;hint1 ', 'par2;type2;hint2 ', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', 'obsid1.proj;obsid1.proj.group;0.9019366063889334;19.489297537299507;par1', 'obsid2.proj;obsid2.proj.group;1.7601631374427096;28.363010767336505;par1', 'obsid3.proj2;obsid3.proj2.group;2.5166567545976224;36.93072164080035;par2'])]
+        # Full number of decimals
+        """ref = ('NAME;INPUTTYPE;HINT', 
+              'par1;type1;hint1 ', 
+              'par2;type2;hint2 ', 
+              'NAME;SUBNAME;LAT;LON;INPUTFIELD', 
+              'obsid1.proj;obsid1.proj.group;0.9019366063889334;19.489297537299507;par1', 
+              'obsid2.proj;obsid2.proj.group;1.7601631374427096;28.363010767336505;par1', 
+              'obsid3.proj2;obsid3.proj2.group;2.5166567545976224;36.93072164080035;par2')"""
+
+        # 6 decimals
+        """ref = ('NAME;INPUTTYPE;HINT',
+                                   'par1;type1;hint1 ',
+                                   'par2;type2;hint2 ',
+                                   'NAME;SUBNAME;LAT;LON;INPUTFIELD',
+                                   'obsid1.proj;obsid1.proj.group;0.901936;19.489297;par1',
+                                   'obsid2.proj;obsid2.proj.group;1.760163;28.363010;par1',
+                                   'obsid3.proj2;obsid3.proj2.group;2.516656;36.930721;par2')"""
+
+        # 8 decimals
+        ref = ('NAME;INPUTTYPE;HINT',
+               'par1;type1;hint1 ',
+               'par2;type2;hint2 ',
+               'NAME;SUBNAME;LAT;LON;INPUTFIELD',
+               'obsid1.proj;obsid1.proj.group;0.90193661;19.48929754;par1',
+               'obsid2.proj;obsid2.proj.group;1.76016314;28.36301077;par1',
+               'obsid3.proj2;obsid3.proj2.group;2.51665675;36.93072164;par2')
+
+        print("Ref")
+        print(ref)
+        assert tuple(testlist) == ref
         #assert False
 
 

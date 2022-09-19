@@ -480,7 +480,7 @@ class Midvatten(object):
             if sanity.result == 1:
                 common_utils.start_waiting_cursor()#show the user this may take a long time...
                 source_srid = db_utils.sql_load_fr_db('''SELECT srid FROM geometry_columns WHERE f_table_name = 'obs_points';''')[1][0][0]
-
+                source_timezone = db_utils.get_timezone_from_db('w_levels_logger')
                 #Let the user chose an EPSG-code for the exported database
                 common_utils.stop_waiting_cursor()
                 user_chosen_EPSG_code = common_utils.ask_for_export_crs(source_srid)
@@ -495,7 +495,8 @@ class Midvatten(object):
                 verno = str(iniText.value('version'))
 
                 newdbinstance = NewDb()
-                newdbinstance.create_new_spatialite_db(verno,user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False)
+                newdbinstance.create_new_spatialite_db(verno,user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False,
+                                                       timezone=source_timezone)
                 common_utils.start_waiting_cursor()
                 if newdbinstance.db_settings:
                     new_dbpath = db_utils.get_spatialite_db_path_from_dbsettings_string(newdbinstance.db_settings)
