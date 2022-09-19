@@ -220,9 +220,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             screen_dpi = QApplication.screens()[0].logicalDotsPerInch()
             width_pixels = width_inches * screen_dpi
             height_pixels = height_inches * screen_dpi
-            self.canvas.setFixedSize(width_pixels, height_pixels)
-            self.widgetPlot.setFixedWidth(max(self.canvas.size().width(), self.mpltoolbar.size().width()))
-            self.widgetPlot.setFixedHeight(self.canvas.size().height() + self.mpltoolbar.size().height()*3)
+            self.canvas.setFixedSize(int(width_pixels), int(height_pixels))
+            self.widgetPlot.setFixedWidth(int(max(self.canvas.size().width(), self.mpltoolbar.size().width())))
+            self.widgetPlot.setFixedHeight(int(self.canvas.size().height() + self.mpltoolbar.size().height()*3))
 
     def add_titlebar(self, widget):
         if widget.isWindow():
