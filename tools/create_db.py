@@ -184,34 +184,35 @@ class NewDb(object):
         versionstext = ', '.join(result[0])
 
         common_utils.stop_waiting_cursor()
-        set_locale = self.ask_for_locale()
+        supplied_locale = self.ask_for_locale()
         common_utils.start_waiting_cursor()
 
         if user_select_CRS=='y':
             common_utils.stop_waiting_cursor()
-            EPSGID=str(self.ask_for_CRS(set_locale)[0])
+            epsg_id = str(self.ask_for_CRS(supplied_locale)[0])
             common_utils.start_waiting_cursor()
         else:
-            EPSGID=EPSG_code
+            epsg_id=EPSG_code
 
-        if EPSGID=='0' or not EPSGID:
+        if epsg_id=='0' or not epsg_id:
             raise common_utils.UserInterruptError()
 
         if timezone is None:
             common_utils.stop_waiting_cursor()
             timezone = self.ask_for_timezone()
             common_utils.start_waiting_cursor()
+        #print("Got timezone " + str(timezone))
 
         filenamestring = "create_db.sql"
 
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
         qgisverno = Qgis.QGIS_VERSION#We want to store info about which qgis-version that created the db
         replace_word_replace_with = [
-            ('CHANGETORELEVANTEPSGID', ru(EPSGID)),
+            ('CHANGETORELEVANTEPSGID', ru(epsg_id)),
             ('CHANGETOPLUGINVERSION', ru(verno)),
             ('CHANGETOQGISVERSION', ru(qgisverno)),
             ('CHANGETODBANDVERSION', 'PostGIS version %s' % ru(versionstext)),
-            ('CHANGETOLOCALE', ru(set_locale)),
+            ('CHANGETOLOCALE', ru(supplied_locale)),
             ('double', 'double precision'),
             ('"', ''),
             ('rowid as rowid', 'CTID as rowid'),
@@ -248,7 +249,7 @@ class NewDb(object):
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), 'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
 
-        self.insert_datadomains(set_locale, dbconnection)
+        self.insert_datadomains(supplied_locale, dbconnection)
 
         execute_sqlfile(get_full_filename('insert_obs_points_triggers_postgis.sql'), dbconnection)
 
@@ -279,11 +280,11 @@ class NewDb(object):
         locale_names.append(locale.getdefaultlocale()[0])
         locale_names = list(set(locale_names))
         question = common_utils.NotFoundQuestion(dialogtitle=ru(QCoreApplication.translate('NewDb', 'User input needed')),
-                                                             msg=ru(QCoreApplication.translate('NewDb', 'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
-                                                             existing_list=locale_names,
-                                                             default_value='',
-                                                             combobox_label=ru(QCoreApplication.translate('newdb', 'Locales')),
-                                                             button_names=['Cancel', 'Ok'])
+             msg=ru(QCoreApplication.translate('NewDb', 'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
+             existing_list=locale_names,
+             default_value='',
+             combobox_label=ru(QCoreApplication.translate('newdb', 'Locales')),
+             button_names=['Cancel', 'Ok'])
         answer = question.answer
         submitted_value = ru(question.value)
         if answer == 'cancel':
@@ -291,16 +292,19 @@ class NewDb(object):
         elif answer == 'ok':
             return submitted_value
 
-    def ask_for_CRS(self, set_locale):
+    def ask_for_CRS(self, supplied_locale):
         # USER MUST SELECT CRS FIRST!! 
-        if set_locale == 'sv_SE':
+        if supplied_locale == 'sv_SE':
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = qgis.PyQt.QtWidgets.QInputDialog.getInt(None, ru(QCoreApplication.translate('NewDb', "Select CRS")), ru(QCoreApplication.translate('NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
-        if not EPSGID[1]:
+        epsg_id = qgis.PyQt.QtWidgets.QInputDialog.getInt(None, ru(QCoreApplication.translate('NewDb', "Select CRS")), 
+              ru(QCoreApplication.translate('NewDb', 
+                                            "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),
+              default_crs)
+        if not epsg_id[1]:
             raise common_utils.UserInterruptError()
-        return EPSGID
+        return epsg_id
 
     def ask_for_timezone(self):
         timezone_list = ['']
@@ -308,7 +312,7 @@ class NewDb(object):
         question = common_utils.NotFoundQuestion(
             dialogtitle=ru(QCoreApplication.translate('NewDb', 'User input needed')),
             msg=ru(QCoreApplication.translate('NewDb',
-                                              'Supply preferred timezone for logger data for table w_levels_loggerSupply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
+                                              'Supply preferred timezone for logger data for table w_levels_logger (use as default timezone for some logger data imports).')),
             existing_list=timezone_list,
             default_value='',
             combobox_label=ru(QCoreApplication.translate('newdb', 'Timezone')),
@@ -341,7 +345,6 @@ class NewDb(object):
 
         table_name_reg = re.compile(r'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
         for table in tables:
-
             #Get table and column comments
             if created_tables_sqls is None:
                 table_descr_sql = ("SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
@@ -395,7 +398,7 @@ class NewDb(object):
                     raise
         if timezone:
             dbconnection.execute(f"""UPDATE about_db SET description = 
-                                     CASE WHEN description IS NULL THEN description = '({timezone})'
+                                     CASE WHEN description IS NULL THEN '({timezone})'
                                      ELSE description || ' ({timezone})' END
                                      WHERE tablename = 'w_levels_logger' and columnname = 'date_time';""")
 
