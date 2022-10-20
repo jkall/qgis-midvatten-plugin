@@ -50,7 +50,7 @@ import datetime
 
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer
-from midvatten.tools.utils.date_utils import dateshift, datestring_to_date, long_dateformat
+from midvatten.tools.utils.date_utils import dateshift, datestring_to_date, long_dateformat, change_timezone
 from midvatten.tools.utils.gui_utils import add_action_to_navigation_toolbar
 
 
@@ -159,7 +159,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.logger_artist = None
         self.loggerpos_masl_or_offset_state = 1
         self.selected_line = None
-        self.logger_artist = None
         self.moving_idx = None
 
         self.settingsdict = settingsdict1
@@ -216,6 +215,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.load_obsid_from_db()
         common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
+        self.w_levels_logger_tz = db_utils.get_timezone_from_db('w_levels_logger')
+        self.w_levels_tz = db_utils.get_timezone_from_db('w_levels')
 
     def update_date_from_extent(self, date_time_edit, xbound_min_or_max):
         date_time_edit.setDateTime(num2date(xbound_min_or_max))
@@ -310,6 +311,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '%s' ORDER BY date_time"""%obsid
         self.meas_ts = self.sql_into_recarray(meas_sql)
+        if self.w_levels_logger_tz and self.w_levels_tz:
+            self.meas_ts.date_time = [change_timezone(x, self.w_levels_tz, self.w_levels_logger_tz)
+                                      for x in self.meas_ts.date_time]
 
         head_level_masl_sql = r"""SELECT date_time, head_cm / 100, level_masl FROM w_levels_logger WHERE obsid = '%s' ORDER BY date_time"""%obsid
         head_level_masl_list = db_utils.sql_load_fr_db(head_level_masl_sql)[1]
@@ -515,6 +519,8 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                                     time_list=logger_time_list,
                                                     style=dict(linestyle='-', picker=5, markersize=3, marker=marker,
                                                     zorder=10, color='#ff7f0eff'))[0]
+        else:
+            self.logger_artist = None
 
         if self.plot_logger_head.isChecked() and self.head_ts_for_plot.size and self.contains_more_than_nan(self.head_ts_for_plot):
             self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger head')),

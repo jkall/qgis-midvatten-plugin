@@ -145,3 +145,9 @@ class TestGetTimezoneFromDb(utils_for_tests.MidvattenTestPostgisDbSv):
         tz = db_utils.get_timezone_from_db('w_levels_logger')
         #print(str(tz))
         assert tz == 'UTC+1'
+
+    def test_other_than_utc(self):
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (Europe/Stockholm)'
+                    WHERE tablename = 'w_levels' and columnname = 'date_time';""")
+        tz = db_utils.get_timezone_from_db('w_levels')
+        assert tz == 'Europe/Stockholm'

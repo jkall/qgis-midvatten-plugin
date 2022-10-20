@@ -286,5 +286,68 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test)
         assert test == ref
 
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_change_timezone_no_w_levels_tz(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100, 1)")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels (obsid, date_time, meas, level_masl) VALUES ('rb1', '2017-02-01 00:00', 200, 2)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
+        calibrlogger.load_obsid_and_init()
+        assert tuple(calibrlogger.meas_ts.tolist()) == (('2017-02-01 00:00', 2.0),)
 
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_change_timezone_w_levels_tz_no_conversion(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100, 1)")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels (obsid, date_time, meas, level_masl) VALUES ('rb1', '2017-02-01 00:00', 200, 2)")
 
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (UTC+1)'
+                                 WHERE tablename = 'w_levels_logger';""")
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (Europe/Stockholm)'
+                                 WHERE tablename = 'w_levels';""")
+
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
+        calibrlogger.load_obsid_and_init()
+        assert tuple(calibrlogger.meas_ts.tolist()) == (('2017-02-01 00:00', 2.0),)
+
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_change_timezone_w_levels_tz_convert(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100, 1)")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels (obsid, date_time, meas, level_masl) VALUES ('rb1', '2017-05-01 00:00', 200, 2)")
+
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (UTC+1)'
+                                 WHERE tablename = 'w_levels_logger';""")
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (Europe/Stockholm)'
+                                 WHERE tablename = 'w_levels';""")
+
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
+        calibrlogger.load_obsid_and_init()
+        assert tuple(calibrlogger.meas_ts.tolist()) == (('2017-04-30 23:00', 2.0),)
+
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_change_timezone_no_w_levels_logger_tz(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100, 1)")
+        db_utils.sql_alter_db(
+            "INSERT INTO w_levels (obsid, date_time, meas, level_masl) VALUES ('rb1', '2017-05-01 00:00', 200, 2)")
+
+        db_utils.sql_alter_db("""UPDATE about_db SET description = ''
+                                 WHERE tablename = 'w_levels_logger';""")
+        db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (Europe/Stockholm)'
+                                 WHERE tablename = 'w_levels';""")
+
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
+        calibrlogger.load_obsid_and_init()
+        assert tuple(calibrlogger.meas_ts.tolist()) == (('2017-05-01 00:00', 2.0),)

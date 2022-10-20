@@ -266,3 +266,51 @@ def parse_timezone_to_timedelta(tz_string):
     minutes = int(res[3].lstrip(':'))*sign if res[3].lstrip(':') else 0
     td = datetime.timedelta(hours=hours, minutes=minutes)
     return td
+
+def change_timezone(date_or_string, from_timezone, to_timezone):
+    """
+    This function should probably not be used for huge amounts of logger data as it might be rather slow.
+    @param date_or_string:
+    @param from_timezone:
+    @param to_timezone:
+    @return:
+
+    # Replace winter time into same utc offset - no change
+    >>> change_timezone('2022-03-27 00:00', 'Europe/Stockholm', 'UTC+1')
+    '2022-03-27 00:00'
+    >>> change_timezone('2022-03-28 00:00', 'Europe/Stockholm', 'UTC+1')
+    '2022-03-27 23:00'
+    >>> change_timezone('2022-03-27 23:00', 'UTC+1', 'Europe/Stockholm')
+    '2022-03-28 00:00'
+    >>> change_timezone('2022-10-30 00:00', 'Europe/Stockholm', 'UTC+1')
+    '2022-10-29 23:00'
+    >>> change_timezone('2022-10-31 00:00', 'Europe/Stockholm', 'UTC+1')
+    '2022-10-31 00:00'
+    """
+    def get_tz_and_timedelta(tz_string):
+        if tz_string.lower().startswith('utc'):
+            new_tz = pytz.utc
+            timedelta = parse_timezone_to_timedelta(tz_string)
+        else:
+            new_tz = pytz.timezone(tz_string)
+            timedelta = None
+        return new_tz, timedelta
+
+
+    tz_naive = datestring_to_date(date_or_string)
+
+    tz, td = get_tz_and_timedelta(from_timezone)
+    tz_aware = tz.localize(tz_naive, is_dst=None)
+    if td:
+        tz_aware = tz_aware - td
+
+    new_tz, new_td = get_tz_and_timedelta(to_timezone)
+    new_date = tz_aware.astimezone(new_tz)
+    if new_td is not None:
+        new_date = new_date + new_td
+
+    if isinstance(date_or_string, str):
+        res = new_date.strftime(find_date_format(date_or_string))
+    else:
+        res = new_date
+    return res

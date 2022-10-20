@@ -1222,5 +1222,11 @@ def get_timezone_from_db(tablename, dbconnection=None):
 
         if m is not None:
             timezone = m.group(0).lstrip('(').rstrip(')')
-
+        else:
+            m = re.search(r"\([a-zA-Z0-9åäöÅÄÖ+-/]+\)", res[0][0], re.IGNORECASE)
+            if m is not None:
+                timezone = m.group(0).lstrip('(').rstrip(')')
     return timezone
+
+
+
