@@ -1230,7 +1230,7 @@ def to_float_or_none(anything):
 
 
 def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';', encoding="utf-8", **kwds):
-    with io.open(filename, 'w', encoding='utf-8') as csvfile:
+    with io.open(filename, 'w', newline='', encoding=encoding) as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=delimiter, dialect=dialect, **kwds)
         #csvwriter.writerows([[bytes(returnunicode(col), encoding) for col in row] for row in printlist])
         csvwriter.writerows(returnunicode(printlist, keep_containers=True))
