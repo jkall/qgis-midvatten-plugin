@@ -1,7 +1,9 @@
 ﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
 SPATIALITE SELECT InitSpatialMetadata(1);
 CREATE TABLE about_db /*A status log for the tables in the db*/(
-tablename text --Name of a table in the db
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, tablename text --Name of a table in the db
 , columnname text --Name of column
 , data_type text --Data type of the column
 , not_null text --1 if NULL-values isn't allowed
@@ -12,8 +14,8 @@ tablename text --Name of a table in the db
 , upd_date text --Date for last update
 , upd_sign text --Person responsible for update
 );
-INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of CHANGETODBANDVERSION', '', '');
-INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
+INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description, upd_date, upd_sign) VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of CHANGETODBANDVERSION', '', '');
+INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description, upd_date, upd_sign) VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
 CREATE TABLE zz_staff /*Data domain for field staff used when importing data*/(
 staff text NOT NULL--Initials of the field staff
 , name text --Name of the field staff

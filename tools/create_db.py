@@ -34,13 +34,14 @@ from qgis.core import Qgis
 from midvatten.tools.utils import common_utils, db_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru, get_full_filename, format_timezone_string
 from midvatten.tools.utils.db_utils import execute_sqlfile
-
+from midvatten.tools.utils.date_utils import get_pytz_timezones
 
 class NewDb(object):
     def __init__(self):
         self.db_settings = ''
 
-    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code='4326', delete_srids=True, timezone=None):  #CreateNewDB(self, verno):
+    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code='4326', delete_srids=True, w_levels_logger_timezone=None,
+                                 w_levels_timezone=None):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
         common_utils.stop_waiting_cursor()
@@ -61,11 +62,20 @@ class NewDb(object):
 
         #path and name of new db
 
-        if timezone is None:
+        if w_levels_logger_timezone is None:
             common_utils.stop_waiting_cursor()
-            timezone = self.ask_for_timezone()
+            default_ts = 'UTC+1' if set_locale.lower() == 'sv_se' else ''
+            w_levels_logger_timezone = self.ask_for_timezone('w_levels_logger', default_ts)
+            print("Got timezone:" + str(w_levels_logger_timezone))
             common_utils.start_waiting_cursor()
-        print("Got timezone:" + str(timezone))
+
+        if w_levels_timezone is None:
+            common_utils.stop_waiting_cursor()
+            default_ts = 'Europe/Stockholm' if set_locale.lower() == 'sv_se' else ''
+            w_levels_timezone = self.ask_for_timezone('w_levels', default_ts)
+            print("Got timezone:" + str(w_levels_timezone))
+            common_utils.start_waiting_cursor()
+
         common_utils.stop_waiting_cursor()
         dbpath = ru(common_utils.get_save_file_name_no_extension(parent=None, caption="New DB",
                                                                              directory="midv_obsdb.sqlite",
@@ -96,7 +106,7 @@ class NewDb(object):
             #utils.pop_up_info("Impossible to connect to selected DataBase")
             common_utils.stop_waiting_cursor()
             return ''
-        d =dbconnection.connector
+        d = dbconnection.connector
         #First, find spatialite version
         versionstext = dbconnection.execute_and_fetchall('select spatialite_version()')[0][0]
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
@@ -120,18 +130,24 @@ class NewDb(object):
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             lines = [ru(line) for line in f]
-        sql_lines = ['{};'.format(l) for l in ' '.join(lines).split(';') if l]
+
+        sql_lines = [common_utils.lstrip('SPATIALITE', l) for l in lines if all([l,
+                                              not l.startswith("#"),
+                                              not l.startswith('--'),
+                                              'POSTGIS' not in l,
+                                              l.replace(';', '').strip().replace(
+                                                 '\n', '').replace('\r', '')])]
+        sql_lines = ['{};'.format(l.strip()) for l in ' '.join(sql_lines).split(';') if l.strip()]
         for line in sql_lines:
-            if all([line, not line.startswith("#"), 'POSTGIS' not in line]):
-                sql = self.replace_words(line, replace_word_replace_with)
+            sql = self.replace_words(line, replace_word_replace_with)
+            try:
+                dbconnection.execute(sql)
+            except:
                 try:
-                    dbconnection.execute(sql)
+                    print(str(sql))
                 except:
-                    try:
-                        print(str(sql))
-                    except:
-                        pass
-                    raise
+                    pass
+                raise
 
         if delete_srids:
             db_utils.delete_srids(dbconnection, EPSGID)
@@ -143,7 +159,8 @@ class NewDb(object):
 
         execute_sqlfile(get_full_filename('qgis3_obsp_fix.sql'), dbconnection)
 
-        self.add_metadata_to_about_db(dbconnection, timezone=timezone)
+        self.add_metadata_to_about_db(dbconnection, w_levels_logger_timezone=w_levels_logger_timezone,
+                                      w_levels_timezone=w_levels_timezone)
 
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
 
@@ -166,7 +183,8 @@ class NewDb(object):
 
         common_utils.stop_waiting_cursor()
 
-    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326', timezone=None):
+    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326', w_levels_logger_timezone=None,
+                            w_levels_timezone=None):
 
         dbconnection = db_utils.DbConnectionManager()
         db_settings = dbconnection.db_settings
@@ -197,11 +215,19 @@ class NewDb(object):
         if epsg_id=='0' or not epsg_id:
             raise common_utils.UserInterruptError()
 
-        if timezone is None:
+        if w_levels_logger_timezone is None:
             common_utils.stop_waiting_cursor()
-            timezone = self.ask_for_timezone()
+            default_ts = 'UTC+1' if supplied_locale.lower() == 'sv_se' else ''
+            w_levels_logger_timezone = self.ask_for_timezone('w_levels_logger', default_ts)
+            print("Got timezone:" + str(w_levels_logger_timezone))
             common_utils.start_waiting_cursor()
-        #print("Got timezone " + str(timezone))
+
+        if w_levels_timezone is None:
+            common_utils.stop_waiting_cursor()
+            default_ts = 'Europe/Stockholm' if supplied_locale.lower() == 'sv_se' else ''
+            w_levels_timezone = self.ask_for_timezone('w_levels', default_ts)
+            print("Got timezone:" + str(w_levels_timezone))
+            common_utils.start_waiting_cursor()
 
         filenamestring = "create_db.sql"
 
@@ -222,29 +248,34 @@ class NewDb(object):
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             lines = [ru(line) for line in f]
-        sql_lines = ['{};'.format(l) for l in ' '.join(lines).split(';') if l]
+        sql_lines = [common_utils.lstrip('POSTGIS', l).lstrip() for l in lines if all([l.strip(),
+                                                                                 not l.startswith("#"),
+                                                                                 not l.startswith('--'),
+                                                                                 'SPATIALITE' not in l,
+                                                                                 'InitSpatialMetadata' not in l,
+                                                                                 l.replace(';', '').strip().replace(
+                                                                                     '\n', '').replace('\r', '')])]
+        sql_lines = ['{};'.format(l.strip()) for l in ' '.join(sql_lines).split(';') if l.strip()]
         for linenr, line in enumerate(sql_lines):
-            if all([line, not line.startswith("#"), 'InitSpatialMetadata' not in line, 'SPATIALITE' not in line,
-                    line.replace(';', '').strip().replace('\n', '').replace('\r', '')]):
-                sql = self.replace_words(line, replace_word_replace_with)
+            sql = self.replace_words(line, replace_word_replace_with)
+            try:
+                dbconnection.execute(sql)
+            except:
                 try:
-                    dbconnection.execute(sql)
+                    print(str(sql))
+                    print("numlines: " + str(len(sql_lines)))
+                    print("Error on line nr {}".format(str(linenr)))
+                    print("before " + sql_lines[linenr - 1])
+                    if linenr + 1 < len(sql_lines):
+                        print("after " + sql_lines[linenr + 1 ])
                 except:
-                    try:
-                        print(str(sql))
-                        print("numlines: " + str(len(sql_lines)))
-                        print("Error on line nr {}".format(str(linenr)))
-                        print("before " + sql_lines[linenr - 1])
-                        if linenr + 1 < len(sql_lines):
-                            print("after " + sql_lines[linenr + 1 ])
-                    except:
-                        pass
-                    raise
-                else:
-                    _sql = sql.lstrip('\r').lstrip('\n').lstrip()
-                    if _sql.startswith('CREATE TABLE'):
-                        tablename = ' '.join(_sql.split()).split()[2]
-                        created_tables_sqls[tablename] = sql
+                    pass
+                raise
+            else:
+                _sql = sql.lstrip('\r').lstrip('\n').lstrip()
+                if _sql.startswith('CREATE TABLE'):
+                    tablename = ' '.join(_sql.split()).split()[2]
+                    created_tables_sqls[tablename] = sql
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), 'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
@@ -255,7 +286,9 @@ class NewDb(object):
 
         execute_sqlfile(get_full_filename('insert_functions_postgis.sql'), dbconnection)
 
-        self.add_metadata_to_about_db(dbconnection, created_tables_sqls, timezone=timezone)
+        self.add_metadata_to_about_db(dbconnection, created_tables_sqls,
+                                      w_levels_logger_timezone=w_levels_logger_timezone,
+                                      w_levels_timezone=w_levels_timezone)
 
         dbconnection.vacuum()
 
@@ -306,15 +339,22 @@ class NewDb(object):
             raise common_utils.UserInterruptError()
         return epsg_id
 
-    def ask_for_timezone(self):
+    def ask_for_timezone(self, table, default_tz=''):
         timezone_list = ['']
-        timezone_list.extend([format_timezone_string(hour) for hour in range(-12, 15)])
+        if table == 'w_levels_logger':
+            msg = ru(QCoreApplication.translate('NewDb',
+                 'Supply preferred timezone for logger data for table w_levels_logger (use as default timezone for some logger data imports).'))
+            timezone_list.extend([format_timezone_string(hour) for hour in range(-12, 15)])
+        elif table == 'w_levels':
+            msg = ru(QCoreApplication.translate('NewDb',
+                                                'Supply preferred timezone for level data for table w_levels (on-the-fly conversion during logger data editing).'))
+            timezone_list.extend(get_pytz_timezones())
+
         question = common_utils.NotFoundQuestion(
             dialogtitle=ru(QCoreApplication.translate('NewDb', 'User input needed')),
-            msg=ru(QCoreApplication.translate('NewDb',
-                                              'Supply preferred timezone for logger data for table w_levels_logger (use as default timezone for some logger data imports).')),
+            msg=msg,
             existing_list=timezone_list,
-            default_value='',
+            default_value=default_tz,
             combobox_label=ru(QCoreApplication.translate('newdb', 'Timezone')),
             button_names=['Cancel', 'Ok'])
         answer = question.answer
@@ -332,7 +372,8 @@ class NewDb(object):
             filenamestring += ".sql"
         execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filenamestring), dbconnection)
 
-    def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None, timezone=None):
+    def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None, w_levels_logger_timezone=None,
+                                 w_levels_timezone=None):
         tables = sorted(db_utils.get_tables(dbconnection=dbconnection, skip_views=True))
 
         #Matches comment inside /* */
@@ -372,6 +413,7 @@ class NewDb(object):
 
             sql = r"""INSERT INTO about_db (tablename, columnname, description, data_type, not_null, default_value, primary_key, foreign_key) VALUES """
             sql +=  r'({});'.format(', '.join(["""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, r'*', table_descr, r'', r'', r'', r'', r'']]))
+
             dbconnection.execute(sql)
 
             for column in table_info:
@@ -387,7 +429,7 @@ class NewDb(object):
                 if column_descr:
                     column_descr = column_descr.rstrip('\r').replace("'", "''")
                 sql = 'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
-                sql += '({});'.format(', '.join(["""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
+                sql += '({});'.format(', '.join(["""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value.replace("'", "''"), primary_key, _foreign_keys, column_descr]]))
                 try:
                     dbconnection.execute(sql)
                 except:
@@ -396,11 +438,14 @@ class NewDb(object):
                     except:
                         pass
                     raise
-        if timezone:
-            dbconnection.execute(f"""UPDATE about_db SET description = 
-                                     CASE WHEN description IS NULL THEN '({timezone})'
-                                     ELSE description || ' ({timezone})' END
-                                     WHERE tablename = 'w_levels_logger' and columnname = 'date_time';""")
+        for tz, tname in [(w_levels_logger_timezone, 'w_levels_logger'),
+                          (w_levels_timezone, 'w_levels')]:
+            if tz:
+                dbconnection.execute(f"""UPDATE about_db SET description = 
+                                         CASE WHEN description IS NULL THEN '({tz})'
+                                         ELSE description || ' ({tz})' END
+                                         WHERE tablename = '{tname}' and columnname = 'date_time';""")
+
 
 class AddLayerStyles(object):
     """ currently this class is not used although it should be, when storing layer styles in the database works better """

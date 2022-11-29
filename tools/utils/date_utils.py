@@ -314,3 +314,6 @@ def change_timezone(date_or_string, from_timezone, to_timezone):
     else:
         res = new_date
     return res
+
+def get_pytz_timezones():
+    return pytz.all_timezones
