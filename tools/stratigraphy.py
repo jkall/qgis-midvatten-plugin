@@ -438,7 +438,10 @@ class SurveyWidget(QtWidgets.QFrame):
                 
         # draw surveys
         for survey in self.order:
-            r = QtCore.QRect(x + margin, 0 + margin, surveyWidth - 2*margin, surveyHeight - 2*margin)
+            r = QtCore.QRect(int(x + margin),
+                             int(0 + margin),
+                             int(surveyWidth - 2*margin),
+                             int(surveyHeight - 2*margin))
             x += surveyWidth
             sond = self.sondaggio[survey.obsid]
             # draw the survey
@@ -467,16 +470,16 @@ class SurveyWidget(QtWidgets.QFrame):
         yBed = top + (interval[1]-depthBot)*scale
         
         # top depth
-        depthRect = QtCore.QRect(sRect.left(),yTop-depthHeight,sRect.width(),depthHeight)
+        depthRect = QtCore.QRect(sRect.left(), int(yTop-depthHeight), sRect.width(), int(depthHeight))
         p.drawText(depthRect, QtCore.Qt.AlignVCenter, "%.1f m" % depthTop)
         
         # bed depth
-        depthRect = QtCore.QRect(sRect.left(),yBed+1,sRect.width(),depthHeight)
+        depthRect = QtCore.QRect(sRect.left(), int(yBed+1), sRect.width(), int(depthHeight))
         p.drawText(depthRect, QtCore.Qt.AlignVCenter, "%.1f m" % depthBot)
         
         
-        dRect = QtCore.QRect(QtCore.QPoint(sRect.left(), yTop),
-                             QtCore.QPoint(sRect.left()+columnWidth, yBed))
+        dRect = QtCore.QRect(QtCore.QPoint(sRect.left(), int(yTop)),
+                             QtCore.QPoint(int(sRect.left()+columnWidth), int(yBed)))
     
         p.drawRect(dRect)
     
@@ -487,12 +490,12 @@ class SurveyWidget(QtWidgets.QFrame):
         for layer in sond.strata:
             y2 = (layer.depthBot - layer.depthTop) * scale
             # column rectangle
-            cRect = QtCore.QRect(QtCore.QPoint(dRect.left(), y),
-                                 QtCore.QPoint(dRect.right(), y+y2-1))
+            cRect = QtCore.QRect(QtCore.QPoint(dRect.left(), int(y)),
+                                 QtCore.QPoint(dRect.right(), int(y+y2-1)))
 
             # text rectangle
-            tRect = QtCore.QRect(QtCore.QPoint(dRect.right()+10, y),
-                                 QtCore.QPoint(sRect.right(), y+y2))
+            tRect = QtCore.QRect(QtCore.QPoint(dRect.right()+10, int(y)),
+                                 QtCore.QPoint(sRect.right(), int(y+y2)))
 
             bType = self.geoToSymbol(layer.geo_short)  # select brush pattern depending on the geo_short 
             # select brush pattern depending on usage of geo or hydro

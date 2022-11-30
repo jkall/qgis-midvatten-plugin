@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.6.12b7:
         - Added timezone request for table w_levels during database creation.
+        - Stratigraphy: bug fixes after after new Python-version where float is not implicitly converted to int.
         Version 1.6.12b6:
         - Fixes bug where export data to csv added blank lines using QGIS for Windows.
         Version 1.6.12b5:
