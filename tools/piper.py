@@ -144,7 +144,7 @@ class PiperPlot(object):
 
     def get_selected_datetimes(self):
         sql1 = self.big_sql()
-        sql2 = r""" select distinct date_time from (""" + sql1 + r""") order by date_time"""
+        sql2 = r""" select distinct date_time from (""" + sql1 + r""") AS foo order by date_time"""
         ConnOK, self.date_times = db_utils.sql_load_fr_db(sql2)
         
     def get_selected_observations(self):
