@@ -58,7 +58,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'utf-8'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -77,7 +77,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
         reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'
@@ -95,7 +95,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
         reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'
@@ -113,7 +113,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
         reference_string = r'''[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'''
@@ -131,7 +131,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data)
         reference_string = 'cancel'
@@ -148,7 +148,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data)
         reference_string = 'cancel'
@@ -163,7 +163,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
         reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, 2.0], [2016-03-15 11:00:00, 157.7, 0.6, 3.0]]'
@@ -181,7 +181,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-            file_data = DiverofficeImport.parse_diveroffice_file(path,
+            file_data = DiverofficeImport.parse_diveroffice_file_old(path,
                                                                    charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
@@ -202,7 +202,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'cp1252'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-            file_data = DiverofficeImport.parse_diveroffice_file(path,
+            file_data = DiverofficeImport.parse_diveroffice_file_old(path,
                                                                    charset_of_diverofficefile)
 
         assert file_data == 'skip'
@@ -220,7 +220,7 @@ class TestParseDiverofficeFile(object):
 
         charset_of_diverofficefile = 'utf-8'
         with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile) as path:
-                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+                file_data = DiverofficeImport.parse_diveroffice_file_old(path, charset_of_diverofficefile)
 
 
         test_string = utils_for_tests.create_test_string(file_data[0])

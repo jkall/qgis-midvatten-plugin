@@ -24,9 +24,13 @@ from __future__ import absolute_import
 
 import io
 import os
+import traceback
+
+import numpy as np
 from builtins import str
 from collections import OrderedDict
 from datetime import datetime
+import re
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
@@ -169,7 +173,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if not charsetchoosen:
             raise common_utils.UserInterruptError()
 
-        files = midvatten_utils.select_files(only_one_file=False, extension="csv (*.csv)")
+        files = midvatten_utils.select_files(only_one_file=False, extension="csv (*.csv);;mon (*.mon)")
         if not files:
             raise common_utils.UserInterruptError()
         self.start_import_button.setEnabled(True)
@@ -188,14 +192,23 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         parsed_files = []
         missing_utcoffset = False
 
+
         for selected_file in files:
             skip_file = False
+
+            if self.parse_func is self.parse_diveroffice_file and selected_file.endswith('.csv'):
+                parse_func = self.parse_diveroffice_file_old
+            else:
+                parse_func = self.parse_func
+
             try:
-                res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+                res = parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
             except:
                 common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
-                                                                                      '''Error on file %s.''')) % selected_file)
+                                                                                      '''Error on file %s.''')) % selected_file,
+                                                       log_msg=traceback.format_exc())
                 raise
+
 
             if res == 'cancel':
                 self.status = True
@@ -203,7 +216,6 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 return res
             elif res in ('skip', 'ignore'):
                 continue
-
             try:
                 file_data, filename, location, file_utc_offset = res
             except Exception as e:
@@ -284,9 +296,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 [row.append(obsid) for row in file_data[1:]]
                 parsed_files_with_obsid.append([file_data, filename, location])
         #Header
+
         file_to_import_to_db =  [parsed_files_with_obsid[0][0][0]]
         file_to_import_to_db.extend([row for parsed_file in parsed_files_with_obsid for row in parsed_file[0][1:]])
-
         # Add comment to import:
         #file_to_import_to_db[0].append('comment')
         #comment = ''
@@ -302,8 +314,11 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         if import_to_db:
             importer = import_data_to_db.midv_data_importer()
-            answer = importer.general_import('w_levels_logger', file_to_import_to_db)
-
+            try:
+                answer = importer.general_import('w_levels_logger', file_to_import_to_db)
+            except:
+                print(f"Got error {traceback.format_exc()}")
+                raise
         if export_csv:
             path = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(
                 self, 'Save File', '', 'CSV(*.csv)')
@@ -320,10 +335,116 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if self.close_after_import.isChecked():
             self.close()
 
+    @staticmethod
+    def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
+        if not pandas_on:
+            raise common_utils.UsageError(ru(QCoreApplication.translate('DiverofficeImport', "Parsinh mon-files requires Python Pandas library!")))
+
+        filedata = []
+        filename = os.path.basename(path)
+        section = None
+        data_start_row = None
+        metadata = {}
+        # Parse metadata
+        with io.open(path, 'rt', encoding=str(charset)) as f:
+            rows = [ru(rawrow).rstrip('\n').rstrip('\r').strip() for rawrow in f]
+
+        for rownr, row in enumerate(rows):
+            if path.lower().endswith('.csv') and row.startswith('Date/time'):
+                data_start_row = rownr+1
+                break
+
+            if row.startswith('['):
+                section = row.strip().lstrip('[').rstrip(']').lower()
+
+                if section == 'data':
+                    data_start_row = rownr+2
+                    break
+                else:
+                    continue
+
+            if section:
+                k, v = [x.strip() for x in row.split('=')]
+                metadata.setdefault(section, {})[k.lower()] = v
+
+        utc_offset = metadata.get('logger settings', {}).get('instrument number', '')
+        if not utc_offset:
+            utc_offset = metadata.get('series settings', {}).get('instrument number', '')
+
+        location = metadata.get('logger settings', {}).get('location', '')
+        if not location:
+            location = metadata.get('series settings', {}).get('location', '')
+
+        data_headers = {0: 'date_time'}
+        for section, data in metadata.items():
+            m = re.search('channel ([0-9]+)', section)
+            if m is not None:
+                secno = m.groups()[0]
+                colname = data['identification']
+                data_headers[int(secno)] = colname
+
+        stop_row = -1 if path.lower().endswith('.mon') else None
+        delimiter = common_utils.get_delimiter_from_file_rows(rows[data_start_row:stop_row], delimiters=['\t', ';', ','],
+                                                              num_fields=len(data_headers), filename=filename)
+
+        usecols = []
+        colnames = []
+        for k, v in sorted(data_headers.items()):
+            if 'level' in v.lower() or 'waterhead' in v.lower().replace(' ', ''):
+                usecols.append(k)
+                colnames.append('head_cm')
+            elif 'temp' in v.lower():
+                usecols.append(k)
+                colnames.append('temp_degc')
+            elif 'cond' in v.lower():
+                usecols.append(k)
+                colnames.append('cond_mscm')
+
+        if colnames:
+            colnames.insert(0, 'date_time')
+            usecols.insert(0, 0)
+
+        if 'head_cm' not in colnames:
+            common_utils.MessagebarAndLog.warning(
+                bar_msg=QCoreApplication.translate('DiverofficeImport', "Diveroffice import warning. See log message panel"),
+                log_msg=ru(QCoreApplication.translate('DiverofficeImport', "Warning, the file %s \ndid not have Water head as a channel.\nMake sure its barocompensated!")))
+            if skip_rows_without_water_level:
+                return 'skip'
+
+        df = pd.read_csv(path, sep=delimiter, encoding=charset, usecols=usecols, names=colnames,
+                         skipfooter=1, skiprows=data_start_row, parse_dates=['date_time'])
+        for col in df.columns[1:]:
+            df[col] = df[col].astype(str).str.replace(',', '.').astype(np.float64)
+
+        if not df.empty:
+            if begindate is not None:
+                df = df.loc[(df['date_time'] >= begindate), :]
+            if enddate is not None:
+                df = df.loc[df['date_time'] <= enddate, :]
+
+            if df.empty:
+                return filedata, filename, location, utc_offset
+
+        if skip_rows_without_water_level:
+            df = df.dropna(subset=['head_cm'])
+            if df.empty:
+                return filedata, filename, location, utc_offset
+
+
+        df['date_time'] = df['date_time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        filedata = [['date_time', 'head_cm', 'temp_degc', 'cond_mscm']]
+        for c in filedata[0]:
+            if c not in df.columns:
+                df[c] = np.nan
+        filedata.extend(df.loc[:, filedata[0]].values.tolist())
+        if len(filedata) < 2:
+            return common_utils.ask_user_about_stopping(ru(QCoreApplication.translate('DiverofficeImport', "Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")) % path)
+
+        return filedata, filename, location, utc_offset
 
 
     @staticmethod
-    def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
+    def parse_diveroffice_file_old(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
         """ Parses a diveroffice csv file into a string
 
         :param path: The file name

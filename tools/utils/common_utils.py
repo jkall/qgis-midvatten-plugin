@@ -585,7 +585,7 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
 
 
 @contextmanager
-def tempinput(data, charset='UTF-8'):
+def tempinput(data, charset='UTF-8', suffix='.csv'):
     """ Creates and yields a temporary file from data
 
         The file can't be deleted in windows for some strange reason.
@@ -593,7 +593,7 @@ def tempinput(data, charset='UTF-8'):
         for it to be a major problem though. Relying on windows temp file
         cleanup instead.
     """
-    temp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
     unicode_data = returnunicode(data)
     encoded_data = unicode_data.encode(charset)
     temp.write(encoded_data)
@@ -1016,15 +1016,15 @@ class Cancel(object):
         pass
 
 
-def get_delimiter(filename, charset='utf-8', delimiters=None, num_fields=None,
+def get_delimiter(filename=None, rows=None, charset='utf-8', delimiters=None, num_fields=None,
                   skip_empty_rows=True):
     if filename is None:
-        raise TypeError(QCoreApplication.translate('get_delimiter', 'Must give filename'))
+        raise TypeError(QCoreApplication.translate('get_delimiter', 'Must give filename or supply rows'))
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
     if skip_empty_rows:
         rows = [row for row in rows if row.strip().strip('\r').strip('\n')]
-    delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=None, num_fields=None)
+    delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=delimiters, num_fields=num_fields)
     return delimiter
 
 
