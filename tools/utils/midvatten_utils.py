@@ -303,6 +303,7 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
     _name = tablename if layername is None else layername
     layer = QgsVectorLayer(uri.uri(), _name, dbtype)
+    print(str(layer))
     if tablename == 'w_lvls_last_geom':
         fields = layer.fields()
 
@@ -311,12 +312,16 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     return layer
 
 
-def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None, layernames=None):
+def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None, layernames=None, key_columns=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
         dbconnection = db_utils.DbConnectionManager()
         dbconnection_created = True
     else:
         dbconnection_created = False
+
+    if key_columns is None:
+        key_columns = [None, 'obsid', 'rowid']
+
     existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
 
     for idx, tablename in enumerate(tablenames):  # first load all non-spatial layers
@@ -336,11 +341,13 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
             if is_old:
                 tablename = 'view_{}'.format(tablename)
 
-        for keycolumn in [None, 'obsid', 'rowid']:
+        for key_column in key_columns:
             layer = create_layer(tablename, geometrycolumn=geometrycolumn, dbconnection=dbconnection, layername=layername,
-                                 keycolumn=keycolumn)
+                                 keycolumn=key_column)
             if layer.isValid():
                 break
+            else:
+                print("Layer invalid with key " + str(key_column))
         else:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
             if dbconnection_created:
