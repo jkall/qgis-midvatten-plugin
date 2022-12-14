@@ -346,8 +346,6 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
                                  keycolumn=key_column)
             if layer.isValid():
                 break
-            else:
-                print("Layer invalid with key " + str(key_column))
         else:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
             if dbconnection_created:
