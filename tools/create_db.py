@@ -47,7 +47,7 @@ class NewDb(object):
         common_utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
         common_utils.start_waiting_cursor()
-        print("Got locale " + str(set_locale))
+        #print("Got locale " + str(set_locale))
 
         if user_select_CRS=='y':
             common_utils.stop_waiting_cursor()
@@ -66,14 +66,14 @@ class NewDb(object):
             common_utils.stop_waiting_cursor()
             default_ts = 'UTC+1' if set_locale.lower() == 'sv_se' else ''
             w_levels_logger_timezone = self.ask_for_timezone('w_levels_logger', default_ts)
-            print("Got timezone:" + str(w_levels_logger_timezone))
+            #print("Got timezone:" + str(w_levels_logger_timezone))
             common_utils.start_waiting_cursor()
 
         if w_levels_timezone is None:
             common_utils.stop_waiting_cursor()
             default_ts = 'Europe/Stockholm' if set_locale.lower() == 'sv_se' else ''
             w_levels_timezone = self.ask_for_timezone('w_levels', default_ts)
-            print("Got timezone:" + str(w_levels_timezone))
+            #print("Got timezone:" + str(w_levels_timezone))
             common_utils.start_waiting_cursor()
 
         common_utils.stop_waiting_cursor()

@@ -1111,3 +1111,96 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     print(f"Test\n{test_string}\n\nRef\n{reference_string}")
                     assert test_string == reference_string
+
+    @attr(status='only')
+    def test_wlvllogg_import_from_diveroffice_mon_files_missing_attr(self):
+        files = [('[Logger settings]',
+                  'Location=rb1',
+                  '[Channel 1]',
+                  'Identification          =LEVEL',
+                  '[Channel 2]',
+                  'Identification          =TEMPERATURE',
+                  '[Data]',
+                  '2',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101',
+                'END OF DATA FILE OF DATALOGGER FOR WINDOWS'),
+                ('[Series settings]',
+                 'Location=rb2',
+                 '[Channel 1]',
+                 'Identification          =Water head',
+                 '[Channel 2]',
+                 'Identification          =TEMPERATURE',
+                 '[Data]',
+                 '2',
+                '2016/04/15 10:30:00\t2\t20',
+                '2016/04/15 11:00:00\t21\t201',
+                'END OF DATA FILE OF DATALOGGER FOR WINDOWS'),
+                ('[Series settings]',
+                 'Location=rb3',
+                 '[Channel 1]',
+                 'Identification          =WATER HEAD (WC)',
+                 '[Channel 2]',
+                 'Identification          =TEMPERATURE',
+                 'Anything                  =',
+                 '                  =',
+                 '[Channel 3]',
+                 'Identification          =2: SPEC.COND.',
+                 '[Data]',
+                 '2',
+                '2016/05/15 10:30:00;3,0;30,0;5,0',
+                '2016/05/15 11:00:00;31,0;301,0;6,0',
+                'END OF DATA FILE OF DATALOGGER FOR WINDOWS')
+                 ]
+
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen, '.mon') as f1:
+            with common_utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen, '.mon') as f2:
+                with common_utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen, '.mon') as f3:
+
+                    filenames = [f1, f2, f3]
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten.tools.import_diveroffice.common_utils.ask_for_delimiter')
+                    @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
+                    @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+                    @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup,
+                                                                     mock_encoding, mock_iface, mock_askuser,
+                                                                     mock_notfoundquestion, mock_messagebarandlog,
+                                                                     mock_delimiter_question):
+                        mock_delimiter_question.return_value = (';', True)
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = ['utf-8']
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = DiverofficeImport(self.iface.mainWindow(), ms)
+                        importer.select_files()
+                        try:
+                            importer.start_import(importer.files, importer.skip_rows.checked,
+                                              importer.confirm_names.checked,
+                                              importer.import_all_data.checked)
+                        except:
+                            pass
+
+                        print('\n'.join([str(x) for x in mock_messagebarandlog.mock_calls]))
+
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
+                    print(f"Test\n{test_string}\n\nRef\n{reference_string}")
+                    assert test_string == reference_string

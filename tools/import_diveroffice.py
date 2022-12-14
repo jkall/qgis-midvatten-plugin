@@ -364,8 +364,8 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                     continue
 
             if section:
-                k, v = [x.strip() for x in row.split('=')]
-                metadata.setdefault(section, {})[k.lower()] = v
+                kv = [x.strip() for x in row.split('=')]
+                metadata.setdefault(section, {})[kv[0].lower()] = '='.join(kv[1:])
 
         utc_offset = metadata.get('logger settings', {}).get('instrument number', '')
         if not utc_offset:
