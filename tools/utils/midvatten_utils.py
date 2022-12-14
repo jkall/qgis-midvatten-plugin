@@ -303,7 +303,6 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
     _name = tablename if layername is None else layername
     layer = QgsVectorLayer(uri.uri(), _name, dbtype)
-    print(str(layer))
     if tablename == 'w_lvls_last_geom':
         fields = layer.fields()
 
