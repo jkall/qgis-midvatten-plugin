@@ -1216,7 +1216,7 @@ def get_timezone_from_db(tablename, dbconnection=None):
             f"""SELECT description FROM about_db WHERE tablename = '{tablename}' AND columnname = 'date_time' LIMIT 1;""")
     else:
         res = dbconnection.execute_and_fetchall(
-            f"""SELECT description FROM about_db WHERE table = '{tablename}' AND column = 'date_time' LIMIT 1;""")
+            f"""SELECT description FROM about_db WHERE "table" = '{tablename}' AND "column" = 'date_time' LIMIT 1;""")
 
     if dbconnection_created:
         dbconnection.closedb()
