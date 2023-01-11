@@ -383,7 +383,15 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 colname = data['identification']
                 data_headers[int(secno)] = colname
 
-        stop_row = -1 if path.lower().endswith('.mon') else None
+        stop_row = None
+        for inv_rownr, row in enumerate(rows[::-1]):
+            true_rownr = len(rows) - inv_rownr - 1
+            if true_rownr == data_start_row:
+                break
+            if row.lower().strip().startswith('end of data'):
+                stop_row = true_rownr
+                break
+
         delimiter = common_utils.get_delimiter_from_file_rows(rows[data_start_row:stop_row], delimiters=['\t', ';', ','],
                                                               num_fields=len(data_headers), filename=filename)
 
