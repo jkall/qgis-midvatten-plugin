@@ -840,8 +840,8 @@ class Midvatten(object):
                 else:
                     try:
                         obs_points_layer = common_utils.find_layer('obs_points')
-                    except common_utils.UsageError:
-                        common_utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Layer obs_points is not found. Plotting without observations!"))
+                    except common_utils.UsageError as e:
+                        common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s. Plotting without observations!"))%str(e))
                         break
                     else:
                         if obs_points_layer.isEditable():
