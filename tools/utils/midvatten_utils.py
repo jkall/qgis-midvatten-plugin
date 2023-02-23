@@ -403,7 +403,7 @@ def warn_about_old_database():
                                           version_comparison_list(latest_database_version()))
 
             if is_old:
-                MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s''')) % (latest_database_version(), wikipage), duration=5)
+                MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s''')) % (latest_database_version(), wikipage), duration=4)
 
     #wikipage_view_obs_points = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#add-view_obs_points-as-workaround-for-qgis-bug-20633'
     if dbconnection.dbtype == 'spatialite' and not all([db_utils.verify_table_exists('view_obs_points', dbconnection=dbconnection),

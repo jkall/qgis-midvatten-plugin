@@ -10,7 +10,64 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 
 
 
-2021-12-16 changes until 1.6.10
+Version 1.6.12b13:
+        - SectionPlot: Fixes better error message when obs_points is not found.
+        Version 1.6.12b12:
+        - DiverofficeImport: Fixes bug.
+        Version 1.6.12b11:
+        - Reading timezone from about_db: Added support for older databases.
+        Version 1.6.12b10:
+        - Minor fixes for utilities.
+        Version 1.6.12b9:
+        - DiverofficeImport: Added support for Diveroffice MON-files.
+        Version 1.6.12b8:
+        - Piperplot: Fixes bug for PostgreSQL-databases.
+        Version 1.6.12b7:
+        - Added timezone request for table w_levels during database creation.
+        - Stratigraphy: bug fixes after after new Python-version where float is not implicitly converted to int.
+        Version 1.6.12b6:
+        - Fixes bug where export data to csv added blank lines using QGIS for Windows.
+        Version 1.6.12b5:
+        - LoggerEditor:
+            * Datetime for manual measurements are converted into logger data timezone if both are set in database.
+                Timezone for manual measurements: Add timezone "(<timezone>)"or  at the end of the description string in
+                  about_db at row tablename=w_levels and columnname=date_time).
+                  Ex. "Date and Time for the observation (Europe/Stockholm)
+                Timezone for logger data: Add timezone "(<timezone>)" or  at the end of the description string in
+                  about_db at row tablename=w_levels_logger and columnname=date_time).
+                  Ex. "Date and Time for the observation (UTC+1)
+            * Fixes bug where old logger line was still selectable if new obsid didn't have any logger data.
+        Version 1.6.12b4:
+        - Fixes bug introduced during last DiverofficeImport update.
+        Version 1.6.12b3:
+        - Sectionplot: bug fixes after after new Python-version where float is not implicitly converted to int.
+        Version 1.6.12b2:
+        - DiverofficeImport, LeveloggerImport and HobologgerImport:
+            * UTC-combobox can now be set from database. (Add "(UTC+/-X)" at the end of the description string in
+                  about_db at row tablename=w_levels_logger and columnname=date_time).
+                  Ex. "Date and Time for the observation (UTC+1)"
+        - Fixed failing tests.
+        Version 1.6.12b1:
+        - Some adjustments after new Python-version where float is not implicitly converted to int. Much more changes are probably required.
+        - Adjusted fieldlogger import to skip non-error warning message.
+Version 1.6.11:
+        - CustomPlot: Fixes bug where pickannotator didn't work.
+        - DiverofficeImport: Fixes bug where timezone can't be parsed in file.
+        - ExportToFieldLogger:
+            * Fixes #342 (latlot from vectorlayer bug).
+            * Fixes bug related to Postgis-databases where getting lat-lon didn't work.
+        - FieldloggerImport:
+            * Fixes bug that crashed the function.
+            * Fixes bug for Postgis-databases where getting parameters from w_qual_field didn't work.
+        - GeneralCsvImport: Support for importing geometry of all srids thas included in the database spatial_ref_sys table.
+        - Logger editor:
+            * Fixes delete rows not working.
+            * Fixes adjustment to matplotib 3.5.1.
+        - MatplotlibReplacements: Fixes a bug by replacing matplotlib.backends.qt_editor.figureoptions.figure_edit
+        - Sectionplot: Fixes bug where a random date was chosen for water level plot.
+        - Strat symbology: Strat symbology is added even if views can not be recreated (which can happen
+                           for a PostgreSQL-database if they already exists and the user lack sufficient
+                           privileges).
 Version 1.6.10b10:
         - ExportFieldlogger: Fixes #340 (bug where empty row in list caused error).
         - General csv import: Addition to fix for #338 which removed all spaces.
