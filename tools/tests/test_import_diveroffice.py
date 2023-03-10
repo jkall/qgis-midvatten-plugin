@@ -230,6 +230,36 @@ class TestParseDiverofficeFile(object):
         assert file_data[2] == 'rb1'
         assert file_data[3] == 'UTC+1'
 
+    @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
+    def test_parse_diveroffice_comma_missing_head_cm_value(self, mock_messagebarandlog):
+        f = ('[Logger settings]',
+                  'Location=rb1',
+                  '[Channel 1]',
+                  'Identification          =LEVEL',
+                  '[Channel 2]',
+                  'Identification          =TEMPERATURE',
+                  '',
+                  'Date/time;Water head[cm];Temperature[°C]',
+                  '2016/03/15 10:30:00;1,2;10',
+                  '2016/03/15 11:00:00;    ;101',
+                  'END OF DATA FILE OF DATALOGGER FOR WINDOWS',
+                  '    ')
+
+        charset_of_diverofficefile = 'utf-8'
+        with common_utils.tempinput('\n'.join(f), charset_of_diverofficefile, suffix='.csv') as path:
+                file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
+
+
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 1.2, 10, nan], [2016-03-15 11:00:00, nan, 101, nan]]'
+
+        print(f"Ref: {reference_string}\ntest: {test_string}")
+        assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == 'rb1'
+
+
+
 @attr(status='on')
 class TestFilterDatesFromFiledata(object):
 

@@ -391,6 +391,8 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             if row.lower().strip().startswith('end of data'):
                 stop_row = true_rownr
                 break
+        if stop_row is not None:
+            skipfooter = len(rows) - stop_row
 
         delimiter = common_utils.get_delimiter_from_file_rows(rows[data_start_row:stop_row], delimiters=['\t', ';', ','],
                                                               num_fields=len(data_headers), filename=filename)
@@ -420,9 +422,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 return 'skip'
 
         df = pd.read_csv(path, sep=delimiter, encoding=charset, usecols=usecols, names=colnames,
-                         skipfooter=1, skiprows=data_start_row, parse_dates=['date_time'])
+                         skipfooter=skipfooter, skiprows=data_start_row, parse_dates=['date_time'])
         for col in df.columns[1:]:
-            df[col] = df[col].astype(str).str.replace(',', '.').astype(np.float64)
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.strip(), errors='coerce')
 
         if not df.empty:
             if begindate is not None:
