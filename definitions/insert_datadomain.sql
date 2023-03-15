@@ -74,7 +74,7 @@ insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('coarse gravel','DarkGreen','O','darkGreen','Dense7Pattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('till','cyan','/','cyan','CrossPattern');
 insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('rock','red','x','red','DiagCrossPattern');
-insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('rock','white','x','white','NoBrush');
+insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('unknown','white','x','white','NoBrush');
 insert into zz_capacity (capacity,explanation) values('','unknown');
 insert into zz_capacity (capacity,explanation) values('0','unknown');
 insert into zz_capacity (capacity,explanation) values('1','above gwl');
