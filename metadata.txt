@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.7.2:
         CreateDb: Fixes incompatibility with QGIS 3.30.
+        CreateDb: Fixes duplicate error when creating database.
         Version 1.7.1:
         DiverofficeImport: Fixes problem with files that miss level data for some dates.
 
