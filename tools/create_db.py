@@ -119,10 +119,11 @@ class NewDb(object):
         filenamestring = "create_db.sql"
 
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
-        qgisverno = Qgis.QGIS_VERSION#We want to store info about which qgis-version that created the db
+        # We want to store info about which qgis-version that created the db
+        qgisverno = ru(Qgis.QGIS_VERSION).replace("'", "")
         replace_word_replace_with = [('CHANGETORELEVANTEPSGID', ru(EPSGID)),
                                     ('CHANGETOPLUGINVERSION', ru(verno)),
-                                    ('CHANGETOQGISVERSION', ru(qgisverno)),
+                                    ('CHANGETOQGISVERSION', qgisverno),
                                     ('CHANGETODBANDVERSION', 'SpatiaLite version %s'%ru(versionstext)),
                                     ('CHANGETOLOCALE', ru(set_locale)),
                                     (('SPATIALITE ', ''))]
