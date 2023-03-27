@@ -343,7 +343,7 @@ def get_subset_of_tables_fr_db(category='obs_points'):
         return ['meteo', 'seismic_data', 'vlf_data', 'w_levels_logger']
     elif category == 'extra_data_tables':
         # Extra non-essential tables created using create_db_extra_data_tables.sql
-        return ['s_qual_lab', 'w_qual_logger']
+        return ['s_qual_lab', 'w_qual_logger', 'altitude_history']
     elif category == 'interlab4_import_table':
         return ['zz_interlab4_obsid_assignment']
     else:

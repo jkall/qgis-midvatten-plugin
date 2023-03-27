@@ -37,3 +37,17 @@ obsid
 , parameter
 , COALESCE(unit, '<NULL>')
 );
+
+CREATE TABLE altitude_history /*Altitude history for obs_points*/ (
+id INTEGER PRIMARY KEY AUTOINCREMENT
+, obsid TEXT NOT NULL
+, valid_from_date TEXT NOT NULL /*date_time from when this altitude entry is valid (for example the well drill date).*/
+, h_gs DOUBLE /*Ground Surface level (m).*/
+, h_toc DOUBLE /*Elevation (masl) for the measuring point*/
+, h_tocags DOUBLE /*Distance from Measuring point to Ground Surface (m)*/
+, h_syst TEXT CHECK(COALESCE(h_gs, h_toc) IS NULL OR h_syst IS NOT NULL) /*Reference system for elevation*/
+, h_accur DOUBLE /*Inaccuracy (m) for Measuring Point level*/
+, valid BOOLEAN /*Specifies if this altitude entry is still valid. Set to False if a new measurement has made the entry not longer valid.*/
+, source TEXT NOT NULL /*Source for the measuring point elevation (consultancy report or similar)*/
+, FOREIGN KEY (obsid) REFERENCES obs_points (obsid) ON DELETE CASCADE
+);

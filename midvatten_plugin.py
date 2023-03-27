@@ -235,6 +235,11 @@ class Midvatten(object):
         self.action_add_view_obs_points_lines.setWhatsThis(QCoreApplication.translate("Midvatten","Add editable views view_obs_points and view_obs_lines to the database. These views replace obs_points and obs_lines in QGIS layer list."))
         self.action_add_view_obs_points_lines.triggered.connect(lambda x: self.add_view_obs_points_lines())
 
+        self.action_non_essential_tables = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), QCoreApplication.translate("Midvatten","Add non-essential data tables"), self.iface.mainWindow())
+        self.action_non_essential_tables.setWhatsThis(QCoreApplication.translate("Midvatten","Add extra tables to the database:\nw_qual_logger to store water quality logger data,\ns_qual_lab to store soil quality data,\naltitude_history to store history of obs_points altitued (h_*-columns)."))
+        self.action_non_essential_tables.triggered.connect(lambda x: self.add_non_essential_tables())
+
+
 
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -321,6 +326,7 @@ class Midvatten(object):
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
         self.menu.db_manage_menu.addAction(self.action_add_view_obs_points_lines)
+        self.menu.db_manage_menu.addAction(self.action_non_essential_tables)
 
         self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
@@ -1053,3 +1059,7 @@ class Midvatten(object):
     @common_utils.general_exception_handler
     def add_view_obs_points_lines(self):
         midvatten_utils.add_view_obs_points_obs_lines()
+
+    @common_utils.general_exception_handler
+    def add_non_essential_tables(self):
+        midvatten_utils.add_non_essential_tables()
