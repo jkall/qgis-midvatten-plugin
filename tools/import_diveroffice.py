@@ -338,7 +338,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     @staticmethod
     def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
         if not pandas_on:
-            raise common_utils.UsageError(ru(QCoreApplication.translate('DiverofficeImport', "Parsinh mon-files requires Python Pandas library!")))
+            raise common_utils.UsageError(ru(QCoreApplication.translate('DiverofficeImport', "Parsing mon-files requires Python Pandas library!")))
 
         filedata = []
         filename = os.path.basename(path)
@@ -394,7 +394,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if stop_row is not None:
             skipfooter = len(rows) - stop_row
 
-        delimiter = common_utils.get_delimiter_from_file_rows(rows[data_start_row:stop_row], delimiters=['\t', ';', ','],
+        delimiter = common_utils.get_delimiter_from_file_rows(rows[data_start_row:stop_row],
+                                                              delimiters=['\t', ';', ',', '        ', '       ',
+                                                                          '      ', '     ', '    ', '   ', '  '],
                                                               num_fields=len(data_headers), filename=filename)
 
         usecols = []

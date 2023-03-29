@@ -1081,3 +1081,67 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
             reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.2, 10.0, None, None, None)])'''
             print(f"Test\n{test_string}\n\nRef\n{reference_string}")
             assert test_string == reference_string
+
+    def test_wlvllogg_import_from_diveroffice_mon_files_space_sep(self):
+        files = [('[Logger settings]',
+                  'Location=rb1',
+                  '[Channel 1]',
+                  'Identification          =LEVEL',
+                  '[Channel 2]',
+                  'Identification          =TEMPERATURE',
+                  '[Data]',
+                  '3',
+                  '2022/06/10 12:00:00.0      268.892       7.280',
+                  '2022/06/10 13:00:00.0      269.883       7.077',
+                  '2022/06/10 14:00:00.0      271.500       7.067',
+                 'END OF DATA FILE OF DATALOGGER FOR WINDOWS'),
+                ]
+
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with common_utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen, '.mon') as f1:
+            filenames = [f1]
+            utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+            utils_askuser_answer_no_obj.result = 0
+            utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+            @mock.patch('midvatten.tools.import_diveroffice.common_utils.ask_for_delimiter')
+            @mock.patch("midvatten.tools.import_diveroffice.common_utils.MessagebarAndLog")
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+            @mock.patch('midvatten.tools.import_diveroffice.midvatten_utils.select_files')
+            def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup,
+                                                             mock_encoding, mock_iface, mock_askuser,
+                                                             mock_notfoundquestion, mock_messagebarandlog,
+                                                             mock_delimiter_question):
+                mock_delimiter_question.return_value = (';', True)
+                mock_notfoundquestion.return_value.answer = 'ok'
+                mock_notfoundquestion.return_value.value = 'rb1'
+                mock_notfoundquestion.return_value.reuse_column = 'location'
+                mock_filenames.return_value = filenames
+                mock_encoding.return_value = ['utf-8']
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = DiverofficeImport(self.iface.mainWindow(), ms)
+                importer.select_files()
+                try:
+                    importer.start_import(importer.files, importer.skip_rows.checked,
+                                      importer.confirm_names.checked,
+                                      importer.import_all_data.checked)
+                except:
+                    pass
+
+                print('\n'.join([str(x) for x in mock_messagebarandlog.mock_calls]))
+
+
+            _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+            test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+            reference_string = r'''(True, [(rb1, 2022-06-10 12:00:00, 268.892, 7.28, None, None, None), (rb1, 2022-06-10 13:00:00, 269.883, 7.077, None, None, None), (rb1, 2022-06-10 14:00:00, 271.5, 7.067, None, None, None)])'''
+            print(f"Test\n{test_string}\n\nRef\n{reference_string}")
+            assert test_string == reference_string
