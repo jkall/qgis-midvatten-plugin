@@ -289,6 +289,14 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         parsed_files_with_obsid = []
         for file_data, filename, location in parsed_files:
+            if not file_data:
+                common_utils.MessagebarAndLog.warning(
+                    bar_msg=QCoreApplication.translate('DiverofficeImport',
+                                                       "Diveroffice import warning. See log message panel"),
+                    log_msg=ru(QCoreApplication.translate('DiverofficeImport',
+                                                          "No data parsed from file %s. Remove rows without the correct number of columns.")) % filename)
+                continue
+
             if filename in filenames_obsid:
                 file_data = list(file_data)
                 obsid = filenames_obsid[filename]
@@ -419,7 +427,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if 'head_cm' not in colnames:
             common_utils.MessagebarAndLog.warning(
                 bar_msg=QCoreApplication.translate('DiverofficeImport', "Diveroffice import warning. See log message panel"),
-                log_msg=ru(QCoreApplication.translate('DiverofficeImport', "Warning, the file %s \ndid not have Water head as a channel.\nMake sure its barocompensated!")))
+                log_msg=ru(QCoreApplication.translate('DiverofficeImport', "Warning, the file %s \ndid not have Water head as a channel.\nMake sure its barocompensated!"))%path)
             if skip_rows_without_water_level:
                 return 'skip'
 
