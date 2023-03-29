@@ -184,11 +184,14 @@ class NewDb(object):
 
         common_utils.stop_waiting_cursor()
 
-    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326', w_levels_logger_timezone=None,
-                            w_levels_timezone=None):
+    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326',
+                            w_levels_logger_timezone=None,
+                            w_levels_timezone=None, schema=None):
 
         dbconnection = db_utils.DbConnectionManager()
+        dbconnection.schema = 'anyschema'
         db_settings = dbconnection.db_settings
+
         if not isinstance(db_settings, str):
             self.db_settings = ru(common_utils.anything_to_string_representation(dbconnection.db_settings))
         else:

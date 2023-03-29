@@ -230,9 +230,9 @@ class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
 class MidvattenTestPostgisNotCreated(MidvattenTestBase):
     ALL_POSTGIS_SETTINGS = {'nosetests': {'estimatedMetadata': 'false', 'publicOnly': 'false', 'service': '', 'database': 'nosetests', 'dontResolveType': 'false', 'saveUsername': 'true', 'sslmode': '1', 'host': '127.0.0.1', 'authcfg': '', 'geometryColumnsOnly': 'false', 'allowGeometrylessTables': 'false', 'savePassword': 'false', 'port': '5432'}}
     TEMP_DB_SETTINGS = {'postgis': {'connection': 'nosetests/127.0.0.1:5432/nosetests'}}
-
     def __init__(self):
         super().__init__()
+        self.schema = 'anyschema'
 
     def setUp(self):
         super().setUp()
@@ -242,16 +242,16 @@ class MidvattenTestPostgisNotCreated(MidvattenTestBase):
             qs.setValue('PostgreSQL/connections/{}/{}'.format('nosetests', k), v)
         #Clear the database
         try:
-            db_utils.sql_alter_db('DROP SCHEMA public CASCADE;')
-            db_utils.sql_alter_db('CREATE SCHEMA public;')
+            db_utils.sql_alter_db(f"""DROP SCHEMA {self.schema} CASCADE;""")
+            db_utils.sql_alter_db(f"""CREATE SCHEMA {self.schema};""")
         except Exception as e:
             print("Failure resetting db: " + str(e))
     @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
     def tearDown(self, mock_messagebar):
         #Clear the database
         try:
-            db_utils.sql_alter_db('DROP SCHEMA public CASCADE;')
-            db_utils.sql_alter_db('CREATE SCHEMA public;')
+            db_utils.sql_alter_db(f"""DROP SCHEMA {self.schema} CASCADE;""")
+            db_utils.sql_alter_db(f"""CREATE SCHEMA {self.schema};""")
         except Exception as e:
             print("Failure resetting db: " + str(e))
             print("MidvattenTestPostgisNotCreated tearDownproblem: " + str(mock_messagebar.mock_calls))

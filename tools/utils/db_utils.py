@@ -187,6 +187,8 @@ class DbConnectionManager(object):
                     raise UserInterruptError()
                 else:
                     raise
+            #self.schema = self.db_settings.get('schema', '')
+            self.schema = 'anyschema'
 
         if self.connector is not None:
             self.conn = self.connector.connection
@@ -209,7 +211,9 @@ class DbConnectionManager(object):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
             raise TypeError(ru(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%ru(type(sql)))
+
         for idx, line in enumerate(sql):
+            line = self.add_schema_to_query(line)
             if all_args is None:
                 try:
                     self.cursor.execute(line)
@@ -233,6 +237,7 @@ class DbConnectionManager(object):
                 raise TypeError(ru(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: all_args must be a list/tuple. Was %s')) % ru(type(all_args)))
 
     def execute_and_fetchall(self, sql):
+        sql = self.add_schema_to_query(sql)
         try:
             self.cursor.execute(sql)
         except (sqlite.OperationalError, Exception) as e:
@@ -310,7 +315,8 @@ class DbConnectionManager(object):
                 sql = """CREATE table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
         else:
-            self.execute("""CREATE TEMPORARY table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types)))
+            self.execute("""CREATE TEMPORARY table %s%s (%s)""" % (f"{self.schema}." if self.schema else '',
+                                                                   temptable_name, ', '.join(fieldnames_types)))
             if geometry_colname_type_srid is not None:
                 geom_column = geometry_colname_type_srid[0]
                 geom_type = geometry_colname_type_srid[1]
@@ -345,7 +351,8 @@ class DbConnectionManager(object):
                 srid = srid[0][0]
         else:
             try:
-                self.cursor.execute("""SELECT Find_SRID('{}', '{}', '{}');""".format(self.schemas(), table_name,
+                self.cursor.execute("""SELECT Find_SRID('{}', '{}', '{}');""".format('public' if not self.schema else self.schema,
+                                                                                     table_name,
                                                                                      geometry_column))
             except:
                 #Assume that the column doesn't have a srid/is a geometry.
@@ -356,6 +363,57 @@ class DbConnectionManager(object):
         if srid is not None:
             srid = int(srid)
         return srid
+
+    def add_schema_to_query(self, sql):
+        """CREATE TABLE about_db
+        INSERT INTO about_db
+        ALTER TABLE obs_points
+        CREATE UNIQUE INDEX w_qual_field_unit_unique_index_null ON w_qual_field
+         REFERENCES obs_points(obsid)
+         CREATE VIEW obs_p_w_qual_field
+         FROM obs_points
+         JOIN w_qual_field
+         CREATE INDEX idx_wquallab_odtp ON w_qual_lab"""
+        if self.dbtype == 'spatialite' or not self.schema:
+            return sql
+        else:
+            _sql = sql
+            if _sql.lower().strip().startswith('create'):
+                _sql = re_match_create_pattern(_sql, self.schema)
+                #print(f"Here, sql {sql} into {_sql}")
+
+            tables_sql = f"""SELECT table_name FROM information_schema.tables WHERE table_schema='{self.schema}'"""
+            self.cursor.execute(tables_sql)
+            tablenames = [row[0] for row in self.cursor.fetchall()]
+            #print(list(sorted(tablenames, key=lambda x: len(x), reverse=True)))
+            for tablename in sorted(tablenames, key=lambda x: len(x), reverse=True):
+                if tablename in _sql:
+                    pattern = f"""\b{tablename}\b"""
+                    _sql = re.sub(pattern, r'''"%s"."%s"'''%(self.schema, tablename), _sql)
+            return _sql
+
+def re_match_create_pattern(sql, schema):
+    """
+
+    @param sql:
+    @param schema:
+    @return:
+
+    >>> re_match_create_pattern("CREATE TEMPORARY TABLE temp_import ", 'public')
+    'CREATE TEMPORARY TABLE "public"."temp_import" '
+
+    >>> re_match_create_pattern("create table about_db", 'public')
+    'CREATE table "public"."about_db"'
+
+    >>> re_match_create_pattern("create view w_lvls_last_geom", 'public')
+    'CREATE view "public"."w_lvls_last_geom"'
+
+    """
+    pattern = """create[\ ]+(temporary)*([\ ]*)(table|view)+[\ ]+([\w]+)"""
+    #print(re.search(pattern, sql, flags=re.IGNORECASE).groups())
+    sql = re.sub(pattern, r'''CREATE \1\2\3 "%s"."\4"''' % schema, sql, flags=re.IGNORECASE)
+    return sql
+
 
 def connect_with_spatialite_connect(dbpath):
     conn = spatialite_connect(dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)

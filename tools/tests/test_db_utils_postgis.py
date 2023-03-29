@@ -29,7 +29,7 @@ from midvatten.tools.utils import db_utils
 from midvatten.tools.tests import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
 
     def test_tables_columns_info_all_tables(self):
@@ -62,7 +62,7 @@ class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
         assert int(col_obsid[5]) == 1
 
 
-@attr(status='on')
+@attr(status='only')
 class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
 
     def test_tables_columns_no_dbconnection_supplied(self):
@@ -88,7 +88,7 @@ class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
             assert tablename not in tables_columns
 
 
-@attr(status='on')
+@attr(status='only')
 class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
 
     def test_get_foreign_keys(self):
@@ -107,7 +107,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference
 
 
-@attr(status='on')
+@attr(status='only')
 class TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
 
     def test_verify_table_exists(self):
@@ -115,7 +115,7 @@ class TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
         assert exists
 
 
-@attr(status='on')
+@attr(status='only')
 class TestNonplotTables(object):
     def test_as_tuple(self):
         tables = db_utils.nonplot_tables(as_tuple=True)
@@ -137,7 +137,7 @@ class TestNonplotTables(object):
         assert tables == r"""('about_db', 'comments', 'zz_flowtype', 'zz_meteoparam', 'zz_strat', 'zz_hydro')"""
 
 
-@attr(status='on')
+@attr(status='only')
 class TestGetTimezoneFromDb(utils_for_tests.MidvattenTestPostgisDbSv):
     def test_get_timezone_from_db(self):
         db_utils.sql_alter_db("""UPDATE about_db SET description = description || ' (UTC+1)'
@@ -151,3 +151,52 @@ class TestGetTimezoneFromDb(utils_for_tests.MidvattenTestPostgisDbSv):
                     WHERE tablename = 'w_levels' and columnname = 'date_time';""")
         tz = db_utils.get_timezone_from_db('w_levels')
         assert tz == 'Europe/Stockholm'
+
+@attr(status='only')
+class TestAddSchema(utils_for_tests.MidvattenTestPostgisDbSv):
+
+    def test_add_schema_to_query(self):
+        c = db_utils.DbConnectionManager()
+        c.schema = 'public'
+
+        test = c.add_schema_to_query("CREATE TABLE obs_points()")
+        print(test)
+        assert test == '''CREATE TABLE "public"."obs_points"()'''
+
+        """>>>add_schema_to_query("INSERT INTO about_db (", 'public')
+        INSERT INTO "public".about_db (
+
+        >>>add_schema_to_query("ALTER TABLE obs_points ", 'public')
+        ALTER TABLE "public".obs_points
+
+        >>>add_schema_to_query("ALTER TABLE obs_points ", 'public')
+        ALTER TABLE "public".obs_points
+
+        >>>add_schema_to_query("CREATE UNIQUE INDEX w_qual_field_unit_unique_index_null ON w_qual_field", 'public')
+        CREATE UNIQUE INDEX w_qual_field_unit_unique_index_null ON "public".w_qual_field
+
+        >>>add_schema_to_query("REFERENCES obs_points(obsid)", 'public')
+        REFERENCES "public".obs_points(obsid)
+
+        >>>add_schema_to_query("CREATE VIEW obs_p_w_qual_field", 'public')
+        CREATE VIEW "public".obs_p_w_qual_field
+
+        >>>add_schema_to_query("FROM obs_points", 'public')
+        FROM "public".obs_points
+
+        >>>add_schema_to_query("REFERENCES obs_points(obsid)", 'public')
+        REFERENCES "public".obs_points(obsid)
+
+        >>>add_schema_to_query("JOIN w_qual_field", 'public')
+        JOIN "public".w_qual_field
+
+        >>>add_schema_to_query("CREATE INDEX idx_wquallab_odtp ON w_qual_lab", 'public')
+        CREATE INDEX idx_wquallab_odtp ON "public".w_qual_lab
+
+        >>>add_schema_to_query("UPDATE "public".w_levels_logger", 'public')
+        UPDATE "public".w_levels_logger
+
+        >>>add_schema_to_query("SELECT * FROM obs_points", 'public')
+        UPDATE "public".w_levels_logger"""
+
+
