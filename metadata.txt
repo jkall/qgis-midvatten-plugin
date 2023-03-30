@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.7.5:
         DiverofficeImport: Fixes problem when importing .mon-files.
+        LoggerEditor: Fixes normalizing head to measurements if there are no logger level_masl values.
         Version 1.7.4:
         Added function to load non-essential tables w_qual_logger, s_qual_lab and new table altitude_history.
         Version 1.7.3:

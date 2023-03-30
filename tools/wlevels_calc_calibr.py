@@ -196,12 +196,21 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.pushButton_delete_logger.clicked.connect(lambda: self.delete_selected_range('w_levels_logger'))
         self.adjust_trend_button.clicked.connect(lambda x: self.adjust_trend_func())
 
-        self.period_selector = RectangleSelector(self.axes, self.line_select_callback,
-                               drawtype='box', useblit=True, button=[1],
-                               minspanx=0, minspany=0, spancoords='data',
-                               interactive=False,
-                               #lineprops=dict(color="black", linestyle="-", linewidth=2, alpha=0.5),
-                               rectprops=dict(facecolor=None, edgecolor="black", alpha=0.5, fill=False))
+        try:
+            #Support for older version of Matplotlib
+            self.period_selector = RectangleSelector(self.axes, self.line_select_callback,
+                                   drawtype='box', useblit=True, button=[1],
+                                   minspanx=0, minspany=0, spancoords='data',
+                                   interactive=False,
+                                   #lineprops=dict(color="black", linestyle="-", linewidth=2, alpha=0.5),
+                                   rectprops=dict(facecolor=None, edgecolor="black", alpha=0.5, fill=False))
+        except:
+            self.period_selector = RectangleSelector(self.axes, self.line_select_callback, useblit=True, button=[1],
+                                                     minspanx=0, minspany=0, spancoords='data',
+                                                     interactive=False,
+                                                     # lineprops=dict(color="black", linestyle="-", linewidth=2, alpha=0.5),
+                                                     props=dict(facecolor=None, edgecolor="black", alpha=0.5,
+                                                                    fill=False))
         self.period_selector.set_active(False)
 
         self.select_nodes_button = SelectNodesButton(self, self.calibrplotfigure)
@@ -321,18 +330,23 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         level_masl_list = [(row[0], row[2]) for row in head_level_masl_list]
 
         self.head_ts = self.list_of_list_to_recarray(head_list)
-
         if self.plot_logger_head.isChecked():
             if self.normalize_head.isChecked():
                 head_vals = [row[1] for row in head_list if row[1] is not None]
                 num_head = len(head_vals)
+
                 if num_head > 0:
                     head_mean = sum(head_vals) / float(len(head_vals))
 
                     level_masl_vals = [row[1] for row in level_masl_list if row[1] is not None]
                     num_level_masl_vals = len(level_masl_vals)
-                    if num_level_masl_vals > 0:
-                        level_masl_mean = sum(level_masl_vals) / float(num_level_masl_vals)
+                    meas_vals = [x for x in self.meas_ts.values if x is not None]
+                    num_meas_vals = len(meas_vals)
+                    if num_level_masl_vals or num_meas_vals:
+                        if num_level_masl_vals:
+                            level_masl_mean = sum(level_masl_vals) / float(num_level_masl_vals)
+                        else:
+                            level_masl_mean = sum(meas_vals) / float(num_meas_vals)
 
                         normalized_head = [(row[0], row[1] + (level_masl_mean - head_mean) if row[1] is not None else None) for row in head_list]
 

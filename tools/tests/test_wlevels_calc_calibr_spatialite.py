@@ -32,7 +32,7 @@ from midvatten.tools.utils import db_utils, date_utils, gui_utils
 from midvatten.tools.tests import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -351,3 +351,49 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
         calibrlogger.load_obsid_and_init()
         assert tuple(calibrlogger.meas_ts.tolist()) == (('2017-05-01 00:00', 2.0),)
+
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_calibrlogger_normalize_against_logger(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 20)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 50, 100)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-03-01 00:00', 100, NULL)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        calibrlogger.plot_logger_head.setChecked(True)
+        calibrlogger.normalize_head.setChecked(True)
+
+        """(level_masl - (head_cm/100))"""
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
+        calibrlogger.load_obsid_and_init()
+
+        #calibrlogger.update_plot()
+        print(str(mock_messagebar.mock_calls))
+        test = tuple(calibrlogger.head_ts_for_plot.values)
+
+        print(test)
+        ref = (99.75, 100.25)
+
+        assert test == ref
+
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_calibrlogger_normalize_against_meas(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 20)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 50, NULL)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-03-01 00:00', 100, NULL)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+        calibrlogger.plot_logger_head.setChecked(True)
+        calibrlogger.normalize_head.setChecked(True)
+
+        """(level_masl - (head_cm/100))"""
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1', add_if_not_exists=False)
+        calibrlogger.load_obsid_and_init()
+
+        #calibrlogger.update_plot()
+        print(str(mock_messagebar.mock_calls))
+        test = tuple(calibrlogger.head_ts_for_plot.values)
+
+        print(test)
+        ref = (19.75, 20.25)
+
+        assert test == ref
