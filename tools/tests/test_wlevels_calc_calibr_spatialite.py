@@ -32,7 +32,7 @@ from midvatten.tools.utils import db_utils, date_utils, gui_utils
 from midvatten.tools.tests import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
