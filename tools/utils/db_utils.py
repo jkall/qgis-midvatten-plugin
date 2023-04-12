@@ -292,14 +292,15 @@ class DbConnectionManager(object):
             temptable_name = 'mem.' + temptable_name
             try:
                 self.cursor.execute("""ATTACH DATABASE ':memory:' AS mem""")
-            except:
+            except Exception as e:
                 #Assume mem already exist.
-                try:
-                    MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('create_temporary_table_for_import',
-                                                                                'attaching memory database failed, %s')
-                                                     )%traceback.format_exc())
-                except:
-                    pass
+                if 'database mem is already in use' not in str(e):
+                    try:
+                        MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('create_temporary_table_for_import',
+                                                                                    'attaching memory database failed, %s')
+                                                         )%traceback.format_exc())
+                    except:
+                        pass
 
             if geometry_colname_type_srid is not None:
                 fieldnames_types.append('geometry %s'%geometry_colname_type_srid[0])
