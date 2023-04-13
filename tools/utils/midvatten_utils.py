@@ -249,7 +249,7 @@ def calculate_db_table_rows():
 
     sql_failed = []
     for tablename in sorted(tablenames):
-        sql = """SELECT count(*) FROM %s""" % (tablename)
+        sql = """SELECT count(*) FROM "%s" """ % (tablename)
 
         sql_result = db_utils.sql_load_fr_db(sql)
         connection_ok, nr_of_rows = sql_result

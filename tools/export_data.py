@@ -19,6 +19,8 @@
 """
 from __future__ import absolute_import
 
+import traceback
+
 from future import standard_library
 
 standard_library.install_aliases()
@@ -135,7 +137,7 @@ class ExportData(object):
         :param obsids:
         :return:
         """
-        sql = "SELECT * FROM %s"%tname
+        sql = """SELECT * FROM "%s" """%tname
         if obsids:
             sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         data = self.source_dbconnection.execute_and_fetchall(sql)
@@ -163,7 +165,14 @@ class ExportData(object):
         else:
             file_data_srid = 4326
 
-        source_data = self.get_table_data(tname, obsids, self.source_dbconnection, file_data_srid)
+        try:
+            source_data = self.get_table_data(tname, obsids, self.source_dbconnection, file_data_srid)
+        except:
+            common_utils.MessagebarAndLog.info(bar_msg=ru(
+                QCoreApplication.translate('ExportData', "Error! Export of table %s failed, see log message panel"))%tname,
+                                               log_msg=ru(traceback.format_exc()))
+            return
+
         if replace:
             self.dest_dbconnection.execute('''PRAGMA foreign_keys = OFF;''')
             dest_data = self.get_table_data(tname, obsids, self.dest_dbconnection, file_data_srid)
@@ -192,7 +201,7 @@ class ExportData(object):
             self.dest_dbconnection.execute('''PRAGMA foreign_keys = ON;''')
 
     def get_table_data(self, tname, obsids, dbconnection, file_data_srid):
-        dbconnection.execute("SELECT * FROM %s LIMIT 1"%tname)
+        dbconnection.execute("""SELECT * FROM "%s" LIMIT 1"""%tname)
         columns = [x[0] for x in dbconnection.cursor.description]
 
 
@@ -208,7 +217,7 @@ class ExportData(object):
                           else col
                           for col in columns]
 
-        sql = '''SELECT {} FROM {}'''.format(u', '.join(select_columns), tname)
+        sql = '''SELECT {} FROM "{}"'''.format(u', '.join(select_columns), tname)
         if obsids:
             sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         dbconnection.execute(sql)
@@ -232,7 +241,7 @@ class ExportData(object):
         for alias, dbconnection in db_aliases_and_connections:
             tablenames = db_utils.get_tables(dbconnection, skip_views=True)
             for tablename in tablenames:
-                sql = """SELECT count(*) FROM %s"""%(tablename)
+                sql = """SELECT count(*) FROM "%s" """%(tablename)
                 try:
                     nr_of_rows = dbconnection.execute_and_fetchall(sql)[0][0]
                 except:
