@@ -455,7 +455,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         filedata = [['date_time', 'head_cm', 'temp_degc', 'cond_mscm']]
         for c in filedata[0]:
             if c not in df.columns:
-                df[c] = np.nan
+                df[c] = None
         filedata.extend(df.loc[:, filedata[0]].values.tolist())
         if len(filedata) < 2:
             return common_utils.ask_user_about_stopping(ru(QCoreApplication.translate('DiverofficeImport', "Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")) % path)

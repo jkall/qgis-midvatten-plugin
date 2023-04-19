@@ -702,13 +702,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
         mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
-        if dbconnection.dbtype == 'postgis':
-            with open(db_defs.extra_datatables_sqlfile()) as f:
-                data = ''.join([row.replace('double', 'double precision') for row in f])
-            with common_utils.tempinput(data) as tf:
-                db_utils.execute_sqlfile(tf, dbconnection, merge_newlines=True)
-        else:
-            db_utils.execute_sqlfile(db_defs.extra_datatables_sqlfile(), dbconnection, merge_newlines=True)
+        db_utils.execute_sqlfile(db_defs.extra_datatables_sqlfile(), dbconnection, merge_newlines=True)
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''', dbconnection=dbconnection)
