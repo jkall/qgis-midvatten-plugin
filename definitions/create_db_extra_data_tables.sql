@@ -39,7 +39,8 @@ obsid
 );
 
 CREATE TABLE altitude_history /*Altitude history for obs_points*/ (
-id INTEGER PRIMARY KEY AUTOINCREMENT
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
 , obsid TEXT NOT NULL
 , valid_from_date TEXT NOT NULL /*date_time from when this altitude entry is valid (for example the well drill date).*/
 , h_gs DOUBLE /*Ground Surface level (m).*/

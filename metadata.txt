@@ -23,6 +23,7 @@ changelog=
         Version 1.7.6:
         Removed unnecessary error message.
         Fixes export problems for malformed databases (the affected tables are skipped).
+        Added support for table altitude_history for Postgresql-databases.
         Version 1.7.5:
         DiverofficeImport: Fixes problem when importing .mon-files.
         LoggerEditor: Fixes normalizing head to measurements if there are no logger level_masl values.
