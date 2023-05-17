@@ -168,7 +168,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             sourcecols = []
             for colname in sorted(existing_columns_in_dest_table):
                 null_replacement = db_utils.cast_null(column_headers_types[colname], dbconnection)
-                if colname in list(geom_columns.keys()) and colname in existing_columns_in_temptable:
+                if colname in geom_columns and colname in existing_columns_in_temptable:
                     sourcecols.append(self.create_geometry_sql(colname, dest_table, dbconnection, source_srid,
                                                                null_replacement, binary_geometry))
                 else:
@@ -326,10 +326,26 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         sql = """(CASE WHEN ({colname} !='' AND {colname} !=' ' AND {colname} IS NOT NULL)\n    THEN {to_geometry} ELSE {null} END)"""
         kwargs = {'colname': geom_col, 'null': null_replacement}
 
-        if str(source_srid).startswith('EPSG:'):
-            source_srid = source_srid.split(':')[-1]
 
-        if source_srid is None or int(source_srid) == int(dest_srid):
+        if str(source_srid).startswith('EPSG:'):
+            _source_srid = source_srid.split(':')[-1]
+        else:
+            _source_srid = source_srid
+
+        try:
+            int(_source_srid)
+        except ValueError as e:
+            raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer',
+                'Source srid "%s" was not a valid EPSG srid. Check coordinate reference system of the source.' )) % str(_source_srid)) from e
+
+        try:
+            int(dest_srid)
+        except ValueError as e:
+            raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer',
+                'Database srid "%s" was not a valid EPSG srid. Check coordinate reference system of the databases')) % str(dest_srid)) from e
+
+
+        if _source_srid is None or int(_source_srid) == int(dest_srid):
             to_geometry = """{convert_func}({geometry}, {dest_srid})""".format(geometry=geom_col,
                                                                                convert_func=convert_func,
                                                                                dest_srid=dest_srid)
@@ -338,7 +354,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 geometry=geom_col,
                 convert_func=convert_func,
                 dest_srid=dest_srid,
-                source_srid=source_srid)
+                source_srid=_source_srid)
         kwargs['to_geometry'] = to_geometry
         return sql.format(**kwargs)
 
