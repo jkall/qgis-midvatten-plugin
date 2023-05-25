@@ -22,6 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.7.7:
         - Import data to db: Fixes better error message when input layer coordinate reference system is wrong.
+        - Removed old error message about view_obs_points and view_obs_lines.
         Version 1.7.6:
         - Removed unnecessary error message.
         - Fixes export problems for malformed databases (the affected tables are skipped).

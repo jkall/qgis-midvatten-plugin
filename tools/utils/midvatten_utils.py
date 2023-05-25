@@ -405,15 +405,6 @@ def warn_about_old_database():
             if is_old:
                 MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''The database version appears to be older than %s. An upgrade is suggested! See %s''')) % (latest_database_version(), wikipage), duration=4)
 
-    #wikipage_view_obs_points = 'https://github.com/jkall/qgis-midvatten-plugin/wiki/6.-Database-management#add-view_obs_points-as-workaround-for-qgis-bug-20633'
-    if dbconnection.dbtype == 'spatialite' and not all([db_utils.verify_table_exists('view_obs_points', dbconnection=dbconnection),
-                                                        db_utils.verify_table_exists('view_obs_lines', dbconnection=dbconnection)]):
-        #answer = Askuser(question="YesNo", msg = "Database is missing view_obs_points or view_obs_lines. It's recommended to add them. Do you want to add them?, dialogtitle=QCoreApplication.translate('askuser', 'User input needed"), parent=None)
-        #if answer:
-        #    add_view_obs_points_obs_lines()
-
-        MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('warn_about_old_database', '''Database is missing view_obs_points or view_obs_lines! Add these using Midvatten>Database Management>Add view_obs_points as workaround for qgis bug #20633.''')), duration=60)
-
     dbconnection.closedb()
 
 
