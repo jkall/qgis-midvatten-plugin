@@ -251,7 +251,7 @@ class TestParseDiverofficeFile(object):
 
 
         test_string = utils_for_tests.create_test_string(file_data[0])
-        reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 1.2, 10, nan], [2016-03-15 11:00:00, nan, 101, nan]]'
+        reference_string = '[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 1.2, 10, None], [2016-03-15 11:00:00, None, 101, None]]'
 
         print(f"Ref: {reference_string}\ntest: {test_string}")
         assert test_string == reference_string

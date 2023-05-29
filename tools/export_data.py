@@ -47,6 +47,8 @@ class ExportData(object):
     def export_2_csv(self,exportfolder):
         self.source_dbconnection = db_utils.DbConnectionManager()
         self.source_dbconnection.connect2db() #establish connection to the current midv db
+        db_utils.export_bytea_as_bytes(self.source_dbconnection)
+
         self.exportfolder = exportfolder
         self.write_data(self.to_csv, None, defs.get_subset_of_tables_fr_db(category='data_domains'))
         self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'))
@@ -66,6 +68,8 @@ class ExportData(object):
         """
         self.source_dbconnection = db_utils.DbConnectionManager()
         self.source_dbconnection.connect2db() #establish connection to the current midv db
+        db_utils.export_bytea_as_bytes(self.source_dbconnection)
+
         self.dest_dbconnection = db_utils.DbConnectionManager(target_db)
         self.dest_dbconnection.connect2db()
 
@@ -177,8 +181,6 @@ class ExportData(object):
             self.dest_dbconnection.execute('''PRAGMA foreign_keys = OFF;''')
             dest_data = self.get_table_data(tname, obsids, self.dest_dbconnection, file_data_srid)
             if dest_data:
-                print("Here replace " + tname + str(dest_data))
-                print("Replace with " + str(source_data))
                 self.dest_dbconnection.execute('''DELETE FROM {}'''.format(tname))
 
         if tname == 'obs_points':
@@ -204,7 +206,6 @@ class ExportData(object):
         dbconnection.execute("""SELECT * FROM "%s" LIMIT 1"""%tname)
         columns = [x[0] for x in dbconnection.cursor.description]
 
-
         if file_data_srid:
             astext = 'ST_AsBinary(ST_Transform({}, %s))'%str(file_data_srid)
         else:
@@ -221,9 +222,10 @@ class ExportData(object):
         if obsids:
             sql += " WHERE obsid IN ({})".format(common_utils.sql_unicode_list(obsids))
         dbconnection.execute(sql)
-        print(str(sql))
+
         table_data = [[x.lower() for x in columns]]
         table_data.extend([row for row in dbconnection.execute_and_fetchall(sql)])
+
         if len(table_data) < 2:
             return None
         else:

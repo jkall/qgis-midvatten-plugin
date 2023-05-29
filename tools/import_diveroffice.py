@@ -450,8 +450,10 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             if df.empty:
                 return filedata, filename, location, utc_offset
 
-
         df['date_time'] = df['date_time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        # Replaces NaN with None
+        df = df.astype(object).where(pd.notnull(df), None)
+
         filedata = [['date_time', 'head_cm', 'temp_degc', 'cond_mscm']]
         for c in filedata[0]:
             if c not in df.columns:

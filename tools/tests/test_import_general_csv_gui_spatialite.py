@@ -1186,8 +1186,6 @@ class TestGeneralCsvGuiFromLayer(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print("5. QgsVectorLayer.getFeature() type: " + str([str(type(self.vlayer.getFeature(x))) for x in feature_ids]))
         print("6. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
 
-
-
     def test_import_obs_points_from_layer(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
         self.create_and_select_vlayer()

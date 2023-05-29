@@ -435,7 +435,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     @mock.patch('midvatten.tools.export_data.common_utils.pop_up_info', autospec=True)
     def test_export_spatialite_transform_coordinates(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
-        mock_createdb_crs_question.return_value = [3010, True]
+        mock_createdb_crs_question.return_value = ['3010', True]
 
         mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
@@ -487,6 +487,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         # In Ubuntu 20.04 it's -517888.384559 for both postgis and spatialite
         #// I've made changes to the transformation so the above values no longer exists, but the previous issue probably does.
         # !!! No idea why
+        # In Ubuntu 22.10, (1, 1) in 3006 turns into 'POINT(10.511265 0.000009)' in WGS84 and into POINT(-517888.39291 1.000667) in 3010!
+        # The problem must be rounding related. 
         
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',

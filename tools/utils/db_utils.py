@@ -1246,3 +1246,25 @@ def get_timezone_from_db(tablename, dbconnection=None):
 
 
 
+def export_bytea_as_bytes(dbconnection):
+    """
+    Using ST_AsBinary(geometry) for a Postgis-database returns MemoryView object.
+    To convert this, one could either use bytes(obj) och memoryview.tobytes(), but this
+    function adjust the dbconnection to return bytes directly.
+
+    https://www.postgresql.org/message-id/CA%2Bmi_8Zy50LYof%3DFfO9qybeQJfoLPpUXCand8CBvapS%3DXoCkGg%40mail.gmail.com
+
+    @param cur:
+    @return:
+    """
+    if dbconnection.dbtype == 'spatialite':
+        return
+
+    def bytea2bytes(value, cur):
+        m = psycopg2.BINARY(value, cur)
+        if m is not None:
+            return m.tobytes()
+
+    BYTEA2BYTES = psycopg2.extensions.new_type(
+        psycopg2.BINARY.values, 'BYTEA2BYTES', bytea2bytes)
+    psycopg2.extensions.register_type(BYTEA2BYTES, dbconnection.conn)

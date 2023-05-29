@@ -21,10 +21,24 @@
 """
 from __future__ import absolute_import
 
+import traceback
 from builtins import object
 from builtins import range
 from builtins import str
 from operator import itemgetter
+import traceback
+
+import io
+
+try:
+    import pandas as pd
+    import numpy as np
+except:
+    pandas_on = False
+else:
+    pandas_on = True
+
+
 
 from qgis.PyQt.QtCore import QCoreApplication
 
@@ -189,10 +203,15 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 kwargs['notnullcheck'] = ' AND '.join(['%s IS NOT NULL'%notnullcol
                                                        for notnullcol in sorted(not_null_columns)])
             sql = sql.format(**kwargs)
+
             recsbefore = dbconnection.execute_and_fetchall('select count(*) from %s' % (dest_table))[0][0]
             try:
                 dbconnection.execute(sql)
             except Exception as e:
+                print(f"{ru(traceback.format_exc())}")
+                print(sql)
+                print("Sourde " + str(source_srid))
+
                 common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % dest_table + ru(str(e)))
                 sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
                 try:
@@ -246,14 +265,72 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             common_utils.stop_waiting_cursor()
 
     def list_to_table(self, dbconnection, destination_table, file_data, primary_keys_for_concat):
+        """
+        TODO: This method can be extremely slow sometimes.
+        @param dbconnection:
+        @param destination_table:
+        @param file_data:
+        @param primary_keys_for_concat:
+        @return:
+        """
         fieldnames_types = ['{} TEXT'.format(field_name) for field_name in file_data[0]]
         self.temptable_name = dbconnection.create_temporary_table_for_import(destination_table + '_temp', fieldnames_types)
 
+        if pandas_on:
+            numskipped = self.list_to_table_using_pandas(dbconnection, self.temptable_name, file_data, primary_keys_for_concat)
+        else:
+            numskipped = self.list_to_table_using_loop(dbconnection, self.temptable_name, file_data, primary_keys_for_concat)
+
+        if numskipped:
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate('midv_data_importer', "%s nr of duplicate rows in file was skipped while importing.")) % str(numskipped))
+
+        for colname in file_data[0]:
+            dbconnection.execute(f"""UPDATE {self.temptable_name} SET {colname} = NULL WHERE {colname} = '' """)
+
+        dbconnection.cursor.execute(f"""select * from {self.temptable_name}""")
+
+    def list_to_table_using_pandas(self, dbconnection, temptable_name, file_data, primary_keys_for_concat):
+        numskipped = 0
+        df = pd.DataFrame.from_records(file_data[1:], columns=file_data[0])
+
+        if primary_keys_for_concat:
+            len_before = len(df)
+            df = df.drop_duplicates(subset=primary_keys_for_concat, keep='first', ignore_index=True)
+            len_after = len(df)
+            numskipped = len_before - len_after
+
+        for column in df.columns:
+            try:
+                df[column] = df[column].str.strip()
+            except (AttributeError, TypeError):
+                # Not a string column
+                pass
+            pass
+
+        # Replaces NaN with None
+        df = df.astype(object).where(pd.notnull(df), None)
+
+        if dbconnection.dbtype == 'spatialite':
+            placeholder_sign = db_utils.placeholder_sign(dbconnection)
+            sql = """INSERT INTO %s VALUES (%s)""" % (
+                temptable_name, ', '.join([placeholder_sign for x in range(len(file_data[0]))]))
+            dbconnection.cursor.executemany(sql, list(df.itertuples(index=False)))
+        else:
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False, header=False, sep=';')
+            csv_buffer.seek(0)
+            dbconnection.cursor.copy_from(csv_buffer, temptable_name, sep=";")
+
+        return numskipped
+
+    def list_to_table_using_loop(self, dbconnection, temptable_name, file_data, primary_keys_for_concat):
+        numskipped = 0
         placeholder_sign = db_utils.placeholder_sign(dbconnection)
         concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
         added_rows = set()
-        numskipped = 0
-        sql = """INSERT INTO %s VALUES (%s)""" % (self.temptable_name, ', '.join([placeholder_sign for x in range(len(file_data[0]))]))
+
+        sql = """INSERT INTO %s VALUES (%s)""" % (
+        temptable_name, ', '.join([placeholder_sign for x in range(len(file_data[0]))]))
         for row in file_data[1:]:
             if primary_keys_for_concat:
                 concatted = '|'.join([ru(row[idx]) for idx in concat_cols])
@@ -266,10 +343,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             args = tuple([self.sanitize(r) for r in row])
 
             dbconnection.cursor.execute(sql, args)
-        #TODO: Let's see what happens without commit
-        #dbconnection.commit()
-        if numskipped:
-            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate('midv_data_importer', "%s nr of duplicate rows in file was skipped while importing.")) % str(numskipped))
+        return numskipped
 
     def sanitize(self, value):
         if isinstance(value, str):
@@ -326,29 +400,33 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         sql = """(CASE WHEN ({colname} !='' AND {colname} !=' ' AND {colname} IS NOT NULL)\n    THEN {to_geometry} ELSE {null} END)"""
         kwargs = {'colname': geom_col, 'null': null_replacement}
 
-
-        if str(source_srid).startswith('EPSG:'):
-            _source_srid = source_srid.split(':')[-1]
+        if source_srid is None:
+            # Assume it's the same as the destination.
+            _source_srid = dest_srid
         else:
-            _source_srid = source_srid
+            if str(source_srid).startswith('EPSG:'):
+                _source_srid = source_srid.split(':')[-1]
+            else:
+                _source_srid = source_srid
 
-        try:
-            int(_source_srid)
-        except ValueError as e:
-            raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer',
-                'Source srid "%s" was not a valid EPSG srid. Check coordinate reference system of the source.' )) % str(_source_srid)) from e
+            try:
+                int(_source_srid)
+            except (ValueError, TypeError) as e:
+                raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer',
+                                                                          'Source srid "%s" was not a valid EPSG srid. Check coordinate reference system of the source.')) % str(
+                    _source_srid)) from e
+
 
         try:
             int(dest_srid)
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             raise MidvDataImporterError(ru(QCoreApplication.translate('midv_data_importer',
                 'Database srid "%s" was not a valid EPSG srid. Check coordinate reference system of the databases')) % str(dest_srid)) from e
 
-
-        if _source_srid is None or int(_source_srid) == int(dest_srid):
+        if int(_source_srid) == int(dest_srid):
             to_geometry = """{convert_func}({geometry}, {dest_srid})""".format(geometry=geom_col,
-                                                                               convert_func=convert_func,
-                                                                               dest_srid=dest_srid)
+                                                                  convert_func=convert_func,
+                                                                  dest_srid=dest_srid)
         else:
             to_geometry = """ST_Transform({convert_func}({geometry}, {source_srid}), {dest_srid})""".format(
                 geometry=geom_col,
