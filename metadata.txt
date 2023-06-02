@@ -23,6 +23,7 @@ changelog=
         Version 1.7.8:
         - Import data to database: Adjustments to enhance import performance.
         - Export data to spatialite: Adjustments to enhance import performance.
+        - Added support for PostgreSQL materialized views.
         Version 1.7.7:
         - Import data to db: Fixes better error message when input layer coordinate reference system is wrong.
         - Removed old error message about view_obs_points and view_obs_lines.

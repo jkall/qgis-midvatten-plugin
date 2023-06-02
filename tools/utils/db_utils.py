@@ -232,9 +232,12 @@ class DbConnectionManager(object):
             else:
                 raise TypeError(ru(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: all_args must be a list/tuple. Was %s')) % ru(type(all_args)))
 
-    def execute_and_fetchall(self, sql):
+    def execute_and_fetchall(self, sql, args=None):
         try:
-            self.cursor.execute(sql)
+            if args is not None:
+                self.cursor.execute(sql, args)
+            else:
+                self.cursor.execute(sql)
         except (sqlite.OperationalError, Exception) as e:
             textstring = ru(QCoreApplication.translate('sql_load_fr_db',
                                                                         """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
@@ -493,7 +496,8 @@ def execute_sqlfile(sqlfilename, dbconnection, merge_newlines=False):
 
 
 def tables_columns(table=None, dbconnection=None):
-    return dict([(k, [col[1] for col in v]) for k, v in db_tables_columns_info(table=table, dbconnection=dbconnection).items()])
+    return dict([(k, [col[1] for col in v]) for k, v in db_tables_columns_info(table=table,
+                                                                               dbconnection=dbconnection).items()])
 
 
 def db_tables_columns_info(table=None, dbconnection=None):
@@ -505,7 +509,6 @@ def db_tables_columns_info(table=None, dbconnection=None):
         dbconnection_created = False
 
     existing_tablenames = get_tables(dbconnection=dbconnection)
-
 
     if table is not None:
         if table not in existing_tablenames:
@@ -556,9 +559,16 @@ def get_tables(dbconnection=None, skip_views=False):
     else:
         if skip_views:
             tabletype = "AND table_type='BASE TABLE'"
+            pg_mat_views = ""
         else:
             tabletype = ''
-        tables_sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='%s' %s AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), tabletype, postgis_internal_tables())
+            pg_mat_views = "UNION SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm'"
+        tables_sql = """SELECT table_name FROM (
+                        SELECT table_name FROM information_schema.tables 
+                        WHERE table_schema='%s' %s 
+                        AND table_name NOT IN %s
+                        %s) foo
+                        ORDER BY table_name"""%(dbconnection.schemas(), tabletype, postgis_internal_tables(), pg_mat_views)
     tables = dbconnection.execute_and_fetchall(tables_sql)
     tablenames = [col[0] for col in tables]
 
@@ -592,6 +602,26 @@ def get_table_info(tablename, dbconnection=None):
         for column in columns:
             if column[1] in primary_keys:
                 column[5] = 1
+
+        if not columns:
+            # Materialized views
+            #ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key
+            columns_sql = f"""SELECT a.attnum,
+                                      a.attname,
+                                      pg_catalog.format_type(a.atttypid, a.atttypmod) as datatype,
+                                      a.attnotnull,
+                                      NULL AS default,
+                                      NULL as primary_key
+                                FROM pg_attribute a
+                                  JOIN pg_class t on a.attrelid = t.oid
+                                  JOIN pg_namespace s on t.relnamespace = s.oid
+                                WHERE a.attnum > 0
+                                  AND NOT a.attisdropped
+                                  AND t.relname = '{tablename}'
+                                  AND s.nspname = '{dbconnection.schemas()}'
+                                ORDER BY a.attnum;"""
+            columns = dbconnection.execute_and_fetchall(columns_sql)
+
         columns = [tuple(column) for column in columns]
 
     if dbconnection_created:
