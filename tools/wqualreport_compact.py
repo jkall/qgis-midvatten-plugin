@@ -249,7 +249,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
     @general_exception_handler
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                  page_break_between_tables, from_active_layer, sql_table, sort_parameters_alphabetically,
-                 sort_order, date_time_as_columns, date_time_format, method, data_column):
+                 sort_order, date_time_as_columns, date_time_format, method, data_column, include_depth_in_obsid=True):
         #show the user this may take a long time...
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
@@ -269,6 +269,9 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         else:
             data_columns = ['obsid', 'date_time', 'parameter', 'unit', data_column]
 
+        if include_depth_in_obsid:
+            data_columns.insert(1, 'depth')
+
         if from_active_layer:
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
             if w_qual_lab_layer is None:
@@ -278,6 +281,13 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             df = self.get_data_from_qgislayer(w_qual_lab_layer, data_columns)
         else:
             df = self.get_data_from_sql(sql_table, common_utils.getselectedobjectnames(), data_columns)
+
+        if 'depth' in df.columns:
+            df['depth'] = df['depth'].fillna(0)
+            df.loc[:, 'obsid'].where(df['depth'] == 0, df['obsid'] + ' (' + df['depth'].astype(
+                str).apply(lambda x: (x.replace('.0', '') if int(float(x)) == float(x) else x)) + ' m)',
+                                     inplace=True)
+            df = df.drop('depth', axis=1)
 
         sort_order = [c for c in sort_order if c in df.columns.values.tolist()]
         if date_time_as_columns:
