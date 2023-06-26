@@ -38,17 +38,21 @@ obsid
 , COALESCE(unit, '<NULL>')
 );
 
-CREATE TABLE altitude_history /*Altitude history for obs_points*/ (
+CREATE TABLE spatial_history /*Spatial history for obs_points*/ (
 SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
 POSTGIS id SERIAL PRIMARY KEY
 , obsid TEXT NOT NULL
-, valid_from_date TEXT NOT NULL /*date_time from when this altitude entry is valid (for example the well drill date).*/
-, h_gs DOUBLE /*Ground Surface level (m).*/
-, h_toc DOUBLE /*Elevation (masl) for the measuring point*/
-, h_tocags DOUBLE /*Distance from Measuring point to Ground Surface (m)*/
-, h_syst TEXT CHECK(COALESCE(h_gs, h_toc) IS NULL OR h_syst IS NOT NULL) /*Reference system for elevation*/
-, h_accur DOUBLE /*Inaccuracy (m) for Measuring Point level*/
-, valid BOOLEAN /*Specifies if this altitude entry is still valid. Set to False if a new measurement has made the entry not longer valid.*/
-, source TEXT NOT NULL /*Source for the measuring point elevation (consultancy report or similar)*/
+, valid_from_date TEXT NOT NULL /*date_time from when this spatial entry is valid (for example the well drill date).*/
+, east double /*Eastern coordinate (in the corresponding CRS)*/
+, north double /*Northern coordinate (in the corresponding CRS)*/
+, ne_accur double /*Approximate inaccuracy for coordinates*/
+, ne_source text /*Source for the given position*/
+, h_toc double /*Elevation (masl) for the measuring point*/
+, h_tocags double /*Distance from Measuring point to Ground Surface (m)*/
+, h_gs double /*Ground Surface level (m).*/
+, h_accur double /*Inaccuracy (m) for Measuring Point level*/
+, h_syst text /*Reference system for elevation*/
+, h_source text /*Source for the measuring point elevation (consultancy report or similar)*/
+, valid BOOLEAN /*Specifies if this spatial entry is still valid. Set to False if a new measurement has made the entry not longer valid.*/
 , FOREIGN KEY (obsid) REFERENCES obs_points (obsid) ON DELETE CASCADE
 );

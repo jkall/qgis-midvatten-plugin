@@ -236,7 +236,7 @@ class Midvatten(object):
         self.action_add_view_obs_points_lines.triggered.connect(lambda x: self.add_view_obs_points_lines())
 
         self.action_non_essential_tables = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), QCoreApplication.translate("Midvatten","Add non-essential data tables"), self.iface.mainWindow())
-        self.action_non_essential_tables.setWhatsThis(QCoreApplication.translate("Midvatten","Add extra tables to the database:\nw_qual_logger to store water quality logger data,\ns_qual_lab to store soil quality data,\naltitude_history to store history of obs_points altitued (h_*-columns)."))
+        self.action_non_essential_tables.setWhatsThis(QCoreApplication.translate("Midvatten","Add extra tables to the database:\nw_qual_logger to store water quality logger data,\ns_qual_lab to store soil quality data,\nspatial_history to store history of obs_points altitued (h_*-columns)."))
         self.action_non_essential_tables.triggered.connect(lambda x: self.add_non_essential_tables())
 
 

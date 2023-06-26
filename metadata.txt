@@ -5,7 +5,7 @@ name=Midvatten
 qgisMinimumVersion=3.22.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
-version=1.7.9
+version=1.7.10
 author=Josef Källgården, Henrik Spångmyr
 email=midvattenplugin@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
@@ -20,6 +20,8 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
+        Version 1.7.10:
+        - Non-essential table altitude_history renamed to spatial_history and now contains columns for east-north.
         Version 1.7.9:
         - Wqualreport compact: Added depth as suffix to obsid when depth is not 0.
         Version 1.7.8:
@@ -32,7 +34,7 @@ changelog=
         Version 1.7.6:
         - Removed unnecessary error message.
         - Fixes export problems for malformed databases (the affected tables are skipped).
-        - Added support for table altitude_history for Postgresql-databases.
+        - Added support for table spatial_history for Postgresql-databases.
         - DiverofficeImport: Fixes issue for postgresql-database where nan-values was not treated as None.
         Version 1.7.5:
         - DiverofficeImport: Fixes problem when importing .mon-files.
