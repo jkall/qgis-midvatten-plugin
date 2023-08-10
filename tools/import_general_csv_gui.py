@@ -33,13 +33,15 @@ from operator import itemgetter
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.core import QgsCoordinateReferenceSystem
+from qgis.core import QgsProject, QgsWkbTypes, QgsGeometry, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, \
+    QgsCoordinateReferenceSystem
 
 import midvatten.definitions.midvatten_defs as defs
 from midvatten.tools import import_data_to_db
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, date_utils
 from midvatten.tools.utils.common_utils import returnunicode as ru
 from midvatten.tools.utils.gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid, DistinctValuesBrowser
+
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -185,13 +187,15 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         features = list(active_layer.getSelectedFeatures())
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
         [file_data.append([ru(attr) if all([ru(attr).strip() != 'NULL' if attr is not None else '', attr is not None]) else '' for attr in feature]) for feature in features]
-        geometries = [feature.geometry().asWkt() if feature.geometry().asWkt() else None for feature in features]
-        if any(geometries):
+        geometries = [feature.geometry() if feature.geometry().asWkt() else None for feature in features]
+        if any([g is not None for g in geometries]):
             geom_name = 'geometry'
             while geom_name in file_data[0]:
                 geom_name += '_'
             file_data[0].append(geom_name)
-            [file_data[idx+1].append(wkt) for idx, wkt in enumerate(geometries)]
+            [file_data[idx+1].append((GeometryExtraction(active_layer.crs(), geom)
+                                     if geom is not None
+                                     else None)) for idx, geom in enumerate(geometries)]
 
         self.file_data = file_data
         self.srid = active_layer.crs().authid()
@@ -261,6 +265,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
         file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns_info[dest_table])
+        # TODO: self.convert_geoms_to_wkt(dest_sric)
         if columns_factors:
             file_data = self.multiply_by_factor(file_data, columns_factors)
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
@@ -613,4 +618,22 @@ class StaticValue(object):
     def __repr__(self):
         return str(self.value)
 
+class GeometryExtraction(object):
+    def __init__(self, crs, geom):
+        self.crs = crs
+        self.geom = QgsGeometry(geom)
 
+    def asWkt(self, dest_srid):
+        return self._transform(dest_srid).asWkt()
+
+    def _transform(self, dest_srid):
+        _from = QgsCoordinateReferenceSystem(self.crs)
+        _to = QgsCoordinateReferenceSystem(dest_srid)
+        coordinatetransform = QgsCoordinateTransform(_from, _to, QgsProject.instance())
+
+        geom = QgsGeometry(self.geom)
+        geom.transform(coordinatetransform)
+        return geom
+
+    def __deepcopy__(self, memodict={}):
+        return GeometryExtraction(self.crs, self.geom)
