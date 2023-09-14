@@ -213,8 +213,19 @@ def sql_to_parameters_units_tuple(sql):
     return parameters
 
 
-def getcurrentlocale(print_error_message_in_bar=True):
-    db_locale = get_locale_from_db(print_error_message_in_bar=print_error_message_in_bar)
+def getcurrentlocale(print_error_message_in_bar=True, dbconnection=None):
+    if not isinstance(dbconnection, db_utils.DbConnectionManager):
+        dbconnection = db_utils.DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
+    db_locale = get_locale_from_db(print_error_message_in_bar=print_error_message_in_bar,
+                                   dbconnection=dbconnection)
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
 
     if db_locale is not None and db_locale:
         return [db_locale, locale.getdefaultlocale()[1]]
@@ -222,9 +233,20 @@ def getcurrentlocale(print_error_message_in_bar=True):
         return locale.getdefaultlocale()[:2]
 
 
-def get_locale_from_db(print_error_message_in_bar=True):
+def get_locale_from_db(print_error_message_in_bar=True, dbconnection=None):
+    if not isinstance(dbconnection, db_utils.DbConnectionManager):
+        dbconnection = db_utils.DbConnectionManager()
+        dbconnection_created = True
+    else:
+        dbconnection_created = False
+
     connection_ok, locale_row = db_utils.sql_load_fr_db("SELECT description FROM about_db WHERE description LIKE 'locale:%'",
-                                                        print_error_message_in_bar=print_error_message_in_bar)
+                                                        print_error_message_in_bar=print_error_message_in_bar,
+                                                        dbconnection=dbconnection)
+
+    if dbconnection_created:
+        dbconnection.closedb()
+
     if connection_ok:
         try:
             locale_setting = ru(locale_row, keep_containers=True)[0][0].split(':')

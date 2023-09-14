@@ -50,14 +50,16 @@ def find_date_format(datestring, suppress_error_msg=False):
     None
     """
     datestring = str(datestring)
-    date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
+    date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S',
+                           '%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%d %H:%M:%S.%f',
                            '%Y%m%d %H:%M:%S', '%Y%m%d %H:%M', '%Y-%m-%d %H:%M', '%Y%m%d',
                            '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S',
                            '%d-%m-%Y %H:%M', '%d-%m-%Y %H', '%Y/%m/%d %H:%M',
                            '%Y/%m/%d %H', '%Y%m%d %H%M%S', '%Y%m%d %H%M',
                            '%Y%m%d %H', '%m/%d/%y %H:%M:%S', '%d-%b-%y %H:%M:%S',
                            '%d-%b-%Y %H:%M:%S', '%d-%B-%y %H:%M:%S', '%d-%B-%Y %H:%M:%S',
-                           '%d.%m.%Y %H:%M', '%d.%m.%Y %H:%M:%S', '%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M']
+                           '%d.%m.%Y %H:%M', '%d.%m.%Y %H:%M:%S', '%d/%m/%Y %H:%M:%S',
+                           '%d/%m/%Y %H:%M']
     found_format = None
     for dateformat in date_formats_to_try:
         try:
