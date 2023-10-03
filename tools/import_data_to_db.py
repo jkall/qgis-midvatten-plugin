@@ -30,6 +30,9 @@ import traceback
 
 import io
 
+import psycopg2
+import psycopg2.extras
+
 try:
     import pandas as pd
     import numpy as np
@@ -319,7 +322,15 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             csv_buffer = io.StringIO()
             df.to_csv(csv_buffer, index=False, header=False, sep=';')
             csv_buffer.seek(0)
-            dbconnection.cursor.copy_from(csv_buffer, temptable_name, sep=";")
+            try:
+                dbconnection.cursor.copy_from(csv_buffer, temptable_name, sep=";")
+            except psycopg2.errors.BadCopyFileFormat:
+                # This is probably due to the separator exists in the values.
+                placeholder_sign = db_utils.placeholder_sign(dbconnection)
+                data = list(df.itertuples(index=False))
+                sql = f"""INSERT INTO {temptable_name} VALUES {placeholder_sign}"""
+                psycopg2.extras.execute_values(dbconnection.cursor, sql, data,
+                                               template=None)
 
         return numskipped
 
