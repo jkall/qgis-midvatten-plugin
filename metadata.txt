@@ -22,7 +22,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.7.13:
         - Import data to db: Fixes bug where import to Postgresql database failed if data
-          containd ";".
+          contains ";".
         Version 1.7.12:
         - Added support for more date formats.
         - Added dbconnection as argument to some db-functions.
