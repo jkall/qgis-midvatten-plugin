@@ -361,6 +361,9 @@ class DbConnectionManager(object):
             srid = int(srid)
         return srid
 
+    def placeholder_sign(self):
+        return placeholder_sign(self)
+
 def connect_with_spatialite_connect(dbpath):
     conn = spatialite_connect(dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
     return conn
