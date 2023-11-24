@@ -1301,3 +1301,22 @@ def export_bytea_as_bytes(dbconnection):
     BYTEA2BYTES = psycopg2.extensions.new_type(
         psycopg2.BINARY.values, 'BYTEA2BYTES', bytea2bytes)
     psycopg2.extensions.register_type(BYTEA2BYTES, dbconnection.conn)
+
+
+def is_distinct_from(dbconnection):
+    """SQLite uses 'IS NOT' and PostgreSQL 'IS DISTINCT FROM'
+     to compare values, where two NULL-values are treated as equal.
+     """
+    if dbconnection.dbtype == 'postgis':
+        return 'IS DISTINCT FROM'
+    else:
+        return 'IS NOT'
+
+def is_not_distinct_from(dbconnection):
+    """SQLite uses 'IS' and PostgreSQL 'IS NOT DISTINCT FROM'
+     to compare values, where two NULL-values are treated as equal.
+     """
+    if dbconnection.dbtype == 'postgis':
+        return 'IS NOT DISTINCT FROM'
+    else:
+        return 'IS'

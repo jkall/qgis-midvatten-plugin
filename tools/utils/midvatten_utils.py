@@ -520,15 +520,21 @@ def add_view_obs_points_obs_lines():
                                                                            'Views added. Please reload layers (Midvatten>Load default db-layers to qgis or "F7").'))
 
 
-def add_non_essential_tables():
-    dbconnection = db_utils.DbConnectionManager()
+def add_non_essential_tables(dbconnection=None):
+    connection_created = False
+    if dbconnection is None:
+        connection_created = True
+        dbconnection = db_utils.DbConnectionManager()
+
     connection_ok = dbconnection.connect2db()
     if connection_ok:
         db_utils.execute_sqlfile(get_full_filename('create_db_extra_data_tables.sql'),
                                  dbconnection, merge_newlines=True)
-        dbconnection.commit_and_closedb()
+        dbconnection.commit()
         MessagebarAndLog.info(bar_msg=QCoreApplication.translate("Midvatten",
                                                                  'Tables added. Load tables using Midvatten>Utilities>Load data tables to qgis.'))
+    if connection_created:
+        dbconnection.closedb()
 
 
 def select_files(only_one_file=True, extension="csv (*.csv)"):
