@@ -21,7 +21,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.7.14:
-        - Database utils: Added some features to dbutils. No changes for the regular user.
+        - Database utils: Added some features to db_utils.
         Version 1.7.13:
         - Import data to db: Fixes bug where import to Postgresql database failed if data
           contains ";".

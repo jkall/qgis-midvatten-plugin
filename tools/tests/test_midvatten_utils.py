@@ -29,7 +29,7 @@ import mock
 import nose
 import numpy as np
 from cycler import cycler
-from mock import call
+from mock import call, Mock
 from nose.plugins.attrib import attr
 
 from midvatten.tools.tests.mocks_for_tests import MockUsingReturnValue
@@ -192,14 +192,21 @@ class TestSqlToParametersUnitsTuple(object):
 
 @attr(status='on')
 class TestGetCurrentLocale(object):
+
+    @mock.patch('midvatten.tools.utils.db_utils.DbConnectionManager')
+    @mock.patch('midvatten.tools.utils.midvatten_utils.isinstance')
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten.tools.utils.midvatten_utils.get_locale_from_db')
-    def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
+    def test_getcurrentlocale(self, mock_get_locale, mock_default_locale,
+                              mock_isinstance,
+                              mock_dbconnection):
         mock_get_locale.return_value = 'a_lang'
         mock_default_locale.return_value = [None, 'an_enc']
+        mock_isinstance.return_value = False
 
         test_string = create_test_string(midvatten_utils.getcurrentlocale())
         reference_string = '[a_lang, an_enc]'
+        print(midvatten_utils.getcurrentlocale())
         assert test_string == reference_string
         
 @attr(status='on')

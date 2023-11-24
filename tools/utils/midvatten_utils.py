@@ -215,13 +215,22 @@ def sql_to_parameters_units_tuple(sql):
 
 def getcurrentlocale(print_error_message_in_bar=True, dbconnection=None):
     if not isinstance(dbconnection, db_utils.DbConnectionManager):
-        dbconnection = db_utils.DbConnectionManager()
-        dbconnection_created = True
+        try:
+            dbconnection = db_utils.DbConnectionManager()
+        except UsageError:
+            # The user has not selected a database.
+            dbconnection_created = False
+            dbconnection = None
+        else:
+            dbconnection_created = True
     else:
         dbconnection_created = False
 
-    db_locale = get_locale_from_db(print_error_message_in_bar=print_error_message_in_bar,
+    if dbconnection is not None:
+        db_locale = get_locale_from_db(print_error_message_in_bar=print_error_message_in_bar,
                                    dbconnection=dbconnection)
+    else:
+        db_locale = None
 
     if dbconnection_created:
         dbconnection.closedb()
