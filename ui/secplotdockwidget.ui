@@ -40,8 +40,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>864</width>
-         <height>902</height>
+         <width>860</width>
+         <height>1164</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -277,6 +277,9 @@
                              <property name="checkable">
                               <bool>false</bool>
                              </property>
+                             <property name="collapsed">
+                              <bool>false</bool>
+                             </property>
                              <layout class="QVBoxLayout" name="verticalLayout_3">
                               <item>
                                <layout class="QHBoxLayout" name="horizontalLayout">
@@ -293,6 +296,8 @@
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="text">
@@ -341,6 +346,8 @@
                                     <font>
                                      <family>DejaVu Sans</family>
                                      <pointsize>9</pointsize>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
                                     </font>
                                    </property>
                                    <property name="text">
@@ -436,6 +443,8 @@ p, li { white-space: pre-wrap; }
                                     <font>
                                      <family>DejaVu Sans</family>
                                      <pointsize>9</pointsize>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
                                     </font>
                                    </property>
                                    <property name="text">
@@ -461,6 +470,8 @@ p, li { white-space: pre-wrap; }
                                     <font>
                                      <family>DejaVu Sans</family>
                                      <pointsize>9</pointsize>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
                                     </font>
                                    </property>
                                    <property name="text">
@@ -474,6 +485,8 @@ p, li { white-space: pre-wrap; }
                                     <font>
                                      <family>DejaVu Sans</family>
                                      <pointsize>9</pointsize>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
                                     </font>
                                    </property>
                                    <property name="text">
@@ -493,6 +506,8 @@ p, li { white-space: pre-wrap; }
                                     <font>
                                      <family>DejaVu Sans</family>
                                      <pointsize>9</pointsize>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
                                     </font>
                                    </property>
                                    <property name="text">
@@ -517,7 +532,7 @@ p, li { white-space: pre-wrap; }
                              <property name="title">
                               <string>Digital elevation models</string>
                              </property>
-                             <layout class="QVBoxLayout" name="verticalLayout_8">
+                             <layout class="QVBoxLayout" name="verticalLayout_6">
                               <item>
                                <widget class="QListWidget" name="inData">
                                 <property name="sizePolicy">
@@ -551,6 +566,36 @@ p, li { white-space: pre-wrap; }
                                 </property>
                                </widget>
                               </item>
+                              <item>
+                               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                                <item>
+                                 <widget class="QLabel" name="label_13">
+                                  <property name="toolTip">
+                                   <string/>
+                                  </property>
+                                  <property name="text">
+                                   <string>Sampling distance (m)</string>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item>
+                                 <widget class="QDoubleSpinBox" name="dem_sampling_distance">
+                                  <property name="toolTip">
+                                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The sampling distance (resolution) of the digitized dem line in meter. &lt;br/&gt;A sampling distance of 1 (m) creates a node every meter.&lt;br/&gt;A sampling distance of 0 m adapts the resolution automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  </property>
+                                  <property name="decimals">
+                                   <number>1</number>
+                                  </property>
+                                  <property name="maximum">
+                                   <double>50000.000000000000000</double>
+                                  </property>
+                                  <property name="singleStep">
+                                   <double>10.000000000000000</double>
+                                  </property>
+                                 </widget>
+                                </item>
+                               </layout>
+                              </item>
                              </layout>
                             </widget>
                            </item>
@@ -564,6 +609,9 @@ p, li { white-space: pre-wrap; }
                              </property>
                              <property name="title">
                               <string>Bars</string>
+                             </property>
+                             <property name="collapsed">
+                              <bool>false</bool>
                              </property>
                              <layout class="QGridLayout" name="gridLayout_2">
                               <item row="1" column="1" colspan="3">
@@ -586,6 +634,8 @@ p, li { white-space: pre-wrap; }
                                 <property name="font">
                                  <font>
                                   <pointsize>9</pointsize>
+                                  <weight>50</weight>
+                                  <bold>false</bold>
                                  </font>
                                 </property>
                                 <property name="text">
@@ -837,6 +887,8 @@ p, li { white-space: pre-wrap; }
                                 <property name="font">
                                  <font>
                                   <pointsize>9</pointsize>
+                                  <weight>50</weight>
+                                  <bold>false</bold>
                                  </font>
                                 </property>
                                 <property name="text">
@@ -862,6 +914,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">
@@ -881,6 +935,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">
@@ -911,6 +967,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">
@@ -934,6 +992,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">
@@ -956,6 +1016,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                  </widget>
@@ -966,6 +1028,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">
@@ -982,6 +1046,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">
@@ -998,6 +1064,8 @@ p, li { white-space: pre-wrap; }
                                    <font>
                                     <family>DejaVu Sans</family>
                                     <pointsize>9</pointsize>
+                                    <weight>50</weight>
+                                    <bold>false</bold>
                                    </font>
                                   </property>
                                   <property name="toolTip">

@@ -418,6 +418,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.ms.settingsdict['secplotlegendplotted'] = self.Legend_checkBox.isChecked()
             self.get_dem_selection()
             self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
+            self.ms.settingsdict['dem_sampling_distance'] = self.dem_sampling_distance.value()
 
             if self.text_align_center.isChecked():
                 self.ms.settingsdict['secplotlayertextalignment'] = 'center'
@@ -937,10 +938,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
                 for layername in self.ms.settingsdict['secplotselectedDEMs']:
                     #TODO: This should be a setting in the gui for each dem layer instead of hardcoded
-                    distance = self.barwidth / 2.0
-                    if not distance:
-                        distance = max([feat for feat in self.sectionlinelayer.getSelectedFeatures()][0].geometry().length()/ 5000, 1)
-
+                    if not self.ms.settingsdict['dem_sampling_distance']:
+                        distance = self.barwidth / 2.0
+                        if not distance:
+                            distance = max([feat for feat in self.sectionlinelayer.getSelectedFeatures()][0].geometry().length()/ 5000, 1)
+                    else:
+                        distance = self.ms.settingsdict['dem_sampling_distance']
+                        
                     temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
                     plotlable = self.get_plot_label_name(layername, self.get_legend_items_labels()[1])
@@ -1310,6 +1314,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ms.save_settings('secplotbw')
         self.ms.save_settings('secplotlocation')
         self.ms.save_settings('secplotselectedDEMs')
+        self.ms.save_settings('dem_sampling_distance')
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
         self.ms.save_settings('secplotwidthofplot')
