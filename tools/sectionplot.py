@@ -34,7 +34,7 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsVectorLayer
 from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
 
 from midvatten.tools.utils.gui_utils import set_combobox
@@ -51,7 +51,7 @@ import datetime
 import matplotlib.dates as mdates
 
 from midvatten.tools.utils import common_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer
+from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer, UsageError
 from midvatten.tools.utils.midvatten_utils import PlotTemplates
 from midvatten.tools.utils.matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
 import midvatten.definitions.midvatten_defs as defs
@@ -958,16 +958,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     self.p.append(lineplot)
 
                     #TODO: This feature should have settings in gui to activate grading for the current layer.
-                    grade_layer = False
+                    grade_layer = True
                     if grade_layer:
                         #TODO: These settings should be in gui in some way.
-                        polylayer_name = 'polylager_with_color'
+                        polylayer_name = 'secplot_polylayer_with_color'
+                        rgb_rasterlayer_name = 'secplot_rasterlayer_with_rgb'
                         alpha_max = 0.5
                         alpha_min = 0
                         number_of_plots = 20
                         graded_depth_m = 2
                         skip_labels = []
-                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata, polylayer_name, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m, skip_labels=skip_labels)
+                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata, polylayer_name, rgb_rasterlayer_name, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m, skip_labels=skip_labels)
                     QgsProject.instance().removeMapLayer(temp_memorylayer.id())
         except:
             raise
@@ -978,20 +979,41 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 pass
 
     @fn_timer
-    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, poly_layer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
-        poly_layer = common_utils.find_layer(poly_layer_name)
+    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, polylayer_name, rgb_rasterlayer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
+        color_layer = None
+        for layername in [polylayer_name, rgb_rasterlayer_name]:
+            try:
+                color_layer = common_utils.find_layer(layername)
+            except UsageError():
+                pass
+            else:
+                break
+
+        if color_layer is None:
+            return
+
         points_srid = temp_memorylayer.crs().authid()
-        poly_layer_srid = poly_layer.crs().authid()
-        if points_srid != poly_layer_srid:
-            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'.")) % (poly_layer_name, str(poly_layer_srid), str(points_srid)))
+        color_layer_srid = color_layer.crs().authid()
+        if points_srid != color_layer_srid:
+            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'.")) % (layername, str(color_layer_srid), str(points_srid)))
             return None
-        polylabels_colors = self.sample_polygon(temp_memorylayer, poly_layer)
+
+        if isinstance(color_layer, QgsVectorLayer):
+            labels_colors = self.sample_polygon(temp_memorylayer, color_layer)
+        else:
+            labels_colors_dict = {}
+            colors = [tuple(color) for color in sampling(temp_memorylayer, color_layer, bands=(1, 2, 3))]
+            for color in colors:
+                if color not in labels_colors_dict:
+                    labels_colors_dict[color] = f"{rgb_rasterlayer_name} {len(labels_colors_dict)+1}"
+            labels_colors = [(labels_colors_dict[color], color) for color in colors]
+
 
         plot_spec = []
         _x = []
         _y = []
         prev_label = None
-        for idx, polylabel_color in enumerate(polylabels_colors):
+        for idx, polylabel_color in enumerate(labels_colors):
             polylabel = polylabel_color[0]
             _x.append(xarray[idx])
             _y.append(DEMdata[idx])
@@ -1003,14 +1025,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         else:
             plot_spec.append([prev_label, _x, _y])
 
-        labels_colors = {lbl: color for lbl, color in polylabels_colors}
+        labels_colors = {lbl: color for lbl, color in labels_colors}
 
         plotted_polylabels = set()
         for label, x_vals, y_vals in plot_spec:
             if skip_labels and label in skip_labels:
                 continue
 
-            plotlable = self.get_plot_label_name('{} {}'.format(poly_layer_name, label), self.get_legend_items_labels()[1])
+            plotlable = self.get_plot_label_name('{} {}'.format(polylayer_name, label), self.get_legend_items_labels()[1])
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
             color = labels_colors[label]
 

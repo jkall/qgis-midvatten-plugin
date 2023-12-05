@@ -128,7 +128,7 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
     virt_layer.triggerRepaint()
     return virt_layer, xarray
 
-def sampling(pointsamplinglayer, rastersamplinglayer): # main process from pointsamplingtool #so far not changed at all from original plugin
+def sampling(pointsamplinglayer, rastersamplinglayer, bands=1): # main process from pointsamplingtool #so far not changed at all from original plugin
     # open sampling points layer
     pointLayer = pointsamplinglayer
     pointProvider = pointLayer.dataProvider()
@@ -136,7 +136,7 @@ def sampling(pointsamplinglayer, rastersamplinglayer): # main process from point
     sRs = pointProvider.crs()
 
     # process raster after raster and point after point...
-    pointFeat = QgsFeature()#??????????????????
+    #pointFeat = QgsFeature()#??????????????????
     np = 0
     DEMLEV = []
     for pointFeat in pointProvider.getFeatures():
@@ -158,9 +158,11 @@ def sampling(pointsamplinglayer, rastersamplinglayer): # main process from point
             print (float(rastSample[1]))
         """
         if np >= 1:
-            try:
-                DEMLEV.append(float(rastSample[1])) ##### !! float() - I HAVE TO IMPLEMENT RASTER TYPE HANDLING!!!!
-            except: # point is out of raster extent
-                DEMLEV.append(None)
-
+            if isinstance(bands, (list, tuple)):
+                DEMLEV.append(tuple([float(rastSample[band]) for band in bands]))
+            else:
+                try:
+                    DEMLEV.append(float(rastSample[bands])) ##### !! float() - I HAVE TO IMPLEMENT RASTER TYPE HANDLING!!!!
+                except: # point is out of raster extent
+                    DEMLEV.append(None)
     return DEMLEV
