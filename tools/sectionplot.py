@@ -34,8 +34,9 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
-from qgis.core import QgsProject, QgsVectorLayer
-from qgis.core import QgsRectangle, QgsGeometry, QgsFeatureRequest, QgsWkbTypes
+from qgis.core import (QgsProject, QgsVectorLayer, QgsRectangle, QgsGeometry,
+                       QgsFeatureRequest, QgsWkbTypes, QgsMapLayer, QgsRuleBasedRenderer,
+                       QgsCategorizedSymbolRenderer, QgsSingleSymbolRenderer, QgsRenderContext)
 
 from midvatten.tools.utils.gui_utils import set_combobox
 
@@ -286,6 +287,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.fill_check_boxes()
         self.fill_combo_boxes()
+        self.fill_spinboxes()
         self.show()
 
         self.sectionlinelayer = sectionlinelayer
@@ -418,7 +420,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.ms.settingsdict['secplotlegendplotted'] = self.Legend_checkBox.isChecked()
             self.get_dem_selection()
             self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
-            self.ms.settingsdict['dem_sampling_distance'] = self.dem_sampling_distance.value()
+            self.ms.settingsdict['secplotdem_sampling_distance'] = self.dem_sampling_distance.value()
 
             if self.text_align_center.isChecked():
                 self.ms.settingsdict['secplotlayertextalignment'] = 'center'
@@ -619,7 +621,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         drillstop = self.ms.settingsdict['secplotdrillstop'] if self.ms.settingsdict['secplotdrillstop'] else '%{}%'.format(defs.bedrock_geoshort())
         self.drillstoplineEdit.setText(drillstop)
-
+        if self.ms.settingsdict['secplotincludeviews']:
+            self.include_views_checkBox.setChecked(True)
     def fill_dem_list(self):   # This method populates the QListWidget 'inData' with all possible DEMs
         self.inData.clear()
         if not self.sectionlinelayer:
@@ -678,6 +681,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         for tabell in tabeller:
             self.wlvltableComboBox.addItem(tabell)
         set_combobox(self.wlvltableComboBox, str(current_text), add_if_not_exists=False)
+
+    def fill_spinboxes(self):
+        if self.ms.settingsdict.get('secplotdem_sampling_distance', 0.0):
+            self.dem_sampling_distance.setValue(float(self.ms.settingsdict['secplotdem_sampling_distance']))
 
     @fn_timer
     def finish_plot(self):
@@ -938,12 +945,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
                 for layername in self.ms.settingsdict['secplotselectedDEMs']:
                     #TODO: This should be a setting in the gui for each dem layer instead of hardcoded
-                    if not self.ms.settingsdict['dem_sampling_distance']:
+                    if not self.ms.settingsdict['secplotdem_sampling_distance']:
                         distance = self.barwidth / 2.0
                         if not distance:
                             distance = max([feat for feat in self.sectionlinelayer.getSelectedFeatures()][0].geometry().length()/ 5000, 1)
                     else:
-                        distance = self.ms.settingsdict['dem_sampling_distance']
+                        distance = self.ms.settingsdict['secplotdem_sampling_distance']
                         
                     temp_memorylayer, xarray = qchain(self.sectionlinelayer, distance)
                     DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
@@ -960,15 +967,19 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     #TODO: This feature should have settings in gui to activate grading for the current layer.
                     grade_layer = True
                     if grade_layer:
+                        secplot_color_layer_name = f"{layername}_secplotcolor"
                         #TODO: These settings should be in gui in some way.
-                        polylayer_name = 'secplot_polylayer_with_color'
-                        rgb_rasterlayer_name = 'secplot_rasterlayer_with_rgb'
-                        alpha_max = 0.5
-                        alpha_min = 0
-                        number_of_plots = 20
-                        graded_depth_m = 2
-                        skip_labels = []
-                        self.plot_graded_dems(temp_memorylayer, xarray, DEMdata, polylayer_name, rgb_rasterlayer_name, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m, skip_labels=skip_labels)
+                        try:
+                            common_utils.find_layer(secplot_color_layer_name)
+                        except UsageError:
+                            pass
+                        else:
+                            alpha_max = 0.8
+                            alpha_min = 0.0
+                            number_of_plots = 20
+                            graded_depth_m = 2
+                            skip_labels = []
+                            self.plot_graded_dems(temp_memorylayer, self.sectionlinelayer, xarray, DEMdata, secplot_color_layer_name, layername, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m, skip_labels=skip_labels)
                     QgsProject.instance().removeMapLayer(temp_memorylayer.id())
         except:
             raise
@@ -979,17 +990,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 pass
 
     @fn_timer
-    def plot_graded_dems(self, temp_memorylayer, xarray, DEMdata, polylayer_name, rgb_rasterlayer_name, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
-        color_layer = None
-        for layername in [polylayer_name, rgb_rasterlayer_name]:
-            try:
-                color_layer = common_utils.find_layer(layername)
-            except UsageError():
-                pass
-            else:
-                break
-
-        if color_layer is None:
+    def plot_graded_dems(self, temp_memorylayer, sectionlinelayer, xarray, DEMdata, layername, dem_layername, alpha_max=0.5, alpha_min=0, number_of_plots=20, graded_depth_m=2, skip_labels=None):
+        try:
+            color_layer = common_utils.find_layer(layername)
+        except UsageError:
             return
 
         points_srid = temp_memorylayer.crs().authid()
@@ -998,24 +1002,36 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Grade dem: Layer %s had wrong srid! Had '%s' but should have '%s'.")) % (layername, str(color_layer_srid), str(points_srid)))
             return None
 
-        if isinstance(color_layer, QgsVectorLayer):
-            labels_colors = self.sample_polygon(temp_memorylayer, color_layer)
+        if isinstance(color_layer, QgsVectorLayer) or color_layer.type() == QgsMapLayer.VectorLayer:
+            print(f"Sampling as polygon")
+            labels_colors = self.sample_polygon(color_layer, sectionlinelayer, xarray)
         else:
+            print(f"Sampling as raster")
             labels_colors_dict = {}
-            colors = [tuple(color) for color in sampling(temp_memorylayer, color_layer, bands=(1, 2, 3))]
+            colors = sampling(temp_memorylayer, color_layer, extract_type='value',
+                                            bands=(1, 2, 3))
             for color in colors:
-                if color not in labels_colors_dict:
-                    labels_colors_dict[color] = f"{rgb_rasterlayer_name} {len(labels_colors_dict)+1}"
-            labels_colors = [(labels_colors_dict[color], color) for color in colors]
+                if color is not None:
+                    if color not in labels_colors_dict:
+                        labels_colors_dict[color] = f"{len(labels_colors_dict)+1}"
 
+            """colors = [tuple([float(c)/255.0 for c in color])
+                      if color is not None else None
+                      for color in colors]"""
 
+            labels_colors = [(labels_colors_dict[tuple(color)], [float(c)/255.0 for c in color])
+                             if color is not None else (None, None) for color in colors]
         plot_spec = []
         _x = []
         _y = []
         prev_label = None
         for idx, polylabel_color in enumerate(labels_colors):
-            polylabel = polylabel_color[0]
             _x.append(xarray[idx])
+            if polylabel_color is None:
+                _y.append(None)
+                continue
+
+            polylabel = polylabel_color[0]
             _y.append(DEMdata[idx])
             if prev_label is not None and prev_label != polylabel:
                 plot_spec.append([prev_label, _x, _y])
@@ -1027,19 +1043,22 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         labels_colors = {lbl: color for lbl, color in labels_colors}
 
+        plotted_axvlines = set()
         plotted_polylabels = set()
         for label, x_vals, y_vals in plot_spec:
+            _y_vals = list(y_vals)
             if skip_labels and label in skip_labels:
                 continue
 
-            plotlable = self.get_plot_label_name('{} {}'.format(polylayer_name, label), self.get_legend_items_labels()[1])
+            plotlable = self.get_plot_label_name(f"{dem_layername} {label}", self.get_legend_items_labels()[1])
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
             color = labels_colors[label]
 
             gradients = np.linspace(alpha_max, alpha_min, number_of_plots)
             for grad_idx, grad in enumerate(gradients):
                 y1 = [_y - graded_plot_height for _y in y_vals]
-                theplot = self.axes.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0, label=plotlable)
+                theplot = self.axes.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0, label=plotlable,
+                                                 picker=2)
 
                 self.p.append(theplot)
                 if label in plotted_polylabels:
@@ -1048,6 +1067,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     theplot.skip_legend = False
                     plotted_polylabels.add(label)
                 y_vals = list(y1)
+
+            for _idx in [0, -1]:
+                if not x_vals[_idx] in plotted_axvlines:
+                    self.axes.plot([x_vals[_idx], x_vals[_idx]], [_y_vals[_idx]-graded_depth_m, _y_vals[_idx]],
+                                    color='brown', linestyle='-')
+                    plotted_axvlines.add(x_vals[_idx])
 
     @fn_timer
     def plot_drill_stop(self):
@@ -1336,7 +1361,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ms.save_settings('secplotbw')
         self.ms.save_settings('secplotlocation')
         self.ms.save_settings('secplotselectedDEMs')
-        self.ms.save_settings('dem_sampling_distance')
+        self.ms.save_settings('secplotdem_sampling_distance')
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
         self.ms.save_settings('secplotwidthofplot')
@@ -1469,60 +1494,68 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #self.canvas.draw()
 
     @fn_timer
-    def sample_polygon(self, pointLayer, polyLayer):
-        """
-        Code reused from PointSamplingTool
-
-        Hard coded to use the last intersecting feature if there are multiple.
-        Hard coded to use the color from the bottom symbol layer if there are multiple.
-
-        :param pointLayer:
-        :param polyLayer:
-        :return:
-        """
-        #Styles
+    def sample_polygon(self, polyLayer, sectionlinelayer, xarray):
         polyProvider = polyLayer.dataProvider()
         renderer = polyLayer.renderer()
-        category_column = renderer.classAttribute()
-        categories = renderer.categories()
+        if not isinstance(renderer, QgsRuleBasedRenderer):
+            renderer = QgsRuleBasedRenderer.convertFromRenderer(renderer)
+        root_rule = renderer.rootRule()
+        rules = root_rule.descendants()
 
-        # Category values are returned as strings.
-        categoryvalue_symbol = {cat.value(): (cat.symbol(), cat.label()) for cat in categories}
+        legend_symbols = root_rule.legendSymbolItems()
+        legend_symbols = {item.ruleKey(): item for item in legend_symbols}
 
-        pointProvider = pointLayer.dataProvider()
+        context = QgsRenderContext.fromMapSettings(self.iface.mapCanvas().mapSettings())
+
         sampled_values = []
 
-        for pointFeat in pointProvider.getFeatures():
-            pointGeom = pointFeat.geometry()
-            if pointGeom.wkbType() == QgsWkbTypes.MultiPoint:
-                pointPoint = pointGeom.asMultiPoint()[0]
+        x0_x1_poly = {}
+        for linefeature in sectionlinelayer.getSelectedFeatures():
+            linegeom = linefeature.geometry()
+            polyfeatures = polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(linegeom.boundingBox()))
+            for polyfeature in polyfeatures:
+                intersection = linegeom.intersection(polyfeature.geometry())
+                if not intersection.isEmpty():
+                    intersection.convertToMultiType()
+                    multiline = intersection.asMultiPolyline()
+                    for line in multiline:
+                        x0 = linegeom.lineLocatePoint(QgsGeometry().fromPointXY(line[0]))
+                        x1 = linegeom.lineLocatePoint(QgsGeometry().fromPointXY(line[-1]))
+                        k = (x0, x1)
+                        if k not in x0_x1_poly:
+                            x0_x1_poly[k] = polyfeature
+
+        processed_features = {}
+
+        x0_x1_poly = dict(sorted(x0_x1_poly.items()))
+        for x in xarray:
+            for (x0, x1), feat in x0_x1_poly.items():
+                if x0 <= x <= x1:
+                    if feat.id() in processed_features:
+                        sampled_values.append(processed_features[feat.id()])
+                        break
+
+                    rendered_rules = [r.ruleKey() for r in rules
+                                      if r.willRenderFeature(feat, context)]
+                    label_symbols = [
+                        (legend_symbols[k].label(), legend_symbols[k].symbol())
+                        for k in rendered_rules]
+
+                    if label_symbols:
+                        label, symbol = label_symbols[0]
+                        symbol_layers = symbol.symbolLayers()
+                        # Use the bottom layer color
+                        _color = symbol_layers[0].properties()['color']
+                        color = tuple(
+                            [float(c) / float(255) for c in _color.split(',')])
+                        sampled_values.append((label, color))
+                        processed_features[feat.id()] = (label, color)
+                    else:
+                        processed_features[feat.id()] = None
+                    break
             else:
-                pointPoint = pointGeom.asPoint()
-            bBox = QgsRectangle(pointPoint.x() - 0.001, pointPoint.y() - 0.001, pointPoint.x() + 0.001,
-                                pointPoint.y() + 0.001)  # reuseable rectangle buffer around the point feature
-
-            pointGeom = QgsGeometry().fromPointXY(pointPoint)
-            features = polyProvider.getFeatures(QgsFeatureRequest().setFilterRect(bBox))
-            intersections = [iFeat for iFeat in features
-                             if pointGeom.intersects(iFeat.geometry())]
-
-            if len(intersections) == 0:
                 sampled_values.append(None)
-                continue
-            else:
-                # If there is two intersecting polygon features, then the last one will be used!
-                feat = intersections[-1]
-                feat_category_value = str(feat.attributes()[polyProvider.fieldNameIndex(category_column)])
-                symbol = categoryvalue_symbol[feat_category_value][0]
-                label = ru(categoryvalue_symbol[feat_category_value][1])
-                symbol_layers = symbol.symbolLayers()
-                #Use the bottom layer color
-                _color = symbol_layers[0].properties()['color']
-                color = tuple([float(c)/float(255) for c in _color.split(',')])
-                sampled_values.append((label, color))
-
         return sampled_values
-
 
 def resample(df, valuecol, rule, resample_kwargs):
     resample_kwargs = dict(resample_kwargs)

@@ -1361,12 +1361,26 @@ class PickAnnotator(object):
 class Timer(object):
     def __init__(self, name):
         self.t0 = time.time()
+        self.t1 = self.t0
         self.name = name
 
     def stop(self):
-        t1 = time.time()
+        t = time.time()
         MessagebarAndLog.info(log_msg=QCoreApplication.translate("Timer", 'Total time running %s: %s seconds') % (
-            self.name, str(t1 - self.t0)))
+            self.name, str(t - self.t0)))
+
+    def current_time(self, info=''):
+        MessagebarAndLog.info(log_msg=QCoreApplication.translate("Timer",
+                                                                 'Current time running %s%s: %s seconds') % (
+                                          self.name, info, str(time.time() - self.t0)))
+
+    def diff(self, info=''):
+        t = time.time()
+        diff = time.time() - self.t1
+        self.t1 = t
+        MessagebarAndLog.info(log_msg=QCoreApplication.translate("Timer",
+                                                                 'Current time running %s%s: %s seconds') % (
+                                          self.name, info, str(diff)))
 
 
 @contextmanager

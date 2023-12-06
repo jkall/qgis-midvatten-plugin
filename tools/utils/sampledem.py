@@ -9,6 +9,8 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/
 """
+import traceback
+
 """
 This code is inspired from the PointSamplingTool plugin Copyright (C) 2008 Borys Jurgiel
 and qchainage plugin (C) 2012 by Werner Macho
@@ -94,7 +96,7 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
     """Adding Points along the line"""
     # Create a new memory layer and add a distance attribute self.layerNameLine
     #layer_crs = virt_layer.setCrs(layer.crs())
-    virt_layer = QgsVectorLayer("Point?crs=%s" % layer.crs().authid(),layerout,"memory")
+    virt_layer = QgsVectorLayer("Point?crs=%s&index=yes" % layer.crs().authid(),layerout,"memory")
     provider = virt_layer.dataProvider()
     virt_layer.startEditing()   # actually writes attributes
     units = layer.crs().mapUnits()
@@ -128,41 +130,39 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
     virt_layer.triggerRepaint()
     return virt_layer, xarray
 
-def sampling(pointsamplinglayer, rastersamplinglayer, bands=1): # main process from pointsamplingtool #so far not changed at all from original plugin
-    # open sampling points layer
-    pointLayer = pointsamplinglayer
-    pointProvider = pointLayer.dataProvider()
-    allAttrs = pointProvider.attributeIndexes()
-    sRs = pointProvider.crs()
+def sampling(pointsamplinglayer, rastersamplinglayer, bands=1, extract_type='value'):
+    point_layer = pointsamplinglayer
+    point_provider = point_layer.dataProvider()
+    raster_provider = rastersamplinglayer.dataProvider()
 
-    # process raster after raster and point after point...
-    #pointFeat = QgsFeature()#??????????????????
-    np = 0
-    DEMLEV = []
-    for pointFeat in pointProvider.getFeatures():
-        np += 1
-        pointGeom = pointFeat.geometry()
+    identify_type = {#'text': QgsRaster.IdentifyFormatText,
+                     'value': QgsRaster.IdentifyFormatValue,
+                     'feature': QgsRaster.IdentifyFormatFeature}
+    _type = identify_type[extract_type]
+    result = []
+    for feature in point_provider.getFeatures():
+        geom = feature.geometry()
 
-        if pointGeom.wkbType() == QgsWkbTypes.MultiPoint:
-            pointPoint = pointGeom.asMultiPoint()[0]
+        if geom.wkbType() == QgsWkbTypes.MultiPoint:
+            point = geom.asMultiPoint()[0]
         else:
-            pointPoint = pointGeom.asPoint()
-        outFeat = QgsFeature()
-        outFeat.setGeometry(pointGeom)
+            point = geom.asPoint()
 
-        rastSample = rastersamplinglayer.dataProvider().identify(pointPoint, QgsRaster.IdentifyFormatValue).results()
-        """
-        if snp<100 or ( snp<5000 and ( np // 10.0 == np / 10.0 ) ) or ( np // 100.0 == np / 100.0 ): # display each or every 10th or every 100th point:
-            print(rastSample)
-            #print (float(rastSample[0]))
-            print (float(rastSample[1]))
-        """
-        if np >= 1:
-            if isinstance(bands, (list, tuple)):
-                DEMLEV.append(tuple([float(rastSample[band]) for band in bands]))
-            else:
-                try:
-                    DEMLEV.append(float(rastSample[bands])) ##### !! float() - I HAVE TO IMPLEMENT RASTER TYPE HANDLING!!!!
-                except: # point is out of raster extent
-                    DEMLEV.append(None)
-    return DEMLEV
+        sample = raster_provider.identify(point, _type).results()
+        if sample is None or not sample:
+            result.append(None)
+            continue
+
+        if extract_type == 'value':
+            try:
+                if isinstance(bands, (list, tuple)):
+                    result.append([float(sample[band]) for band in bands])
+                else:
+                    result.append(float(sample[bands]))
+            except: # point is out of raster extent
+                traceback.print_exc()
+                result.append(None)
+        else:
+            result.append(sample[list(sample.keys())[0]])
+
+    return result

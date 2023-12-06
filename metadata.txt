@@ -22,7 +22,7 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.7.17:
-        - Sectionplot: Turned on hidden feature for producing graded dems.
+        - Sectionplot: Updated graded dems feature. It is now turned on for a dem layer using a layer named "<layername>_secplotcolor"
         Version 1.7.16:
         - Sectionplot: Added sampling distance for dems.
         Version 1.7.15:
