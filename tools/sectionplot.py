@@ -944,7 +944,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         try:
             if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
                 for layername in self.ms.settingsdict['secplotselectedDEMs']:
-                    #TODO: This should be a setting in the gui for each dem layer instead of hardcoded
                     if not self.ms.settingsdict['secplotdem_sampling_distance']:
                         distance = self.barwidth / 2.0
                         if not distance:
@@ -1026,12 +1025,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         _y = []
         prev_label = None
         for idx, polylabel_color in enumerate(labels_colors):
-            _x.append(xarray[idx])
             if polylabel_color is None:
-                _y.append(None)
+                plot_spec.append([prev_label, _x, _y])
+                _x = []
+                _y = []
+                prev_label = None
                 continue
 
             polylabel = polylabel_color[0]
+            _x.append(xarray[idx])
             _y.append(DEMdata[idx])
             if prev_label is not None and prev_label != polylabel:
                 plot_spec.append([prev_label, _x, _y])
@@ -1041,7 +1043,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         else:
             plot_spec.append([prev_label, _x, _y])
 
-        labels_colors = {lbl: color for lbl, color in labels_colors}
+        labels_colors_dict = {label_color[0]: label_color[1] for label_color in labels_colors
+                              if label_color is not None}
 
         plotted_axvlines = set()
         plotted_polylabels = set()
@@ -1052,7 +1055,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             plotlable = self.get_plot_label_name(f"{dem_layername} {label}", self.get_legend_items_labels()[1])
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
-            color = labels_colors[label]
+            color = labels_colors_dict[label]
 
             gradients = np.linspace(alpha_max, alpha_min, number_of_plots)
             for grad_idx, grad in enumerate(gradients):
