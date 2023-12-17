@@ -132,8 +132,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self._waterlevel_lineplot = None
         self.resample_rule.setText('1D')
         self.resample_rule.setToolTip(defs.pandas_rule_tooltip())
-        self.resample_base.setText('0')
-        self.resample_base.setToolTip(defs.pandas_base_tooltip())
+        self.resample_offset.setText('')
+        self.resample_offset.setToolTip(defs.pandas_base_tooltip())
         self.resample_how.setText('mean')
         self.resample_how.setToolTip(defs.pandas_how_tooltip())
 
@@ -422,6 +422,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
             self.ms.settingsdict['secplotdem_sampling_distance'] = self.dem_sampling_distance.value()
 
+            self.ms.settingsdict['secplot_apply_graded_dems'] = self.secplot_apply_graded_dems.isChecked()
+            self.ms.settingsdict['secplot_grading_depth'] = self.secplot_grading_depth.value()
+            self.ms.settingsdict['secplot_grading_num_layers'] = self.secplot_grading_depth.value()
+            self.ms.settingsdict['secplot_grading_max_opacity'] = self.secplot_grading_max_opacity.value()
+            self.ms.settingsdict['secplot_grading_min_opacity'] = self.secplot_grading_min_opacity.value()
+
             if self.text_align_center.isChecked():
                 self.ms.settingsdict['secplotlayertextalignment'] = 'center'
             else:
@@ -576,11 +582,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             self.width_of_plot.setChecked(True)
         else:
             self.width_of_profile.setChecked(True)
-
         if self.ms.settingsdict['secplotlayertextalignment'] == 'center':
             self.text_align_center.setChecked(True)
         else:
             self.text_align_edge.setChecked(True)
+        if self.ms.settingsdict['secplot_apply_graded_dems']:
+            self.secplot_apply_graded_dems.setChecked(True)
+
 
     def fill_combo_boxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
@@ -685,6 +693,20 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def fill_spinboxes(self):
         if self.ms.settingsdict.get('secplotdem_sampling_distance', 0.0):
             self.dem_sampling_distance.setValue(float(self.ms.settingsdict['secplotdem_sampling_distance']))
+
+        if self.ms.settingsdict.get('secplot_grading_depth', 2.0):
+            self.secplot_grading_depth.setValue(float(self.ms.settingsdict['secplot_grading_depth']))
+
+        if self.ms.settingsdict.get('secplot_grading_num_layers', 20):
+            self.secplot_grading_num_layers.setValue(int(self.ms.settingsdict['secplot_grading_num_layers']))
+
+        if self.ms.settingsdict.get('secplot_grading_max_opacity', 0.8):
+            self.secplot_grading_max_opacity.setValue(float(self.ms.settingsdict['secplot_grading_max_opacity']))
+
+        if self.ms.settingsdict.get('secplot_grading_min_opacity', 0.0):
+            self.secplot_grading_min_opacity.setValue(float(self.ms.settingsdict['secplot_grading_min_opacity']))
+
+
 
     @fn_timer
     def finish_plot(self):
@@ -963,20 +985,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     lineplot, = self.axes.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                     self.p.append(lineplot)
 
-                    #TODO: This feature should have settings in gui to activate grading for the current layer.
-                    grade_layer = True
-                    if grade_layer:
+                    if self.ms.settingsdict['secplot_apply_graded_dems'] :
                         secplot_color_layer_name = f"{layername}_secplotcolor"
-                        #TODO: These settings should be in gui in some way.
                         try:
                             common_utils.find_layer(secplot_color_layer_name)
                         except UsageError:
                             pass
                         else:
-                            alpha_max = 0.8
-                            alpha_min = 0.0
-                            number_of_plots = 20
-                            graded_depth_m = 2
+                            alpha_max = self.ms.settingsdict['secplot_grading_max_opacity']
+                            alpha_min = self.ms.settingsdict['secplot_grading_min_opacity']
+                            number_of_plots = self.ms.settingsdict['secplot_grading_num_layers']
+                            graded_depth_m = self.ms.settingsdict['secplot_grading_depth']
                             skip_labels = []
                             self.plot_graded_dems(temp_memorylayer, self.sectionlinelayer, xarray, DEMdata, secplot_color_layer_name, layername, alpha_max=alpha_max, alpha_min=alpha_min, number_of_plots=number_of_plots, graded_depth_m=graded_depth_m, skip_labels=skip_labels)
                     QgsProject.instance().removeMapLayer(temp_memorylayer.id())
@@ -1183,8 +1202,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if isinstance(df, pd.Series):
             df = df.to_frame()
 
-        resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'convention': 'start',
-                           'base': int(self.resample_base.text())}
+        resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'convention': 'start'}
+        if self.resample_offset.text():
+            resample_kwargs['offset'] = self.resample_offset.text()
 
         # First resample each obsid to overcome duplicate date_times
         df = resample(df.groupby(by=['obsid']), 'level_masl', self.resample_rule.text(), resample_kwargs)
@@ -1371,6 +1391,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.ms.save_settings('secplotincludeviews')
         self.ms.save_settings('secplotlegendplotted')
         self.ms.save_settings('secplotlayertextalignment')
+        self.ms.save_settings('secplot_apply_graded_dems')
+        self.ms.save_settings('secplot_grading_depth')
+        self.ms.save_settings('secplot_grading_num_layers')
+        self.ms.save_settings('secplot_grading_max_opacity')
+        self.ms.save_settings('secplot_grading_min_opacity')
 
         #Don't save plot min/max for next plot. If a specific is to be used, it should be set in a saved template file.
         loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)

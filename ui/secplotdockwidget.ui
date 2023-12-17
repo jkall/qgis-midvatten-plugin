@@ -41,7 +41,7 @@
          <x>0</x>
          <y>0</y>
          <width>860</width>
-         <height>1164</height>
+         <height>1322</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -333,6 +333,9 @@
                                 <property name="checkable">
                                  <bool>true</bool>
                                 </property>
+                                <property name="checked">
+                                 <bool>true</bool>
+                                </property>
                                 <layout class="QVBoxLayout" name="verticalLayout_5">
                                  <item>
                                   <widget class="QLabel" name="label_3">
@@ -411,7 +414,7 @@ p, li { white-space: pre-wrap; }
                                 </property>
                                 <layout class="QGridLayout" name="gridLayout">
                                  <item row="1" column="1">
-                                  <widget class="QLineEdit" name="resample_base">
+                                  <widget class="QLineEdit" name="resample_offset">
                                    <property name="font">
                                     <font>
                                      <family>DejaVu Sans</family>
@@ -421,7 +424,7 @@ p, li { white-space: pre-wrap; }
                                     </font>
                                    </property>
                                    <property name="inputMethodHints">
-                                    <set>Qt::ImhDigitsOnly</set>
+                                    <set>Qt::ImhNone</set>
                                    </property>
                                   </widget>
                                  </item>
@@ -475,7 +478,7 @@ p, li { white-space: pre-wrap; }
                                     </font>
                                    </property>
                                    <property name="text">
-                                    <string>Resample base</string>
+                                    <string>Resample offset</string>
                                    </property>
                                   </widget>
                                  </item>
@@ -570,6 +573,12 @@ p, li { white-space: pre-wrap; }
                                <layout class="QHBoxLayout" name="horizontalLayout_11">
                                 <item>
                                  <widget class="QLabel" name="label_13">
+                                  <property name="font">
+                                   <font>
+                                    <weight>75</weight>
+                                    <bold>true</bold>
+                                   </font>
+                                  </property>
                                   <property name="toolTip">
                                    <string/>
                                   </property>
@@ -595,6 +604,92 @@ p, li { white-space: pre-wrap; }
                                  </widget>
                                 </item>
                                </layout>
+                              </item>
+                              <item>
+                               <widget class="QGroupBox" name="secplot_apply_graded_dems">
+                                <property name="font">
+                                 <font>
+                                  <weight>75</weight>
+                                  <bold>true</bold>
+                                 </font>
+                                </property>
+                                <property name="toolTip">
+                                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Colorize the elevation models with graded colors.&lt;/p&gt;&lt;p&gt;The feature can be used to visualize changing features along the profile line, for example soil type or land use for a ground surface dem or bedrock type for a bedrock dem.&lt;/p&gt;&lt;p&gt;To use coloration for a layer, create a polygon layer with the same name as the elevation model raster layer and '_secplotcolor' at the end. Ex (dem 'groundsurface' and polygon layer 'groundsurface_secplotcolor'. Apply a categorized or rule base symbology with simple symbols with different fill colors, which will be used for graded colors. The label of the category will be used for the legend. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                </property>
+                                <property name="title">
+                                 <string>Graded coloration</string>
+                                </property>
+                                <property name="checkable">
+                                 <bool>true</bool>
+                                </property>
+                                <layout class="QGridLayout" name="gridLayout_3">
+                                 <item row="2" column="0">
+                                  <widget class="QLabel" name="label_16">
+                                   <property name="text">
+                                    <string>Maximum opacity</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="3" column="0">
+                                  <widget class="QLabel" name="label_17">
+                                   <property name="text">
+                                    <string>Minimum opacity</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="1" column="0">
+                                  <widget class="QLabel" name="label_15">
+                                   <property name="text">
+                                    <string>Number of layers</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="2" column="1">
+                                  <widget class="QDoubleSpinBox" name="secplot_grading_max_opacity">
+                                   <property name="toolTip">
+                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The opacity for the topmost graded layer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                   </property>
+                                   <property name="value">
+                                    <double>0.800000000000000</double>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="0" column="0">
+                                  <widget class="QLabel" name="label_14">
+                                   <property name="text">
+                                    <string>Depth (m)</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="3" column="1">
+                                  <widget class="QDoubleSpinBox" name="secplot_grading_min_opacity">
+                                   <property name="toolTip">
+                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The opacity for the bottom layer (the layer at &amp;quot;Depth (m)&amp;quot;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="1" column="1">
+                                  <widget class="QSpinBox" name="secplot_grading_num_layers">
+                                   <property name="toolTip">
+                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of graded layers. More layers makes smoother transitions at the cost of slower rendering.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                   </property>
+                                   <property name="value">
+                                    <number>20</number>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="0" column="1">
+                                  <widget class="QDoubleSpinBox" name="secplot_grading_depth">
+                                   <property name="toolTip">
+                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum depth below raster to add graded color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                   </property>
+                                   <property name="value">
+                                    <double>2.000000000000000</double>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                </layout>
+                               </widget>
                               </item>
                              </layout>
                             </widget>

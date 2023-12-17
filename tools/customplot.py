@@ -875,9 +875,9 @@ class PandasCalculations(object):
         for wid in [self.rule_label, self.rule]:
             wid.setToolTip(defs.pandas_rule_tooltip())
 
-        self.base_label = qgis.PyQt.QtWidgets.QLabel('Resample base')
-        self.base = qgis.PyQt.QtWidgets.QLineEdit()
-        for wid in [self.base_label, self.base]:
+        self.offset_label = qgis.PyQt.QtWidgets.QLabel('Resample offset')
+        self.offset = qgis.PyQt.QtWidgets.QLineEdit()
+        for wid in [self.offset_label, self.offset]:
             wid.setToolTip(defs.pandas_base_tooltip())
 
         self.how_label = qgis.PyQt.QtWidgets.QLabel('Resample how')
@@ -905,17 +905,17 @@ class PandasCalculations(object):
                            'See Pandas pandas.rolling_mean documentation for more info.')))
 
 
-        for lineedit in [self.rule, self.base, self.how, self.window, self.center]:
+        for lineedit in [self.rule, self.offset, self.how, self.window, self.center]:
             #lineedit.sizeHint()setFixedWidth(122)
             lineedit.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Preferred)
 
         maximumwidth = 0
-        for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
+        for label in [self.rule_label, self.offset_label, self.how_label, self.window_label, self.center_label]:
             testlabel = qgis.PyQt.QtWidgets.QLabel()
             testlabel.setText(label.text())
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
-        for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
+        for label in [self.rule_label, self.offset_label, self.how_label, self.window_label, self.center_label]:
             label.setFixedWidth(maximumwidth)
             #label.setMinimumWidth(maximumwidth)
             label.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Fixed)
@@ -924,7 +924,7 @@ class PandasCalculations(object):
         hline.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Fixed)
         gridlayout.addWidget(hline)
         for col1, col2 in [(self.rule_label, self.rule),
-                           (self.base_label, self.base),
+                           (self.offset_label, self.offset),
                            (self.how_label, self.how),
                            (self.window_label, self.window),
                            (self.center_label, self.center)]:
@@ -948,20 +948,15 @@ class PandasCalculations(object):
     def calculate(self, df):
         #Resample
         rule = self.rule.text()
-        base = self.base.text() if self.base.text() else 0
+        offset = self.offset.text() if self.offset.text() else None
         how = self.how.text() if self.how.text() else 'mean'
         if rule:
-            try:
-                base = int(base)
-            except ValueError:
-                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Resample base must be an integer')))
+            if pd.__version__ > '0.18.0':
+                # new api for pandas >=0.18
+                df = getattr(df.resample(rule,offset=offset),how)()
             else:
-                if pd.__version__ > '0.18.0':
-                    # new api for pandas >=0.18
-                    df = getattr(df.resample(rule,base=int(base)),how)()
-                else:
-                    #old pandas
-                    df = df.resample(rule, how=how, base=int(base))
+                #old pandas
+                df = df.resample(rule, how=how, offset=offset)
         #Rolling mean
         window = self.window.text()
         if window:
