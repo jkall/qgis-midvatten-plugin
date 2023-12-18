@@ -36,7 +36,8 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QSizePolicy
 from qgis.core import (QgsProject, QgsVectorLayer, QgsRectangle, QgsGeometry,
                        QgsFeatureRequest, QgsWkbTypes, QgsMapLayer, QgsRuleBasedRenderer,
-                       QgsCategorizedSymbolRenderer, QgsSingleSymbolRenderer, QgsRenderContext)
+                       QgsCategorizedSymbolRenderer, QgsSingleSymbolRenderer, QgsRenderContext,
+                       Qgis)
 
 from midvatten.tools.utils.gui_utils import set_combobox
 
@@ -1442,7 +1443,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         feature = selected_features[0]
 
         geom = feature.geometry()
-        geom_linestring = geom.convertToType(1)
+        try:
+            geom_linestring = geom.convertToType(1)
+        except TypeError:
+            # Adjustment for QGIS > 3.30
+            geom_linestring = geom.convertToType(Qgis.LineString)
         wkt = geom_linestring.asWkt()
         sql = """INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid)
         self.dbconnection.execute(sql)
