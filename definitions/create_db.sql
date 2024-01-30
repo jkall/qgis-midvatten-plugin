@@ -142,7 +142,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , depth double --The depth at which the measurement was done
 , comment text --Comment
 , PRIMARY KEY(obsid, date_time, parameter, unit)
-, FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
+, FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE UNIQUE INDEX w_qual_field_unit_unique_index_null ON w_qual_field /* Index to stop duplicate values where unit is null */ (
 obsid, date_time, parameter, COALESCE(unit, '<NULL>')
@@ -161,7 +161,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , unit text --Unit
 , comment text --Comment
 , PRIMARY KEY(report, parameter)
-, FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
+, FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE w_flow /*Water flow*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
@@ -211,7 +211,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , comment text NOT NULL --Comment
 , staff text NOT NULL --Staff who made the comment
 , PRIMARY KEY(obsid, date_time)
-, FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
+, FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE zz_interlab4_obsid_assignment /*Assign obsids automatically during interlab4 import*/(
 specifik_provplats text NOT NULL --The attribute Specifik Provplats from interlab4 file format.

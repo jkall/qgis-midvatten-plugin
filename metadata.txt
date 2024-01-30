@@ -24,6 +24,7 @@ changelog=
         Version 1.7.19:
         - Sectionplot: Fixes bugs related to graded dems.
         - Sectionplot: Now possible to set depth to negative value for graded dems to appear on top of the line.
+        - Database schema: Removed staff as foreign key for tables comments, w_qual_lab and w_qual_field. It wasn't beneficial enough to keep it.
         Version 1.7.18:
         - Sectionplot: Grade dems fixes and adjustments to new pandas version.
         Version 1.7.17:
