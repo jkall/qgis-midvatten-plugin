@@ -425,7 +425,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
             self.ms.settingsdict['secplot_apply_graded_dems'] = self.secplot_apply_graded_dems.isChecked()
             self.ms.settingsdict['secplot_grading_depth'] = self.secplot_grading_depth.value()
-            self.ms.settingsdict['secplot_grading_num_layers'] = self.secplot_grading_depth.value()
+            self.ms.settingsdict['secplot_grading_num_layers'] = self.secplot_grading_num_layers.value()
             self.ms.settingsdict['secplot_grading_max_opacity'] = self.secplot_grading_max_opacity.value()
             self.ms.settingsdict['secplot_grading_min_opacity'] = self.secplot_grading_min_opacity.value()
 
@@ -1070,14 +1070,14 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         plotted_polylabels = set()
         for label, x_vals, y_vals in plot_spec:
             _y_vals = list(y_vals)
-            if skip_labels and label in skip_labels:
+            if (skip_labels and label in skip_labels) or label is None:
                 continue
 
             plotlable = self.get_plot_label_name(f"{dem_layername} {label}", self.get_legend_items_labels()[1])
             graded_plot_height = float(graded_depth_m) / float(number_of_plots)
             color = labels_colors_dict[label]
 
-            gradients = np.linspace(alpha_max, alpha_min, number_of_plots)
+            gradients = np.linspace(alpha_max, alpha_min, int(number_of_plots))
             for grad_idx, grad in enumerate(gradients):
                 y1 = [_y - graded_plot_height for _y in y_vals]
                 theplot = self.axes.fill_between(x_vals, y1, y_vals, alpha=grad, facecolor=color, linewidth=0, label=plotlable,
