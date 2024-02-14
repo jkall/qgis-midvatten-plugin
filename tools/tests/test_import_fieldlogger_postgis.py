@@ -61,14 +61,12 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
                 importer.start_import(importer.observations)
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg='Import error, staff not given')
-
     def test_full_integration_test_to_db(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -131,10 +129,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -147,7 +144,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -210,10 +206,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, None, None, 555.0, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, None, None, 555.0, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -226,7 +221,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -289,10 +283,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -305,7 +298,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -370,10 +362,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv), (Rb1608, 2016-03-30 15:34:14, None, None, 777.0, None)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv), (Rb1608, 2016-03-30 15:34:14, None, None, 777.0, None)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -386,7 +377,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -454,10 +444,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -470,7 +459,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -549,10 +537,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -573,7 +560,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -658,10 +644,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -678,7 +663,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -829,8 +813,8 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('w_flow', 'zz_staff', 'comments', 'zz_flowtype')]))
-            reference_string = '{comments: (True, [(2, 2016-12-12 10:03:15, onlycomment, teststaff)]), w_flow: (True, [(2, testid, Momflow2, 2016-12-12 10:03:07, 123.0, aunit, None)]), zz_flowtype: (True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)]), zz_staff: (True, [(teststaff, None)])}'
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('w_flow', 'comments', 'zz_flowtype')]))
+            reference_string = '{comments: (True, [(2, 2016-12-12 10:03:15, onlycomment, teststaff)]), w_flow: (True, [(2, testid, Momflow2, 2016-12-12 10:03:07, 123.0, aunit, None)]), zz_flowtype: (True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)])}'
             assert test_string == reference_string
 
 
@@ -840,7 +824,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1615', NULL)''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1505', 0)''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1512', 10)''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -895,10 +878,9 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db('select * from %s'%k)) for k in ('w_levels', 'w_qual_field', 'w_flow', 'zz_staff', 'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db('select * from %s'%k)) for k in ('w_levels', 'w_qual_field', 'w_flow', 'comments')]))
             print(test_string)
-            reference_string = '{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1615, 2016-03-29 15:34:13, ergv2, teststaff)]), w_flow: (True, []), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, 0.0, -555.0, ergv), (Rb1615, 2016-03-31 15:34:13, 111.0, None, None, ergv1)]), w_qual_field: (True, []), zz_staff: (True, [(teststaff, None)])}'
-            print(reference_string)
+            reference_string = '{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1615, 2016-03-29 15:34:13, ergv2, teststaff)]), w_flow: (True, []), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, 0.0, -555.0, ergv), (Rb1615, 2016-03-31 15:34:13, 111.0, None, None, ergv1)]), w_qual_field: (True, [])}'
             assert test_string == reference_string
 
 
@@ -908,7 +890,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
         db_utils.sql_alter_db('''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
 
@@ -969,19 +950,14 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
                 importer.start_import(importer.observations)
-                return mock_MessagebarAndLog
+                print(str(mock_MessagebarAndLog.mock_calls))
 
-            mock_messagebar = _test(self, filename)
-            print(str(mock_messagebar.mock_calls))
-            #assert not mock_messagebar.mock_calls
+            _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff', )]))
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, 1.23, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)]), zz_staff: (True, [(teststaff, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, 1.23, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
             assert test_string == reference_string
-
-

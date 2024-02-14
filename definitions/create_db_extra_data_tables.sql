@@ -15,7 +15,6 @@ obsid text not null
 , comment text
 , primary key(report, parameter)
 , foreign key(obsid) references obs_points(obsid)
-, foreign key(staff) references zz_staff(staff)
 );
 
 CREATE TABLE w_qual_logger /*Water quality from logger measurements*/(

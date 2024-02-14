@@ -293,8 +293,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
     
     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer(self):
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
-
+        
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('obsid1')")
         f = [['obsid', 'depth', 'report', 'project', 'staff', 'date_time', 'anameth', 'parameter', 'reading_num', 'reading_txt', 'unit', 'comment'],
              ['obsid1', '2', 'testreport', 'testproject', 'teststaff', '2011-10-19 12:30:00', 'testmethod', '1,2-Dikloretan', '1.5', '<1.5', 'µg/l', 'testcomment']]
@@ -310,8 +309,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
     
     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer_depth_empty_string(self):
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
-
+        
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('obsid1')")
         f = [['obsid', 'depth', 'report', 'project', 'staff', 'date_time', 'anameth', 'parameter', 'reading_num', 'reading_txt', 'unit', 'comment'],
              ['obsid1', '', 'testreport', 'testproject', 'teststaff', '2011-10-19 12:30:00', 'testmethod', '1,2-Dikloretan', '1.5', '<1.5', 'µg/l', 'testcomment']]
@@ -327,7 +325,6 @@ class TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
     
     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer_no_staff(self):
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('obsid1')")
 
         f = [['obsid', 'depth', 'report', 'project', 'date_time', 'anameth', 'parameter', 'reading_num', 'reading_txt', 'unit', 'comment'],
@@ -452,9 +449,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
         self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
 
-        test_calls_list = [call.info(log_msg='In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.'),
-                         call.info(log_msg='In total "0" rows were deleted due to foreign keys restrictions and "2" rows remain.'),
-                         call.info(bar_msg='1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
+        test_calls_list = [call.info(bar_msg='1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
         for test_call in test_calls_list:
             assert test_call in mock_messagebar.mock_calls
 
@@ -479,30 +474,14 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
         self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
 
-        test_calls_list = [call.info(log_msg='In total "0" rows were deleted due to foreign keys restrictions and "2" rows remain.'),
-                            call.info(bar_msg='2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
+        test_calls_list = [call.info(bar_msg='2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
+        print(f"Mock calls {mock_messagebar.mock_calls}")
         for test_call in test_calls_list:
             assert test_call in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db('''select * from w_qual_field'''))
         reference_string = r'''(True, [(obsid1, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment), (obsid2, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
-        assert test_string == reference_string
-
-        test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from zz_staff'''))
-        reference_string = r'''(True, [])'''
-        print(str(test_string))
-        assert test_string == reference_string
-
-        #Import another null and check that there is not two nulls now.
-        f = [['obsid', 'staff', 'date_time', 'instrument', 'parameter', 'reading_num', 'reading_txt', 'unit', 'depth', 'comment'],
-             ['obsid3', '', '2011-10-19 12:30:00', 'testinstrument', 'DO', '12', '<12', '%', '22', 'testcomment'],
-             ['obsid4', '', '2011-10-19 12:30:00', 'testinstrument', 'DO', '12', '<12', '%', '22', 'testcomment']]
-        self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
-        test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from zz_staff'''))
-        reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
     @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mock.MagicMock())
@@ -526,8 +505,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
         self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
 
         print(str(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_field''')))
-        test_calls_list = [call.info(log_msg='In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.'),
-            call.info(log_msg='In total "0" rows were deleted due to foreign keys restrictions and "7" rows remain.'),
+        test_calls_list = [
             call.info(bar_msg='7 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg='--------------------')]
         print(str(mock_messagebar.mock_calls))
         for test_call in test_calls_list:

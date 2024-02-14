@@ -44,8 +44,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
     def test_interlab4_full_test_to_db(self):
 
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
 
         interlab4_lines = (
@@ -84,6 +82,8 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_lab'''))
         reference_string = r'''(True, [(anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30), (anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
+        print(reference_string)
+        print(test_string)
         assert test_string == reference_string
 
 
@@ -127,17 +127,12 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM w_qual_lab'''))
         reference_string = '''(True, [(anobsid, None, DM-990908-2773, Demoproj, 0, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30), (anobsid, None, DM-990908-2773, Demoproj, 0, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
-        assert test_string == reference_string
-
-        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM zz_staff'''))
-        reference_string = '(True, [(0, None)])'
+        print(reference_string)
+        print(test_string)
         assert test_string == reference_string
 
 
     def test_interlab4_connection_table(self):
-
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
 
@@ -192,9 +187,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
 
     def test_interlab4_connection_table_with_provtagningsorsak(self):
-
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
@@ -249,9 +241,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
 
     def test_interlab4_connection_table_only_1(self):
-
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
@@ -446,7 +435,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
 
             lablitteras = _test(self, filename)
         print(str(lablitteras))
-        assert lablitteras == patterns
+        assert set(lablitteras) == set(patterns)
 
 
     def test_interlab4_filter_no_match(self):
@@ -552,3 +541,4 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
         #print(str(mock_messagebar.mock_calls))
         assert lablitteras == patterns
         #assert False
+

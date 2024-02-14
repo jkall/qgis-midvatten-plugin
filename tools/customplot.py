@@ -875,7 +875,8 @@ class PandasCalculations(object):
         for wid in [self.rule_label, self.rule]:
             wid.setToolTip(defs.pandas_rule_tooltip())
 
-        self.offset_label = qgis.PyQt.QtWidgets.QLabel('Resample offset')
+        _label = 'Resample base'  if pd.__version__ < '1.1.0' else 'Resample offset'
+        self.offset_label = qgis.PyQt.QtWidgets.QLabel(_label)
         self.offset = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.offset_label, self.offset]:
             wid.setToolTip(defs.pandas_base_tooltip())
@@ -949,14 +950,29 @@ class PandasCalculations(object):
         #Resample
         rule = self.rule.text()
         offset = self.offset.text() if self.offset.text() else None
-        how = self.how.text() if self.how.text() else 'mean'
+
+        if pd.__version__ < '1.1.0':
+            base = 0 if offset is None else offset
+            try:
+                base = int(base)
+            except ValueError:
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Resample base must be an integer')))
+                # Rule is set to None to skip resampling
+                rule = None
+            else:
+                resample_kwargs = {'base': base}
+        else:
+            resample_kwargs = {'offset': offset}
+
         if rule:
+            how = self.how.text() if self.how.text() else 'mean'
             if pd.__version__ > '0.18.0':
                 # new api for pandas >=0.18
-                df = getattr(df.resample(rule,offset=offset),how)()
+                df = getattr(df.resample(rule, **resample_kwargs),how)()
             else:
                 #old pandas
-                df = df.resample(rule, how=how, offset=offset)
+                df = df.resample(rule, how=how, base=base)
+
         #Rolling mean
         window = self.window.text()
         if window:

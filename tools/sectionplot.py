@@ -96,6 +96,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.layer_annotations = []
         self.hydro_colors = defs.hydrocolors()
 
+        if pd.__version__ < '1.1.0':
+            self.resample_offset_label.setText('Resample base')
 
         self.parent = parent1
         self.iface = iface1
@@ -133,7 +135,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self._waterlevel_lineplot = None
         self.resample_rule.setText('1D')
         self.resample_rule.setToolTip(defs.pandas_rule_tooltip())
-        self.resample_offset.setText('')
+        self.resample_offset.setText('0' if pd.__version__ < '1.1.0' else '')
         self.resample_offset.setToolTip(defs.pandas_base_tooltip())
         self.resample_how.setText('mean')
         self.resample_how.setToolTip(defs.pandas_how_tooltip())
@@ -1203,9 +1205,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         if isinstance(df, pd.Series):
             df = df.to_frame()
 
-        resample_kwargs = {'how': self.resample_how.text(), 'axis': 0, 'convention': 'start'}
+        resample_kwargs = {'how': self.resample_how.text()}
         if self.resample_offset.text():
-            resample_kwargs['offset'] = self.resample_offset.text()
+            if pd.__version__ < '1.1.0':
+                resample_kwargs['base'] = int(self.resample_offset.text())
+            else:
+                resample_kwargs['offset'] = self.resample_offset.text()
 
         # First resample each obsid to overcome duplicate date_times
         df = resample(df.groupby(by=['obsid']), 'level_masl', self.resample_rule.text(), resample_kwargs)

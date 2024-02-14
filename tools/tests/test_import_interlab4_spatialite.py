@@ -41,8 +41,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     def test_interlab4_full_test_to_db(self):
 
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
 
         interlab4_lines = (
@@ -130,15 +128,8 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test_string)
         assert test_string == reference_string
 
-        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM zz_staff'''))
-        reference_string = '(True, [(0, None)])'
-        assert test_string == reference_string
-
 
     def test_interlab4_connection_table(self):
-
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
 
@@ -193,9 +184,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
     def test_interlab4_connection_table_with_provtagningsorsak(self):
-
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
@@ -250,9 +238,6 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
     def test_interlab4_connection_table_only_1(self):
-
-        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('DV')''')
-
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
