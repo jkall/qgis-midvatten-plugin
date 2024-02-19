@@ -55,3 +55,30 @@ POSTGIS id SERIAL PRIMARY KEY
 , valid BOOLEAN /*Specifies if this spatial entry is still valid. Set to False if a new measurement has made the entry not longer valid.*/
 , FOREIGN KEY (obsid) REFERENCES obs_points (obsid) ON DELETE CASCADE
 );
+
+
+CREATE TABLE zz_installation_plots /* Plot styles for well installations */ (
+id INTEGER PRIMARY KEY AUTOINCREMENT
+, installation TEXT NOT NULL -- Short name of the installation, EX JWS 2.0
+, description TEXT -- Longer description of the installation.
+, color_mplot text --Color codes for matplotlib plots
+, hatch_mplot text --Hatch codes for matplotlib plots
+, UNIQUE (installation)
+);
+
+
+CREATE TABLE obs_installation /* Well installations */ (
+id INTEGER PRIMARY KEY NOT NULL
+, obsid TEXT NOT NULL
+, installation TEXT NOT NULL
+, diam_inner REAL
+, diam_outer REAL
+, material TEXT
+, description TEXT
+, top_level REAL
+, bottom_level REAL
+, install_date TEXT
+, source TEXT NOT NULL
+, FOREIGN KEY (obsid) REFERENCES obs_points(obsid)
+, FOREIGN KEY (installation) REFERENCES zz_installation_plots(installation)
+);

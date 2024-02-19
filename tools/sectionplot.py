@@ -92,6 +92,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         self.geo_bars = {}
         self.hydro_bars = {}
+        self.installation_bars = {}
         self.layer_texts = {}
         self.layer_annotations = []
         self.hydro_colors = defs.hydrocolors()
@@ -340,6 +341,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         # get PlotData
         self.z_data = self.get_z_data()
         self.geo_bars = self.get_plot_data_bars(defs.PlotTypesDict(), strat_key='TRIM(LOWER(geoshort))')
+        self.installation_bars = self.get_plot_data_installation_bars()
         hydro_subtypes = {k: "IN ('{}')".format(k) for k in self.hydro_colors.keys()}
         self.hydro_bars = self.get_plot_data_bars(hydro_subtypes, strat_key='TRIM(capacity)')
         self.layer_texts = self.get_plot_data_layer_texts()
@@ -461,6 +463,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     # Write text by all hydrology types adjacent to floating bar series
                     if len(self.ms.settingsdict['secplottext']) > 0:
                         self.write_annotation()
+
+                # plot installations
+                self.plot_bars(self.geo_bars, color_dict=defs.PlotColorDict(),
+                               color_key='color',
+                               hatch_dict=defs.PlotHatchDict())
 
                 self.plot_water_level()
 
@@ -879,6 +886,31 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
     @fn_timer
     def get_plot_data_bars(self, typ_subtypes, strat_key='lower(geoshort)'):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
+        common_utils.start_waiting_cursor()#show the user this may take a long time...
+        bars = {}
+        if len(self.obsids_x_position) > 0:
+            for typ, subtypes in typ_subtypes.items():
+                for obs, x in self.obsids_x_position.items():
+                    sql = """SELECT depthtop, depthbot
+                             FROM stratigraphy WHERE obsid = '{obs}' AND  {key} {values} 
+                             ORDER BY stratid""".format(obs=obs, key=strat_key, values=subtypes)
+                    recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
+                    if not recs:
+                        continue
+
+                    for row in recs:
+                        bars.setdefault(typ, {}).setdefault('x', []).append(x)
+                        bars.setdefault(typ, {}).setdefault('height', []).append(float(row[1]) - float(row[0]))
+                        bars.setdefault(typ, {}).setdefault('bottom', []).append(self.z_data[obs]['z'] - float(row[1]))
+
+                    if obs not in self.obsid_annotation:
+                        self.obsid_annotation[obs] = (x, self.z_data[obs]['z'])
+        common_utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
+        return bars
+
+    @fn_timer
+    def get_plot_data_installation_bars(self, typ_subtypes, strat_key='lower(geoshort)'):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
+        return
         common_utils.start_waiting_cursor()#show the user this may take a long time...
         bars = {}
         if len(self.obsids_x_position) > 0:
