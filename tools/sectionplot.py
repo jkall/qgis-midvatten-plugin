@@ -1198,7 +1198,11 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def plot_water_level_interactive(self):
         sql = '''SELECT date_time, level_masl, obsid FROM {} WHERE obsid IN ({})'''.format(self.ms.settingsdict['secplotwlvltab'], common_utils.sql_unicode_list(self.obsids_x_position.keys()))
         df = pd.read_sql(sql,
-                         self.dbconnection.conn, index_col='date_time', coerce_float=True, params=None, parse_dates=['date_time'],
+                         self.dbconnection.conn,
+                         index_col='date_time',
+                         coerce_float=True,
+                         params=None,
+                         parse_dates={'date_time': {'format': 'mixed'}},
                          columns=None,
                          chunksize=None)
 
@@ -1308,8 +1312,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         min_date = mdates.num2date(xmin_1970).replace(tzinfo=None)
         max_date = mdates.num2date(xmax_1970).replace(tzinfo=None)
-        min_idx = self.df.index.get_loc(min_date, method='backfill')
-        max_idx = self.df.index.get_loc(max_date, method='pad')
+        min_idx = self.df.index.get_indexer([min_date], method='backfill')
+        max_idx = self.df.index.get_indexer([max_date], method='pad')
 
         prev_val = self.date_slider.val
         self.date_slider.valmin = min_idx
@@ -1452,7 +1456,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             geom_linestring = geom.convertToType(1)
         except TypeError:
             # Adjustment for QGIS > 3.30
-            geom_linestring = geom.convertToType(Qgis.LineString)
+            geom_linestring = geom.convertToType(Qgis.GeometryType.Line)
         wkt = geom_linestring.asWkt()
         sql = """INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid)
         self.dbconnection.execute(sql)

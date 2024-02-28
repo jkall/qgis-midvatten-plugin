@@ -122,7 +122,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         sql = '''SELECT date_time, reading, obsid, instrumentid, comment FROM w_flow WHERE flowtype = 'Accvol' AND date_time >= '%s' AND date_time <= '%s' AND obsid IN (%s)
                  ORDER by obsid, instrumentid, date_time'''%(date_from, date_to, common_utils.sql_unicode_list(self.observations))
         dbconnection = db_utils.DbConnectionManager()
-        df = pd.read_sql(sql, dbconnection.conn, index_col=['date_time'], coerce_float=True, params=None, parse_dates=['date_time'],
+        df = pd.read_sql(sql, dbconnection.conn, index_col=['date_time'], coerce_float=True, params=None, parse_dates={'date_time': {'format': 'mixed'}},
                              columns=None,
                              chunksize=None)
         dbconnection.closedb()
