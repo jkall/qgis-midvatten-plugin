@@ -17,46 +17,62 @@ POSTGIS id SERIAL PRIMARY KEY
 INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description, upd_date, upd_sign) VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of CHANGETODBANDVERSION', '', '');
 INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description, upd_date, upd_sign) VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
 CREATE TABLE zz_staff /*Data domain for field staff used when importing data*/(
-staff text NOT NULL--Initials of the field staff
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, staff text NOT NULL--Initials of the field staff
 , name text --Name of the field staff
-, PRIMARY KEY(staff)
+, UNIQUE(staff)
 );
 CREATE TABLE zz_flowtype /*Data domain for flowtypes in table w_flow*/(
-type text NOT NULL --Allowed flowtypes
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, type text NOT NULL --Allowed flowtypes
 , explanation text --Explanation of the flowtypes
-, PRIMARY KEY(type)
+, UNIQUE(type)
 );
 CREATE TABLE zz_meteoparam /*Data domain for meteorological parameters in meteo*/(
-parameter text NOT NULL --Allowed meteorological parameters
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, parameter text NOT NULL --Allowed meteorological parameters
 , explanation text --Explanation of the parameters
-, PRIMARY KEY(parameter)
+, UNIQUE(parameter)
 );
 CREATE TABLE zz_strat /*Data domain for stratigraphy classes*/(
-geoshort text NOT NULL --Abbreviation for the strata (stratigraphy class)
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, geoshort text NOT NULL --Abbreviation for the strata (stratigraphy class)
 , strata text NOT NULL --clay etc
-, PRIMARY KEY(geoshort)
+, UNIQUE(geoshort)
 );
 CREATE TABLE zz_stratigraphy_plots /*Data domain for stratigraphy plot colors and symbols used by the plugin*/(
-strata text NOT NULL --clay etc
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, strata text NOT NULL --clay etc
 , color_mplot text NOT NULL --Color codes for matplotlib plots
 , hatch_mplot text NOT NULL --Hatch codes for matplotlib plots
 , color_qt text NOT NULL --Color codes for Qt plots
 , brush_qt text NOT NULL --Brush types for Qt plots
-, PRIMARY KEY(strata)
+, UNIQUE(strata)
 );
 CREATE TABLE zz_capacity /*Data domain for capacity classes used by the plugin*/(
-capacity text NOT NULL --Water capacity (ex. in the range 1-6)
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, capacity text NOT NULL --Water capacity (ex. in the range 1-6)
 , explanation text NOT NULL --Description of water capacity classes
-, PRIMARY KEY(capacity)
+, UNIQUE(capacity)
 );
 CREATE TABLE zz_capacity_plots /*Data domain for capacity plot colors used by the plugin*/(
-capacity text NOT NULL --Water capacity (ex. in the range 1-6)
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, capacity text NOT NULL --Water capacity (ex. in the range 1-6)
 , color_qt text NOT NULL --Hatchcolor codes for Qt plots
-, PRIMARY KEY(capacity)
+, UNIQUE(capacity)
 , FOREIGN KEY(capacity) REFERENCES zz_capacity(capacity)
 );
 CREATE TABLE obs_points /*One of the two main tables. This table holds all point observation objects.*/(
-obsid text NOT NULL --ID for the observation point
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --ID for the observation point
 , name text --Ordinary name for the observation
 , place text --Place for the observation. E.g. estate
 , type text --Type of observation
@@ -82,43 +98,51 @@ obsid text NOT NULL --ID for the observation point
 , source text --The source for the observation point
 , com_onerow text --Onerow comment
 , com_html text --Multiline formatted comment in html format
-, PRIMARY KEY (obsid)
+, UNIQUE(obsid)
 );
 SPATIALITE SELECT AddGeometryColumn('obs_points', 'geometry', CHANGETORELEVANTEPSGID, 'POINT', 'XY', 0);
 POSTGIS ALTER TABLE obs_points ADD COLUMN geometry geometry(Point,CHANGETORELEVANTEPSGID);
 CREATE TABLE obs_lines /*One of the two main tables. This table holds all line observation objects.*/(
-obsid text  NOT NULL --ID for observation line
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text  NOT NULL --ID for observation line
 , name text --Ordinary name for the observation
 , place text --Place for the observation
 , type text --Type of observation
 , source text --The origin for the observation
-, PRIMARY KEY (obsid)
+, UNIQUE(obsid)
 );
 SPATIALITE SELECT AddGeometryColumn('obs_lines', 'geometry', CHANGETORELEVANTEPSGID, 'LINESTRING', 'XY', 0);
 POSTGIS ALTER TABLE obs_lines ADD COLUMN geometry geometry(Linestring,CHANGETORELEVANTEPSGID);
 CREATE TABLE w_levels /*Manual water level measurements*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation
 , meas double --Distance from measuring point to water level
 , h_toc double --Elevation (masl) for the measuring point at the particular date_time (measuring point elevation may vary by time)
 , level_masl double --Water level elevation (masl) calculated from measuring point and distance from measuring point to water level
 , comment text --Comment
-, PRIMARY KEY (obsid, date_time)
+, UNIQUE(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE w_levels_logger /*Automatic water level readings*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation
 , head_cm double --Pressure (cm water column) on pressure transducer
 , temp_degc double --Temperature degrees C
 , cond_mscm double --Electrical conductivity mS/cm
 , level_masl double --Corresponding Water level elevation (masl)
 , comment text --Comment
-, PRIMARY KEY (obsid, date_time)
+, UNIQUE(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE stratigraphy /*Stratigraphy information from drillings*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , stratid integer NOT NULL --Stratigraphy layer ID for the OBSID
 , depthtop double --Top of the layer in m from ground surface
 , depthbot double --Bottom of the layer in m from ground surface
@@ -127,11 +151,13 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , capacity text --Well development at the layer
 , development text --Well development - Is the flushed water clear and free of suspended solids?
 , comment text --Comment
-, PRIMARY KEY (obsid, stratid)
+, UNIQUE(obsid, stratid)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE w_qual_field /*Water quality from field measurements*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , staff text --Field staff
 , date_time text NOT NULL --Date and Time for the observation
 , instrument text --Instrument ID
@@ -141,14 +167,16 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , unit text --Unit
 , depth double --The depth at which the measurement was done
 , comment text --Comment
-, PRIMARY KEY(obsid, date_time, parameter, unit)
+, UNIQUE(obsid, date_time, parameter, unit)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE UNIQUE INDEX w_qual_field_unit_unique_index_null ON w_qual_field /* Index to stop duplicate values where unit is null */ (
 obsid, date_time, parameter, COALESCE(unit, '<NULL>')
 );
 CREATE TABLE w_qual_lab /*Water quality from laboratory analysis*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , depth double --Depth (m below h_gs) from where sample is taken
 , report text NOT NULL --Report no from laboratory
 , project text --Project number
@@ -160,22 +188,26 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , reading_txt text --Value as text (ex. can contain '>' and '<')
 , unit text --Unit
 , comment text --Comment
-, PRIMARY KEY(report, parameter)
+, UNIQUE(report, parameter)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE w_flow /*Water flow*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , instrumentid text NOT NULL --Instrument Id
 , flowtype text NOT NULL --Flowtype must correspond to type in flowtypes
 , date_time text NOT NULL --Date and Time for the observation
 , reading double --Value (real number) reading for the flow rate
 , unit text --Unit corresponding to the value reading
 , comment text --Comment
-, PRIMARY KEY (obsid, instrumentid, flowtype, date_time)
+, UNIQUE(obsid, instrumentid, flowtype, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY (flowtype) REFERENCES zz_flowtype(type)
 );
 CREATE TABLE meteo /*meteorological observations*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , instrumentid text NOT NULL --Instrument ID
 , parameter text NOT NULL --The meteorological parameter
 , date_time text NOT NULL --Date and Time for the observation
@@ -183,41 +215,49 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , reading_txt text --Value as text (ex. can contain '>' and '<')
 , unit text --Unit corresponding to the value reading
 , comment text --Comment
-, PRIMARY KEY (obsid, instrumentid, parameter, date_time)
+, UNIQUE(obsid, instrumentid, parameter, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY (parameter) REFERENCES zz_meteoparam(parameter)
 );
 CREATE TABLE seismic_data /*Interpreted data from seismic measurements*/(
-obsid text NOT NULL --Obsid linked to obs_lines.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_lines.obsid
 , length double NOT NULL --Length along line
 , ground double --Ground surface level
 , bedrock double --Interpreted level for bedrock surface
 , gw_table double --Interpreted level for limit between unsaturated/saturated conditions
 , comment text --Additional info
-, PRIMARY KEY (obsid, length)
+, UNIQUE(obsid, length)
 , FOREIGN KEY (obsid) REFERENCES obs_lines(obsid)
 );
 CREATE TABLE vlf_data /*Raw data from VLF measurements*/(
-obsid text NOT NULL --Obsid linked to obs_lines.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_lines.obsid
 , length double NOT NULL --Length along line
 , real_comp double --Raw data real component (in-phase(%))
 , imag_comp double --Raw data imaginary component
 , comment text --Additional info
-, PRIMARY KEY (obsid, length)
+, UNIQUE(obsid, length)
 , FOREIGN KEY (obsid) REFERENCES obs_lines(obsid)
 );
 CREATE TABLE comments /*Comments connected to obsids*/(
-obsid text NOT NULL --Obsid linked to obs_points.obsid
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the comment
 , comment text NOT NULL --Comment
 , staff text NOT NULL --Staff who made the comment
-, PRIMARY KEY(obsid, date_time)
+, UNIQUE(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE zz_interlab4_obsid_assignment /*Assign obsids automatically during interlab4 import*/(
-specifik_provplats text NOT NULL --The attribute Specifik Provplats from interlab4 file format.
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, specifik_provplats text NOT NULL --The attribute Specifik Provplats from interlab4 file format.
 , provplatsnamn text NOT NULL --The attribute Provplatsnamn from interlab4 file format.
 , obsid text NOT NULL --Obsid linked to obs_points.obsid
-, PRIMARY KEY(specifik_provplats, provplatsnamn)
+, UNIQUE(specifik_provplats, provplatsnamn)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 SPATIALITE CREATE VIEW obs_p_w_qual_field AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_field AS b using (obsid);

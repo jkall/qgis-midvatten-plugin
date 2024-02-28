@@ -330,7 +330,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db('''SELECT * FROM vlf_data'''))
+                        db_utils.sql_load_fr_db('''SELECT obsid, length, real_comp, imag_comp, comment FROM vlf_data'''))
                     reference_string = '''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
                     assert test_string == reference_string
 

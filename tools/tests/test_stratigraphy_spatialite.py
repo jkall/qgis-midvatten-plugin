@@ -130,7 +130,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 1, 0, 1, 'sand', 'sand', '3', 'j')''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
         self.create_and_select_vlayer()
-        print(str(db_utils.sql_load_fr_db('''SELECT * FROM zz_strat''')))
+        print(str(db_utils.sql_load_fr_db('''SELECT geoshort, strata FROM zz_strat''')))
         dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
 
         dlg.showSurvey()

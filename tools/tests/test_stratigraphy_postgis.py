@@ -74,8 +74,8 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         self.create_and_select_vlayer()
 
         #print(str(self.vlayer.isValid()))
-        #print(str(db_utils.sql_load_fr_db('select * from obs_points')))
-        #print(str(db_utils.sql_load_fr_db('select * from stratigraphy')))
+        #print(str(db_utils.sql_load_fr_db('select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, geometry FROM obs_points')))
+        #print(str(db_utils.sql_load_fr_db('select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy')))
         dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
         #print(str(mock_messagebar.mock_calls))
         #print(str(mock_skippopup.mock_calls))
@@ -142,8 +142,8 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         self.create_and_select_vlayer()
 
         print(str(self.vlayer.isValid()))
-        print(str(db_utils.sql_load_fr_db('select * from obs_points')))
-        print(str(db_utils.sql_load_fr_db('select * from stratigraphy')))
+        print(str(db_utils.sql_load_fr_db('select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, geometry FROM obs_points')))
+        print(str(db_utils.sql_load_fr_db('select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy')))
         dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
         print(str(mock_messagebar.mock_calls))
         print(str(mock_skippopup.mock_calls))
@@ -177,8 +177,8 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         self.create_and_select_vlayer()
 
         print(str(self.vlayer.isValid()))
-        print(str(db_utils.sql_load_fr_db('select * from obs_points')))
-        print(str(db_utils.sql_load_fr_db('select * from stratigraphy')))
+        print(str(db_utils.sql_load_fr_db('select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, geometry FROM obs_points')))
+        print(str(db_utils.sql_load_fr_db('select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy')))
         dlg = Stratigraphy(self.iface, self.vlayer, self.midvatten.ms.settingsdict)
         print(str(mock_messagebar.mock_calls))
         print(str(mock_skippopup.mock_calls))

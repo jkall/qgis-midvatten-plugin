@@ -333,9 +333,8 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
 
     uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
     _name = tablename if layername is None else layername
+
     layer = QgsVectorLayer(uri.uri(), _name, dbtype)
-    if tablename == 'w_lvls_last_geom':
-        fields = layer.fields()
 
     if dbconnection_created:
         dbconnection.closedb()
@@ -349,9 +348,6 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
     else:
         dbconnection_created = False
 
-    if key_columns is None:
-        key_columns = [None, 'obsid', 'rowid']
-
     existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
 
     for idx, tablename in enumerate(tablenames):  # first load all non-spatial layers
@@ -359,6 +355,28 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
 
         if not tablename in existing_tables:
             continue
+
+        if key_columns is None:
+            columns = db_utils.get_table_info(tablename, dbconnection=dbconnection)
+            primary_keys = [(col[1], col[5]) for col in columns if col[5]]
+            colnames = [col[1] for col in columns]
+            _key_columns = []
+            if len(primary_keys) == 1:
+                _key_columns.append(primary_keys[0][0])
+
+            # Add common key columns as backup, but only if they exists in the table.
+            for alt_key in ['rowid', 'id', 'obsid']:
+                if alt_key in colnames:
+                    _key_columns.append(alt_key)
+
+            # Use as a backup for SQLite databases which has a "hidden" rowid column.
+            if 'rowid' not in _key_columns:
+                _key_columns.append('rowid')
+            # If all else fails, try None.
+            _key_columns.append(None)
+        else:
+            _key_columns = []
+
 
         layername = layernames[idx] if layernames is not None else None
 
@@ -371,7 +389,7 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
             if is_old:
                 tablename = 'view_{}'.format(tablename)
 
-        for key_column in key_columns:
+        for key_column in _key_columns:
             layer = create_layer(tablename, geometrycolumn=geometrycolumn, dbconnection=dbconnection, layername=layername,
                                  keycolumn=key_column)
             if layer.isValid():

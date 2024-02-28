@@ -1,7 +1,9 @@
 # Optional data tables not fully integrated in the plugin
 
 CREATE TABLE s_qual_lab /*Soil quality data*/(
-obsid text not null
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+, obsid text not null
 , depth double
 , report text not null
 , project text
@@ -13,19 +15,21 @@ obsid text not null
 , reading_txt text
 , unit text
 , comment text
-, primary key(report, parameter)
+, UNIQUE(report, parameter)
 , foreign key(obsid) references obs_points(obsid)
 );
 
 CREATE TABLE w_qual_logger /*Water quality from logger measurements*/(
- obsid text NOT NULL /*Obsid linked to obs_points.obsid*/
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
+ , obsid text NOT NULL /*Obsid linked to obs_points.obsid*/
  , date_time text NOT NULL /*Date and Time for the observation*/
  , instrument text /*Instrument ID*/
  , parameter text NOT NULL /*Measured parameter*/
  , reading_num double /*Value as real number*/
  , unit text /*Unit*/
  , comment text /*Comment*/
- , PRIMARY KEY(obsid, date_time, instrument, parameter, unit)
+ , UNIQUE(obsid, date_time, instrument, parameter, unit)
  , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
  );
 
@@ -56,19 +60,19 @@ POSTGIS id SERIAL PRIMARY KEY
 , FOREIGN KEY (obsid) REFERENCES obs_points (obsid) ON DELETE CASCADE
 );
 
-
 CREATE TABLE zz_installation_plots /* Plot styles for well installations */ (
-id INTEGER PRIMARY KEY AUTOINCREMENT
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
 , installation TEXT NOT NULL -- Short name of the installation, EX JWS 2.0
 , description TEXT -- Longer description of the installation.
 , color_mplot text --Color codes for matplotlib plots
 , hatch_mplot text --Hatch codes for matplotlib plots
-, UNIQUE (installation)
+, UNIQUE(installation)
 );
 
-
 CREATE TABLE obs_installation /* Well installations */ (
-id INTEGER PRIMARY KEY NOT NULL
+SPATIALITE id INTEGER PRIMARY KEY AUTOINCREMENT
+POSTGIS id SERIAL PRIMARY KEY
 , obsid TEXT NOT NULL
 , installation TEXT NOT NULL
 , diam_inner REAL

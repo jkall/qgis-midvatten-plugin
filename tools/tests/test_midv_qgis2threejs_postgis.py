@@ -47,7 +47,7 @@ class TestPrepareQgis2Threejs(utils_for_tests.MidvattenTestPostgisDbSv):
         dbconnection.execute('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('1', 1, 0, 1, 'torv'); ''')
         dbconnection.execute('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geoshort) VALUES ('1', 2, 1, 2, 'fyll'); ''')
         dbconnection.commit_and_closedb()
-        #print(str(db_utils.sql_load_fr_db('''SELECT * FROM stratigraphy;''')))
+        #print(str(db_utils.sql_load_fr_db('''SELECT obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy;''')))
 
         canvas = MagicMock()
         mock_iface.mapCanvas.return_value = canvas

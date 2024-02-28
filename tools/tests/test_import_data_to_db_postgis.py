@@ -213,7 +213,7 @@ class TestImportObsPointsObsLines(
     def test_import_obsids_directly(self):
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('obsid1')")
         db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('obsid2')")
-        result = db_utils.sql_load_fr_db('select * from obs_points')
+        result = db_utils.sql_load_fr_db('select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, geometry FROM obs_points')
         assert result == (True, [('obsid1', None, None, None, None, None, None, None,
                                   None, None, None, None, None, None, None, None, None,
                                   None, None, None, None, None, None, None, None, None,
@@ -370,7 +370,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         self.importinstance.general_import(dest_table='w_qual_lab', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_lab'''))
+            db_utils.sql_load_fr_db('''select obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment FROM  w_qual_lab'''))
 
         reference_string = r'''(True, [(obsid1, 2.0, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
@@ -388,7 +388,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         self.importinstance.general_import(dest_table='w_qual_lab', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_lab'''))
+            db_utils.sql_load_fr_db('''select obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment FROM  w_qual_lab'''))
 
         reference_string = r'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
@@ -407,7 +407,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         self.importinstance.general_import(dest_table='w_qual_lab', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_lab'''))
+            db_utils.sql_load_fr_db('''select obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment FROM  w_qual_lab'''))
         reference_string = r'''(True, [(obsid1, 2.0, testreport, testproject, None, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
@@ -427,7 +427,7 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='w_flow', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_flow'''))
+            db_utils.sql_load_fr_db('''select obsid, instrumentid, flowtype, date_time, reading, unit, comment FROM w_flow'''))
         reference_string = r'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
@@ -443,7 +443,7 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='w_flow', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_flow'''))
+            db_utils.sql_load_fr_db('''select obsid, instrumentid, flowtype, date_time, reading, unit, comment FROM w_flow'''))
         reference_string = r'''(True, [(obsid1, testid, Testtype, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
@@ -459,11 +459,11 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='w_flow', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_flow'''))
+            db_utils.sql_load_fr_db('''select obsid, instrumentid, flowtype, date_time, reading, unit, comment FROM w_flow'''))
         reference_string = r'''(True, [(obsid1, testid, Momflow2, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from zz_flowtype'''))
+            db_utils.sql_load_fr_db('''select type, explanation from zz_flowtype'''))
         reference_string = r'''(True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)])'''
         assert test_string == reference_string
 
@@ -483,7 +483,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
         self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db('''select obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field'''))
         reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
@@ -499,7 +499,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
         self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db('''select obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field'''))
         reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
         assert test_string == reference_string
 
@@ -521,7 +521,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
             ex) == 'Required columns parameter are missing for table w_qual_field'
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db('''select obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field'''))
         reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
@@ -547,7 +547,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
             assert test_call in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db('''select obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field'''))
         reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
@@ -577,7 +577,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
             assert test_call in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db('''select obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field'''))
         reference_string = r'''(True, [(obsid1, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment), (obsid2, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
@@ -610,7 +610,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         self.importinstance.general_import(dest_table='w_qual_field', file_data=f)
 
-        print(str(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_field''')))
+        print(str(db_utils.sql_load_fr_db('''SELECT obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field''')))
         test_calls_list = [
             call.info(
                 bar_msg='7 rows imported and 0 excluded for table w_qual_field. See log message panel for details',
@@ -620,7 +620,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
             assert test_call in mock_messagebar.mock_calls
 
         test_string = common_utils.anything_to_string_representation(
-            db_utils.sql_load_fr_db('''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db('''select obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment FROM  w_qual_field'''))
         print(str(test_string))
         reference_string = r'''(True, [("obsid1", "teststaff", "2011-10-19 12:30:00", "testinstrument", "DO", 12.0, "<12", "test unit", 22.0, "testcomment", ), ("obsid2", "teststaff", "2011-10-19 12:31:00", "testinstrument2", "DO2", 13.0, "<13", "test unit", 23.0, "testcomment", ), ("obsid2", "teststaff", "2011-10-19 12:36:00", "testinstrument2", "DO2", 13.0, "<13", "test  unit", 23.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:32:00", "testinstrument3", "DO3", 14.0, "<14", "test unit", 24.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:33:00", "testinstrument3", "DO3", 14.0, "<14", "", 24.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:34:00", "testinstrument3", "DO3", 14.0, "<14", "", 24.0, "testcomment", ), ("obsid3", "teststaff", "2011-10-19 12:35:00", "testinstrument3", "DO3", 14.0, "<14", "", 24.0, "testcomment", )], )'''
         assert test_string == reference_string
@@ -639,7 +639,7 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_levels'''))
+            db_utils.sql_load_fr_db('''select obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
         reference_string = r'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, None, testcomment)])'''
         assert test_string == reference_string
 
@@ -655,7 +655,7 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''SELECT * FROM w_levels'''))
+            db_utils.sql_load_fr_db('''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
         reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
@@ -673,7 +673,7 @@ class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='seismic_data', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from seismic_data'''))
+            db_utils.sql_load_fr_db('''select obsid, length, ground, bedrock, gw_table, comment FROM seismic_data'''))
         reference_string = r'''(True, [(obsid1, 500.0, 2.0, 4.0, 3.0, acomment)])'''
         assert test_string == reference_string
 
@@ -691,7 +691,7 @@ class TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         self.importinstance.general_import(dest_table='comments', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from comments'''))
+            db_utils.sql_load_fr_db('''select obsid, date_time, comment, staff FROM comments'''))
         reference_string = r'''(True, [(obsid1, 2011-10-19 12:30:00, testcomment, teststaff)])'''
         assert test_string == reference_string
 
@@ -713,7 +713,7 @@ class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
                                            file_data=f)  # dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from stratigraphy'''))
+            db_utils.sql_load_fr_db('''select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy'''))
         reference_string = '''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
@@ -739,7 +739,7 @@ class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
                                            file_data=f)  # dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from stratigraphy'''))
+            db_utils.sql_load_fr_db('''select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy'''))
         reference_string = '''(True, [(obsid1, 1, 0.0, 1.0, s, s, 1, (j), acomment), (obsid1, 2, 1.0, 2.0, s, s, 1, (j), acomment), (obsid1, 3, 2.0, 3.0, s, s, 1, (j), acomment), (obsid1, 4, 3.0, 4.0, s, s, 1, (j), acomment), (obsid1, 5, 4.0, 5.0, s, s, 1, (j), acomment), (obsid1, 6, 5.0, 6.0, s, s, 1, (j), acomment), (obsid1, 7, 6.0, 7.0, s, s, 1, (j), acomment), (obsid1, 8, 7.0, 8.0, s, s, 1, (j), acomment), (obsid1, 9, 8.0, 9.0, s, s, 1, (j), acomment), (obsid1, 10, 9.0, 12.1, s, s, 1, (j), acomment), (obsid1, 11, 12.1, 13.0, s, s, 1, (j), acomment)])'''
         assert test_string == reference_string
 
@@ -760,7 +760,7 @@ class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
                                            file_data=f)  # dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from stratigraphy'''))
+            db_utils.sql_load_fr_db('''select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy'''))
         reference_string = '''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
@@ -781,7 +781,7 @@ class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
                                            file_data=f)  # dest_table='stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from stratigraphy'''))
+            db_utils.sql_load_fr_db('''select obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy'''))
         reference_string = '''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
@@ -801,7 +801,7 @@ class TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='meteo', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from meteo'''))
+            db_utils.sql_load_fr_db('''select obsid, instrumentid, parameter, date_time, reading_num, reading_txt, unit, comment FROM meteo'''))
         reference_string = '''(True, [(obsid1, ints1, pressure, 2016-01-01 00:00:00, 1100.0, 1100, aunit, acomment)])'''
         assert test_string == reference_string
 
@@ -819,7 +819,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(dest_table='vlf_data', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from vlf_data'''))
+            db_utils.sql_load_fr_db('''select obsid, length, real_comp, imag_comp, comment FROM vlf_data'''))
         reference_string = '''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
         assert test_string == reference_string
 
@@ -836,7 +836,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
             assert utils_for_tests.foreign_key_test_from_exception(e, 'spatialite')
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from vlf_data'''))
+            db_utils.sql_load_fr_db('''select obsid, length, real_comp, imag_comp, comment FROM vlf_data'''))
         reference_string = '''(True, [])'''
         assert test_string == reference_string
 
@@ -854,7 +854,7 @@ class TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         self.importinstance.general_import(dest_table='obs_lines', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from obs_lines'''))
+            db_utils.sql_load_fr_db('''select obsid, name, place, type, source, geometry FROM obs_lines'''))
         reference_string = '''(True, [(obsid1, aname, aplace, atype, asource, None)])'''
         assert test_string == reference_string
 
@@ -889,7 +889,7 @@ class TestDeleteExistingDateTimesFromTemptable(
         self.importinstance.general_import(dest_table='w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_levels'''))
+            db_utils.sql_load_fr_db('''select obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
         reference_string = r'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
@@ -906,7 +906,7 @@ class TestDeleteExistingDateTimesFromTemptable(
         self.importinstance.general_import(dest_table='w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_levels'''))
+            db_utils.sql_load_fr_db('''select obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
         reference_string = r'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
@@ -927,7 +927,7 @@ class TestDeleteExistingDateTimesFromTemptable(
         self.importinstance.general_import(dest_table='w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from w_levels'''))
+            db_utils.sql_load_fr_db('''select obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
         reference_string = r'''(True, [(obsid1, 2016-01-01 00:00, None, None, 123.0, None), (obsid1, 2016-01-01 00:02:00, None, None, 789.0, None)])'''
         assert test_string == reference_string
 

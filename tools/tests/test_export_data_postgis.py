@@ -633,15 +633,14 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
         dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = '0' ''')
 
 
-        print(str(dbconnection.execute_and_fetchall('''SELECT * FROM zz_capacity_plots
+        print(str(dbconnection.execute_and_fetchall('''SELECT capacity, color_qt FROM zz_capacity_plots
         WHERE capacity = '0';''')))
 
         dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = '0' ''')
 
-        print(str(dbconnection.execute_and_fetchall('''SELECT * FROM zz_capacity_plots
-        WHERE capacity = '0';''')))
+        print(str(dbconnection.execute_and_fetchall('''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity = '0';''')))
 
-        # print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
+        # print(str(dbconnection.execute_and_fetchall('select geoshort, strata from zz_strat')))
         dbconnection.commit_and_closedb()
         print("Before export")
         mock_locale.return_value.answer = 'ok'
@@ -721,7 +720,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbEn):
 
         dbconnection.commit_and_closedb()
 
-        print(str(db_utils.sql_load_fr_db('''select * From s_qual_lab''')))
+        print(str(db_utils.sql_load_fr_db('''select obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment From s_qual_lab''')))
 
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'sv_SE'

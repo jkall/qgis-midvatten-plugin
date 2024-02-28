@@ -63,7 +63,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.set_logger_pos()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 00:00, 100.0, None, None, 3.0, None)])'
         assert test == ref
 
@@ -81,7 +81,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.add_to_level_masl()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 150.0, None)])'
         print(test)
         assert test == ref
@@ -102,7 +102,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-03-01 00:00, None, None, None, 50.0, None)])'
         print(test)
         assert test == ref
@@ -124,7 +124,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         assert test == ref
@@ -146,7 +146,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         print(ref)
@@ -170,7 +170,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         assert test == ref
