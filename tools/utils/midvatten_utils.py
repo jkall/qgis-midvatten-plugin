@@ -30,13 +30,10 @@ import matplotlib as mpl
 import qgis.PyQt
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QDesktopServices
-from future import standard_library
 from matplotlib import pyplot as plt
 from qgis.core import QgsProject
 from qgis.core import QgsVectorLayer
 
-standard_library.install_aliases()
-from builtins import str
 import re
 import locale
 import os

@@ -21,11 +21,6 @@ from __future__ import absolute_import
 
 import traceback
 
-from future import standard_library
-
-standard_library.install_aliases()
-from builtins import str
-from builtins import object
 import os, os.path
 from qgis.PyQt.QtCore import QCoreApplication
 
