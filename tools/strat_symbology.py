@@ -487,9 +487,9 @@ def add_views_to_db(dbconnection, bedrock_types):
 
     view_name = 'w_lvls_last_geom'
     try:
-        cur.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
         if dbconnection.dbtype == 'spatialite':
             cur.execute('''DELETE FROM views_geometry_columns WHERE view_name = '{}' '''.format(view_name))
+            cur.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
             cur.execute('''CREATE VIEW {view_name} AS 
                                     SELECT b.{rowid} AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.h_tocags AS h_tocags, b.geometry AS geometry 
                                     FROM w_levels AS a JOIN obs_points AS b using (obsid) 
@@ -497,6 +497,7 @@ def add_views_to_db(dbconnection, bedrock_types):
                 **{'view_name': view_name, 'rowid': db_utils.rowid_string(dbconnection)}))
             cur.execute('''INSERT OR IGNORE INTO views_geometry_columns SELECT '{}', 'geometry', 'rowid', 'obs_points', 'geometry', 1;'''.format(view_name))
         else:
+            cur.execute('''DROP VIEW IF EXISTS {}'''.format(view_name))
             cur.execute('''CREATE OR REPLACE VIEW {view_name} AS SELECT a.obsid AS obsid, a.date_time AS date_time, a.meas AS meas, a.level_masl AS level_masl, c.h_tocags AS h_tocags, c.geometry AS geometry FROM w_levels AS a JOIN (SELECT obsid, max(date_time) as date_time FROM w_levels GROUP BY obsid) as b ON a.obsid=b.obsid and a.date_time=b.date_time JOIN obs_points AS c ON a.obsid=c.obsid;'''
                                  .format(**{'view_name': view_name}))
     except:

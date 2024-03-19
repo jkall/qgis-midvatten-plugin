@@ -182,14 +182,14 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test_string)
         assert test_string == reference_string
 
-
+    @attr(status='only')
     def test_interlab4_connection_table_with_provtagningsorsak(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
 
         db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
-        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid2')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo2 vattenverk', 'obsid2')''')
 
 
         interlab4_lines = (
@@ -539,5 +539,59 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert lablitteras == patterns
         #assert False
 
+
+    def test_interlab4_connection_table_ignore_provtagningsorsak(self):
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
+
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo1 vattenverk', 'obsid1')''')
+        db_utils.sql_alter_db('''INSERT INTO zz_interlab4_obsid_assignment (specifik_provplats, provplatsnamn, obsid) VALUES ('Demo', 'Demo2 vattenverk', 'obsid2')''')
+
+
+        interlab4_lines = (
+            '#Interlab',
+            '#Version=4.0',
+            '#Tecken=UTF-8',
+            '#Textavgränsare=Nej',
+            '#Decimaltecken=,',
+            '#Provadm',
+            'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;;Demo1 vattenverk;Demo;;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            'DM-990908-2774;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;;Demo2 vattenverk;Demo;En provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            '#Provdat',
+            'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            'DM-990908-2774;SS-EN ISO 7887-1/4;Kalium;<15;15;;mg/l Pt;;;;;;;',
+            '#Slut'
+                )
+
+        with common_utils.tempinput('\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten.tools.utils.common_utils.NotFoundQuestion')
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.Askuser', mocks_for_tests.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('midvatten.tools.import_data_to_db.common_utils.pop_up_info', autospec=True)
+            @mock.patch('midvatten.tools.utils.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = 'ok'
+                mock_not_found_question.return_value.value = 'anobsid'
+                mock_not_found_question.return_value.reuse_column = 'obsid'
+                mock_filenames.return_value = [[filename]]
+                importer = Interlab4Import(self.iface.mainWindow(), self.midvatten.ms)
+                importer.init_gui()
+                importer.select_files_button.click()
+                importer.use_obsid_assignment_table.setChecked(True)
+                importer.ignore_provtagningsorsak.setChecked(True)
+                importer.start_import_button.click()
+
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_lab'''))
+
+        reference_string = r'''(True, [(obsid1, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo1 vattenverk. specifik provplats: Demo), (obsid1, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo1 vattenverk. specifik provplats: Demo), (obsid2, None, DM-990908-2774, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 15.0, <15, mg/l Pt, provtagningsorsak: En provtagningsorsak. provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo2 vattenverk. specifik provplats: Demo)])'''
+        print(reference_string)
+        print(test_string)
+        assert test_string == reference_string
 
 
