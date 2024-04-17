@@ -23,6 +23,7 @@ from __future__ import print_function
 import ast
 import codecs
 import os
+import traceback
 from builtins import object
 from builtins import range
 from builtins import str
@@ -283,6 +284,11 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             df = self.get_data_from_sql(sql_table, common_utils.getselectedobjectnames(), data_columns)
 
         if 'depth' in df.columns:
+            try:
+                df.loc[df['depth'] == '', 'depth'] = np.NaN
+            except:
+                print(f"Something went wrong: {traceback.format_exc()}")
+
             df['depth'] = df['depth'].fillna(0)
             df.loc[:, 'obsid'].where(df['depth'] == 0, df['obsid'] + ' (' + df['depth'].astype(
                 str).apply(lambda x: (x.replace('.0', '') if int(float(x)) == float(x) else x)) + ' m)',
@@ -369,7 +375,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
                            for feature in features if feature.isValid()])
 
         df = pd.DataFrame(file_data[1:], columns=file_data[0])
-        df['date_time'] = pd.to_datetime(df['date_time'])
+        df['date_time'] = pd.to_datetime(df['date_time'], format='mixed')
 
         num_features = len(file_data) - 1
         invalid_features = len(features) - num_features
