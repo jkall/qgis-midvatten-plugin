@@ -493,7 +493,9 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                         'mikrobiologisk bedömning',
                                         'provplatsid',
                                         'provplatsnamn',
-                                        'specifik provplats']
+                                        'specifik provplats',
+                                        'inlämningsdatum',
+                                        'inlämningstid']
 
             #Only keep the comments that really has a value.
             more_meta_comments = '. '.join([': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != 'ej bedömt', metadata[_x] != '-'])])
