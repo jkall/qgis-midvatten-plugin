@@ -114,6 +114,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , cond_mscm double --Electrical conductivity mS/cm
 , level_masl double --Corresponding Water level elevation (masl)
 , comment text --Comment
+, source text -- The source of the measurement (used to keep series apart)
 , PRIMARY KEY (obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
@@ -210,6 +211,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the comment
 , comment text NOT NULL --Comment
 , staff text NOT NULL --Staff who made the comment
+, type text -- Can be used to distinguish different types of comments.
 , PRIMARY KEY(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
@@ -253,6 +255,6 @@ CREATE VIEW w_flow_accvol AS SELECT obsid AS obsid,instrumentid AS instrumentid,
 CREATE INDEX idx_wquallab_odtp ON w_qual_lab(obsid, date_time, parameter);
 CREATE INDEX idx_wquallab_odtpu ON w_qual_lab(obsid, date_time, parameter, unit);
 CREATE INDEX idx_wqualfield_odtpu ON w_qual_field(obsid, date_time, parameter, unit);
-CREATE INDEX idx_wlvllogger_o ON w_levels_logger(obsid);
+CREATE INDEX idx_wlvllogger_o ON w_levels_logger(obsid, source);
 CREATE INDEX idx_wflow_oif ON w_flow(obsid, instrumentid, flowtype);
 CREATE INDEX idx_wflow_ofi ON w_flow(obsid, flowtype, instrumentid);

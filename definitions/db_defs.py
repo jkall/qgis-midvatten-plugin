@@ -3,7 +3,7 @@
 import os
 
 def latest_database_version():
-    return '1.7.10'
+    return '1.8.0'
 
 def extra_datatables_sqlfile():
     """

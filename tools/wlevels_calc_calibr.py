@@ -324,10 +324,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.meas_ts.date_time = [change_timezone(x, self.w_levels_tz, self.w_levels_logger_tz)
                                       for x in self.meas_ts.date_time]
 
-        head_level_masl_sql = r"""SELECT date_time, head_cm / 100, level_masl FROM w_levels_logger WHERE obsid = '%s' ORDER BY date_time"""%obsid
+        existing_columns = db_utils.tables_columns('w_levels_logger')['w_levels_logger']
+        if 'source' in existing_columns:
+            head_level_masl_sql = r"""SELECT date_time, head_cm / 100, level_masl, TRIM(COALESCE(source, '')) FROM w_levels_logger WHERE obsid = '%s' ORDER BY date_time"""%obsid
+        else:
+            head_level_masl_sql = r"""SELECT date_time, head_cm / 100, level_masl, '' as source FROM w_levels_logger WHERE obsid = '%s' ORDER BY date_time""" % obsid
         head_level_masl_list = db_utils.sql_load_fr_db(head_level_masl_sql)[1]
-        head_list = [(row[0], row[1]) for row in head_level_masl_list]
-        level_masl_list = [(row[0], row[2]) for row in head_level_masl_list]
+        head_list = [(row[0], row[1], row[3]) for row in head_level_masl_list]
+        level_masl_list = [(row[0], row[2], row[3]) for row in head_level_masl_list]
 
         self.head_ts = self.list_of_list_to_recarray(head_list)
         if self.plot_logger_head.isChecked():
@@ -348,7 +352,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                         else:
                             level_masl_mean = sum(meas_vals) / float(num_meas_vals)
 
-                        normalized_head = [(row[0], row[1] + (level_masl_mean - head_mean) if row[1] is not None else None) for row in head_list]
+                        normalized_head = [(row[0], row[1] + (level_masl_mean - head_mean) if row[1] is not None else None, row[2]) for row in head_list]
 
                         self.head_ts_for_plot = self.list_of_list_to_recarray(normalized_head)
                     else:
@@ -485,7 +489,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def list_of_list_to_recarray(self, list_of_lists):
-        my_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
+        my_format = [('date_time', datetime.datetime),
+                     ('values', float)]  # Define (with help from function datetime) a good format for numpy array
+
+        if len(list_of_lists):
+            if len(list_of_lists[0]) == 3:
+                max_len = max([len(x[2]) for x in list_of_lists])
+                my_format = [('date_time', datetime.datetime), ('values', float), ('source', np.dtype('U' + str(max_len)))]
+
         table = np.array(list_of_lists, dtype=my_format)  #NDARRAY
         table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values
         return table2
@@ -506,9 +517,13 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
         p=[None]*2 # List for plot objects
 
+        handles = []
+        labels = []
+
         # Load manual reading (full time series) for the obsid
         if self.meas_ts.size and self.contains_more_than_nan(self.meas_ts):
-            self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')),
+
+            a = self.plot_recarray(self.axes, self.meas_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' measurements')),
                                style=dict(linestyle='-',
                                           marker='o',
                                           zorder=50,
@@ -517,7 +532,9 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                           markerfacecolor="None",
                                           markeredgecolor='#1f77b4ff',
                                           markeredgewidth=3
-                                          ))
+                                          ))[0]
+            handles.append(a)
+            labels.append(a.get_label())
 
 
         if self.loggerLineNodes.isChecked():
@@ -525,20 +542,68 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         else:
             marker = ''
 
+
+
+        logger_level_masl_colors = ['#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+        logger_head_colors = [str(x/10) for x in reversed(list(range(1, 10)))]
+        #r = np.random.rand(3, 1).ravel()
+
+        self.logger_plot_artists = []
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
         if self.level_masl_ts.size and self.contains_more_than_nan(self.level_masl_ts):
             self.logger_artist = self.plot_recarray(self.axes, self.level_masl_ts,
                                                     obsid + ru(QCoreApplication.translate('Calibrlogger',
-                                                                                          ' logger water level')),
+                                                                                          ' logger water level for editing')),
                                                     time_list=logger_time_list,
-                                                    style=dict(linestyle='-', picker=5, markersize=3, marker=marker,
-                                                    zorder=10, color='#ff7f0eff'))[0]
+                                                    style=dict(linestyle='none', picker=5, marker=None,
+                                                    zorder=10, color='white'))[0]
+
+            for idx, source in enumerate(np.unique(self.level_masl_ts.source, equal_nan=True)):
+                label = obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger water level'))
+                if source is None or not str(source).strip():
+                    pass
+                else:
+                    label = label + f', {source}'
+
+                ts = self.level_masl_ts.copy()
+                ts.values[ts.source != source] = np.nan
+                try:
+                    color = logger_level_masl_colors[idx]
+                except IndexError:
+                    color = np.random.rand(3, 1).ravel()
+                a = self.plot_recarray(self.axes, ts,
+                                                label,
+                                                time_list=logger_time_list,
+                                                style=dict(linestyle='-', picker=0, markersize=3, marker=marker,
+                                                zorder=10, color=color))[0]
+                self.logger_plot_artists.append(a)
+                handles.append(a)
+                labels.append(label)
+
         else:
             self.logger_artist = None
 
         if self.plot_logger_head.isChecked() and self.head_ts_for_plot.size and self.contains_more_than_nan(self.head_ts_for_plot):
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger head')),
-                               style=dict(linestyle='--', zorder=5, color='#c1c1c1ff', marker=''), time_list=logger_time_list,)
+            for idx, source in enumerate(np.unique(self.head_ts_for_plot.source, equal_nan=True)):
+                try:
+                    color = logger_head_colors[idx]
+                except IndexError:
+                    color = np.random.rand(3, 1).ravel()
+
+                label = obsid + ru(
+                    QCoreApplication.translate('Calibrlogger', ' logger head'))
+                if source is None or not str(source).strip():
+                    pass
+                else:
+                    label = label + f', {source}'
+                ts = self.head_ts_for_plot.copy()
+                ts.values[ts.source != source] = np.nan
+
+                a = self.plot_recarray(self.axes, ts, label,
+                                   style=dict(linestyle='--', zorder=5, color=color, marker=''), time_list=logger_time_list)[0]
+                handles.append(a)
+                labels.append(label)
+
 
         self.plot_or_update_selected_line()
 
@@ -556,7 +621,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.calibrplotfigure.tight_layout()
 
         if self.axes.legend_ is None:
-            leg = self.axes.legend()
+            leg = self.axes.legend(handles, labels)
 
         self.canvas.draw()
         #plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure

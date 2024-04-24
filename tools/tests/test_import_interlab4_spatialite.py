@@ -33,7 +33,7 @@ from midvatten.tools.import_interlab4 import Interlab4Import
 
 
 
-@attr(status='on')
+@attr(status='only')
 class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def setUp(self):
         super().setUp()
@@ -78,7 +78,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_lab'''))
-        reference_string = r'''(True, [(anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30), (anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
+        reference_string = r'''(True, [(anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30), (anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. inlämningsdatum: 2010-09-07. inlämningstid: 14:15)])'''
         print(reference_string)
         print(test_string)
         assert test_string == reference_string
@@ -123,7 +123,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM w_qual_lab'''))
-        reference_string = '''(True, [(anobsid, None, DM-990908-2773, Demoproj, 0, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30), (anobsid, None, DM-990908-2773, Demoproj, 0, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
+        reference_string = '''(True, [(anobsid, None, DM-990908-2773, Demoproj, 0, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30), (anobsid, None, DM-990908-2773, Demoproj, 0, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. inlämningsdatum: 2010-09-07. inlämningstid: 14:15)])'''
         print(reference_string)
         print(test_string)
         assert test_string == reference_string
@@ -182,7 +182,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test_string)
         assert test_string == reference_string
 
-    @attr(status='only')
+
     def test_interlab4_connection_table_with_provtagningsorsak(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('obsid2')''')
@@ -231,7 +231,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT * FROM w_qual_lab'''))
 
-        reference_string = r'''(True, [(obsid1, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo1 vattenverk. specifik provplats: Demo), (obsid1, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo1 vattenverk. specifik provplats: Demo), (anobsid, None, DM-990908-2774, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 15.0, <15, mg/l Pt, provtagningsorsak: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo2 vattenverk. specifik provplats: Demo)])'''
+        reference_string = r'''(True, [(obsid1, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 2.5, <2,5, mg/l Pt, provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo1 vattenverk. specifik provplats: Demo), (obsid1, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium (dubblett 1), 1.0, <1, mg/l Pt, provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo1 vattenverk. specifik provplats: Demo), (anobsid, None, DM-990908-2774, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 15.0, <15, mg/l Pt, provtagningsorsak: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. provtyp: Dricksvatten enligt SLVFS 2001:30. provtypspecifikation: Utgående. bedömning: Nej. kemisk bedömning: Tjänligt. provplatsnamn: Demo2 vattenverk. specifik provplats: Demo. inlämningsdatum: 2010-09-07. inlämningstid: 14:15)])'''
         print(reference_string)
         print(test_string)
         assert test_string == reference_string

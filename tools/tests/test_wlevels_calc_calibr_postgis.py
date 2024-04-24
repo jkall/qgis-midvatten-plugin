@@ -25,6 +25,7 @@ from __future__ import print_function
 from decimal import Decimal
 
 import mock
+import numpy as np
 from nose.plugins.attrib import attr
 
 from midvatten.tools.wlevels_calc_calibr import Calibrlogger
@@ -63,7 +64,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.set_logger_pos()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 00:00, 100.0, None, None, 3.0, None)])'
         assert test == ref
 
@@ -81,7 +82,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.add_to_level_masl()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 150.0, None)])'
         print(test)
         assert test == ref
@@ -102,7 +103,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-03-01 00:00, None, None, None, 50.0, None)])'
         print(test)
         assert test == ref
@@ -124,7 +125,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         assert test == ref
@@ -146,7 +147,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         print(ref)
@@ -170,7 +171,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.calc_best_fit()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'))
         ref = '(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
         print(test)
         assert test == ref
@@ -396,3 +397,59 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = (19.75, 20.25)
 
         assert test == ref
+
+    @mock.patch('midvatten.tools.utils.common_utils.MessagebarAndLog')
+    def test_calibrlogger_plot_source_postgres(self, mock_messagebar):
+        db_utils.sql_alter_db("INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db("INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, source) VALUES ('rb1', '2017-02-01 00:00', 100, 'source1')")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, source) VALUES ('rb1', '2017-02-02 00:00', 101, 'source2')")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, source) VALUES ('rb1', '2017-02-03 00:00', 102, '')")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, source) VALUES ('rb1', '2017-02-04 00:00', 103, NULL)")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, source) VALUES ('rb1', '2017-02-05 00:00', 104, '')")
+        db_utils.sql_alter_db("INSERT INTO w_levels_logger (obsid, date_time, head_cm, source) VALUES ('rb1', '2017-02-06 00:00', 105, NULL)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.midvatten.ms)
+
+        calibrlogger.update_plot()
+
+        calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date('2000-01-01 00:00:00'))
+        calibrlogger.logger_elevation.setText('2')
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, 'rb1 (uncalibrated)')
+
+        calibrlogger.set_logger_pos()
+
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db("""SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, round(level_masl::numeric, 2), comment, source FROM w_levels_logger"""))
+        ref = ("(True, ["
+               "(rb1, 2017-02-01 00:00, 100.0, None, None, 3.00, None, source1), "
+               "(rb1, 2017-02-02 00:00, 101.0, None, None, 3.01, None, source2), "
+               "(rb1, 2017-02-03 00:00, 102.0, None, None, 3.02, None, ), "
+               "(rb1, 2017-02-04 00:00, 103.0, None, None, 3.03, None, None), "
+               "(rb1, 2017-02-05 00:00, 104.0, None, None, 3.04, None, ), "
+               "(rb1, 2017-02-06 00:00, 105.0, None, None, 3.05, None, None)])")
+        print(test)
+        print(ref)
+        print(str(mock_messagebar.mock_calls))
+        assert test == ref
+
+        lines_data = []
+        line_labels = []
+        for ax in calibrlogger.calibrplotfigure.axes:
+            for line in ax.lines:
+                line_labels.append(line.get_label())
+                xydata = tuple([(x, round(y, 2) if not np.isnan(y) else None) for x, y in line.get_xydata()])
+                lines_data.append((line.get_label(), xydata))
+                #print(line.get_label())
+        #print(tuple(line_labels))
+        assert tuple(line_labels) == ('rb1 measurements', 'rb1 logger water level for editing', 'rb1 logger water level', 'rb1 logger water level, source1', 'rb1 logger water level, source2', 'rb1 logger head', 'rb1 logger head, source1', 'rb1 logger head, source2', 'Selected nodes')
+
+        #print(lines_data)
+        assert tuple(lines_data) == (('rb1 measurements', ((17198.0, 100.0),)),
+                                     ('rb1 logger water level for editing', ((17198.0, 3.0), (17199.0, 3.01), (17200.0, 3.02), (17201.0, 3.03), (17202.0, 3.04), (17203.0, 3.05))),
+                                     ('rb1 logger water level', ((17198.0, None), (17199.0, None), (17200.0, 3.02), (17201.0, 3.03), (17202.0, 3.04), (17203.0, 3.05))),
+                                     ('rb1 logger water level, source1', ((17198.0, 3.0), (17199.0, None), (17200.0, None), (17201.0, None), (17202.0, None), (17203.0, None))),
+                                     ('rb1 logger water level, source2', ((17198.0, None), (17199.0, 3.01), (17200.0, None), (17201.0, None), (17202.0, None), (17203.0, None))),
+                                     ('rb1 logger head', ((17198.0, None), (17199.0, None), (17200.0, 3.02), (17201.0, 3.03), (17202.0, 3.04), (17203.0, 3.05))),
+                                     ('rb1 logger head, source1', ((17198.0, 3.0), (17199.0, None), (17200.0, None), (17201.0, None), (17202.0, None), (17203.0, None))),
+                                     ('rb1 logger head, source2', ((17198.0, None), (17199.0, 3.01), (17200.0, None), (17201.0, None), (17202.0, None), (17203.0, None))),
+                                     ('Selected nodes', ((17198.0, 3.0), (17199.0, 3.01), (17200.0, 3.02), (17201.0, 3.03), (17202.0, 3.04), (17203.0, 3.05))))
+
