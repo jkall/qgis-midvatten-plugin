@@ -38,7 +38,7 @@ from midvatten.tools.tests.utils_for_tests import create_test_string, create_vec
 from midvatten.tools.export_fieldlogger import ExportToFieldLogger
 from midvatten.tools import export_fieldlogger
 
-@attr(status='on')
+@attr(status='only')
 class TestExportFieldloggerNoDb(MidvattenTestBase):
     def setUp(self):
         super().__init__()
@@ -384,8 +384,8 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         mock_ms = MagicMock()
         mock_ms.settingsdict = {'fieldlogger_export_pbrowser': '',
                                 'fieldlogger_export_pgroups': ''}
-        mock_settingsstrings.side_effect = [('[[0, (("input_field_list", ["DO.mg/L;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), )]]', True),
-                                            ('[[0, (("input_field_group_list", ["DO.mg/L;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), ("location_suffix", "2766", ), ("sublocation_suffix", "level", ), )], [1, (("input_field_group_list", ["comment;text;Obsid related comment"], ), ("location_suffix", "1234", ), ("sublocation_suffix", "comment", ), )]]', True)]
+        mock_settingsstrings.side_effect = [('[[0, (("input_field_list", ["DO.mg/l;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), )]]', True),
+                                            ('[[0, (("input_field_group_list", ["DO.mg/l;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), ("location_suffix", "2766", ), ("sublocation_suffix", "level", ), )], [1, (("input_field_group_list", ["comment;text;Obsid related comment"], ), ("location_suffix", "1234", ), ("sublocation_suffix", "comment", ), )]]', True)]
 
         mock_iface = QWidget()
         mock_iface.legendInterface = mock.Mock()
@@ -395,8 +395,8 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
         exportfieldlogger.settings_strings_dialogs()
 
-        assert mock_ms.settingsdict['fieldlogger_export_pbrowser'] == '[[0, (("input_field_list", ["DO.mg/L;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), )]]'
-        assert mock_ms.settingsdict['fieldlogger_export_pgroups'] == '[[0, (("input_field_group_list", ["DO.mg/L;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), ("location_suffix", "2766", ), ("sublocation_suffix", "level", ), )], [1, (("input_field_group_list", ["comment;text;Obsid related comment"], ), ("location_suffix", "1234", ), ("sublocation_suffix", "comment", ), )]]'
+        assert mock_ms.settingsdict['fieldlogger_export_pbrowser'] == '[[0, (("input_field_list", ["DO.mg/l;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), )]]'
+        assert mock_ms.settingsdict['fieldlogger_export_pgroups'] == '[[0, (("input_field_group_list", ["DO.mg/l;numberDecimal|numberSigned; ", "comment;text;Obsid related comment"], ), ("location_suffix", "2766", ), ("sublocation_suffix", "level", ), )], [1, (("input_field_group_list", ["comment;text;Obsid related comment"], ), ("location_suffix", "1234", ), ("sublocation_suffix", "comment", ), )]]'
 
     @staticmethod
     @mock.patch('midvatten.tools.export_fieldlogger.common_utils.MessagebarAndLog')
@@ -420,7 +420,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
     @staticmethod
     @mock.patch('midvatten.tools.export_fieldlogger.common_utils.get_save_file_name_no_extension')
     @mock.patch('midvatten.tools.export_fieldlogger.common_utils.MessagebarAndLog')
-    def test_write_printlist_to_file(mock_MessagebarAndLog, mock_get_save_file_name_no_extension):
+    def test_write_to_file(mock_MessagebarAndLog, mock_get_save_file_name_no_extension):
         lines = (
                     "NAME;INPUTTYPE;HINT",
                     "Value;numberDecimal|numberSigned;in m to top of tube",
@@ -434,18 +434,17 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         with common_utils.tempinput('', 'utf-8') as testfile:
             mock_get_save_file_name_no_extension.return_value = testfile
 
-            export_fieldlogger.ExportToFieldLogger.write_printlist_to_file(lines)
+            export_fieldlogger.ExportToFieldLogger.write_to_file('\n'.join(lines))
 
         with open(testfile, 'r') as f:
             result_lines = [row.rstrip('\n') for row in f]
 
         assert tuple(lines) == tuple(result_lines)
 
-    #@staticmethod
     @mock.patch('midvatten.tools.export_fieldlogger.db_utils.tables_columns')
-    @mock.patch('midvatten.tools.export_fieldlogger.ExportToFieldLogger.write_printlist_to_file')
+    @mock.patch('midvatten.tools.export_fieldlogger.ExportToFieldLogger.write_to_file')
     @mock.patch('midvatten.tools.export_fieldlogger.common_utils.MessagebarAndLog')
-    def test_laton_from_vectorlayer(self, mock_tables_columns, mock_write_printlist_to_file, mock_MessagebarAndLog):
+    def test_laton_from_vectorlayer(self, mock_tables_columns, mock_write_to_file, mock_MessagebarAndLog):
         mock_ms = mock.MagicMock()
         mock_ms.settingsdict = {}
 
@@ -481,8 +480,8 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         print("Prints")
         #maximum_test_precision = 8
         testlist = []
-        for _call in mock_write_printlist_to_file.call_args_list:
-            args = _call[0][0]
+        for _call in mock_write_to_file.call_args_list:
+            args = _call[0][0].split('\n')
             #print(str(args))
             for location_idx in range(len(args)):
                 loc = args[location_idx]
@@ -529,4 +528,147 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         assert tuple(testlist) == ref
         #assert False
 
+    @mock.patch('midvatten.tools.export_fieldlogger.db_utils.tables_columns')
+    @mock.patch('midvatten.tools.export_fieldlogger.ExportToFieldLogger.write_to_file')
+    @mock.patch('midvatten.tools.export_fieldlogger.common_utils.MessagebarAndLog')
+    def test_laton_from_vectorlayer_fieldform(self, mock_tables_columns, mock_write_printlist_to_file, mock_MessagebarAndLog):
+        mock_ms = mock.MagicMock()
+        mock_ms.settingsdict = {}
 
+        mock_tables_columns.return_value = {}
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('obsid', QVariant.String, QVariant.typeToName(QVariant.String))]
+        data = [[1, 'obsid1'], [2, 'obsid2'], [3, 'obsid3']]
+        geometries = [QgsGeometry.fromWkt('POINT(1000000.0 100000.0)'),
+                      QgsGeometry.fromWkt('POINT(2000000.0 200000.0)'),
+                      QgsGeometry.fromWkt('POINT(3000000.0 300000.0)')]
+
+        self.vlayer = create_vectorlayer(_fields, data, geometries=geometries, geomtype='Point', crs=3006)
+        QgsProject.instance().addMapLayer(self.vlayer)
+        #mock_iface = QWidget()
+        #mock_iface.legendInterface = mock.Mock()
+        #mock_iface.legendInterface.return_value.layers.return_value = [vlayer]
+        exporttofieldlogger = ExportToFieldLogger(None, mock_ms)
+
+        stored_settings = [(0, (('input_field_group_list', ['{"par1": {"type": "type1", "hint": "hint1"}}']), ('sublocation_suffix', 'group'),
+                                ('location_suffix', 'proj'))),
+                           (1, (('input_field_group_list', ['{"par2": {"type": "type2", "hint": "hint2"}}']), ('sublocation_suffix', 'group'),
+                                ('location_suffix', 'proj2')))]
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, None)
+        parameter_groups[0]._obsid_list.paste_data(['obsid1', 'obsid2'])
+        parameter_groups[1]._obsid_list.paste_data(['obsid3'])
+        exporttofieldlogger.parameter_groups = parameter_groups
+        exporttofieldlogger.obs_from_vlayer.setChecked(True)
+
+        exporttofieldlogger.export_as_fieldform.setChecked(True)
+
+        exporttofieldlogger.export()
+
+        test = mock_write_printlist_to_file.call_args_list[0][0][0]
+
+        ref__ = (
+            {
+                "settings": {
+                    "use_standard_time": "YES"
+                },
+                "inputfields": {
+                    "value": {
+                        "type": "number"
+                    },
+                    "comment": {
+                        "type": "text",
+                        "hint": "place a comment"
+                    },
+                    "reliable": {
+                        "type": "choice",
+                        "hint": "is this measurement reliable?",
+                        "options": [
+                            "yes",
+                            "no"
+                        ]
+                    },
+                    "photo": {
+                        "type": "photo",
+                        "hint": "take a picture"
+                    }
+                },
+                "groups": {
+                    "group_1": {
+                        "name": "Group 1",
+                        "color": "orange"
+                    },
+                    "group_2": {
+                        "name": "Group 2",
+                        "color": "blue"
+                    }
+                },
+                "locations": {
+                    "location_1": {
+                        "lat": 51.9,
+                        "lon": 6.5,
+                        "group": "group_1",
+                        "sublocations": {
+                            "loc_1_1": {
+                                "inputfields": [
+                                    "value",
+                                    "reliable",
+                                    "comment"
+                                ],
+                                "photo": "loc_1.png",
+                                "properties": {
+                                    "surface level": "20.74",
+                                    "filter level": 18.64
+                                }
+                            },
+                            "loc_1_2": {
+                                "inputfields": [
+                                    "value",
+                                    "reliable",
+                                    "comment"
+                                ],
+                                "photo": "loc_1.png",
+                                "properties": {
+                                    "surface level": "20.74",
+                                    "filter level": 10.0
+                                }
+                            }
+                        }
+                    },
+                    "location_2": {
+                        "lat": 52.1,
+                        "lon": 6.3,
+                        "group": "group_2",
+                        "sublocations": {
+                            "loc_2_1": {
+                                "inputfields": [
+                                    "value",
+                                    "photo"
+                                ],
+                                "photo": "loc_2.pdf",
+                                "properties": {
+                                    "surface level": "10.41",
+                                    "filter level": 8.26
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+
+        )
+
+
+
+        # 8 decimals
+        ref = """{"inputfields": {"par1": {"type": "type1", "hint": "hint1"}, "par2": {"type": "type2", "hint": "hint2"}}, "locations": {"obsid1.proj": {"lat": 0.9019366063889331, "lon": 19.489297537299507, "sublocations": {"obsid1.proj.group": {"inputfields": ["par1"]}}}, "obsid2.proj": {"lat": 1.7601631374427096, "lon": 28.3630107673365, "sublocations": {"obsid2.proj.group": {"inputfields": ["par1"]}}}, "obsid3.proj2": {"lat": 2.516656754597623, "lon": 36.93072164080036, "sublocations": {"obsid3.proj2.group": {"inputfields": ["par2"]}}}}}"""
+
+        print("Ref")
+        print(ref)
+        print(f"Test")
+        print(test)
+        assert test == ref
+        #assert False

@@ -972,9 +972,16 @@ def anything_to_string_representation(anything, itemjoiner=', ', pad='', dictfor
     elif isinstance(anything, (float, int)):
         aunicode = '{}'.format(returnunicode(anything))
     elif isinstance(anything, str):
-        aunicode = '"{}"'.format(anything)
-    elif isinstance(anything, str):
-        aunicode = '"{}"'.format(anything)
+        if '"' not in anything:
+            aunicode = '"{}"'.format(anything)
+        elif "'" not in anything:
+            aunicode = "'{}'".format(anything)
+        elif not anything.startswith('"') and not anything.endswith('"'):
+            aunicode = '"""{}"""'.format(anything)
+        elif not anything.startswith("'") and not anything.endswith("'"):
+            aunicode = "'''{}'''".format(anything)
+        else:
+            aunicode = '""" {} """'.format(anything)
     elif isinstance(anything, qgis.PyQt.QtCore.QVariant):
         aunicode = returnunicode(anything.toString().data())
     else:
@@ -1151,7 +1158,7 @@ def general_exception_handler(func):
     return new_func
 
 
-def save_stored_settings(ms, stored_settings, settingskey):
+def save_stored_settings(ms, stored_settings, settingskey, skip_ast=False):
     """
     Saves the current parameter settings into midvatten settings
 
@@ -1159,13 +1166,16 @@ def save_stored_settings(ms, stored_settings, settingskey):
     :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
     :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
     """
-    settings_string = anything_to_string_representation(stored_settings)
+    if not skip_ast:
+        settings_string = anything_to_string_representation(stored_settings)
+    else:
+        settings_string = stored_settings
     ms.settingsdict[settingskey] = settings_string
     ms.save_settings(settingskey)
     MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('save_stored_settings', 'Settings %s stored for key %s.')) % (settings_string, settingskey))
 
 
-def get_stored_settings(ms, settingskey, default=None):
+def get_stored_settings(ms, settingskey, default=None, skip_ast=False):
     """
     Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
 
@@ -1191,14 +1201,18 @@ def get_stored_settings(ms, settingskey, default=None):
     except:
         pass
 
-    try:
-        stored_settings = ast.literal_eval(settings_string_raw)
-    except SyntaxError as e:
-        stored_settings = default
-        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Getting stored settings failed for key %s see log message panel.')) % settingskey, log_msg=returnunicode(QCoreApplication.translate('ExportToFieldLogger', 'Parsing the settingsstring %s failed. Msg "%s"')) % (settings_string_raw, str(e)))
-    except ValueError as e:
-        stored_settings = default
-        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Getting stored settings failed for key %s see log message panel.')) % settingskey, log_msg=returnunicode(QCoreApplication.translate('ExportToFieldLogger', 'Parsing the settingsstring %s failed. Msg "%s"')) % (settings_string_raw, str(e)))
+    if skip_ast:
+        stored_settings = settings_string_raw
+    else:
+        try:
+            stored_settings = ast.literal_eval(settings_string_raw)
+        except SyntaxError as e:
+            stored_settings = default
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Getting stored settings failed for key %s see log message panel.')) % settingskey, log_msg=returnunicode(QCoreApplication.translate('ExportToFieldLogger', 'Parsing the settingsstring %s failed. Msg "%s"')) % (settings_string_raw, str(e)))
+        except ValueError as e:
+            stored_settings = default
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Getting stored settings failed for key %s see log message panel.')) % settingskey, log_msg=returnunicode(QCoreApplication.translate('ExportToFieldLogger', 'Parsing the settingsstring %s failed. Msg "%s"')) % (settings_string_raw, str(e)))
+
     return stored_settings
 
 

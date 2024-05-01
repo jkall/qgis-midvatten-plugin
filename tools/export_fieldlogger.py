@@ -21,6 +21,7 @@ from __future__ import absolute_import
 
 import ast
 import copy
+import json
 import os.path
 from builtins import object
 from builtins import range
@@ -30,24 +31,25 @@ from collections import OrderedDict
 import qgis.PyQt
 import qgis.gui
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt import QtWidgets
 # from qgis._core import QgsProject
 from qgis.core import QgsProject, QgsWkbTypes, QgsGeometry, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem
 
 import midvatten.definitions.midvatten_defs as defs
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, gui_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
-from midvatten.tools.utils.gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
+from midvatten.tools.utils.common_utils import returnunicode as ru, start_waiting_cursor, stop_waiting_cursor
+from midvatten.tools.utils.gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox, VRowEntry
 
 export_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
 
-class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
+class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate('ExportToFieldLogger', "Export to Fieldlogger dialog"))) # Set the title for the dialog
@@ -64,16 +66,42 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         self.stored_settingskey = 'fieldlogger_export_pgroups'
         self.stored_settingskey_parameterbrowser = 'fieldlogger_export_pbrowser'
+        self.stored_settingskey_format = 'fieldlogger_export_format'
 
-        for settingskey in [self.stored_settingskey, self.stored_settingskey_parameterbrowser]:
+        for settingskey in [self.stored_settingskey, self.stored_settingskey_parameterbrowser, self.stored_settingskey_format]:
             if settingskey not in self.ms.settingsdict:
                 common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('ExportToFieldLogger', '%s did not exist in settingsdict')) % settingskey)
 
-        self.obs_from_obs_points = qgis.PyQt.QtWidgets.QRadioButton(
+
+        self.export_format_row = VRowEntry()
+        self.export_format_row.layout.setContentsMargins(0, 0, 0, 0)
+        self.export_as_fieldlogger = QtWidgets.QRadioButton(
+            QCoreApplication.translate('ExportToFieldLogger', 'FieldLogger'))
+        self.export_as_fieldform = QtWidgets.QRadioButton(
+            QCoreApplication.translate('ExportToFieldLogger', 'FieldForm'))
+        self.export_format_row.layout.addWidget(QtWidgets.QLabel(QCoreApplication.translate('ExportToFieldLogger', 'Export format')))
+        self.export_format_row.layout.addWidget(self.export_as_fieldlogger)
+        self.export_format_row.layout.addWidget(self.export_as_fieldform)
+        self.gridLayout_buttons.addWidget(self.export_format_row.widget,
+                                          self.gridLayout_buttons.rowCount(), 0)
+        self.gridLayout_buttons.addWidget(get_line(),
+                                          self.gridLayout_buttons.rowCount(), 0)
+        self.export_as_fieldlogger.setChecked(True)
+        self.export_as_fieldform.clicked.connect(lambda x: self.parameter_browser.use_fieldform())
+        self.export_as_fieldlogger.clicked.connect(lambda x: self.parameter_browser.use_fieldlogger())
+        if common_utils.get_stored_settings(self.ms, self.stored_settingskey_format, 'FieldLogger').lower() == 'fieldform':
+            self.export_as_fieldform.setChecked(True)
+
+        self.obs_from_obs_points = QtWidgets.QRadioButton(
             QCoreApplication.translate('ExportToFieldLogger', 'table obs_points (id obsid)'))
-        self.obs_from_vlayer = qgis.PyQt.QtWidgets.QRadioButton(
+        self.obs_from_vlayer = QtWidgets.QRadioButton(
             QCoreApplication.translate('ExportToFieldLogger', 'vector layer:'))
         self.obslayer = ObsLayer(self.iface, self.obs_from_vlayer)
+        self.obs_from_row = VRowEntry()
+        self.obs_from_row.layout.setContentsMargins(0, 0, 0, 0)
+        self.obs_from_row.layout.addWidget(self.obs_from_obs_points)
+        self.obs_from_row.layout.addWidget(self.obs_from_vlayer)
+
 
         self.parameter_groups = self.create_parameter_groups_using_stored_settings(
             common_utils.get_stored_settings(self.ms, self.stored_settingskey),
@@ -81,7 +109,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         if self.parameter_groups is None or not self.parameter_groups:
             self.parameter_groups = [ParameterGroup(self.obslayer)]
 
-        self.main_vertical_layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Fieldlogger input fields and locations:'))))
+        self.main_vertical_layout.addWidget(QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Fieldlogger input fields and locations:'))))
         self.main_vertical_layout.addWidget(get_line())
         self.splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
@@ -101,7 +129,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         #ParameterUnitBrowser
         self.parameter_browser = ParameterBrowser(tables_columns, self.widget)
-        self.parameter_browser_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Create Input Fields')))
+        self.parameter_browser_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Create Input Fields')))
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, self.gridLayout_buttons.rowCount(), 0)
         self.parameter_browser_button.clicked.connect(
                      lambda : self.parameter_browser.show())
@@ -109,7 +137,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.update_parameter_browser_using_stored_settings(
             common_utils.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
 
-        self.add_parameter_group = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'More Fields and Locations')))
+        self.add_parameter_group = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'More Fields and Locations')))
         self.add_parameter_group.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Creates an additional empty input field group.')))
         self.gridLayout_buttons.addWidget(self.add_parameter_group, self.gridLayout_buttons.rowCount(), 0)
         #Lambda and map is used to run several functions for every button click
@@ -118,10 +146,9 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
 
         # obsid-layers:
-        self.gridLayout_buttons.addWidget(qgis.PyQt.QtWidgets.QLabel(
+        self.gridLayout_buttons.addWidget(QtWidgets.QLabel(
             QCoreApplication.translate('ExportToFieldLogger', 'Locations from:')))
-        self.gridLayout_buttons.addWidget(self.obs_from_obs_points, self.gridLayout_buttons.rowCount(), 0)
-        self.gridLayout_buttons.addWidget(self.obs_from_vlayer, self.gridLayout_buttons.rowCount(), 0)
+        self.gridLayout_buttons.addWidget(self.obs_from_row.widget, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(self.obslayer.widget, self.gridLayout_buttons.rowCount(), 0)
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
 
@@ -133,35 +160,35 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         # Obsid settings
 
         #Buttons
-        self.save_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Save settings')))
+        self.save_settings_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Save settings')))
         self.save_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Saves the current input fields settings.')))
         self.gridLayout_buttons.addWidget(self.save_settings_button, self.gridLayout_buttons.rowCount(), 0)
         self.save_settings_button.clicked.connect(self.save_stored_settings)
 
-        self.clear_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear settings')))
+        self.clear_settings_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Clear all input fields settings.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, self.gridLayout_buttons.rowCount(), 0)
         self.clear_settings_button.clicked.connect(self.clear_settings)
 
-        self.settings_strings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings strings')))
+        self.settings_strings_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Settings strings')))
         self.settings_strings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Access the settings strings ("Create input fields" and input fields) to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.')))
         self.gridLayout_buttons.addWidget(self.settings_strings_button, self.gridLayout_buttons.rowCount(), 0)
         self.settings_strings_button.clicked.connect(lambda x: self.settings_strings_dialogs())
 
-        self.default_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Default settings')))
+        self.default_settings_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Default settings')))
         self.default_settings_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Updates "Create input fields" and input fields to default settings.')))
         self.gridLayout_buttons.addWidget(self.default_settings_button, self.gridLayout_buttons.rowCount(), 0)
         self.default_settings_button.clicked.connect(lambda x: self.restore_default_settings())
 
         self.gridLayout_buttons.addWidget(get_line(), self.gridLayout_buttons.rowCount(), 0)
 
-        self.preview_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Preview')))
+        self.preview_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Preview')))
         self.preview_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'View a preview of the Fieldlogger location file as pop-up info.')))
         self.gridLayout_buttons.addWidget(self.preview_button, self.gridLayout_buttons.rowCount(), 0)
         # Lambda and map is used to run several functions for every button click
         self.preview_button.clicked.connect(lambda x: self.preview())
 
-        self.export_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Export')))
+        self.export_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Export')))
         self.export_button.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger', 'Exports the current combination of locations and input fields to a Fieldlogger location file.')))
         self.gridLayout_buttons.addWidget(self.export_button, self.gridLayout_buttons.rowCount(), 0)
         # Lambda and map is used to run several functions for every button click
@@ -175,8 +202,8 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
     def init_splitters_layouts(splitter):
         widgets_layouts = []
         for nr in range(2):
-            widget = qgis.PyQt.QtWidgets.QWidget()
-            layout = qgis.PyQt.QtWidgets.QHBoxLayout()
+            widget = QtWidgets.QWidget()
+            layout = QtWidgets.QHBoxLayout()
             widget.setLayout(layout)
             splitter.addWidget(widget)
             widgets_layouts.append((widget, layout))
@@ -185,21 +212,21 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
     def add_parameter_group_to_gui(self, widgets_layouts, parameter_group):
 
             self.create_widget_and_connect_widgets(widgets_layouts[0][1],
-                                                   [qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Sub-location suffix'))),
+                                                   [QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Sub-location suffix'))),
                                                     parameter_group._sublocation_suffix,
-                                                    qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Input fields'))),
+                                                    QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Input fields'))),
                                                     parameter_group._input_field_group_list])
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
-                                                   [qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Locations'))),
+                                                   [QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Locations'))),
                                                     parameter_group.paste_from_selection_button,
                                                     parameter_group._obsid_list,
-                                                   qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Location suffix\n(ex. project number)'))),
+                                                   QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Location suffix\n(ex. project number)'))),
                                                    parameter_group._location_suffix])
 
     @staticmethod
-    def create_widget_and_connect_widgets(parent_layout=None, widgets=None, layout_class=qgis.PyQt.QtWidgets.QVBoxLayout):
-        new_widget = qgis.PyQt.QtWidgets.QWidget()
+    def create_widget_and_connect_widgets(parent_layout=None, widgets=None, layout_class=QtWidgets.QVBoxLayout):
+        new_widget = QtWidgets.QWidget()
         layout = layout_class()
         new_widget.setLayout(layout)
         if parent_layout is not None:
@@ -254,7 +281,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         return [[index, copy.deepcopy(an_object.get_settings())] for index, an_object in enumerate(objects_with_get_settings) if an_object.get_settings()]
 
     def restore_default_settings(self):
-        input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults()
+        input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults('FieldLogger' if self.export_as_fieldlogger.isChecked() else 'FieldForm')
         self.update_settings(input_field_browser, self.stored_settingskey_parameterbrowser)
         self.update_settings(input_fields_groups, self.stored_settingskey)
         common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', 'Input fields and "Create Input Fields" updated to default.\nRestart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))
@@ -272,8 +299,8 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         old_string = common_utils.anything_to_string_representation(self.update_stored_settings(objects_with_get_settings))
 
-        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate('ExportToFieldLogger', "Edit settings string")), msg,
-                                                           qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
+        new_string = QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate('ExportToFieldLogger', "Edit settings string")), msg,
+                                                           QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
             return False
 
@@ -306,21 +333,24 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         return latlons
 
     @common_utils.general_exception_handler
-    @common_utils.waiting_cursor
     def export(self):
+        start_waiting_cursor()
         common_utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
-        self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups, self.get_latlons()))
+        if self.export_as_fieldform.isChecked():
+            self.write_to_file(json.dumps(self.create_json_export(self.parameter_groups, self.get_latlons()), ensure_ascii=False), filter='json (*.json)')
+        else:
+            self.write_to_file('\n'.join(self.create_export_printlist(self.parameter_groups, self.get_latlons())))
+        stop_waiting_cursor()
 
     def preview(self):
-        export_printlist = self.create_export_printlist(self.parameter_groups, self.get_latlons())
-        qgis.PyQt.QtWidgets.QMessageBox.information(None, 'Preview', '\n'.join(export_printlist))
+        if self.export_as_fieldform.isChecked():
+            output = json.dumps(self.create_json_export(self.parameter_groups, self.get_latlons()), ensure_ascii=False) #.encode('utf8')
+        else:
+            output = '\n'.join(self.create_export_printlist(self.parameter_groups, self.get_latlons()))
+        QtWidgets.QMessageBox.information(None, 'Preview', output)
 
     @staticmethod
-    def create_export_printlist(parameter_groups, latlons):
-        """
-        Creates a result list with FieldLogger format from selected obsids and parameters
-        :return: a list with result lines to export to file
-        """
+    def organize_for_export(parameter_groups, latlons):
         sublocations_locations = {}
         locations_sublocations = OrderedDict()
         locations_lat_lon = OrderedDict()
@@ -365,6 +395,16 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
                     locations_sublocations.setdefault(location, []).append(sublocation)
                     if sublocation not in sublocations_locations:
                         sublocations_locations[sublocation] = location
+        return sublocations_locations, locations_sublocations, locations_lat_lon, sublocations_parameters, parameters_inputtypes_hints
+
+
+    @staticmethod
+    def create_export_printlist(parameter_groups, latlons):
+        """
+        Creates a result list with FieldLogger format from selected obsids and parameters
+        :return: a list with result lines to export to file
+        """
+        sublocations_locations, locations_sublocations, locations_lat_lon, sublocations_parameters, parameters_inputtypes_hints = ExportToFieldLogger.organize_for_export(parameter_groups, latlons)
 
         printlist = []
         printlist.append("NAME;INPUTTYPE;HINT")
@@ -386,17 +426,43 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         return printlist
 
     @staticmethod
-    def write_printlist_to_file(printlist):
-        filename = common_utils.get_save_file_name_no_extension(parent=None, caption=ru(QCoreApplication.translate('ExportToFieldLogger', 'Choose a file name')), directory='', filter='csv (*.csv)')
-        if os.path.splitext(filename)[1] != '.csv':
-            filename += '.csv'
+    def write_to_file(out_string, filter='csv (*.csv)'):
+        stop_waiting_cursor()
+        filename = common_utils.get_save_file_name_no_extension(parent=None, caption=ru(QCoreApplication.translate('ExportToFieldLogger', 'Choose a file name')), directory='', filter=filter)
+        start_waiting_cursor()
+        if os.path.splitext(filename)[1] != f".{filter.split()[0]}":
+            filename += f".{filter.split()[0]}"
         try:
-            with open(filename, 'w') as f:
-                f.write('\n'.join(printlist))
+            with open(filename, 'w', encoding='utf8') as f:
+                f.write(out_string)
         except IOError as e:
             common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', "Writing of file failed!: %s ")) % str(e))
         except UnicodeDecodeError as e:
-            common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', "Error writing %s")) % str(printlist))
+            common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', "Error writing %s")) % str(out_string))
+
+    @staticmethod
+    def create_json_export(parameter_groups, latlons):
+        sublocations_locations, locations_sublocations, locations_lat_lon, sublocations_parameters, parameters_inputtypes_hints = ExportToFieldLogger.organize_for_export(parameter_groups, latlons)
+        json_output = {}
+        for parameter, _parameters_inputtypes_hints in parameters_inputtypes_hints.items():
+            print(f"_parameters_inputtypes_hints {_parameters_inputtypes_hints}")
+            json_output.setdefault('inputfields', {}).update(json.loads(_parameters_inputtypes_hints))
+
+        # TODO: Make sure this works.
+        for location, sublocations in sorted(locations_sublocations.items()):
+            loc_dict = {}
+            lat, lon = locations_lat_lon[location]
+            loc_dict['lat'] = float(lat)
+            loc_dict['lon'] = float(lon)
+            #loc_dict['lat'], loc_dict['lon'] = locations_lat_lon[location]
+            for sublocation in sorted(sublocations):
+                inputfields = [parameter_name for d in sublocations_parameters[sublocation]
+                               for parameter_name in ast.literal_eval(d).keys()]
+                loc_dict.setdefault('sublocations', {})[sublocation] = {'inputfields': inputfields}
+            json_output.setdefault('locations', {})[location] = loc_dict
+        print(f"Got output {json_output}")
+        return json_output
+
 
     def closeEvent(self, event):
         self.obslayer.disconnect_event()
@@ -413,14 +479,22 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
                                               [self.parameter_browser]),
                                           self.stored_settingskey_parameterbrowser)
 
+        common_utils.save_stored_settings(self.ms,
+                                          'FieldForm' if self.export_as_fieldform.isChecked() else 'FieldLogger',
+                                          self.stored_settingskey_format)
+
+
     def clear_settings(self):
         common_utils.save_stored_settings(self.ms, [], self.stored_settingskey),
+        common_utils.save_stored_settings(self.ms, defs.export_fieldlogger_defaults()[self.stored_settingskey_format], self.stored_settingskey_format)
         common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger',
             'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))
 
     def _add_parameter_group(self):
         self.parameter_groups.append(ParameterGroup(self.obslayer))
         self.add_parameter_group_to_gui(self.widgets_layouts,   self.parameter_groups[-1])
+
+
 
 
 class ParameterGroup(object):
@@ -430,11 +504,11 @@ class ParameterGroup(object):
         self.obslayer = obslayer
         #Widget list:
 
-        self._location_suffix = qgis.PyQt.QtWidgets.QLineEdit()
-        self._sublocation_suffix = qgis.PyQt.QtWidgets.QLineEdit()
+        self._location_suffix = QtWidgets.QLineEdit()
+        self._sublocation_suffix = QtWidgets.QLineEdit()
         self._input_field_group_list = ExtendedQPlainTextEdit(keep_sorted=False)
         self._obsid_list = ExtendedQPlainTextEdit(keep_sorted=True)
-        self.paste_from_selection_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ParameterGroup','Paste selected ids')))
+        self.paste_from_selection_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ParameterGroup','Paste selected ids')))
         #------------------------------------------------------------------------
         self._location_suffix.setToolTip(ru(QCoreApplication.translate('ParameterGroup',
                                          """(optional)\n"""
@@ -485,7 +559,6 @@ class ParameterGroup(object):
         settings = (('input_field_group_list', self.input_field_group_list),
                    ('location_suffix', self.location_suffix),
                    ('sublocation_suffix', self.sublocation_suffix))
-
         settings = tuple((k, v) for k, v in settings if v)
         return ru(settings, keep_containers=True)
 
@@ -529,15 +602,16 @@ class ParameterGroup(object):
             self._input_field_group_list.paste_data(paste_list=value.split('\n'))
 
 
-class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
-    def __init__(self, tables_columns, parent=None):
-        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
+class ParameterBrowser(QtWidgets.QDialog, parameter_browser_dialog):
+    def __init__(self, tables_columns, parent=None, use_fieldlogger=True):
+        QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         #Widgets:
         # ------------------------------------------------------------------------------------
         #Other widgets in the ui-file
         self._input_field_list = ExtendedQPlainTextEdit(keep_sorted=True)
+        self._input_field_list.sizePolicy().setHorizontalPolicy(QtWidgets.QSizePolicy.Expanding)
 
         # ------------------------------------------------------------------------------------
         self._parameter_table.addItem('')
@@ -559,7 +633,7 @@ class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
                      lambda: self._combined_name.setText('.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
 
         self._add_button.clicked.connect(
-                lambda : self.combine_name(self.combined_name, self.input_type, self.hint))
+                lambda : self.combine_name(self.combined_name, self.input_type, self.hint, self.options, self.default_value))
 
         # ------------------------------------------------------------------------------------
         par_unit_tooltip = ru(QCoreApplication.translate('ParameterBrowser' ,
@@ -572,20 +646,25 @@ class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
                                        'Either supply a chosen name directly or use parameter\n'
                                        'and unit boxes to create a name.\n'
                                        'ex: parameter.unit')))
-        self._input_type.addItem('')
-        self._input_type.addItems(['numberDecimal|numberSigned', 'text'])
-        self._input_type.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger',
-                                   '(mandatory)\n'
-                                    'Decides the keyboard layout in the Fieldlogger app.\n'
-                                    'numberDecimal|numberSigned: Decimals with allowed "-" sign\n'
-                                    'text: Text')))
-        self._hint.setToolTip(ru(QCoreApplication.translate('ParameterBrowser', '(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')))
+
+        self._hint.setToolTip(ru(QCoreApplication.translate('ParameterBrowser', '(optional)\nHint given to the Fieldlogger/FieldForm user for the parameter. Ex: "depth to water"')))
         #------------------------------------------------------------------------------------
         self._input_field_list.setToolTip(ru(QCoreApplication.translate('ParameterBrowser', 'Copy input fields to the "Input Fields" boxes using ctrl+c, ctrl+v.')))
-        self._input_field_list.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Expanding)
+        self._input_field_list.sizePolicy().setHorizontalPolicy(QtWidgets.QSizePolicy.Expanding)
         self._input_field_list.setMinimumWidth(200)
         #------------------------------------------------------------------------------------
         self.horizontalLayout.addWidget(self._input_field_list)
+
+        self._options.setToolTip(ru(QCoreApplication.translate('ParameterBrowser', '(optional)\nThe options between which the user can choose when type=choice or type=multichoice.\n'
+                                                                                   "Specify as a comma separated list, ex: 'OptionB', 'OptionB', 'OptionC'")))
+        self._default_value.setToolTip(ru(QCoreApplication.translate('ParameterBrowser', "(optional)\nThe default value for an inputfield, only supported for type=choice")))
+
+
+        self._use_fieldlogger = use_fieldlogger
+        if use_fieldlogger:
+            self.use_fieldlogger()
+        else:
+            self.use_fieldform()
 
         #self.horizontalLayoutWidget.setTabOrder(self._add_button, self._input_field_list)
         #self.horizontalLayoutWidget.setTabOrder(self._input_field_list, self._parameter_table)
@@ -622,25 +701,35 @@ class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
         settings = (('input_field_list', self.input_field_list),)
         return ru(settings, keep_containers=True)
 
-    def combine_name(self, combined_name, input_type, hint):
+    def combine_name(self, combined_name, input_type, hint, options=None, default=None):
+        if self._use_fieldlogger:
+            unique_names = [input_field.split(';')[0] for input_field in self.input_field_list]
+            if not combined_name:
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Error, input name not set')))
+                return
+            elif not input_type:
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Error, input type not set')))
+                return
+            elif combined_name in unique_names:
+                common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Error, input name already existing. No duplicates allowed')))
+                return
 
-        unique_names = [input_field.split(';')[0] for input_field in self.input_field_list]
+            if not hint:
+                common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Warning, hint not given and will be set to a space (" ") as it must exist')))
+                hint = hint + ' '
 
-        if not combined_name:
-            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Error, input name not set')))
-            return
-        elif not input_type:
-            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Error, input type not set')))
-            return
-        elif combined_name in unique_names:
-            common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Error, input name already existing. No duplicates allowed')))
-            return
+            self._input_field_list.paste_data([';'.join([combined_name, input_type, hint])])
 
-        if not hint:
-            common_utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('ParameterBrowser', 'Warning, hint not given and will be set to a space (" ") as it must exist')))
-            hint = hint + ' '
-
-        self._input_field_list.paste_data([';'.join([combined_name, input_type, hint])])
+        else:
+            # FieldForm format:
+            input_field = {combined_name: {'type': input_type}}
+            if hint:
+                input_field['hint'] = hint
+            if options and input_type in ('choice', 'multichoice'):
+                input_field['options'] = ast.literal_eval(f"({options})")
+            if default and type == 'choice':
+                input_field['default_value'] = default
+            self._input_field_list.paste_data([json.dumps(input_field, ensure_ascii=False)])
 
     @property
     def parameter_table(self):
@@ -718,6 +807,23 @@ class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
     def input_field_list(self):
         return ru(self._input_field_list.get_all_data(), keep_containers=True)
 
+    @property
+    def options(self):
+        return ru(self._options.text())
+
+    @options.setter
+    def options(self, value):
+        self._options.setText(ru(value))
+
+    @property
+    def default_value(self):
+        return ru(self._default_value.text())
+
+    @default_value.setter
+    def default_value(self, value):
+        self._default_value.setText(ru(value))
+
+
     @input_field_list.setter
     def input_field_list(self, value):
         value = ru(value, keep_containers=True)
@@ -725,6 +831,28 @@ class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
             self._input_field_list.paste_data(paste_list=value)
         else:
             self._input_field_list.paste_data(paste_list=value.split('\n'))
+
+    def use_fieldlogger(self):
+        self._input_type.clear()
+        self._input_type.addItem('')
+        self._input_type.addItems(['numberDecimal|numberSigned', 'text'])
+        self._input_type.setToolTip(ru(QCoreApplication.translate('ExportToFieldLogger',
+                                                                  '(mandatory)\n'
+                                                                  'Decides the keyboard layout in the Fieldlogger app.\n'
+                                                                  'numberDecimal|numberSigned: Decimals with allowed "-" sign for FieldLogger app\n'
+                                                                  'text: Text\n')))
+        self._options.setEnabled(False)
+        self._default_value.setEnabled(False)
+        self._use_fieldlogger = True
+
+    def use_fieldform(self):
+        self._input_type.clear()
+        self._input_type.addItem('')
+        self._input_type.addItems(['number', 'text', 'choice', 'multichoice', 'photo', 'check', 'date', 'time', 'datetime'])
+        self._input_type.setToolTip('')
+        self._options.setEnabled(True)
+        self._default_value.setEnabled(True)
+        self._use_fieldlogger = False
 
 
 class MessageBar(qgis.gui.QgsMessageBar):
@@ -756,8 +884,8 @@ class ObsLayer(gui_utils.VRowEntry):
         self.obs_from_vlayer = obs_from_vlayer
         self.iface = iface
         self._vectorlayers = None
-        self.vectorlayer_list = qgis.PyQt.QtWidgets.QComboBox()
-        self.column_list = qgis.PyQt.QtWidgets.QComboBox()
+        self.vectorlayer_list = QtWidgets.QComboBox()
+        self.column_list = QtWidgets.QComboBox()
         QgsProject.instance().layersAdded.connect(self.update_vectorlayers)
         self.vectorlayer_list.currentIndexChanged.connect(lambda x: self.update_column_list())
         self.update_vectorlayers(select_layer='obs_points')
@@ -769,10 +897,10 @@ class ObsLayer(gui_utils.VRowEntry):
             combobox.setEnabled(False)
 
         #self.layout.addWidget(
-        #    qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Layer')))
+        #    QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Layer')))
         self.layout.addWidget(self.vectorlayer_list)
         self.layout.addWidget(
-            qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'id column:')))
+            QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'id column:')))
         self.layout.addWidget(self.column_list)
 
     def get_all_vectorlayers(self):

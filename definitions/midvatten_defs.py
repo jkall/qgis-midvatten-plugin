@@ -126,6 +126,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'fieldlogger_export_pgroups': '',
             'fieldlogger_export_pbrowser': '',
             'fieldlogger_export': '',
+            'fieldlogger_export_format': 'FieldLogger'
             }
     return dictionary
 
@@ -644,102 +645,194 @@ def get_last_used_quality_instruments():
 specific_table_info = {'obs_lines': '''The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must have a SRID that's supported by database.''',
                        'obs_points': '''The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must have a SRID that's supported by database.'''}
 
-def export_fieldlogger_defaults():
+def export_fieldlogger_defaults(format='FieldLogger'):
     current_locale = getcurrentlocale(print_error_message_in_bar=False)[0]
 
-    if current_locale != 'sv_SE':
-        input_field_browser =  [
-            [0, (("input_field_list",[
-            "Accvol.m3;numberDecimal|numberSigned; ",
-            "DO.mg/L;numberDecimal|numberSigned; ",
-            "Momflow.l/s;numberDecimal|numberSigned; ",
-            "Momflow.m3/h;numberDecimal|numberSigned; ",
-            "comment;text;Obsid related comment",
-            "cond.µS/cm;numberDecimal|numberSigned; ",
-            "f.comment;text;Measurement related comment",
-            "l.comment;text;Measurement related comment",
-            "meas.m;numberDecimal|numberSigned;depth to water",
-            "pH;numberDecimal|numberSigned; ",
-            "q.comment;text;Measurement related comment",
-            "redox.mV;numberDecimal|numberSigned; ",
-            "s.comment;text;Measurement related comment",
-            "temp.°C;numberDecimal|numberSigned; ",
-            "turb.FNU;numberDecimal|numberSigned; "
-            ]),)]]
-        input_fields_groups = [
-            [0, (("input_field_group_list",
-                  ["meas.m;numberDecimal|numberSigned;depth to water",
-                   "l.comment;text;Measurement related comment"]),
-                ("sublocation_suffix", "level"))],
-            [1, (("input_field_group_list",
-                  ["comment;text;Obsid related comment"]),
-                 ("sublocation_suffix", "comment"))],
-            [2, (("input_field_group_list",
-                  ["cond.µS/cm;numberDecimal|numberSigned; ",
-                   "DO.mg/L;numberDecimal|numberSigned; ",
-                   "pH;numberDecimal|numberSigned; ",
-                   "redox.mV;numberDecimal|numberSigned; ",
-                   "temp.°C;numberDecimal|numberSigned; ",
-                   "turb.FNU;numberDecimal|numberSigned; ",
-                   "q.comment;text;Measurement related comment"]),
-                 ("sublocation_suffix", "quality"))],
-            [3, (("input_field_group_list",
-                  ["temp.°C;numberDecimal|numberSigned; ",
-                   "turb.FNU;numberDecimal|numberSigned; ",
-                   "s.comment;text;Measurement related comment"]),
-                 ("sublocation_suffix", "sample"))],
-            [4, (("input_field_group_list",
-                  ["Accvol.m3;numberDecimal|numberSigned; ",
-                   "Momflow.l/s;numberDecimal|numberSigned; ",
-                   "Momflow.m3/h;numberDecimal|numberSigned; ",
-                   "f.comment;text;Measurement related comment"]),
-                 ("sublocation_suffix", "flow"))]]
-    else:
-        input_field_browser = [[0, (("input_field_list", [
-            "Accvol.m3;numberDecimal|numberSigned; ",
-            "DO.mg/L;numberDecimal|numberSigned; ",
-            "Momflow.l/s;numberDecimal|numberSigned; ",
-            "Momflow.m3/h;numberDecimal|numberSigned; ",
-            "f.kommentar;text;mätrelaterad kommentar",
-            "k.kommentar;text;mätrelaterad kommentar",
-            "kommentar;text;obsidrelaterad kommentar",
-            "kond.µS/cm;numberDecimal|numberSigned; ",
-            "meas.m;numberDecimal|numberSigned;djup till vatten",
-            "n.kommentar;text;mätrelaterad kommentar",
-            "nedmätning.m;numberDecimal|numberSigned;djup till vatten",
-            "p.kommentar;text;mätrelaterad kommentar", "pH;numberDecimal|numberSigned; ",
-            "redox.mV;numberDecimal|numberSigned; ", "temp.°C;numberDecimal|numberSigned; ",
-            "turb.FNU;numberDecimal|numberSigned; "
-            ], ), )]]
+    if format.lower() == 'fieldlogger':
+        if current_locale != 'sv_SE':
+            input_field_browser =  [
+                [0, (("input_field_list",[
+                "Accvol.m3;numberDecimal|numberSigned; ",
+                "DO.mg/l;numberDecimal|numberSigned; ",
+                "Momflow.l/s;numberDecimal|numberSigned; ",
+                "Momflow.m3/h;numberDecimal|numberSigned; ",
+                "comment;text;Obsid related comment",
+                "cond.µS/cm;numberDecimal|numberSigned; ",
+                "f.comment;text;Measurement related comment",
+                "l.comment;text;Measurement related comment",
+                "meas.m;numberDecimal|numberSigned;depth to water",
+                "pH;numberDecimal|numberSigned; ",
+                "q.comment;text;Measurement related comment",
+                "redox.mV;numberDecimal|numberSigned; ",
+                "s.comment;text;Measurement related comment",
+                "temp.°C;numberDecimal|numberSigned; ",
+                "turb.FNU;numberDecimal|numberSigned; "
+                ]),)]]
+            input_fields_groups = [
+                [0, (("input_field_group_list",
+                      ["meas.m;numberDecimal|numberSigned;depth to water",
+                       "l.comment;text;Measurement related comment"]),
+                    ("sublocation_suffix", "level"))],
+                [1, (("input_field_group_list",
+                      ["comment;text;Obsid related comment"]),
+                     ("sublocation_suffix", "comment"))],
+                [2, (("input_field_group_list",
+                      ["cond.µS/cm;numberDecimal|numberSigned; ",
+                       "DO.mg/l;numberDecimal|numberSigned; ",
+                       "pH;numberDecimal|numberSigned; ",
+                       "redox.mV;numberDecimal|numberSigned; ",
+                       "temp.°C;numberDecimal|numberSigned; ",
+                       "turb.FNU;numberDecimal|numberSigned; ",
+                       "q.comment;text;Measurement related comment"]),
+                     ("sublocation_suffix", "quality"))],
+                [3, (("input_field_group_list",
+                      ["temp.°C;numberDecimal|numberSigned; ",
+                       "turb.FNU;numberDecimal|numberSigned; ",
+                       "s.comment;text;Measurement related comment"]),
+                     ("sublocation_suffix", "sample"))],
+                [4, (("input_field_group_list",
+                      ["Accvol.m3;numberDecimal|numberSigned; ",
+                       "Momflow.l/s;numberDecimal|numberSigned; ",
+                       "Momflow.m3/h;numberDecimal|numberSigned; ",
+                       "f.comment;text;Measurement related comment"]),
+                     ("sublocation_suffix", "flow"))]]
+        else:
+            input_field_browser = [[0, (("input_field_list", [
+                "Accvol.m3;numberDecimal|numberSigned; ",
+                "DO.mg/l;numberDecimal|numberSigned; ",
+                "Momflow.l/s;numberDecimal|numberSigned; ",
+                "Momflow.m3/h;numberDecimal|numberSigned; ",
+                "f.kommentar;text;mätrelaterad kommentar",
+                "k.kommentar;text;mätrelaterad kommentar",
+                "kommentar;text;obsidrelaterad kommentar",
+                "kond.µS/cm;numberDecimal|numberSigned; ",
+                "meas.m;numberDecimal|numberSigned;djup till vatten",
+                "n.kommentar;text;mätrelaterad kommentar",
+                "nedmätning.m;numberDecimal|numberSigned;djup till vatten",
+                "p.kommentar;text;mätrelaterad kommentar",
+                "pH;numberDecimal|numberSigned; ",
+                "redox.mV;numberDecimal|numberSigned; ",
+                "temp.°C;numberDecimal|numberSigned; ",
+                "turb.FNU;numberDecimal|numberSigned; "
+                ], ), )]]
 
-        input_fields_groups = [
-            [0, (("input_field_group_list",
-               ["nedmätning.m;numberDecimal|numberSigned;djup till vatten",
-                "n.kommentar;text;mätrelaterad kommentar"]),
-              ("sublocation_suffix", "nivå"))],
-            [1, (("input_field_group_list",
-                  ["kommentar;text;obsidrelaterad kommentar"]),
-                 ("sublocation_suffix", "kommentar"))],
-            [2, (("input_field_group_list",
-                  ["kond.µS/cm;numberDecimal|numberSigned; ",
-                   "DO.mg/L;numberDecimal|numberSigned; ",
-                   "pH;numberDecimal|numberSigned; ",
-                   "redox.mV;numberDecimal|numberSigned; ",
-                   "temp.°C;numberDecimal|numberSigned; ",
-                   "turb.FNU;numberDecimal|numberSigned; ",
-                   "k.kommentar;text;mätrelaterad kommentar"]),
-                 ("sublocation_suffix", "kvalitet"))],
-            [3, (("input_field_group_list",
-                  ["temp.°C;numberDecimal|numberSigned; ",
-                   "turb.FNU;numberDecimal|numberSigned; ",
-                   "p.kommentar;text;mätrelaterad kommentar"]),
-                 ("sublocation_suffix", "prov"))],
-            [4, (("input_field_group_list",
-                  ["Accvol.m3;numberDecimal|numberSigned; ",
-                   "Momflow.l/s;numberDecimal|numberSigned; ",
-                   "Momflow.m3/h;numberDecimal|numberSigned; ",
-                   "f.kommentar;text;mätrelaterad kommentar"],),
-                 ("sublocation_suffix", "flöde"))]]
+            input_fields_groups = [
+                [0, (("input_field_group_list",
+                   ["nedmätning.m;numberDecimal|numberSigned;djup till vatten",
+                    "n.kommentar;text;mätrelaterad kommentar"]),
+                  ("sublocation_suffix", "nivå"))],
+                [1, (("input_field_group_list",
+                      ["kommentar;text;obsidrelaterad kommentar"]),
+                     ("sublocation_suffix", "kommentar"))],
+                [2, (("input_field_group_list",
+                      ["kond.µS/cm;numberDecimal|numberSigned; ",
+                       "DO.mg/l;numberDecimal|numberSigned; ",
+                       "pH;numberDecimal|numberSigned; ",
+                       "redox.mV;numberDecimal|numberSigned; ",
+                       "temp.°C;numberDecimal|numberSigned; ",
+                       "turb.FNU;numberDecimal|numberSigned; ",
+                       "k.kommentar;text;mätrelaterad kommentar"]),
+                     ("sublocation_suffix", "kvalitet"))],
+                [3, (("input_field_group_list",
+                      ["temp.°C;numberDecimal|numberSigned; ",
+                       "turb.FNU;numberDecimal|numberSigned; ",
+                       "p.kommentar;text;mätrelaterad kommentar"]),
+                     ("sublocation_suffix", "prov"))],
+                [4, (("input_field_group_list",
+                      ["Accvol.m3;numberDecimal|numberSigned; ",
+                       "Momflow.l/s;numberDecimal|numberSigned; ",
+                       "Momflow.m3/h;numberDecimal|numberSigned; ",
+                       "f.kommentar;text;mätrelaterad kommentar"],),
+                     ("sublocation_suffix", "flöde"))]]
+    elif format.lower() == 'fieldform':
+        if current_locale != 'sv_SE':
+            input_field_browser = [
+                [0, (("input_field_list", [
+                    '{"meas.m": {"type": "number", "hint": "djup till vatten"}}',
+                    '{"comment": {"type": "text"}}',
+                    '{"cond.µS/cm": {"type": "number"}}',
+                    '{"DO.mg/l": {"type": "number"}}',
+                    '{"pH": {"type": "number"}}',
+                    '{"redox.mV": {"type": "number"}}',
+                    '{"temp.°C": {"type": "number"}}',
+                    '{"turb.FNU": {"type": "number"}}',
+                    '{"Accvol.m3": {"type": "number"}}',
+                    '{"Momflow.l/s": {"type": "number"}}',
+                    '{"Momflow.m3/h": {"type": "number"}}'
+                ]),)]]
+            input_fields_groups = [
+                [0, (("input_field_group_list",
+                      ['{"meas.m": {"type": "number", "hint": "djup till vatten"}}',
+                       '{"comment": {"type": "text"}}']),
+                     ("sublocation_suffix", "level"))],
+                [1, (("input_field_group_list",
+                      ['{"comment": {"type": "text"}}']),
+                     ("sublocation_suffix", "comment"))],
+                [2, (("input_field_group_list",
+                      ['{"cond.µS/cm": {"type": "number"}}',
+                       '{"DO.mg/l": {"type": "number"}}',
+                       '{"pH": {"type": "number"}}',
+                       '{"redox.mV": {"type": "number"}}',
+                       '{"temp.°C": {"type": "number"}}',
+                       '{"turb.FNU": {"type": "number"}}',
+                       '{"comment": {"type": "text"}}']),
+                     ("sublocation_suffix", "quality"))],
+                [3, (("input_field_group_list",
+                      ['{"temp.°C": {"type": "number"}}',
+                       '{"turb.FNU": {"type": "number"}}',
+                       '{"comment": {"type": "text"}}']),
+                     ("sublocation_suffix", "sample"))],
+                [4, (("input_field_group_list",
+                      ['{"Accvol.m3": {"type": "number"}}',
+                        '{"Momflow.l/s": {"type": "number"}}',
+                        '{"Momflow.m3/h": {"type": "number"}}',
+                        '{"comment": {"type": "text"}}']),
+                     ("sublocation_suffix", "flow"))]]
+        else:
+            input_field_browser = [[0, (("input_field_list", [
+                '{"nedmätning.m": {"type": "number", "hint": "djup till vatten"}}',
+                '{"kommentar": {"type": "text"}}',
+                '{"kond.µS/cm": {"type": "number"}}',
+                '{"DO.mg/l": {"type": "number"}}',
+                '{"pH": {"type": "number"}}',
+                '{"redox.mV": {"type": "number"}}',
+                '{"temp.°C": {"type": "number"}}',
+                '{"turb.FNU": {"type": "number"}}',
+                '{"Accvol.m3": {"type": "number"}}',
+                '{"Momflow.l/s": {"type": "number"}}',
+                '{"Momflow.m3/h": {"type": "number"}}'
+            ],),)]]
+
+            input_fields_groups = [
+                [0, (("input_field_group_list",
+                      ['{"nedmätning.m": {"type": "number", "hint": "djup till vatten"}}',
+                     '{"kommentar": {"type": "text"}}']),
+                     ("sublocation_suffix", "nivå"))],
+                [1, (("input_field_group_list",
+                      ['{"kommentar": {"type": "text"}}']),
+                     ("sublocation_suffix", "kommentar"))],
+                [2, (("input_field_group_list",
+                      ['{"kond.µS/cm": {"type": "number"}}',
+                        '{"DO.mg/l": {"type": "number"}}',
+                        '{"pH": {"type": "number"}}',
+                        '{"redox.mV": {"type": "number"}}',
+                        '{"temp.°C": {"type": "number"}}',
+                        '{"turb.FNU": {"type": "number"}}',
+                       '{"kommentar": {"type": "text"}}']),
+                     ("sublocation_suffix", "kvalitet"))],
+                [3, (("input_field_group_list",
+                      ['{"temp.°C": {"type": "number"}}',
+                        '{"turb.FNU": {"type": "number"}}',
+                       '{"kommentar": {"type": "text"}}']),
+                     ("sublocation_suffix", "prov"))],
+                [4, (("input_field_group_list",
+                      ['{"Accvol.m3": {"type": "number"}}',
+                       '{"Momflow.l/s": {"type": "number"}}',
+                       '{"Momflow.m3/h": {"type": "number"}}',
+                       '{"kommentar": {"type": "text"}}'],),
+                     ("sublocation_suffix", "flöde"))]]
+    else:
+        raise Exception("Programming Error!: format must be FieldLogger or FieldForm")
 
     input_field_browser = anything_to_string_representation(input_field_browser)
     input_fields_groups = anything_to_string_representation(input_fields_groups)

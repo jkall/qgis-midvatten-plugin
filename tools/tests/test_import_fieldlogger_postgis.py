@@ -40,7 +40,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -82,7 +82,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -120,7 +120,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -131,7 +131,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -159,7 +159,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -197,7 +197,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -208,7 +208,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, None, None, 555.0, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, None, None, 555.0, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -236,7 +236,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -274,7 +274,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -285,7 +285,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -314,7 +314,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -353,7 +353,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -364,7 +364,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv), (Rb1608, 2016-03-30 15:34:14, None, None, 777.0, None)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv), (Rb1608, 2016-03-30 15:34:14, None, None, 777.0, None)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -392,7 +392,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -435,7 +435,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -446,7 +446,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)])}'
+            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -474,7 +474,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -519,7 +519,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -539,7 +539,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)])}'
+            reference_string = '{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -575,7 +575,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -617,7 +617,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -646,7 +646,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
@@ -678,7 +678,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             ]
@@ -722,7 +722,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -870,7 +870,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['depth', ''], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['depth', ''], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['depth', ''], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -905,7 +905,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
             "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/l\n",
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
             "Rb1512.quality;30-03-2016;15:30:40;1.23;q.depth.m\n"
@@ -945,7 +945,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['instrument', 'testid']]],
                                    ['q.konduktivitet.µS/cm', [['import_method', 'w_qual_field'], ['parameter', 'konduktivitet'], ['unit', 'µS/cm'], ['instrument', 'testid']]],
-                                   ['q.syre.mg/L', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/L'], ['instrument', 'testid']]],
+                                   ['q.syre.mg/l', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', 'mg/l'], ['instrument', 'testid']]],
                                    ['q.syre.%', [['import_method', 'w_qual_field'], ['parameter', 'syre'], ['unit', '%'], ['instrument', 'testid']]],
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
@@ -956,7 +956,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_flow', 'comments')])
             t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time, parameter' % k)) for k in ('w_qual_field',)]))
             test_string = create_test_string(t)
-            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, 1.23, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
+            reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/l, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, 1.23, None), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None)])}'
             print(test_string)
             print("REF")
             print(reference_string)
