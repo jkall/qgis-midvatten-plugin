@@ -89,7 +89,7 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
         self.export_as_fieldlogger.setChecked(True)
         self.export_as_fieldform.clicked.connect(lambda x: self.parameter_browser.use_fieldform())
         self.export_as_fieldlogger.clicked.connect(lambda x: self.parameter_browser.use_fieldlogger())
-        if common_utils.get_stored_settings(self.ms, self.stored_settingskey_format, 'FieldLogger').lower() == 'fieldform':
+        if common_utils.get_stored_settings(self.ms, self.stored_settingskey_format, 'FieldLogger', skip_ast=True).lower() == 'fieldform':
             self.export_as_fieldform.setChecked(True)
 
         self.obs_from_obs_points = QtWidgets.QRadioButton(
@@ -337,7 +337,7 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
         start_waiting_cursor()
         common_utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
         if self.export_as_fieldform.isChecked():
-            self.write_to_file(json.dumps(self.create_json_export(self.parameter_groups, self.get_latlons()), ensure_ascii=False), filter='json (*.json)')
+            self.write_to_file(json.dumps(self.create_json_export(self.parameter_groups, self.get_latlons()), ensure_ascii=False, indent=4), filter='json (*.json)')
         else:
             self.write_to_file('\n'.join(self.create_export_printlist(self.parameter_groups, self.get_latlons())))
         stop_waiting_cursor()
@@ -481,12 +481,12 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
 
         common_utils.save_stored_settings(self.ms,
                                           'FieldForm' if self.export_as_fieldform.isChecked() else 'FieldLogger',
-                                          self.stored_settingskey_format)
+                                          self.stored_settingskey_format, skip_ast=True)
 
 
     def clear_settings(self):
         common_utils.save_stored_settings(self.ms, [], self.stored_settingskey),
-        common_utils.save_stored_settings(self.ms, defs.export_fieldlogger_defaults()[self.stored_settingskey_format], self.stored_settingskey_format)
+        common_utils.save_stored_settings(self.ms, defs.export_fieldlogger_defaults()[self.stored_settingskey_format], self.stored_settingskey_format, skip_ast=True)
         common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger',
             'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))
 

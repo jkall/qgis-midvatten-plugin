@@ -38,7 +38,7 @@ from midvatten.tools.tests.utils_for_tests import create_test_string, create_vec
 from midvatten.tools.export_fieldlogger import ExportToFieldLogger
 from midvatten.tools import export_fieldlogger
 
-@attr(status='only')
+@attr(status='on')
 class TestExportFieldloggerNoDb(MidvattenTestBase):
     def setUp(self):
         super().__init__()
@@ -664,8 +664,54 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
 
 
         # 8 decimals
-        ref = """{"inputfields": {"par1": {"type": "type1", "hint": "hint1"}, "par2": {"type": "type2", "hint": "hint2"}}, "locations": {"obsid1.proj": {"lat": 0.9019366063889331, "lon": 19.489297537299507, "sublocations": {"obsid1.proj.group": {"inputfields": ["par1"]}}}, "obsid2.proj": {"lat": 1.7601631374427096, "lon": 28.3630107673365, "sublocations": {"obsid2.proj.group": {"inputfields": ["par1"]}}}, "obsid3.proj2": {"lat": 2.516656754597623, "lon": 36.93072164080036, "sublocations": {"obsid3.proj2.group": {"inputfields": ["par2"]}}}}}"""
-
+        #ref = """{"inputfields": {"par1": {"type": "type1", "hint": "hint1"}, "par2": {"type": "type2", "hint": "hint2"}}, "locations": {"obsid1.proj": {"lat": 0.9019366063889331, "lon": 19.489297537299507, "sublocations": {"obsid1.proj.group": {"inputfields": ["par1"]}}}, "obsid2.proj": {"lat": 1.7601631374427096, "lon": 28.3630107673365, "sublocations": {"obsid2.proj.group": {"inputfields": ["par1"]}}}, "obsid3.proj2": {"lat": 2.516656754597623, "lon": 36.93072164080036, "sublocations": {"obsid3.proj2.group": {"inputfields": ["par2"]}}}}}"""
+        ref = """{
+    "inputfields": {
+        "par1": {
+            "type": "type1",
+            "hint": "hint1"
+        },
+        "par2": {
+            "type": "type2",
+            "hint": "hint2"
+        }
+    },
+    "locations": {
+        "obsid1.proj": {
+            "lat": 0.9019366063889331,
+            "lon": 19.489297537299507,
+            "sublocations": {
+                "obsid1.proj.group": {
+                    "inputfields": [
+                        "par1"
+                    ]
+                }
+            }
+        },
+        "obsid2.proj": {
+            "lat": 1.7601631374427096,
+            "lon": 28.3630107673365,
+            "sublocations": {
+                "obsid2.proj.group": {
+                    "inputfields": [
+                        "par1"
+                    ]
+                }
+            }
+        },
+        "obsid3.proj2": {
+            "lat": 2.516656754597623,
+            "lon": 36.93072164080036,
+            "sublocations": {
+                "obsid3.proj2.group": {
+                    "inputfields": [
+                        "par2"
+                    ]
+                }
+            }
+        }
+    }
+}"""
         print("Ref")
         print(ref)
         print(f"Test")

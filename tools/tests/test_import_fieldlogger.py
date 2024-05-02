@@ -295,6 +295,41 @@ class TestFieldLoggerImporterNoDb(object):
         print(str(test_string))
         assert test_string == reference_string
 
+    def test_load_file_fieldform(self):
+        f = [
+            "LOCATION;DATE;TIME;VALUE;TYPE\n",
+            "Rb1202.sample;2016-03-30;15:31:30;hej2;s.comment\n",
+            "Rb1608.level;2016-03-30;15:34:40;testc;l.comment\n",
+            "Rb1615.flow;2016-03-30;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;2016-03-30;15:30:09;gick bra;f.comment\n",
+            "Rb1608.level;2016-03-30;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;2016-03-30;15:34:13;555;l.meas.m\n",
+            "Rb1512.sample;2016-03-30;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1505.quality;2016-03-30;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;2016-03-30;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1512.quality;2016-03-30;15:30:39;test;q.comment\n",
+            "Rb1512.quality;2016-03-30;15:30:39;67;q.syre.mg/l\n",
+            "Rb1512.quality;2016-03-30;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.quality;2016-03-30;15:30:40;58;q.syre.%\n",
+            ]
+
+        with common_utils.tempinput(''.join(f)) as filename:
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('midvatten.tools.import_fieldlogger.midvatten_utils.QtWidgets.QInputDialog.getText')
+            @mock.patch('midvatten.tools.import_fieldlogger.common_utils.MessagebarAndLog')
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [[filename]]
+
+                test_string = create_test_string(sorted(FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows), key=itemgetter('date_time', 'parametername', 'sublocation')))
+
+                return test_string
+
+            test_string = _test(self, filename)
+            reference = utils_for_tests.create_test_string(sorted([{'date_time': '2016-03-30 15:29:26', 'parametername': 'q.comment', 'sublocation': 'Rb1505.quality', 'value': 'hej'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.syre.mg/l', 'sublocation': 'Rb1512.quality', 'value': '67'}, {'date_time': '2016-03-30 15:31:30', 'parametername': 's.turbiditet.FNU', 'sublocation': 'Rb1512.sample', 'value': '899'}, {'date_time': '2016-03-30 15:29:26', 'parametername': 'q.konduktivitet.µS/cm', 'sublocation': 'Rb1505.quality', 'value': '863'}, {'date_time': '2016-03-30 15:30:09', 'parametername': 'f.comment', 'sublocation': 'Rb1615.flow', 'value': 'gick bra'}, {'date_time': '2016-03-30 15:30:40', 'parametername': 'q.syre.%', 'sublocation': 'Rb1512.quality', 'value': '58'}, {'date_time': '2016-03-30 15:34:13', 'parametername': 'l.meas.m', 'sublocation': 'Rb1608.level', 'value': '555'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.comment', 'sublocation': 'Rb1512.quality', 'value': 'test'}, {'date_time': '2016-03-30 15:31:30', 'parametername': 's.comment', 'sublocation': 'Rb1202.sample', 'value': 'hej2'}, {'date_time': '2016-03-30 15:34:40', 'parametername': 'l.comment', 'sublocation': 'Rb1608.level', 'value': 'testc'}, {'date_time': '2016-03-30 15:30:09', 'parametername': 'f.Accvol.m3', 'sublocation': 'Rb1615.flow', 'value': '357'}, {'date_time': '2016-03-30 15:34:13', 'parametername': 'l.comment', 'sublocation': 'Rb1608.level', 'value': 'ergv'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.temperatur.grC', 'sublocation': 'Rb1512.quality', 'value': '8'}], key=itemgetter('date_time', 'parametername', 'sublocation')))
+            assert test_string == reference
+
+
 @attr(status='on')
 class TestCommentsImportFields(object):
     def setUp(self):

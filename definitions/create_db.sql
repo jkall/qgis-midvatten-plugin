@@ -9,7 +9,7 @@ POSTGIS id SERIAL PRIMARY KEY
 , not_null text --1 if NULL-values isn't allowed
 , default_value text --The default value of the column
 , primary_key text --The primary key order number if column is a primary key
-, foreign_key text --"foreign key table(foreign key column)"
+, foreign_key text --Foreign key table(foreign key column)
 , description text --Description for column or table
 , upd_date text --Date for last update
 , upd_sign text --Person responsible for update
@@ -61,7 +61,7 @@ obsid text NOT NULL --ID for the observation point
 , place text --Place for the observation. E.g. estate
 , type text --Type of observation
 , length double --Borehole length from ground surface to bottom (equals to depth if vertical)
-, drillstop text --Drill stop (ex "Driven to bedrock")
+, drillstop text --Drill stop (ex 'Driven to bedrock')
 , diam double --Inner diameter for casing or upper part of borehole
 , material text --Well material
 , screen text --Type of well screen
@@ -114,7 +114,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , cond_mscm double --Electrical conductivity mS/cm
 , level_masl double --Corresponding Water level elevation (masl)
 , comment text --Comment
-, source text -- The source of the measurement (used to keep series apart)
+, source text --The source of the measurement (used to keep series apart)
 , PRIMARY KEY (obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
@@ -211,7 +211,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the comment
 , comment text NOT NULL --Comment
 , staff text NOT NULL --Staff who made the comment
-, type text -- Can be used to distinguish different types of comments.
+, type text --Can be used to distinguish different types of comments
 , PRIMARY KEY(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );

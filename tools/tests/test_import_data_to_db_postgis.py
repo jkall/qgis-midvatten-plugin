@@ -691,7 +691,7 @@ class TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         self.importinstance.general_import(dest_table='comments', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db('''select * from comments'''))
+            db_utils.sql_load_fr_db('''select obsid, date_time, comment, staff  from comments'''))
         reference_string = r'''(True, [(obsid1, 2011-10-19 12:30:00, testcomment, teststaff)])'''
         assert test_string == reference_string
 
