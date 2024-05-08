@@ -454,14 +454,17 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         else:
             raise Exception('Programming error. Must be time or XY!')
 
+        # Matplotlib rcParams often uses lines.markeredgewidth: 0.0 which makes the marker invisible.
+        markeredgewidth = 1.0 if not mpl.rcParams['lines.markeredgewidth'] else mpl.rcParams['lines.markeredgewidth']
+
         if plottype == "step-pre":
             self.p[i], = plotfunc(numtime, table2.values, '', picker=2, drawstyle='steps-pre', marker='None', label=self.plabels[i], **next(self.line_cycler))# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
         elif plottype == "step-post":
             self.p[i], = plotfunc(numtime, table2.values, '', picker=2, drawstyle='steps-post', marker='None', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "line and cross":
-            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='x', label=self.plabels[i], **next(self.line_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='x', label=self.plabels[i], markeredgewidth=markeredgewidth, **next(self.line_cycler))
         elif plottype == "marker":
-            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, linestyle='None', label=self.plabels[i], **next(self.marker_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, linestyle='None', label=self.plabels[i], markeredgewidth=markeredgewidth, **next(self.marker_cycler))
         elif plottype == "line":
             self.p[i], = plotfunc(numtime, table2.values, '', picker=2, marker='None', label=self.plabels[i], **next(self.line_cycler))
         elif plottype == "frequency" and FlagTimeXY == "time":
@@ -473,7 +476,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                 self.plabels[i]='frequency '+str(self.plabels[i])
         else:
             # line and marker
-            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, label=self.plabels[i], **next(self.line_and_marker_cycler))
+            self.p[i], = plotfunc(numtime, table2.values, '', picker=2, label=self.plabels[i], markeredgewidth=markeredgewidth, **next(self.line_and_marker_cycler))
 
 
     def LastSelections(self):#set same selections as last plot
@@ -737,17 +740,17 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         #The legend
         if self.Legend_checkBox.isChecked():
-            ncol = mpl.rcParams['legend.midv_ncol']
+            ncols = mpl.rcParams['legend.midv_ncol']
             if self.axes.legend_ is None:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend(self.p, self.plabels, ncol=ncol)
+                    leg = self.axes.legend(self.p, self.plabels, ncols=ncols)
                 else:
-                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncol=ncol)
+                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncols=ncols)
             else:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend(ncol=ncol)
+                    leg = self.axes.legend(ncols=ncols)
                 else:
-                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncol=ncol)
+                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncols=ncols)
 
             leg.set_zorder(999)
             try:

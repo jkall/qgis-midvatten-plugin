@@ -504,7 +504,7 @@ class PiperPlot(object):
                 line_label.append((line, label))
                 distinct.add(label)
 
-        leg = ax.legend(*zip(*line_label), ncol=4)
+        leg = ax.legend(*zip(*line_label), ncols=4)
         try:
             leg.set_draggable(state=True)
         except AttributeError:

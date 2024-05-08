@@ -906,8 +906,9 @@ class MatplotlibStyles(object):
             else:
                 use_style = _style
                 break
+
         if use_style is not None:
-            with plt.style.context(use_style):
+            with mpl.style.context(use_style, after_reset=True):
                 drawfunc()
             if plot_widget_navigationtoolbar_name is not None:
                 navigationtoolbar = getattr(plot_widget_navigationtoolbar_name[0], plot_widget_navigationtoolbar_name[1])
