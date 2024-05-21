@@ -35,7 +35,7 @@ import numpy as np
 
 from midvatten.definitions.midvatten_defs import piperplot_style, piperplot2_style
 from midvatten.tools.utils import common_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import returnunicode as ru, LEGEND_NCOL_KEY
 
 
 class PiperPlot(object):
@@ -321,7 +321,7 @@ class PiperPlot(object):
                     dummyplot.append(ax1.plot(1000,1000,self.markerset[_l], ls='',label=_l))
                     ph,l = ax1.get_legend_handles_labels()
                     #
-                leg = plt.figlegend(ph, l, ncol=6)
+                leg = plt.figlegend(ph, l, **{LEGEND_NCOL_KEY: 6})
                 try:
                     leg.set_draggable(state=True)
                 except AttributeError:
@@ -504,7 +504,7 @@ class PiperPlot(object):
                 line_label.append((line, label))
                 distinct.add(label)
 
-        leg = ax.legend(*zip(*line_label), ncols=4)
+        leg = ax.legend(*zip(*line_label), **{LEGEND_NCOL_KEY: 4})
         try:
             leg.set_draggable(state=True)
         except AttributeError:

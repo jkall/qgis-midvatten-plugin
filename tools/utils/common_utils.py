@@ -46,6 +46,8 @@ from qgis.core import Qgis, QgsApplication, QgsLogger, QgsProject, QgsMapLayer
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__), '../..', 'ui', 'not_found_gui.ui'))[0]
 
+LEGEND_NCOL_KEY = 'ncol' if mpl.__version__ < '3.6.0' else 'ncols'
+
 
 class MessagebarAndLog(object):
     """ Class that sends logmessages to messageBar and or to QgsMessageLog

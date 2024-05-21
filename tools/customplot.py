@@ -51,7 +51,7 @@ import matplotlib.ticker as tick
 from qgis.PyQt.QtWidgets import QApplication
 
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru
+from midvatten.tools.utils.common_utils import returnunicode as ru, LEGEND_NCOL_KEY
 from midvatten.definitions import midvatten_defs as defs
 from midvatten.tools.utils.gui_utils import set_groupbox_children_visibility
 
@@ -743,14 +743,14 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             ncols = mpl.rcParams['legend.midv_ncol']
             if self.axes.legend_ is None:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend(self.p, self.plabels, ncols=ncols)
+                    leg = self.axes.legend(self.p, self.plabels, **{LEGEND_NCOL_KEY: ncols})
                 else:
-                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncols=ncols)
+                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, **{LEGEND_NCOL_KEY: ncols})
             else:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend(ncols=ncols)
+                    leg = self.axes.legend(**{LEGEND_NCOL_KEY: ncols})
                 else:
-                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, ncols=ncols)
+                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10, **{LEGEND_NCOL_KEY: ncols})
 
             leg.set_zorder(999)
             try:

@@ -53,7 +53,7 @@ import datetime
 import matplotlib.dates as mdates
 
 from midvatten.tools.utils import common_utils, db_utils
-from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer, UsageError
+from midvatten.tools.utils.common_utils import returnunicode as ru, fn_timer, UsageError, LEGEND_NCOL_KEY
 from midvatten.tools.utils.midvatten_utils import PlotTemplates
 from midvatten.tools.utils.matplotlib_replacements import NavigationToolbarWithSignal as NavigationToolbar
 import midvatten.definitions.midvatten_defs as defs
@@ -777,7 +777,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             items, labels = self.get_legend_items_labels()
 
             legend_kwargs = dict(self.secplot_templates.loaded_template['legend_Axes_legend'])
-
+            if LEGEND_NCOL_KEY not in legend_kwargs:
+                if LEGEND_NCOL_KEY.rstrip('s') in legend_kwargs:
+                    legend_kwargs[LEGEND_NCOL_KEY] = legend_kwargs.pop(LEGEND_NCOL_KEY.rstrip('s'))
             leg = self.axes.legend(items, labels, **legend_kwargs)
 
             try:
