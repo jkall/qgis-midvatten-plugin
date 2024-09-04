@@ -401,7 +401,6 @@ def get_postgis_connections():
     for k in sorted(qs.allKeys()):
         k = ru(k)
         if k.startswith('PostgreSQL'):
-            print(f"k {k}")
             cols = k.split('/')
             conn_name = cols[2]
             try:
@@ -411,7 +410,6 @@ def get_postgis_connections():
                 continue
             value = qs.value(k)
             postgresql_connections.setdefault(conn_name, {})[setting] = value
-    print(f"postgresql_connections {postgresql_connections}")
     postgresql_connections= ru(postgresql_connections, keep_containers=True)
     return postgresql_connections
 
