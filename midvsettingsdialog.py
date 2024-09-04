@@ -699,7 +699,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
         self.label.setFixedWidth(label_width)
         self._connection = qgis.PyQt.QtWidgets.QComboBox()
         self._connection.addItem('')
-        connection_names = ['/'.join([k, ':'.join([v.get('host', ''), v.get('port', '')]), v.get('database', '')]) for k, v in postgis_connections.items()]
+        connection_names = ['/'.join([k, ':'.join([v.get('service', ''), v.get('host', ''), v.get('port', '')]), v.get('database', '')]) for k, v in postgis_connections.items()]
         self._connection.addItems(sorted(connection_names))
 
         self._connection.currentIndexChanged.connect(self.set_db)
