@@ -985,6 +985,10 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                                                             """Warning!\n No data found within the chosen period. No trend adjustment done!\nTry changing "from" and "to".""")))
             return
 
+        common_utils.MessagebarAndLog.info(log_msg=ru(
+                                               QCoreApplication.translate('Calibrlogger',
+                                                                          'Trend adjusted using: \n%s')) % (
+                                                       str(data)))
         sql = """
                 UPDATE w_levels_logger SET level_masl = level_masl -
                 (
