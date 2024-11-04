@@ -63,7 +63,7 @@ class TestFieldLoggerImporterNoDb(object):
         assert test_string == reference_string
 
     def test_parse_rows_skip_empty_rows(self):
-        f = ['Br2;12-12-2016;15:33:30;123;w_lvl', 'Br1;12-12-2016;15:34:30;;w_lvl']
+        f = ['LOCATION;DATE;TIME;VALUE;TYPE', 'Br2;12-12-2016;15:33:30;123;w_lvl', 'Br1;12-12-2016;15:34:30;;w_lvl']
         observations = FieldloggerImport.parse_rows(f)
         test = create_test_string(observations)
         reference = utils_for_tests.create_test_string([{'date_time': '2016-12-12 15:33:30', 'parametername': 'w_lvl', 'sublocation': 'Br2', 'value': '123'}])
@@ -297,20 +297,20 @@ class TestFieldLoggerImporterNoDb(object):
 
     def test_load_file_fieldform(self):
         f = [
-            "LOCATION;DATE;TIME;VALUE;TYPE\n",
-            "Rb1202.sample;2016-03-30;15:31:30;hej2;s.comment\n",
-            "Rb1608.level;2016-03-30;15:34:40;testc;l.comment\n",
-            "Rb1615.flow;2016-03-30;15:30:09;357;f.Accvol.m3\n",
-            "Rb1615.flow;2016-03-30;15:30:09;gick bra;f.comment\n",
-            "Rb1608.level;2016-03-30;15:34:13;ergv;l.comment\n",
-            "Rb1608.level;2016-03-30;15:34:13;555;l.meas.m\n",
-            "Rb1512.sample;2016-03-30;15:31:30;899;s.turbiditet.FNU\n",
-            "Rb1505.quality;2016-03-30;15:29:26;hej;q.comment\n",
-            "Rb1505.quality;2016-03-30;15:29:26;863;q.konduktivitet.µS/cm\n",
-            "Rb1512.quality;2016-03-30;15:30:39;test;q.comment\n",
-            "Rb1512.quality;2016-03-30;15:30:39;67;q.syre.mg/l\n",
-            "Rb1512.quality;2016-03-30;15:30:39;8;q.temperatur.grC\n",
-            "Rb1512.quality;2016-03-30;15:30:40;58;q.syre.%\n",
+            "LOCATION;DATE;TIME;TYPE;VALUE\n",
+            "Rb1202.sample;2016-03-30;15:31:30;s.comment;hej2\n",
+            "Rb1608.level;2016-03-30;15:34:40;l.comment;testc\n",
+            "Rb1615.flow;2016-03-30;15:30:09;f.Accvol.m3;357\n",
+            "Rb1615.flow;2016-03-30;15:30:09;f.comment;gick bra\n",
+            "Rb1608.level;2016-03-30;15:34:13;l.comment;ergv\n",
+            "Rb1608.level;2016-03-30;15:34:13;l.meas.m;555\n",
+            "Rb1512.sample;2016-03-30;15:31:30;s.turbiditet.FNU;899\n",
+            "Rb1505.quality;2016-03-30;15:29:26;q.comment;hej\n",
+            "Rb1505.quality;2016-03-30;15:29:26;q.konduktivitet.µS/cm;863\n",
+            "Rb1512.quality;2016-03-30;15:30:39;q.comment;test\n",
+            "Rb1512.quality;2016-03-30;15:30:39;q.syre.mg/l;67\n",
+            "Rb1512.quality;2016-03-30;15:30:39;q.temperatur.grC;8\n",
+            "Rb1512.quality;2016-03-30;15:30:40;q.syre.%;58\n",
             ]
 
         with common_utils.tempinput(''.join(f)) as filename:
@@ -326,6 +326,7 @@ class TestFieldLoggerImporterNoDb(object):
                 return test_string
 
             test_string = _test(self, filename)
+            print(test_string)
             reference = utils_for_tests.create_test_string(sorted([{'date_time': '2016-03-30 15:29:26', 'parametername': 'q.comment', 'sublocation': 'Rb1505.quality', 'value': 'hej'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.syre.mg/l', 'sublocation': 'Rb1512.quality', 'value': '67'}, {'date_time': '2016-03-30 15:31:30', 'parametername': 's.turbiditet.FNU', 'sublocation': 'Rb1512.sample', 'value': '899'}, {'date_time': '2016-03-30 15:29:26', 'parametername': 'q.konduktivitet.µS/cm', 'sublocation': 'Rb1505.quality', 'value': '863'}, {'date_time': '2016-03-30 15:30:09', 'parametername': 'f.comment', 'sublocation': 'Rb1615.flow', 'value': 'gick bra'}, {'date_time': '2016-03-30 15:30:40', 'parametername': 'q.syre.%', 'sublocation': 'Rb1512.quality', 'value': '58'}, {'date_time': '2016-03-30 15:34:13', 'parametername': 'l.meas.m', 'sublocation': 'Rb1608.level', 'value': '555'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.comment', 'sublocation': 'Rb1512.quality', 'value': 'test'}, {'date_time': '2016-03-30 15:31:30', 'parametername': 's.comment', 'sublocation': 'Rb1202.sample', 'value': 'hej2'}, {'date_time': '2016-03-30 15:34:40', 'parametername': 'l.comment', 'sublocation': 'Rb1608.level', 'value': 'testc'}, {'date_time': '2016-03-30 15:30:09', 'parametername': 'f.Accvol.m3', 'sublocation': 'Rb1615.flow', 'value': '357'}, {'date_time': '2016-03-30 15:34:13', 'parametername': 'l.comment', 'sublocation': 'Rb1608.level', 'value': 'ergv'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.temperatur.grC', 'sublocation': 'Rb1512.quality', 'value': '8'}], key=itemgetter('date_time', 'parametername', 'sublocation')))
             assert test_string == reference
 

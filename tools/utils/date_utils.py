@@ -305,7 +305,7 @@ def change_timezone(date_or_string, from_timezone, to_timezone):
     try:
         tz_aware = tz.localize(tz_naive, is_dst=None)
     except AttributeError as e:
-        raise Exception(f"Error changing timezone for {date_or_string}, returned {tz_naive}.")
+        raise Exception(f"Error changing timezone for '{date_or_string}', returned '{tz_naive}'.")
     if td:
         tz_aware = tz_aware - td
 

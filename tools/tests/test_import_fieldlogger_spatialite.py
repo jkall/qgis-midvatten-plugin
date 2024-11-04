@@ -61,6 +61,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                 importer.start_import(importer.observations)
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg='Import error, staff not given')
+
     def test_full_integration_test_to_db(self):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
@@ -213,7 +214,6 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             print("REF")
             print(reference_string)
             assert test_string == reference_string
-
 
 
     def test_full_integration_test_to_db_w_levels_value_to_meas(self):

@@ -158,9 +158,8 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
                         return None
 
                     with io.open(filename, 'rt', encoding=encoding) as f:
-                        #Skip header
-                        f.readline()
-                        observations.extend(row_parser(f, delimiter))
+                        rows = f.readlines()
+                        observations.extend(row_parser(rows, delimiter))
 
                 except UnicodeDecodeError:
                     continue
@@ -186,18 +185,58 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
 
         """
         observations = []
+
+        header_rownr = None
+        for rownr, rawrow in enumerate(f):
+            row = rawrow.rstrip('\n').strip().lower()
+            cols = row.split(delimiter)
+            if not row:
+                continue
+            else:
+                if 'location' in row:
+                    try:
+                        location_idx = cols.index('location')
+                        date_idx = cols.index('date')
+                        time_idx = cols.index('time')
+                        type_idx = cols.index('type')
+                        value_idx = cols.index('value')
+                    except ValueError:
+                        pass
+                    else:
+                        header_rownr = rownr
+                else:
+                    # Header was not the first row with data.
+                    # Use column
+                    break
+
         for rownr, rawrow in enumerate(f):
             observation = {}
             row = rawrow.rstrip('\n').strip()
+            cols = row.split(delimiter)
             if not row:
                 continue
-            cols = row.split(delimiter)
-            observation['sublocation'] = cols[0]
-            date = cols[1]
-            time = cols[2]
-            observation['date_time'] = datestring_to_date(' '.join([date, time]))
-            observation['value'] = cols[3]
-            observation['parametername'] = cols[4]
+            if header_rownr is None and not rownr:
+                # Assume that the first row is the header row.
+                continue
+            if header_rownr is not None and rownr <= header_rownr:
+                continue
+
+            if header_rownr is not None:
+                observation['sublocation'] = cols[location_idx]
+                date = cols[date_idx]
+                time = cols[time_idx]
+                observation['date_time'] = datestring_to_date(' '.join([date, time]))
+                observation['value'] = cols[value_idx]
+                observation['parametername'] = cols[type_idx]
+            else:
+                # Assume it's structured as fieldlogger measurement file.
+                observation['sublocation'] = cols[0]
+                date = cols[1]
+                time = cols[2]
+                observation['date_time'] = datestring_to_date(' '.join([date, time]))
+                observation['value'] = cols[3]
+                observation['parametername'] = cols[4]
+
             if observation['value']:
                 observations.append(observation)
         return observations
