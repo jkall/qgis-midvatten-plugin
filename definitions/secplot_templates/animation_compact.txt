@@ -26,7 +26,6 @@
                 "edgecolor": "black",
                 "zorder": 5}},
     "grid_Axes_grid": {
-        "b": True,
         "color": "0.65",
         "linestyle": "-",
         "which": "both",

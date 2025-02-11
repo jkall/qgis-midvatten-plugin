@@ -194,6 +194,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.button_auto_calculate.clicked.connect(lambda x: self.logger_pos_best_fit())
         self.button_auto_fit.clicked.connect(lambda x: self.level_masl_best_fit())
         self.pushButton_delete_logger.clicked.connect(lambda: self.delete_selected_range('w_levels_logger'))
+        self.pushButton_set_null.clicked.connect(lambda: self.delete_selected_range('w_levels_logger', set_to_null_instead=True))
         self.adjust_trend_button.clicked.connect(lambda x: self.adjust_trend_func())
 
         try:
@@ -886,7 +887,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             self.mpltoolbar.zoom()
 
     @fn_timer
-    def delete_selected_range(self, table_name):
+    def delete_selected_range(self, table_name, set_to_null_instead=False):
         """ Deletes the current selected range from the database from w_levels_logger
         :return: De
         """
@@ -907,18 +908,28 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         dbconnection = db_utils.DbConnectionManager()
         dbtype = dbconnection.dbtype
         dbconnection.closedb()
+
         if dbtype == 'spatialite':
-            sql = f"""DELETE FROM "{table_name}" 
-                      WHERE obsid = '{selected_obsid}'
-                         AND CAST(strftime('%s', date_time) AS NUMERIC) >= '{fr_d_t}'
+            where_dt = f"""CAST(strftime('%s', date_time) AS NUMERIC) >= '{fr_d_t}'
                          AND CAST(strftime('%s', date_time) AS NUMERIC) <= '{to_d_t}'"""
         else:
-            sql = f"""DELETE FROM "{table_name}" 
-                      WHERE obsid = '{selected_obsid}'
-                      AND EXTRACT(EPOCH FROM date_time::timestamp) >= '{fr_d_t}'
+            where_dt = f"""EXTRACT(EPOCH FROM date_time::timestamp) >= '{fr_d_t}'
                       AND EXTRACT(EPOCH FROM date_time::timestamp) <= '{to_d_t}'"""
 
-        really_delete = common_utils.Askuser("YesNo", ru(QCoreApplication.translate('Calibrlogger', "Do you want to delete the period %s to %s for obsid %s from table %s?")) % (str(self.FromDateTime.dateTime().toPyDateTime()), str(self.ToDateTime.dateTime().toPyDateTime()), selected_obsid, table_name)).result
+        if set_to_null_instead:
+            sql = f"""UPDATE "{table_name}" SET level_masl = NULL WHERE obsid = '{selected_obsid}' AND {where_dt};"""
+            msg = ru(QCoreApplication.translate('Calibrlogger',
+                                          "Do you want to set level_masl to NULL for the period %s to %s for obsid %s in table %s?")) % (
+                str(self.FromDateTime.dateTime().toPyDateTime()),
+                str(self.ToDateTime.dateTime().toPyDateTime()), selected_obsid, table_name)
+        else:
+            sql = f"""DELETE FROM "{table_name}" WHERE obsid = '{selected_obsid}' AND {where_dt};"""
+            msg = ru(QCoreApplication.translate('Calibrlogger',
+                                                "Do you want to delete the period %s to %s for obsid %s from table %s?")) % (
+                str(self.FromDateTime.dateTime().toPyDateTime()),
+                str(self.ToDateTime.dateTime().toPyDateTime()), selected_obsid, table_name)
+
+        really_delete = common_utils.Askuser("YesNo", msg).result
         if really_delete:
             common_utils.start_waiting_cursor()
             db_utils.sql_alter_db(sql)
@@ -1071,6 +1082,19 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         'eclick and erelease are the press and release events'
         x1, y1 = eclick.xdata, eclick.ydata
         x2, y2 = erelease.xdata, erelease.ydata
+
+
+        # Ongoing developement 
+        """xy = np.array(self.logger_artist.get_xydata())
+        filtered = xy[np.where(((xy[:, 0] >= min(x1, x2))
+                                & xy[:, 0] <= max(x1, x2))
+                                & (xy[:, 1] >= min(y1, y2))
+                                & (xy[:, 1] <= max(y1, y2)),
+                                True, False)]
+
+        if len(filtered):
+            self.FromDateTime.setDateTime(num2date(min(filtered[:,0])))
+            self.ToDateTime.setDateTime(num2date(max(filtered[:,0])))"""
 
         self.logger_artist.get_xdata()
         y_idx = [idx for idx, y in enumerate(self.logger_artist.get_ydata()) if min(y1, y2) <= y <= max(y1, y2)]
