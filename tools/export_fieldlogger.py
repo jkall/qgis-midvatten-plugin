@@ -128,7 +128,7 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
         #Buttons
 
         #ParameterUnitBrowser
-        self.parameter_browser = ParameterBrowser(tables_columns, self.widget)
+        self.parameter_browser = ParameterBrowser(tables_columns, self.widget, use_fieldlogger=self.export_as_fieldlogger.isChecked())
         self.parameter_browser_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Create Input Fields')))
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, self.gridLayout_buttons.rowCount(), 0)
         self.parameter_browser_button.clicked.connect(
@@ -284,6 +284,10 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
         input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults('FieldLogger' if self.export_as_fieldlogger.isChecked() else 'FieldForm')
         self.update_settings(input_field_browser, self.stored_settingskey_parameterbrowser)
         self.update_settings(input_fields_groups, self.stored_settingskey)
+        common_utils.save_stored_settings(self.ms,
+                                          'FieldForm' if self.export_as_fieldform.isChecked() else 'FieldLogger',
+                                          self.stored_settingskey_format, skip_ast=True)
+
         common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger', 'Input fields and "Create Input Fields" updated to default.\nRestart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))
 
     def settings_strings_dialogs(self):

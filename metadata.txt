@@ -23,6 +23,7 @@ icon=icons/MidvSettings.png
 changelog=
         Version 1.8.1b6:
         - Sectionplot: Fixes a bug in two templates.
+        - FieldLogger export: Fixes support for FieldForm.
         Version 1.8.1b5:
         - FieldloggerImport: Fixes support for import of FieldForm result files.
         Version 1.8.1b4:
