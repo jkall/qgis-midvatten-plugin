@@ -375,10 +375,8 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
                 break
         else:
             MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
-            if dbconnection_created:
-                dbconnection.closedb()
 
-            return
+            continue
 
         if tablename in ['view_obs_points', 'view_obs_lines']:
             layer.setName(orig_tablename)

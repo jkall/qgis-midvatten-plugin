@@ -125,6 +125,9 @@ class DbConnectionManager(object):
         self.cursor = None
         self.connector = None
 
+        #Only supports schema public
+        self.schema = 'public'
+
         if db_settings is None:
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
 
@@ -264,9 +267,9 @@ class DbConnectionManager(object):
         self.closedb()
 
     def schemas(self):
-        """Only supports schema public
         """
-        return 'public'
+        """
+        return self.schema
 
     def closedb(self):
         self.conn.close()
@@ -330,7 +333,7 @@ class DbConnectionManager(object):
         if self.dbtype == 'spatialite':
             self.execute('''DROP TABLE {}'''.format(temptable_name))
         else:
-            self.execute('''DROP TEMPORARY TABLE IF EXISTS {}'''.format(temptable_name))
+            self.execute('''DROP TABLE IF EXISTS {}'''.format(temptable_name))
 
     def dump_table_2_csv(self, table_name=None):
         self.cursor.execute(u'select * from {}'.format(table_name))
@@ -352,7 +355,7 @@ class DbConnectionManager(object):
                 srid = srid[0][0]
         else:
             try:
-                self.cursor.execute("""SELECT Find_SRID('{}', '{}', '{}');""".format(self.schemas(), table_name,
+                self.cursor.execute("""SELECT Find_SRID('{}', '{}', '{}');""".format(self.schema, table_name,
                                                                                      geometry_column))
             except:
                 #Assume that the column doesn't have a srid/is a geometry.
@@ -681,15 +684,15 @@ def get_foreign_keys(table, dbconnection=None):
                 JOIN pg_namespace n 
                   ON n.oid = c.connamespace 
                 WHERE contype IN ('f') 
-                AND n.nspname = 'public' 
+                AND n.nspname = '%s' 
                 AND conrelid::regclass::text = '%s'
                 ORDER BY conrelid::regclass::text, contype DESC;
-                """%table
+                """%(dbconnection.schema, table)
 
         result_list = dbconnection.execute_and_fetchall(sql)
         for row in result_list:
             info = row[2]
-            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ0-9\-\_]+)\(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\)', info)
+            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ0-9\-\_\.]+)\(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\)', info)
             res = m.groups()
             if res:
                 foreign_keys.setdefault(res[1], []).append((res[0], res[2]))
@@ -806,7 +809,7 @@ def get_geometry_types(dbconnection, tablename):
         sql = """SELECT f_geometry_column, type
                 FROM geometry_columns
                 WHERE f_table_schema = '%s'
-                AND f_table_name = '%s';"""%(dbconnection.schemas(), tablename)
+                AND f_table_name = '%s';"""%(dbconnection.schema, tablename)
     result = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
     return result
 

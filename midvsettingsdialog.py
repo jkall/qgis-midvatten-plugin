@@ -696,7 +696,8 @@ class PostgisSettings(gui_utils.RowEntryGrid):
         postgis_connections = db_utils.get_postgis_connections()
 
         self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('PostgisSettings', 'Connections')))
-        self.label.setFixedWidth(label_width)
+        if label_width is not None:
+            self.label.setFixedWidth(label_width)
         self._connection = qgis.PyQt.QtWidgets.QComboBox()
         self._connection.addItem('')
         connection_names = ['/'.join([k, ':'.join([v.get('service', ''), v.get('host', ''), v.get('port', '')]), v.get('database', '')]) for k, v in postgis_connections.items()]

@@ -195,8 +195,13 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                             type=column_headers_types[colname],
                             null=null_replacement))
 
+            if dbconnection.dbtype.lower() == 'postgis':
+                dest_table_with_schema = f'"{dbconnection.schema}"."{dest_table}"'
+            else:
+                dest_table_with_schema = dest_table
+
             sql = """INSERT INTO {dest_table} ({dest_columns})\nSELECT {source_columns}\nFROM {source_table}\n"""
-            kwargs = {'dest_table': dest_table,
+            kwargs = {'dest_table': dest_table_with_schema,
                       'dest_columns': ', '.join(sorted(existing_columns_in_dest_table)),
                       'source_table': self.temptable_name,
                       'source_columns': u',\n    '.join(sourcecols)
@@ -207,7 +212,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                                                        for notnullcol in sorted(not_null_columns)])
             sql = sql.format(**kwargs)
 
-            recsbefore = dbconnection.execute_and_fetchall('select count(*) from %s' % (dest_table))[0][0]
+            recsbefore = dbconnection.execute_and_fetchall('select count(*) from %s' % (dest_table_with_schema))[0][0]
             try:
                 dbconnection.execute(sql)
             except Exception as e:
@@ -215,7 +220,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 print(sql)
                 print("Sourde " + str(source_srid))
 
-                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % dest_table + ru(str(e)))
+                common_utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('midv_data_importer', 'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % dest_table_with_schema + ru(str(e)))
                 sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
                 try:
                     dbconnection.execute(sql)
@@ -229,7 +234,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                         common_utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('midv_data_importer', 'Import failed, see log message panel')),
                                                                            log_msg=ru(QCoreApplication.translate('midv_data_importer', 'Sql\n%s  failed.\nMsg:\n%s')) % (sql, ru(str(e))), duration=999)
 
-            recsafter = dbconnection.execute_and_fetchall('select count(*) from %s' % (dest_table))[0][0]
+            recsafter = dbconnection.execute_and_fetchall('select count(*) from %s' % (dest_table_with_schema))[0][0]
             nr_imported = recsafter - recsbefore
             nr_excluded = recsinfile - nr_imported
 
@@ -385,6 +390,10 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
         #Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00 will not be imported if 2016-01-01 00:00:00 exists
         pks_and_00 = list(pks)
         pks_and_00.append("':00'")
+
+        if dbconnection.dbtype.lower() == 'postgis':
+            dest_table = f'"{dbconnection.schema}"."{dest_table}"'
+
         sql = '''delete from %s where %s in (select %s from %s)'''%(self.temptable_name,
                                                                                           ' || '.join(pks_and_00),
                                                                                           ' || '.join(pks),
@@ -404,7 +413,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                             binary_geometry=False):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
-        dest_srid = dbconnection.get_srid(table_name)
+        dest_srid = dbconnection.get_srid(table_name, geometry_column=geom_col)
 
         convert_func = '''ST_GeomFromWKB''' if binary_geometry else '''ST_GeomFromText'''
 

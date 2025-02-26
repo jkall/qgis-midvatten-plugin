@@ -45,10 +45,11 @@ import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file
 
 
 class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
-    def __init__(self, parent, msettings=None):
+    def __init__(self, parent, msettings=None, dbconnection=None):
         self.iface = parent
         self.ms = msettings
-        self.ms.loadSettings()
+        if self.ms is not None:
+            self.ms.loadSettings()
         qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
@@ -56,9 +57,13 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.table_chooser = None
         self.file_data = None
         self.srid = None
+        if dbconnection is not None:
+            self.dbconnection = dbconnection
+        else:
+            self.dbconnection = None
 
     def load_gui(self):
-        self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info().items() if not k.endswith('_geom')}
+        self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info(dbconnection=self.dbconnection).items() if not k.endswith('_geom')}
         self.table_chooser = ImportTableChooser(self.tables_columns_info, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
@@ -215,7 +220,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         dest_table = self.table_chooser.import_method
 
-        foreign_keys = db_utils.get_foreign_keys(dest_table)
+        foreign_keys = db_utils.get_foreign_keys(dest_table, dbconnection=self.dbconnection)
 
         foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.items() for colname in colnames if colname[0] == 'obsid']
         if len(foreign_key_obsid_tables) == 1:
@@ -270,7 +275,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         file_data = self.reformat_date_time(file_data)
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(dest_table=dest_table, file_data=file_data, source_srid=self.srid)
+        answer = importer.general_import(dest_table=dest_table, file_data=file_data, source_srid=self.srid, _dbconnection=self.dbconnection)
         common_utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():
