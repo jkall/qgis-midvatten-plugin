@@ -570,13 +570,13 @@ def get_tables(dbconnection=None, skip_views=False):
             pg_mat_views = ""
         else:
             tabletype = ''
-            pg_mat_views = "UNION SELECT oid::regclass::text FROM pg_class WHERE relkind = 'm'"
+            pg_mat_views = """UNION SELECT relname FROM pg_class WHERE relkind = 'm' AND TRIM(TRIM(REPLACE(oid::regclass::text, relname, ''), '.'), '"') = '%s' """%dbconnection.schema
         tables_sql = """SELECT table_name FROM (
                         SELECT table_name FROM information_schema.tables 
                         WHERE table_schema='%s' %s 
                         AND table_name NOT IN %s
                         %s) foo
-                        ORDER BY table_name"""%(dbconnection.schemas(), tabletype, postgis_internal_tables(), pg_mat_views)
+                        ORDER BY table_name"""%(dbconnection.schema, tabletype, postgis_internal_tables(), pg_mat_views)
     tables = dbconnection.execute_and_fetchall(tables_sql)
     tablenames = [col[0] for col in tables]
 
