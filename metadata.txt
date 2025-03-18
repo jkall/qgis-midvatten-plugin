@@ -22,7 +22,8 @@ icon=icons/MidvSettings.png
 
 changelog=
         Version 1.8.1b9:
-        - Sectionplot: Fixes adjustment of graded dems to QGIS 3.40
+        - Sectionplot: Fixes adjustment of graded dems to QGIS 3.40.
+        - Fixes for PrepareforQgis2Threejs for Postgis databases.
         Version 1.8.1b8:
         - db_utils: Fixes to allow parts of the utils to be used with other database schemas.
         Version 1.8.1b7:
