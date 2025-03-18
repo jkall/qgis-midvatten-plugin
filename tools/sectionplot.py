@@ -1590,8 +1590,15 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                         symbol_layers = symbol.symbolLayers()
                         # Use the bottom layer color
                         _color = symbol_layers[0].properties()['color']
-                        color = tuple(
-                            [float(c) / float(255) for c in _color.split(',')])
+                        color_list = _color.split(',')
+                        try:
+                            color = tuple([float(c) / float(255) for c in color_list])
+                        except ValueError:
+                            if len(color_list) > 4:
+                                color = tuple(
+                                    [float(c) / float(255) for c in color_list[:4]])
+                            else:
+                                raise
                         sampled_values.append((label, color))
                         processed_features[feat.id()] = (label, color)
                     else:
