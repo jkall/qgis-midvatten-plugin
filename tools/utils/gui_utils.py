@@ -116,10 +116,11 @@ def get_line():
     return line
 
 
-class DateTimeFilter(RowEntry):
-    def __init__(self, calendar=False):
-        super(DateTimeFilter, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+class DateTimeFilter(qgis.PyQt.QtWidgets.QWidget):
+    def __init__(self, calendar=False, parent=None):
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QHBoxLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
 
         self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('DateTimeFilter', 'Import data from: ')))
         self.from_datetimeedit = qgis.PyQt.QtWidgets.QDateTimeEdit(datestring_to_date('1901-01-01 00:00:00'))
@@ -136,7 +137,7 @@ class DateTimeFilter(RowEntry):
             self.to_datetimeedit.setCalendarPopup(True)
         #self.import_after_last_date = PyQt4.QtWidgets.QCheckBox("Import after latest date in database for each obsid")
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
-            self.layout.addWidget(widget)
+            self.layout().addWidget(widget)
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)

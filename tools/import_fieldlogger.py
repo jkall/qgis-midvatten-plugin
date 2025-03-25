@@ -81,12 +81,12 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
                                                                                                  'Filter dates'))
         self.date_time_filter.date_time_filter_update_button.setToolTip(ru(QCoreApplication.translate('FieldloggerImport',
                                                                                      'Filter observations using from and to dates and update gui.')))
-        self.date_time_filter.layout.addWidget(self.date_time_filter.date_time_filter_update_button)
+        self.date_time_filter.layout().addWidget(self.date_time_filter.date_time_filter_update_button)
 
         self.settings.append(self.date_time_filter)
         for setting in self.settings:
-            if hasattr(setting, 'widget'):
-                settings_layout.addWidget(setting.widget)
+            if isinstance(setting, QtWidgets.QWidget):
+                settings_layout.addWidget(setting)
         #self.add_line(settings_layout)
 
         #Settings with own loop gets self.observations to work on.
@@ -96,7 +96,7 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
         sublocations = [observation['sublocation'] for observation in self.observations]
         self.sublocation_filter = SublocationFilter(sublocations)
         self.settings.append(self.sublocation_filter)
-        splitter.addWidget(self.sublocation_filter.widget)
+        splitter.addWidget(self.sublocation_filter)
         #sublocations_layout.addWidget(self.sublocation_filter.widget)
         #self.add_line(sublocations_layout)
 
@@ -107,7 +107,7 @@ class FieldloggerImport(QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
         self.input_fields = InputFields()
         self.input_fields.update_parameter_imports_queue(self.observations, self.stored_settings)
 
-        splitter.addWidget(self.input_fields.widget)
+        splitter.addWidget(self.input_fields)
 
         #General buttons
         self.save_settings_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('FieldloggerImport', 'Save settings')))
@@ -535,17 +535,18 @@ class ObsidFilter(object):
         return observations
 
 
-class StaffQuestion(RowEntry):
-    def __init__(self):
-        super(StaffQuestion, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+class StaffQuestion(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QHBoxLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.label = QtWidgets.QLabel(ru(QCoreApplication.translate('StaffQuestion', 'Staff who did the measurement')))
         self.existing_staff_combobox = default_combobox()
         existing_staff = sorted(defs.staff_list()[1])
         self.existing_staff_combobox.addItems(existing_staff)
 
         for widget in [self.label, self.existing_staff_combobox]:
-            self.layout.addWidget(widget)
+            self.layout().addWidget(widget)
 
     @property
     def staff(self):
@@ -564,16 +565,17 @@ class StaffQuestion(RowEntry):
         return observation
 
 
-class DateShiftQuestion(RowEntry):
-    def __init__(self):
-        super(DateShiftQuestion, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+class DateShiftQuestion(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QHBoxLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.label = QtWidgets.QLabel(ru(QCoreApplication.translate('DateShiftQuestion', 'Shift dates, supported format ex. "%s":'))%'-1 hours')
         self.dateshift_lineedit = QtWidgets.QLineEdit()
         self.dateshift_lineedit.setText('0 hours')
 
         for widget in [self.label, self.dateshift_lineedit]:
-            self.layout.addWidget(widget)
+            self.layout().addWidget(widget)
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
@@ -606,16 +608,17 @@ class DateShiftQuestion(RowEntry):
         return observation
 
 
-class SublocationFilter(VRowEntry):
-    def __init__(self, sublocations):
+class SublocationFilter(QtWidgets.QWidget):
+    def __init__(self, sublocations, parent=None):
         """
 
         :param sublocations: a list like ['a.b', '1.2.3', ...]
         """
-        super(SublocationFilter, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QVBoxLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
 
-        self.layout.addWidget(QtWidgets.QLabel(
+        self.layout().addWidget(QtWidgets.QLabel(
             ru(QCoreApplication.translate('FieldloggerImport', 'Select sublocations to import:'))))
 
         self.table = QtWidgets.QTableWidget()
@@ -629,9 +632,9 @@ class SublocationFilter(VRowEntry):
         self.table.setSortingEnabled(True)
 
         self.update_sublocations(sublocations)
-        self.layout.addWidget(self.table)
-        self.widget.sizePolicy().setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
-        self.widget.sizePolicy().setVerticalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
+        self.layout().addWidget(self.table)
+        self.sizePolicy().setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
+        self.sizePolicy().setVerticalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
 
     def set_selection(self, sublocations, true_or_false):
         """
@@ -681,19 +684,16 @@ class SublocationFilter(VRowEntry):
         self.table.selectAll()
 
 
-class InputFields(RowEntry):
-    def __init__(self):
-        self.widget = QtWidgets.QWidget()
-        self.layout = QtWidgets.QVBoxLayout()
-        self.widget.setLayout(self.layout)
-
-        self.all_children = []
+class InputFields(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setLayout(QtWidgets.QVBoxLayout())
 
         self.active_updater = False
         self.update_queue = Queue()
         self.update_queue_working = False
 
-        self.layout.addWidget(QtWidgets.QLabel(ru(QCoreApplication.translate('InputFields', 'Specify import methods for input fields'))))
+        self.layout().addWidget(QtWidgets.QLabel(ru(QCoreApplication.translate('InputFields', 'Specify import methods for input fields'))))
 
         self.parameter_imports = OrderedDict()
 
@@ -701,7 +701,7 @@ class InputFields(RowEntry):
         #connected elsewhere.
         self.update_parameters_button = QtWidgets.QPushButton(ru(QCoreApplication.translate('InputFields', 'Update input fields')))
         self.update_parameters_button.setToolTip(ru(QCoreApplication.translate('InputFields', 'Update input fields using the observations remaining after filtering by date and sublocation selection.')))
-        self.layout.addWidget(self.update_parameters_button)
+        self.layout().addWidget(self.update_parameters_button)
 
     def update_parameter_imports_queue(self, *args, **kwargs):
         if self.update_queue_working:
@@ -729,12 +729,10 @@ class InputFields(RowEntry):
                 k, imp_obj = self.parameter_imports.popitem()
             except KeyError:
                 break
-            imp_obj.widget.deleteLater()
+            imp_obj.deleteLater()
+            imp_obj = None
             #self.layout.removeWidget(imp_obj.widget)
             #imp_obj.close()
-
-        for child in self.all_children:
-            child.deleteLater()
 
         observations = copy.deepcopy(observations)
         parameter_names = list(sorted(set([observation['parametername'] for observation in observations])))
@@ -748,6 +746,7 @@ class InputFields(RowEntry):
         testlabel = None
 
         if self.parameter_imports:
+            # When would this ever happen?
             return
 
         for parametername in parameter_names:
@@ -755,9 +754,7 @@ class InputFields(RowEntry):
             param_import_obj.label.setFixedWidth(maximumwidth)
             if parametername not in self.parameter_imports:
                 self.parameter_imports[parametername] = param_import_obj
-                self.layout.addWidget(param_import_obj.widget)
-                if param_import_obj.widget not in self.all_children:
-                    self.all_children.append(param_import_obj.widget)
+                self.layout().addWidget(param_import_obj)
 
         self.set_parameters_using_stored_settings(stored_settings)
 
@@ -766,7 +763,6 @@ class InputFields(RowEntry):
         #utils.MessagebarAndLog.info(log_msg="All children parents:\n" + '\n'.join([': '.join([str(w), str(w.parentWidget())]) for w in self.all_children]))
 
     def update_observations(self, observations):
-
         observations = copy.deepcopy(observations)
         for parameter_name, import_method_chooser in self.parameter_imports.items():
             parameter_import_fields = import_method_chooser.parameter_import_fields
@@ -776,7 +772,6 @@ class InputFields(RowEntry):
         return observations
 
     def filter_import_methods_not_set(self, observations):
-
         observations = copy.deepcopy(observations)
         #Order the observations under the import methods, and filter out the parameters not set.
         _observations = []
@@ -873,15 +868,18 @@ class InputFields(RowEntry):
 
     def clear_widgets(self):
         for name, param_import_obj in self.parameter_imports.items():
-            param_import_obj.widget.deleteLater()
+            param_import_obj.deleteLater()
             #self.layout.removeWidget(param_import_obj.widget)
             #param_import_obj.widget.close()
         self.parameter_imports = OrderedDict()
 
 
-class ImportMethodChooser(RowEntry):
-    def __init__(self, parameter_name, staff=None):
-        super(ImportMethodChooser, self).__init__()
+class ImportMethodChooser(QtWidgets.QWidget):
+    def __init__(self, parameter_name, staff=None, parent=None):
+        #super(ImportMethodChooser, self).__init__()
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QHBoxLayout())
+
         self.staff = staff
         self.parameter_widget = None
         self.parameter_name = parameter_name
@@ -904,10 +902,10 @@ class ImportMethodChooser(RowEntry):
                      lambda: self.choose_method(self.import_method_classes))
 
         for widget in [self.label, self.__import_method]:
-            self.layout.addWidget(widget)
+            self.layout().addWidget(widget)
 
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
     @property
     def import_method(self):
@@ -926,7 +924,7 @@ class ImportMethodChooser(RowEntry):
                 self.parameter_widget.deleteLater()
                 #self.layout.removeWidget(self.parameter_widget)
             except Exception as e:
-                pass
+                self.parameter_widget = None
             else:
                 self.parameter_widget = None
         """try:
@@ -943,27 +941,28 @@ class ImportMethodChooser(RowEntry):
             self.parameter_import_fields = None
         else:
             self.parameter_import_fields = parameter_import_fields_class(self, staff=self.staff)
-            self.parameter_widget = self.parameter_import_fields.widget
-            self.layout.addWidget(self.parameter_widget)
+            self.parameter_widget = self.parameter_import_fields
+            self.layout().addWidget(self.parameter_widget)
 
-    def close(self):
-        for child in self.layout.children():
+    """def close(self):
+        for child in self.layout().children():
             #self.layout.removeWidget(child)
             child.deleteLater()
             #child.close()
         #self.widget.close()
-        self.widget.deleteLater()
+        self.deleteLater()"""
 
 
-class CommentsImportFields(RowEntry):
+class CommentsImportFields(QtWidgets.QWidget):
     """
     """
-    def __init__(self, import_method_chooser, staff=None):
+    def __init__(self, import_method_chooser, staff=None, parent=None):
         """
         """
-        super(CommentsImportFields, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QHBoxLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.import_method_chooser = import_method_chooser
 
     def alter_data(self, observations):
@@ -990,16 +989,17 @@ class CommentsImportFields(RowEntry):
         return tuple()
 
 
-class WLevelsImportFields(RowEntryGrid):
+class WLevelsImportFields(QtWidgets.QWidget):
     """
     """
 
-    def __init__(self, import_method_chooser, staff=None):
+    def __init__(self, import_method_chooser, staff=None, parent=None):
         """
         """
-        super(WLevelsImportFields, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        super().__init__(parent)
+        self.setLayout(QtWidgets.QGridLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self.h_toc_dict = None
         self.import_method_chooser = import_method_chooser
@@ -1009,9 +1009,9 @@ class WLevelsImportFields(RowEntryGrid):
         self._calculate_level_masl_checkbox.setToolTip(ru(QCoreApplication.translate('WLevelsImportFields', 'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')))
         self._value_column.addItems(['meas', 'level_masl'])
         self.value_column = 'meas'
-        self.layout.addWidget(self.label_value_column, 0, 0)
-        self.layout.addWidget(self._value_column, 1, 0)
-        self.layout.addWidget(self._calculate_level_masl_checkbox, 1, 1)
+        self.layout().addWidget(self.label_value_column, 0, 0)
+        self.layout().addWidget(self._value_column, 1, 0)
+        self.layout().addWidget(self._calculate_level_masl_checkbox, 1, 1)
 
         self._value_column.currentIndexChanged.connect(self.set_calculate_level_masl_visibility)
 
@@ -1075,21 +1075,22 @@ class WLevelsImportFields(RowEntryGrid):
         return (('value_column', self.value_column), )
 
 
-class WFlowImportFields(RowEntryGrid):
+class WFlowImportFields(QtWidgets.QWidget):
     """
     This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "flowtype" and "unit" dropdown lists.
     """
 
 
-    def __init__(self, import_method_chooser, staff=None):
+    def __init__(self, import_method_chooser, staff=None, parent=None):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
-        super(WFlowImportFields, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        super().__init__(parent)
+        self.setLayout(QtWidgets.QGridLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self._import_method_chooser = import_method_chooser
         self.label_flowtype = QtWidgets.QLabel('Flowtype: ')
@@ -1101,10 +1102,10 @@ class WFlowImportFields(RowEntryGrid):
         self.__flowtype.editTextChanged.connect(
                      lambda : self.fill_list(self.__unit, self.flowtype, self._flowtypes_units))
 
-        self.layout.addWidget(self.label_flowtype, 0, 0)
-        self.layout.addWidget(self.__flowtype, 1, 0)
-        self.layout.addWidget(self.label_unit, 0, 1)
-        self.layout.addWidget(self.__unit, 1, 1)
+        self.layout().addWidget(self.label_flowtype, 0, 0)
+        self.layout().addWidget(self.__flowtype, 1, 0)
+        self.layout().addWidget(self.label_unit, 0, 1)
+        self.layout().addWidget(self.__unit, 1, 1)
 
     @property
     def flowtype(self):
@@ -1157,22 +1158,23 @@ class WFlowImportFields(RowEntryGrid):
         return observations
 
 
-class WQualFieldImportFields(RowEntryGrid):
+class WQualFieldImportFields(QtWidgets.QWidget):
     """
     This class should create a layout and populate it with question boxes relevant to w_qual_fields import which is probably "parameter", "unit" dropdown lists.
     And a depth dropdown list which is populated by the parameternames. The purpose is that the user should select which parametername to use as the depth variable
 
     """
 
-    def __init__(self, import_method_chooser, staff=None):
+    def __init__(self, import_method_chooser, staff=None, parent=None):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
-        super(WQualFieldImportFields, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        super().__init__(parent)
+        self.setLayout(QtWidgets.QGridLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self.staff = staff
         self._import_method_chooser = import_method_chooser
@@ -1198,12 +1200,12 @@ class WQualFieldImportFields(RowEntryGrid):
         self.label_instrument.setToolTip(instrument_tooltip)
         self.parameter_instruments = self.get_sorted_parameter_date_time_list(self.staff, 2)
 
-        self.layout.addWidget(self.label_parameter, 0, 0)
-        self.layout.addWidget(self.__parameter, 1, 0)
-        self.layout.addWidget(self.label_unit, 0, 1)
-        self.layout.addWidget(self.__unit, 1, 1)
-        self.layout.addWidget(self.label_instrument, 0, 3)
-        self.layout.addWidget(self.__instrument, 1, 3)
+        self.layout().addWidget(self.label_parameter, 0, 0)
+        self.layout().addWidget(self.__parameter, 1, 0)
+        self.layout().addWidget(self.label_unit, 0, 1)
+        self.layout().addWidget(self.__unit, 1, 1)
+        self.layout().addWidget(self.label_instrument, 0, 3)
+        self.layout().addWidget(self.__instrument, 1, 3)
 
         self.__parameter.editTextChanged.connect(
                      lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units, sort_list=False,
@@ -1316,15 +1318,16 @@ class WQualFieldImportFields(RowEntryGrid):
         return observations
 
 
-class WQualFieldDepthImportFields(RowEntry):
+class WQualFieldDepthImportFields(QtWidgets.QWidget):
     """
     """
-    def __init__(self, import_method_chooser, staff=None):
+    def __init__(self, import_method_chooser, staff=None, parent=None):
         """
         """
-        super(WQualFieldDepthImportFields, self).__init__()
-        self.layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        super().__init__(parent)
+        self.setLayout(qgis.PyQt.QtWidgets.QHBoxLayout())
+        self.layout().setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.import_method_chooser = import_method_chooser
 
     def alter_data(self, observations):

@@ -74,7 +74,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
     def load_gui(self):
         self.date_time_filter = DateTimeFilter(calendar=True)
-        self.add_row(self.date_time_filter.widget)
+        self.add_row(self.date_time_filter)
 
         if pandas_on:
             self.utcoffset_label = QtWidgets.QLabel(QCoreApplication.translate('DiverofficeImport', 'Identify and change UTC offset:'))
