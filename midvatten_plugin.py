@@ -830,7 +830,7 @@ class Midvatten(object):
                                                                log_msg=ru(QCoreApplication.translate("Midvatten", 'The layer must be of type QgsVectorLayer, but was  "%s".'))%str(type(selected_layer)))
             raise common_utils.UsageError()
         selected_obspoints = None
-        for feat in selected_layer.getFeatures():
+        for feat in selected_layer.getSelectedFeatures():
             geom = feat.geometry()
             if geom.wkbType() in (QgsWkbTypes.LineString, 2,
                                   QgsWkbTypes.MultiLineString, 5,
