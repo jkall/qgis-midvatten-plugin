@@ -5,7 +5,7 @@ name=Midvatten
 qgisMinimumVersion=3.34.6
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database.
-version=1.8.1
+version=1.8.2
 author=Josef Källgården, Henrik Spångmyr
 email=midvattenplugin@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
@@ -21,6 +21,8 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 
 changelog=
+        Version 1.8.2
+        - Fixes bug in FieldLoggerExport.
         Version 1.8.1
         - Database connection to PostgreSQL/PostGIS now supports "service" (pg_service.conf).
         - db_utils: Fixes to allow parts of the utils to be used with other database schemas.
@@ -29,7 +31,7 @@ changelog=
         - LoggerEditor: Printing trend adjustment to log.
         - FieldloggerImport: Fixes support for import of FieldForm result files.
         - FieldLoggerImport: Fixes error "wrapped C/C++ object ... has been deleted".
-        - FieldLogger export: Fixes support for FieldForm and changed vector layer list to QgsMapLayerComboBox.
+        - FieldLoggerExport: Fixes support for FieldForm and changed vector layer list to QgsMapLayerComboBox.
         - Sectionplot: Fixes a bug in two templates.
         - Sectionplot: Fixes adjustment of graded dems to QGIS 3.40.
         - Sectionplot: Fix to only check geometry of selected layer.

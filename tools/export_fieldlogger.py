@@ -486,7 +486,7 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
 
     def clear_settings(self):
         common_utils.save_stored_settings(self.ms, [], self.stored_settingskey),
-        common_utils.save_stored_settings(self.ms, defs.export_fieldlogger_defaults()[self.stored_settingskey_format], self.stored_settingskey_format, skip_ast=True)
+        common_utils.save_stored_settings(self.ms, 'FieldLogger', self.stored_settingskey_format, skip_ast=True)
         common_utils.pop_up_info(ru(QCoreApplication.translate('ExportToFieldLogger',
             'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))
 
