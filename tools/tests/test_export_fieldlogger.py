@@ -457,7 +457,8 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
                       QgsGeometry.fromWkt('POINT(3000000.0 300000.0)')]
 
         self.vlayer = create_vectorlayer(_fields, data, geometries=geometries, geomtype='Point', crs=3006)
-        QgsProject.instance().addMapLayer(self.vlayer)
+        #print(f"vlayer is {self.vlayer}")
+        #QgsProject.instance().addMapLayer(self.vlayer)
         #mock_iface = QWidget()
         #mock_iface.legendInterface = mock.Mock()
         #mock_iface.legendInterface.return_value.layers.return_value = [vlayer]
@@ -473,6 +474,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         parameter_groups[1]._obsid_list.paste_data(['obsid3'])
         exporttofieldlogger.parameter_groups = parameter_groups
         exporttofieldlogger.obs_from_vlayer.setChecked(True)
+        exporttofieldlogger.obslayer.vectorlayer_list.setCurrentIndex(0)
 
         exporttofieldlogger.export()
 
@@ -560,6 +562,7 @@ class TestExportFieldloggerNoDb(MidvattenTestBase):
         parameter_groups[1]._obsid_list.paste_data(['obsid3'])
         exporttofieldlogger.parameter_groups = parameter_groups
         exporttofieldlogger.obs_from_vlayer.setChecked(True)
+        exporttofieldlogger.obslayer.vectorlayer_list.setCurrentIndex(0)
 
         exporttofieldlogger.export_as_fieldform.setChecked(True)
 

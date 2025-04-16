@@ -30,11 +30,12 @@ from collections import OrderedDict
 
 import qgis.PyQt
 import qgis.gui
+from qgis.gui import QgsMapLayerComboBox
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt import QtWidgets
 # from qgis._core import QgsProject
 from qgis.core import QgsProject, QgsWkbTypes, QgsGeometry, QgsVectorLayer, QgsMapLayer, QgsCoordinateTransform, \
-    QgsCoordinateReferenceSystem
+    QgsCoordinateReferenceSystem, QgsMapLayerProxyModel, Qgis
 
 import midvatten.definitions.midvatten_defs as defs
 from midvatten.tools.utils import common_utils, midvatten_utils, db_utils, gui_utils
@@ -95,7 +96,7 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
         self.obs_from_obs_points = QtWidgets.QRadioButton(
             QCoreApplication.translate('ExportToFieldLogger', 'table obs_points (id obsid)'))
         self.obs_from_vlayer = QtWidgets.QRadioButton(
-            QCoreApplication.translate('ExportToFieldLogger', 'vector layer:'))
+            QCoreApplication.translate('ExportToFieldLogger', 'point layer:'))
         self.obslayer = ObsLayer(self.iface, self.obs_from_vlayer)
         self.obs_from_row = VRowEntry()
         self.obs_from_row.layout.setContentsMargins(0, 0, 0, 0)
@@ -466,11 +467,6 @@ class ExportToFieldLogger(QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
             json_output.setdefault('locations', {})[location] = loc_dict
         print(f"Got output {json_output}")
         return json_output
-
-
-    def closeEvent(self, event):
-        self.obslayer.disconnect_event()
-        super().closeEvent(event)
 
     def save_stored_settings(self):
         common_utils.save_stored_settings(self.ms,
@@ -887,12 +883,15 @@ class ObsLayer(gui_utils.VRowEntry):
         super().__init__()
         self.obs_from_vlayer = obs_from_vlayer
         self.iface = iface
+
+        self.vectorlayer_list = QgsMapLayerComboBox()
+        self.vectorlayer_list.setFilters(Qgis.LayerFilter.PointLayer) # QgsMapLayerProxyModel.VectorLayer |
+        self.vectorlayer_list.setAdditionalItems([''])
+        self.vectorlayer_list.setCurrentIndex(self.vectorlayer_list.count()-1)
+
         self._vectorlayers = None
-        self.vectorlayer_list = QtWidgets.QComboBox()
         self.column_list = QtWidgets.QComboBox()
-        QgsProject.instance().layersAdded.connect(self.update_vectorlayers)
-        self.vectorlayer_list.currentIndexChanged.connect(lambda x: self.update_column_list())
-        self.update_vectorlayers(select_layer='obs_points')
+        self.vectorlayer_list.layerChanged.connect(lambda x: self.update_column_list())
 
         self.obs_from_vlayer.toggled.connect(lambda: self.vectorlayer_list.setEnabled(self.obs_from_vlayer.isChecked()))
         self.obs_from_vlayer.toggled.connect(lambda: self.column_list.setEnabled(self.obs_from_vlayer.isChecked()))
@@ -900,65 +899,28 @@ class ObsLayer(gui_utils.VRowEntry):
         for combobox in [self.vectorlayer_list, self.column_list]:
             combobox.setEnabled(False)
 
-        #self.layout.addWidget(
-        #    QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'Layer')))
         self.layout.addWidget(self.vectorlayer_list)
         self.layout.addWidget(
             QtWidgets.QLabel(QCoreApplication.translate('ObsLayer', 'id column:')))
         self.layout.addWidget(self.column_list)
-
-    def get_all_vectorlayers(self):
-        #layers = self.iface.legendInterface().layers()
-        layers = [layer for layer in QgsProject.instance().mapLayers().values()]
-        vectorlayers = []
-        for layer in layers:
-            if layer.type() == QgsMapLayer.VectorLayer:
-                for feat in layer.getFeatures():
-                    geom = feat.geometry()
-                    if geom.wkbType() in (QgsWkbTypes.Point, 1,
-                                          QgsWkbTypes.MultiPoint, 4,
-                                          QgsWkbTypes.PointZ, 1001,
-                                          QgsWkbTypes.MultiPointZ, 1004,
-                                          QgsWkbTypes.PointM, 2001,
-                                          QgsWkbTypes.MultiPointM, 2004,
-                                          QgsWkbTypes.PointZM, 3001,
-                                          QgsWkbTypes.MultiPointZM, 3004):
-                        vectorlayers.append(layer)
-                    break
-        return sorted(vectorlayers, key=lambda x: x.name())
-
-    def update_vectorlayers(self, select_layer=None):
-        if select_layer is None:
-            select_layer = self.current_layer()
-
-        self.vectorlayer_list.clear()
-        self._vectorlayers = self.get_all_vectorlayers()
-        for layer in self._vectorlayers:
-            self.vectorlayer_list.addItem(layer.name())
-        if select_layer:
-            if isinstance(select_layer, str):
-                gui_utils.set_combobox(self.vectorlayer_list, select_layer, add_if_not_exists=False)
-            elif isinstance(select_layer, QgsVectorLayer):
-                for idx, layer in enumerate(self._vectorlayers):
-                    if layer is select_layer:
-                        self.vectorlayer_list.setCurrentIndex(idx)
-                        break
 
     def update_column_list(self, select_column='obsid'):
         if select_column is None:
             select_column = self.current_column()
 
         self.column_list.clear()
-        fields = self.current_layer().fields()
-        fieldnames = [field.name() for field in fields]
-        self.column_list.addItems(fieldnames)
-        gui_utils.set_combobox(self.column_list, select_column)
+
+        if self.current_layer() is not None:
+            fields = self.current_layer().fields()
+            fieldnames = [field.name() for field in fields]
+            self.column_list.addItems(fieldnames)
+            gui_utils.set_combobox(self.column_list, select_column)
 
     def get_selected(self):
         return common_utils.getselectedobjectnames(thelayer=self.current_layer(), column_name=self.current_column())
 
     def current_layer(self):
-        return self._vectorlayers[self.vectorlayer_list.currentIndex()]
+        return self.vectorlayer_list.currentLayer()
 
     def current_column(self):
         return self.column_list.currentText()
@@ -981,6 +943,4 @@ class ObsLayer(gui_utils.VRowEntry):
                     for k, v in features.items()}
         return latlons
 
-    def disconnect_event(self):
-        QgsProject.instance().layersAdded.disconnect(self.update_vectorlayers)
 

@@ -110,7 +110,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             mock_geom.wkbType.return_value = 'test'
             mock_feature = mock.Mock()
             mock_feature.geometry.return_value = mock_geom
-            mock_layer.getFeatures.return_value = [mock_feature]
+            mock_layer.getSelectedFeatures.return_value = [mock_feature]
             self.midvatten.plot_section()
 
         _test(self)
