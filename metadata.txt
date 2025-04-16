@@ -33,7 +33,7 @@ changelog=
         - Sectionplot: Fixes a bug in two templates.
         - Sectionplot: Fixes adjustment of graded dems to QGIS 3.40.
         - Sectionplot: Fix to only check geometry of selected layer.
-        - PrepareforQgis2Threejs: Fixes for postgis databases.
+        - PrepareforQgis2Threejs: Fixes for postgis databases..
 
 
         Version 1.8.0:
